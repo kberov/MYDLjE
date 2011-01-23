@@ -1,2 +1,8 @@
-MYDLjE 
-Mojolicious, YAML, DBI*, Locale::Maketext, jQuery, Elastic CSS and many more to paly together well.
+MYDLjE
+ 
+Mojolicious, YAML, DBI*, Locale::Maketext, jQuery, Elastic CSS and many more to play together well.
+
+DESCRIPTION
+
+MYDLjE is a collection of Perl, JavaScript, CSS and HTML5 code bundles to form a 
+General Purpose Platform for building Web-Applications.

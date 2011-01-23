@@ -7,9 +7,13 @@ use warnings;
 
 use File::Basename 'dirname';
 use File::Spec;
+use Cwd;
+BEGIN {
+    $ENV{MOJO_HOME} = Cwd::realpath( File::Spec->rel2abs(dirname(__FILE__).'/../../'));
+}
 
-use lib join '/', File::Spec->splitdir(dirname(__FILE__)), 'lib';
-use lib join '/', File::Spec->splitdir(dirname(__FILE__)), '..', 'lib';
+use lib ( "$ENV{MOJO_HOME}/perl/lib" );
+
 
 # Check if Mojo is installed
 eval 'use Mojolicious::Commands';

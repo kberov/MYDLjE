@@ -1,8 +1,56 @@
 MYDLjE
- 
-Mojolicious, YAML, DBI*, Locale::Maketext, jQuery, Elastic CSS and many more to play together well.
+
+Mojolicious, YAML, DBI*, Locale::Maketext, jQuery, Elastic CSS and many 
+more to play together well.
 
 DESCRIPTION
 
-MYDLjE is a collection of Perl, JavaScript, CSS and HTML5 code bundles to form a 
-General Purpose Platform for building Web-Applications.
+MYDLjE is a collection of Perl, JavaScript, CSS and HTML5 code bundles to 
+form a General Purpose Platform for building Web-Applications.
+
+We count on several "State Of the Art" open source software projects to 
+make a powerful platform.
+
+MYDLjE comes with two bundled web applications around and on top of which 
+you can build even more powerful domain specific applications. 
+The applications are intended to be used by anyone able to use some 
+popular PHP-based CMS.
+
+CONTROL PANEL
+
+This application is for managing your platform. You access and manage 
+your users, customers, site, pages, content, applications etc. from here. 
+Only trusted people should be allowed to use it.
+
+SITE
+
+This is your front-end application intended for the public. Build a site 
+or a custom application to be used by your customers. Build whatever you 
+want on top of and around it.
+
+MINIMAL REQUIREMENTS
+
+* Perl 5.8.8
+* Apache with mod_(f)cgi - if you deploy on a cheap shared hosting.
+* MySQL or DBD::SQLite Perl Module
+
+INSTALLATION
+
+1. Unpack the bundle in a directory visible by Apache.
+2. Use your browser to access http://yoursite.com/where/MYDLjE/index.html
+3. Follow the feather.
+4. Enjoy the results of your ideas
+
+LICENSE and COPYRIGHT
+
+This is a bundle of other people's code and code written by Krasi Berov. 
+The code written by Krasi is licenced under the Artistic License 2.0. 
+
+The other people's code is licenced under various 
+Open Source Licences allowing redistribution and modifications.
+See: http://www.perlfoundation.org/artistic_license_2_0
+How to understand: http://www.perlfoundation.org/artistic_2_0_notes
+
+(C) Krasimir Berov 2011 
+-----------------------
+

@@ -1,0 +1,54 @@
+package MojoX::Session::Transport;
+
+use strict;
+use warnings;
+
+use base 'Mojo::Base';
+
+require Carp;
+
+__PACKAGE__->attr('tx');
+
+sub get { Carp::croak('Method "get" not implemented by subbclass') }
+
+sub set { Carp::croak('Method "set" not implemented by subbclass') }
+
+1;
+__END__
+
+=head1 NAME
+
+MojoX::Session::Transport - Base class for transport
+
+=head1 SYNOPSIS
+
+    use base 'MojoX::Session::Transport';
+
+    sub get {
+        my ($self) = @_;
+        ...
+        return $sid;
+    }
+
+    sub set {
+        my ($self, $sid, $expires) = @_;
+        ...
+        return 1;
+    }
+
+=head1 DESCRIPTION
+
+L<MojoX::Session::Transport> is a base class for transport objects in
+L<MojoX::Session>.
+
+=head1 METHODS
+
+=head2 C<get>
+
+Get session id. Returns it.
+
+=head2 C<set>
+
+Set session id. Returns status.
+
+=cut

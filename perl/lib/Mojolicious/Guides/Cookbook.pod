@@ -1,0 +1,262 @@
+
+=head1 NAME
+
+Mojolicious::Guides::Cookbook - Cookbook
+
+=head1 OVERVIEW
+
+Cooking with L<Mojolicious>, recipes for every taste.
+
+=head1 DEPLOYMENT
+
+Getting L<Mojolicious> and L<Mojolicious::Lite> applications running on
+different platforms.
+
+=head2 Builtin Server
+
+L<Mojolicious> contains a very portable HTTP 1.1 compliant web server.
+It is usally used during development but is solid and fast enough for small
+to mid sized applications.
+
+    % ./script/myapp daemon
+    Server available at http://127.0.0.1:3000.
+
+It has many configuration options and is known to work on every platform
+Perl works on.
+
+    % ./script/myapp help daemon
+    ...List of available options...
+
+Another huge advantage is that it supports TLS and WebSockets out of the box.
+
+    % ./script/myapp daemon --listen https://*:3000
+    Server available at https://*:3000.
+
+A development certificate for testing purposes is built right in, so it just
+works.
+
+=head2 Hypnotoad
+
+For bigger applications L<Mojolicious> contains the UNIX optimized preforking
+web server L<Mojo::Server::Hypnotoad> that will allow you to take advantage
+of multiple cpu cores and copy-on-write.
+
+    Mojo::Server::Hypnotoad
+    |- Mojo::Server::Daemon [1]
+    |- Mojo::Server::Daemon [2]
+    |- Mojo::Server::Daemon [3]
+    `- Mojo::Server::Daemon [4]
+
+It is based on the normal builtin web server but optimized specifically for
+production environments out of the box.
+
+    % hypnotoad script/myapp
+    Server available at http://*:8080.
+
+Config files are plain Perl scripts for maximal customizability.
+
+    # hypnotoad.conf
+    {listen => ['http://*:80'], workers => 10};
+
+But one of its biggest advantages is the support for effortless zero downtime
+software upgrades.
+That means you can upgrade L<Mojolicious>, Perl or even system libraries at
+runtime without ever stopping the server or losing a single incoming
+connection, just by sending it a C<USR2> signal.
+
+    % kill -s 'USR2' `cat hypnotoad.pid`
+
+=head2 Nginx
+
+One of the most popular setups these days is the builtin web server behind a
+Nginx reverse proxy.
+
+    upstream myapp {
+        server 127.0.0.1:8080;
+    }
+    server {
+        listen 80;
+        server_name localhost;
+        location / {
+            proxy_read_timeout 300;
+            proxy_pass http://myapp;
+            proxy_set_header Host $http_host;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+    }
+
+You might also want to enable reverse proxy support in C<hypnotoad> if your
+proxy is on a different physical machine than your application and can't be
+auto detected.
+
+    # hypnotoad.conf
+    {proxy => 1};
+
+=head2 Apache/CGI
+
+C<CGI> is supported out of the box and your L<Mojolicious> application will
+automatically detect that it is executed as a C<CGI> script.
+
+    <VirtualHost *:80>
+        ServerName localhost
+        DocumentRoot /home/sri/myapp/public
+
+        ScriptAlias /myapp "/home/sri/myapp/script/myapp"
+    </VirtualHost>
+
+=head2 Apache/FastCGI
+
+C<FastCGI> is also supported out of the box and your L<Mojolicious>
+application will automatically detect that it is executed as a C<FastCGI>
+script.
+
+    <VirtualHost *:80>
+        ServerName localhost
+        DocumentRoot /home/sri/myapp/public
+
+        FastCgiServer /home/sri/myapp/script/myapp -processes 10
+        Alias /myapp /home/sri/myapp/script/myapp
+    </VirtualHost>
+
+=head2 PSGI/Plack
+
+L<PSGI> is an interface between Perl web frameworks and web servers, and
+L<Plack> is a Perl module and toolkit that contains PSGI middleware, helpers
+and adapters to web servers.
+L<PSGI> and L<Plack> are inspired by Python's WSGI and Ruby's Rack.
+L<Mojolicious> applications are ridiculously simple to deploy with L<Plack>.
+
+    % plackup ./script/myapp
+    HTTP::Server::PSGI: Accepting connections at http://0:5000/
+
+L<Plack> provides many server and protocol adapters for you to choose from
+such as C<FCGI>, C<SCGI> and C<mod_perl>.
+Make sure to run C<plackup> from your applications home directory, otherwise
+libraries might not be found.
+
+    % plackup ./script/myapp -s FCGI -l /tmp/myapp.sock
+
+Because C<plackup> uses a weird trick to load your script, L<Mojolicious> is
+not always able to detect the applications home directory, if thats the case
+you can simply use the C<MOJO_HOME> environment variable.
+Also note that C<app-E<gt>start> needs to be the last Perl statement in the
+application script for the same reason.
+
+    % MOJO_HOME=/home/sri/myapp plackup ./script/myapp
+    HTTP::Server::PSGI: Accepting connections at http://0:5000/
+
+Some server adapters might ask for a C<.psgi> file, if thats the case you can
+just point them at your application script because it will automatically
+act like one if it detects the presence of a C<PLACK_ENV> environment
+variable.
+
+=head2 Apache/mod_perl (PSGI/Plack)
+
+C<mod_perl> is a good example for a L<PSGI> adapter that is used without
+C<plackup>, note that setting the C<PLACK_ENV> environment variable is
+required for L<Mojolicious> L<PSGI> detection.
+
+    <VirtualHost *:80>
+        ServerName localhost
+        DocumentRoot /home/sri/myapp/public
+
+        <Perl>
+            $ENV{PLACK_ENV} = 'production';
+            $ENV{MOJO_HOME} = '/home/sri/myapp';
+        </Perl>
+
+        <Location /myapp>
+            SetHandler perl-script
+            PerlHandler Plack::Handler::Apache2
+            PerlSetVar psgi_app /home/sri/myapp/script/myapp
+        </Location>
+    </VirtualHost>
+
+=head1 CLIENT
+
+When we say L<Mojolicious> is a web framework we actually mean it.
+
+=head2 Streaming Response
+
+Receiving a streaming response can be really tricky in most HTTP clients,
+L<Mojo::Client> makes it actually easy.
+
+    my $client = Mojo::Client->new;
+    my $tx     = $client->build_tx(GET => 'http://mojolicio.us');
+    $tx->res->body(sub { print $_[1] });
+    $client->start($tx);
+
+The C<body> callback will be called for every chunk of data that is received,
+even C<chunked> encoding will be handled transparently if neccessary.
+
+=head2 Streaming Request
+
+Sending a streaming request is almost just as easy.
+
+    my $client  = Mojo::Client->new;
+    my $tx      = $client->build_tx(GET => 'http://mojolicio.us');
+    my $content = 'Hello world!';
+    $tx->req->headers->content_length(length $content);
+    my $drain;
+    $drain = sub {
+        my $req   = shift;
+        my $chunk = substr $content, 0, 1, '';
+        $drain    = undef unless length $content;
+        $req->write($chunk, $drain);
+    };
+    $drain->($tx->req);
+    $client->start($tx);
+
+The drain callback passed to C<write> will be invoked whenever the entire
+previous chunk has been written to the kernel send buffer.
+
+=head1 JAVASCRIPT
+
+=head2 jQuery (Content Distribution Network)
+
+These days L<Mojolicious> ships with a bundled version of jQuery, which you
+can easily use as a fallback for applications that might be used offline from
+time to time.
+
+    <%= javascript
+        'http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js' %>
+    <%= javascript begin %>
+        if (typeof jQuery == 'undefined') {
+            var e = document.createElement('script');
+            e.src = '/js/jquery.js';
+            e.type = 'text/javascript';
+            document.getElementsByTagName("head")[0].appendChild(e);
+        }
+    <% end %>
+
+=head1 HACKS
+
+Fun hacks you might not use very often but that might come in handy some day.
+
+=head2 Rewriting
+
+Sometimes you might have to deploy your application in a broken blackbox
+environment where you can't just fix the server configuration.
+In such cases you can use a C<before_dispatch> hook to rewrite incoming
+requests.
+
+    app->hook(before_dispatch => sub {
+        my $self = shift;
+        $self->req->url->base->scheme('https')
+          if $self->req->headers->header('X-Forwarded-Protocol') eq 'https';
+    });
+
+=head2 Hello World
+
+If every byte matters this is the smallest C<Hello World> application you can
+write with L<Mojolicious::Lite>.
+
+    use Mojolicious::Lite;
+    get '/' => {text => 'Hello World!'};
+    app->start;
+
+It works because automatic rendering kicks in even if no actual code gets
+executed by the router, the renderer just picks up the C<text> value from the
+stash and generates a response.
+
+=cut

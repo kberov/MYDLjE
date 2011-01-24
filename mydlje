@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 
 # Copyright (C) 2008-2010, Sebastian Riedel.
+# Copyright (C) 2011, Krasi Berov.
 
 use strict;
 use warnings;

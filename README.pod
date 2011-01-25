@@ -1,56 +1,80 @@
-MYDLjE
+=head1 MYDLjE - Web-presence rethought
 
-Mojolicious, YAML, DBI*, Locale::Maketext, jQuery, Elastic CSS and many 
-more to play together well.
+=head1 DESCRIPTION
 
-DESCRIPTION
+B<NOTE: Everything below is just a TODO-list for now.>
 
-MYDLjE is a collection of Perl, JavaScript, CSS and HTML5 code bundles to 
+MYDLjE is a collection of Perl, JavaScript, CSS and HTML5 code libraries to 
 form a General Purpose Platform for building Web-Applications.
 
 We count on several "State Of the Art" open source software projects to 
 make a powerful platform.
 
+The framework name is an acronym. It stands for:
+B<Mojolicious, YAML, DBI*, Locale::Maketext, jQuery, Elastic CSS> which are
+the main building blocks. B<Template::Alloy> is yet another solid rock on 
+which we stand.
+
+=head1 APPLICATIONS
+
 MYDLjE comes with two bundled web applications around and on top of which 
 you can build even more powerful domain specific applications. 
-The applications are intended to be used by anyone able to use some 
-popular PHP-based CMS.
+The applications are intended to be usable for the average 
+computer-literate user.
 
-CONTROL PANEL
+=head2 CONTROL PANEL (cpanel)
 
 This application is for managing your platform. You access and manage 
 your users, customers, site, pages, content, applications etc. from here. 
 Only trusted people should be allowed to use it.
 
-SITE
+=head2 SITE (site)
 
 This is your front-end application intended for the public. Build a site 
 or a custom application to be used by your customers. Build whatever you 
 want on top of and around it.
 
-MINIMAL REQUIREMENTS
+=head1 MINIMAL REQUIREMENTS
 
-* Perl 5.8.8
-* Apache with mod_(f)cgi - if you deploy on a cheap shared hosting.
-* MySQL or DBD::SQLite Perl Module
+=over
 
-INSTALLATION
+=item * Perl 5.8.8
 
-1. Unpack the bundle in a directory visible by Apache.
-2. Use your browser to access http://yoursite.com/where/MYDLjE/index.html
-3. Follow the feather.
-4. Enjoy the results of your ideas
+=item * Apache with mod_(f)cgi - if you deploy on a cheap, shared hosting.
 
-LICENSE and COPYRIGHT
+=item * MySQL or DBD::SQLite Perl Module
 
-This is a bundle of other people's code and code written by Krasi Berov. 
-The code written by Krasi is licenced under the Artistic License 2.0. 
+=back
 
+=head1 INSTALLATION
+
+=over
+
+=item 1 Unpack the bundle in a directory visible by Apache.
+
+=item 1 Use your browser to access 
+http://example.com/where/is/MYDLjE/index.html
+
+=item 1 Follow the feather.
+
+=item 1 Enjoy the results and start building your presence
+
+=back
+
+=head1 LICENSE and COPYRIGHT
+
+This is a package of libraries written by many authors. 
+Krasimir Berov bundled them together and wrote the domain specific parts
+to form something that works as one. The code written by K. Berov 
+is licenced under the LGPLv3. 
 The other people's code is licenced under various 
-Open Source Licences allowing redistribution and modifications.
-See: http://www.perlfoundation.org/artistic_license_2_0
+Open Source Licences that allow redistribution and modifications.
+See: http://www.perlfoundation.org/artistic_license_2_0, 
+http://www.gnu.org/licenses/lgpl-3.0.txt
+
 How to understand: http://www.perlfoundation.org/artistic_2_0_notes
 
-(C) Krasimir Berov 2011 
+(C) Krasimir Berov 2011
+
 -----------------------
 

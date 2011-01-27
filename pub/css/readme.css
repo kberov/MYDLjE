@@ -1,9 +1,19 @@
-    body {
-        font-family:sans-serif;font-size:95%;color:#136;padding:0 30% 0 20%;
-        background: url("img/logo3.png") no-repeat scroll;
-        background-attachment:fixed;
-        background-position:70% 2%;
-        }
-        hr {display:none}
-    
-    h1,h2,h3 {color:#135;}
+body {
+    font-family:sans-serif;
+    font-size:95%;
+    color:#136;
+    padding:0 30% 0 20%;
+    background: url("img/logo3.png") no-repeat scroll;
+    background-attachment:fixed;
+    background-position:65% 2%;
+    background-color:white;
+
+}
+hr {display:none}
+
+h1,h2,h3 {color:#135;}
+.ui-widget-content {
+    background:none;
+}
+.inner {padding: 0 1em 0 1em ;}
+#title {padding: 1ex 1ex 0 1ex;}

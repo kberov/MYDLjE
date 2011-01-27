@@ -40,6 +40,7 @@ $dom->at('h1')->replace('');
 $dom->at('ul li')->replace('');
 $dom->at('head')->replace_inner($head);
 $dom->at('[name="index"] p')->replace('');
+while (my $e = $dom->at('hr')) { $e->replace(''); }
 my $body = $dom->at('body')->inner_xml;
 $dom->at('body')
   ->replace_inner('<div class="ui-widget-content ui-corner-all"><h1 id="title">' 

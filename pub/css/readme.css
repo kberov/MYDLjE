@@ -16,4 +16,6 @@ h1,h2,h3 {color:#135;}
     background:none;
 }
 .inner {padding: 0 1em 0 1em ;}
-#title {padding: 1ex 1ex 0 1ex;}
+#title {padding: 1ex 1ex 0 1ex; font-size:14pt;}
+h1 {font-size:17pt;}
+h2 {font-size:15pt;padding-left:1em;}

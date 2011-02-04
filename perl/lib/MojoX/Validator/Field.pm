@@ -116,16 +116,26 @@ sub is_valid {
     return 1 if $self->is_empty;
 
     foreach my $c (@{$self->constraints}) {
-        foreach my $value (@values) {
-            my ($ok, $error) = $c->is_valid($value);
+        if ($c->is_multiple) {
+            my ($ok, $error) = $c->is_valid([@values]);
 
             unless ($ok) {
                 $self->error($self->_message($c->error, $error));
                 return 0;
             }
         }
+        else {
+            foreach my $value (@values) {
+                my ($ok, $error) = $c->is_valid($value);
+
+                unless ($ok) {
+                    $self->error($self->_message($c->error, $error));
+                    return 0;
+                }
+            }
+        }
     }
-    
+
     @values = map { &{$self->deflate} } @values if $self->deflate;
 
     $self->value($self->multiple ? \@values : $values[0]);

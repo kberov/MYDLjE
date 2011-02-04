@@ -5,6 +5,8 @@ use warnings;
 
 use base 'MojoX::Validator::Constraint';
 
+sub is_multiple {1}
+
 sub is_valid {
     my ($self, $values) = @_;
 

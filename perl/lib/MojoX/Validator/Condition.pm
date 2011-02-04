@@ -11,13 +11,12 @@ __PACKAGE__->attr(matched => 0);
 __PACKAGE__->attr(then    => sub { });
 __PACKAGE__->attr(bulks   => sub { [] });
 
-sub regexp {shift->constraint('regexp' => @_)}
-sub length {shift->constraint('length' => @_)}
+sub regexp { shift->constraint('regexp' => @_) }
+sub length { shift->constraint('length' => @_) }
 
 sub when {
-    my $self   = shift;
-    my $fields = shift;
-    $fields = [$fields] unless ref($fields) eq 'ARRAY';
+    my $self = shift;
+    my $fields = ref $_[0] eq 'ARRAY' ? shift : [@_];
 
     my $bulk = {fields => $fields, constraints => []};
     push @{$self->bulks}, $bulk;
@@ -37,7 +36,7 @@ sub constraint {
 }
 
 sub match {
-    my $self = shift;
+    my $self   = shift;
     my $params = shift;
 
     foreach my $bulk (@{$self->bulks}) {

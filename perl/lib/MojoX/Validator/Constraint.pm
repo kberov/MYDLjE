@@ -11,6 +11,8 @@ __PACKAGE__->attr('args' => sub { [] });
 
 sub is_valid {0}
 
+sub is_multiple {0}
+
 sub error {
     my $self = shift;
 

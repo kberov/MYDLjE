@@ -1,8 +1,8 @@
 package Mojolicious::Plugin;
 use Mojo::Base -base;
 
-# This is Fry's decision.
-# And he made it wrong, so it's time for us to interfere in his life.
+# "This is Fry's decision.
+#  And he made it wrong, so it's time for us to interfere in his life."
 sub register { }
 
 1;
@@ -14,7 +14,7 @@ Mojolicious::Plugin - Plugin Base Class
 
 =head1 SYNOPSIS
 
-    use Mojo::Base 'Mojolicious::Plugin';
+  use Mojo::Base 'Mojolicious::Plugin';
 
 =head1 DESCRIPTION
 
@@ -29,7 +29,7 @@ the following new ones.
 
 =head2 C<register>
 
-    $plugin->register;
+  $plugin->register;
     
 This method will be called by L<Mojolicious::Plugins> at startup time,
 your plugin should use this to hook into the application.

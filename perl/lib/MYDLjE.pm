@@ -14,21 +14,16 @@ sub startup {
   my $app = shift;
 
   #Load Plugins
-  $app->plugin(charset => {charset => 'UTF-8'});
-  $app->plugin('validator');
-  $app->plugin('pod_renderer');
-
+  foreach (@{$app->config('plugins')}) {
+    $app->plugin( ref($_) eq 'HASH' ? %{$_} : $_ );  
+  }
   # Routes
   my $r = $app->routes;
-
-  $r->route('/:action')->to(controller => 'C', action => 'hi', id => 1);
-  $r->route('/:action/:id')->to(controller => 'C', action => 'hi', id => 1);
-  $r->route('/:controller/:action/:id')
-    ->to(controller => 'C', action => 'hi', id => 1);
-
-
-  #TODO: Define routes using description from config file
-
+  #TODO: support 'via' and other routes descriptions
+  foreach my $route(@{$app->config('routes')}){
+    $r->route($route->{route})->to(%{$route->{to}})
+  }
+  return;
 }
 
 sub config {

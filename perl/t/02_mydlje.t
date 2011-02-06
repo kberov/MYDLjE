@@ -18,7 +18,7 @@ use MYDLjE;
 my $m = MYDLjE->new();
 
 #warn Dumper($m->config);
-
+#exit;
 SKIP: {
   my $local = "$ENV{MOJO_HOME}/conf/local.development.yaml";
   skip '$local exists', 1 if -e $local;

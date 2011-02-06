@@ -1,3 +1,29 @@
 ---
 site_name: MYDLjE
 
+#MYDLjE::startup
+plugins:
+  - charset: 
+      charset: 'UTF-8'
+  - validator
+  - pod_renderer
+  
+#the keys are the methods, the values are their params
+#$r->route('/:action')->to(controller => 'C', action => 'hi', id => 1);
+routes: 
+  - route: '/:action'
+    to: 
+      controller: C
+      action: hi
+      id: 1
+  - route: '/:action/:id'
+    to: 
+      controller: C
+      action: hi
+      id: 1
+  - route: '/:controller/:action/:id'
+    to: 
+      controller: C
+      action: hi
+      id: 1
+    

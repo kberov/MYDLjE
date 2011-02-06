@@ -1,13 +1,15 @@
 package MYDLjE::Base;
 use Mojo::Base -base;
-use strict;
 use warnings FATAL => qw( all );
 
 sub import {
   goto \&Mojo::Base::import;
 
   #strict->import;
-  warnings->import(FATAL => qw( all ));
+  if( exists $ENV{MYDLjE_FATAL_WARNINGS}
+     && $ENV{MYDLjE_FATAL_WARNINGS} ){
+    warnings->import(FATAL => qw( all ));
+  }
 }
 
 1;

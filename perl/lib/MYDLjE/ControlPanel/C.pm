@@ -1,14 +1,30 @@
 package MYDLjE::ControlPanel::C;
 
 #Base class for MYDLjE::ControlPanel controllers
-
-use strict;
-use warnings FATAL => qw( all );
 use Mojo::Base 'MYDLjE::C';
 
-sub hi {
-  my $c = shift;
-  $c->render(text => ref($c) . ' says Hi!');
-}
 1;
+
+__END__
+
+
+=head1 NAME
+
+MYDLjE::ControlPanel::C - The L<cpanel> Controller class
+
+
+=head1 DESCRIPTION
+
+
+=head1 ATTRIBUTES
+
+L<MYDLjE::ControlPanel::C> inherits most attributes from L<MYDLjE::C> and implements/overrides the following ones.
+
+
+
+=head1 SEE ALSO
+
+L<MYDLjE::Guides>, L<MYDLjE::C>, L<MYDLjE::Site::C>
+
+
 

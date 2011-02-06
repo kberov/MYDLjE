@@ -1,14 +1,13 @@
 package MYDLjE::Site;
+use MYDLjE::Base 'MYDLjE';
 
-use strict;
-use warnings FATAL => qw( all );
-use Mojo::Base 'MYDLjE';
+
+has controller_class => 'MYDLjE::Site::C';
+
 
 sub startup {
   my $app = shift;
   $app->SUPER::startup;
-  my $r = $app->routes;
-  $app->controller_class('MYDLjE::Site::C');
 
   #TODO: Define routes using description from config file
 
@@ -21,5 +20,22 @@ __END__
 
 =head1 NAME
 
-MYDLjE::Site - The Application class
+MYDLjE::Site - The L<site> Application class
+
+=head1 DESCRIPTION
+
+
+=head1 ATTRIBUTES
+
+L<MYDLjE::Site> inherits all attributes from L<MYDLjE> and implements/overrides the following ones.
+
+=head2 controller_class 
+
+L<MYDLjE::Site::C>
+
+
+=head1 SEE ALSO
+
+L<MYDLjE::Guides>, L<MYDLjE::Site::C>, L<MYDLjE>
+
 

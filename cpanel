@@ -28,7 +28,7 @@ EOF
 
 
 # Application
-$ENV{MOJO_APP} = 'MYDLjE::Site';
+$ENV{MOJO_APP} = 'MYDLjE::ControlPanel';
 
 Mojolicious::Commands->start;
 

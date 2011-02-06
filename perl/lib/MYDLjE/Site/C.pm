@@ -1,19 +1,10 @@
 package MYDLjE::Site::C;
 
 #Base class for MYDLjE::Site controllers
+use MYDLjE::C;
+use MYDLjE::Base 'MYDLjE::C';
 
-use strict;
-use warnings FATAL => qw( all );
-use Mojo::Base 'MYDLjE::C';
 
-=pod
-
-sub hi {
-    my $c = shift;
-    $c->render(text => ref($c) . ' says Hi!');
-}
-
-=cut
 
 1;
 

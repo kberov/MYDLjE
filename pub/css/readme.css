@@ -3,9 +3,6 @@ body {
     font-size:95%;
     color:#136;
     padding:0 30% 0 20%;
-    background: url("img/logo3.png") no-repeat scroll;
-    background-attachment:fixed;
-    background-position:65% 2%;
     background-color:white;
 
 }
@@ -13,9 +10,17 @@ hr {display:none}
 
 h1,h2,h3 {color:#135;}
 .ui-widget-content {
-    background:none;
 }
-.inner {padding: 0 1em 0 1em ;}
-#title {padding: 1ex 1ex 0 1ex; font-size:14pt;}
+.inner {
+  padding: 0 1ex 0 1em ;
+  background: url("img/logo3.png") no-repeat scroll;
+  background-position:97% 0%;
+}
+#title {
+  padding: 1ex 1ex 1ex 1ex; 
+  font-size:14pt;
+  margin-top:0;
+}
 h1 {font-size:17pt;}
 h2 {font-size:15pt;padding-left:1em;}
+h2:first-letter {font-size:17pt;font-style:italic;margin-right:0.5ex;}

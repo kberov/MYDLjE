@@ -8,7 +8,8 @@
 <link href="pub/css/redmond/jquery-ui-1.8.7.custom.css" rel="stylesheet" type="text/css" />
     <link href="pub/css/readme.css" rel="stylesheet" type="text/css" /></head>
 
-<body style="background-color: white"><div class="ui-widget-content ui-corner-all"><h1 id="title">MYDLjE - Web-presence rethought</h1><div class="inner">
+<body style="background-color: white"><div class="ui-widget ui-widget-content ui-corner-all">
+    <h1 class="ui-dialog-titlebar ui-widget-header ui-corner-all" id="title">MYDLjE - Web-presence rethought</h1><div class="inner">
 
 
 <!-- INDEX BEGIN -->
@@ -23,11 +24,13 @@
 	<ul>
 
 		<li><a href="#control_panel__cpanel_">CONTROL PANEL (cpanel)</a></li>
+		<li><a href="#mydlje__mydlje_">MYDLjE (mydlje)</a></li>
 		<li><a href="#site__site_">SITE (site)</a></li>
 	</ul>
 
 	<li><a href="#minimal_requirements">MINIMAL REQUIREMENTS</a></li>
 	<li><a href="#installation">INSTALLATION</a></li>
+	<li><a href="#roadmap">ROADMAP</a></li>
 	<li><a href="#license_and_copyright">LICENSE and COPYRIGHT</a></li>
 </ul>
 
@@ -43,34 +46,30 @@
 
 <h1 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="description">DESCRIPTION</a></h1>
 <p><strong>NOTE: Everything below is just a TODO-list for now.</strong></p>
-<p>MYDLjE is a collection of Perl, JavaScript, CSS and HTML5 code libraries to 
-form a General Purpose Platform for building Web-Applications.</p>
-<p>We count on several &quot;State Of the Art&quot; open source software projects to 
-make a powerful platform.</p>
-<p>The framework name is an acronym. It stands for:
-<strong>Mojolicious, YAML, DBI*, Locale::Maketext, jQuery, Elastic CSS</strong> which are
-the main building blocks. <strong>Template::Alloy</strong> is yet another solid rock on 
-which we stand.</p>
+<p>MYDLjE is a lightweight Web-Applications and Content Management Framework.
+It is a collection of Perl, JavaScript, CSS and HTML5 code libraries to form a General Purpose Platform for building Web-Applications.
+We count on several &quot;State Of the Art&quot; open-source software projects to make a powerful platform for building business online.</p>
+<p>The framework name is an acronym. It stands for: <strong>Mojolicious, YAML, DBI*, Locale::Maketext, jQuery, Elastic CSS</strong> which are the main building blocks. <strong>Template::Alloy</strong> is chosen as view system.</p>
 <p>
 </p>
 
 <h1 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="applications">APPLICATIONS</a></h1>
-<p>MYDLjE comes with two bundled web applications around and on top of which 
-you can build even more powerful domain specific applications. 
-The applications are intended to be usable for the average 
-computer-literate user.</p>
+<p>MYDLjE comes with three bundled web applications around and on top of which you can build even more powerful domain specific applications. 
+The applications are intended to be easy to use (intuitive) for the average computer-literate user.</p>
 <p>
 </p>
 <h2 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="control_panel__cpanel_">CONTROL PANEL (cpanel)</a></h2>
-<p>This application is for managing your platform. You access and manage 
-your users, customers, site, pages, content, applications etc. from here. 
-Only trusted people should be allowed to use it.</p>
+<p>This application is for managing your platform. You access and manage your users, customers, site, pages, content, applications etc.  
+Only trusted people (back-end users) should be allowed to use it.</p>
+<p>
+</p>
+<h2 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="mydlje__mydlje_">MYDLjE (mydlje)</a></h2>
+<p>This is a bare-bones application. It it is used as the base for the other two.</p>
 <p>
 </p>
 <h2 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="site__site_">SITE (site)</a></h2>
-<p>This is your front-end application intended for the public. Build a site 
-or a custom application to be used by your customers. Build whatever you 
-want on top of and around it.</p>
+<p>This is your front-end application intended for the public. Build a site or a custom application to be used by your customers. 
+Build whatever you want on top of and around it.</p>
 <p>
 </p>
 
@@ -98,11 +97,54 @@ want on top of and around it.</p>
 <a href="http://example.com/where/is/MYDLjE/index.html">http://example.com/where/is/MYDLjE/index.html</a></a></strong>
 
 </li>
-<li><strong><a class="item" name="follow_the_feather">Follow the feather.</a></strong>
+<li><strong><a class="item" name="feather">Follow the feather (our mascot).</a></strong>
 
 </li>
-<li><strong><a class="item" name="enjoy_the_results_and_start_building_your_presence">Enjoy the results and start building your presence</a></strong>
+<li><strong><a class="item" name="enjoy_your_new_site_and_start_building_your_presence">Enjoy your new site and start building your presence.</a></strong>
 
+</li>
+</ol>
+<p>
+</p>
+
+<h1 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="roadmap">ROADMAP</a></h1>
+<ol>
+<li><strong><a class="item" name="implement_the_base_system_bundle_required_libraries_and_write_enough_tests_to_be_sure_the_things_work_together_well">Implement the base system. Bundle required libraries and write enough tests to be sure the things work together well.</a></strong>
+
+</li>
+<li><strong><a class="item" name="implement_the_control_panel_application">Implement the &quot;Control Panel&quot; application</a></strong>
+
+<ol>
+<li><strong><a class="item" name="implement_the_users_groups_management_plugin">Implement the Users/Groups Management plugin;</a></strong>
+
+</li>
+<li><strong><a class="item" name="implement_the_screens_pages_management_plugin">Implement the Screens/Pages Management plugin;</a></strong>
+
+</li>
+<li><strong><a class="item" name="implement_the_content_management_plugin">Implement the Content Management plugin;</a></strong>
+
+</li>
+<li><strong><a class="item" name="implement_applications_plugins_management_plugin">Implement Applications/Plugins Management plugin;</a></strong>
+
+</li>
+</ol>
+</li>
+<li><strong><a class="item" name="implement_the_site_application">Implement the &quot;Site&quot; application</a></strong>
+
+<ol>
+<li><strong><a class="item" name="implement_the_registration_site_plugin">Implement the &quot;Registration&quot; Site plugin;</a></strong>
+
+</li>
+<li><strong><a class="item" name="plugin">Implement the &quot;Login&quot; Site plugin(with Oauth2 and/or OpenID);</a></strong>
+
+</li>
+<li><strong><a class="item" name="implement_the_profile_site_plugin">Implement the &quot;Profile&quot; Site plugin</a></strong>
+
+</li>
+<li><strong><a class="item" name="implement_the_q_a_site_plugin">Implement the &quot;Q&amp;A&quot; Site plugin;</a></strong>
+
+</li>
+</ol>
 </li>
 </ol>
 <p>

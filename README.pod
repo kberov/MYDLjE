@@ -4,35 +4,32 @@
 
 B<NOTE: Everything below is just a TODO-list for now.>
 
-MYDLjE is a collection of Perl, JavaScript, CSS and HTML5 code libraries to 
-form a General Purpose Platform for building Web-Applications.
+MYDLjE is a lightweight Web-Applications and Content Management Framework.
+It is a collection of Perl, JavaScript, CSS and HTML5 code libraries to form a General Purpose Platform for building Web-Applications.
+We count on several "State Of the Art" open-source software projects to make a powerful platform for building business online.
 
-We count on several "State Of the Art" open source software projects to 
-make a powerful platform.
-
-The framework name is an acronym. It stands for:
-B<Mojolicious, YAML, DBI*, Locale::Maketext, jQuery, Elastic CSS> which are
-the main building blocks. B<Template::Alloy> is yet another solid rock on 
-which we stand.
+The framework name is an acronym. It stands for: B<Mojolicious, YAML, DBI*, Locale::Maketext, jQuery, Elastic CSS> which are the main building blocks. B<Template::Alloy> is chosen as view system.
 
 =head1 APPLICATIONS
 
-MYDLjE comes with two bundled web applications around and on top of which 
-you can build even more powerful domain specific applications. 
-The applications are intended to be usable for the average 
-computer-literate user.
+MYDLjE comes with three bundled web applications around and on top of which you can build even more powerful domain specific applications. 
+The applications are intended to be easy to use (intuitive) for the average computer-literate user.
 
 =head2 CONTROL PANEL (cpanel)
 
-This application is for managing your platform. You access and manage 
-your users, customers, site, pages, content, applications etc. from here. 
-Only trusted people should be allowed to use it.
+This application is for managing your platform. You access and manage your users, customers, site, pages, content, applications etc.  
+Only trusted people (back-end users) should be allowed to use it.
+
+=head2 MYDLjE (mydlje)
+
+This is a bare-bones application. It it is used as the base for the other two.
 
 =head2 SITE (site)
 
-This is your front-end application intended for the public. Build a site 
-or a custom application to be used by your customers. Build whatever you 
-want on top of and around it.
+This is your front-end application intended for the public. Build a site or a custom application to be used by your customers. 
+Build whatever you want on top of and around it.
+
+
 
 =head1 MINIMAL REQUIREMENTS
 
@@ -55,9 +52,48 @@ want on top of and around it.
 =item 1 Use your browser to access 
 http://example.com/where/is/MYDLjE/index.html
 
-=item 1 Follow the feather.
+=item 1 Follow the feather (our mascot).
 
-=item 1 Enjoy the results and start building your presence
+=item 1 Enjoy your new site and start building your presence.
+
+=back
+
+=head1 ROADMAP
+
+=over
+
+=item 1 Implement the base system. Bundle required libraries and write enough tests to be sure the things work together well.
+
+=item 1 Implement the "Control Panel" application
+
+=over
+
+=item 1 Implement the Users/Groups Management plugin;
+
+=item 1 Implement the Screens/Pages Management plugin;
+
+=item 1 Implement the Content Management plugin;
+
+=item 1 Implement Applications/Plugins Management plugin;
+
+=back
+
+=item 1 Implement the "Site" application
+
+=over
+
+=item 1 Implement the "Registration" Site plugin;
+
+=item 1 Implement the "Login" Site plugin(with Oauth2 and/or OpenID);
+
+=item 1 Implement the "Profile" Site plugin
+
+=item 1 Implement the "Q&A" Site plugin;
+
+
+=back
+
+
 
 =back
 

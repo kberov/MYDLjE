@@ -2,7 +2,7 @@ package MYDLjE::ControlPanel;
 
 use strict;
 use warnings FATAL => qw( all );
-use  MYDLjE::Base 'MYDLjE';
+use MYDLjE::Base 'MYDLjE';
 
 
 has controller_class => 'MYDLjE::ControlPanel::C';

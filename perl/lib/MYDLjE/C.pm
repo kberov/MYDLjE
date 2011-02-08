@@ -8,16 +8,16 @@ use MYDLjE::Base 'Mojolicious::Controller';
 # no other actions allowed here.
 sub hi {
   my $c = shift;
-  $c->render(
-    text => 'Controller '.$c->stash('controller') . ' from '
-       .  ref($c)
+  $c->render(text => 'Controller '
+      . $c->stash('controller')
+      . ' from '
+      . ref($c)
       . ' with action '
       . $c->stash('action')
       . ' and id '
       . $c->stash('id')
       . ' says Hi!'
-      . ($c->stash('format') || 'no format')
-  );
+      . ($c->stash('format') || 'no format'));
 }
 
 1;

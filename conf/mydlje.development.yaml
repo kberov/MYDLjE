@@ -1,6 +1,6 @@
 ---
 site_name: MYDLjE
-
+installed: 0
 #MYDLjE::startup
 plugins:
   - charset: 

@@ -2,26 +2,35 @@ package MYDLjE;
 use MYDLjE::Base 'Mojolicious';
 use YAML::Any();
 use Hash::Merge();
-
+use Data::Dumper;
 has controller_class => 'MYDLjE::C';
 has env              => sub {
-  if   ($_[1] && exists $ENV{$_[1]} && $ENV{$_[1]}) { $ENV{$_[1]} }
-  else                                              { \%ENV }
+  if   ($_[1] && exists $ENV{$_[1]}) { $ENV{$_[1]} }
+  else                               { \%ENV }
 };
 has merger => sub { Hash::Merge->new('RIGHT_PRECEDENT') };
+
+#TODO think of merging ARRAYs behavior
+#
+our $DEBUG = ((!$ENV{MOJO_MODE} || $ENV{MOJO_MODE} =~ /^dev/) ? 1 : 0);
 
 sub startup {
   my $app = shift;
 
   #Load Plugins
-  foreach (@{$app->config('plugins')}) {
-    $app->plugin( ref($_) eq 'HASH' ? %{$_} : $_ );  
+  my $plugins = $app->config('plugins') || [];
+
+  foreach (@$plugins) {
+    $app->plugin(ref($_) eq 'HASH' ? %{$_} : $_);
   }
+
   # Routes
   my $r = $app->routes;
+
   #TODO: support 'via' and other routes descriptions
-  foreach my $route(@{$app->config('routes')}){
-    $r->route($route->{route})->to(%{$route->{to}})
+  my $routes = $app->config('routes') || [];
+  foreach my $route (@$routes) {
+    $r->route($route->{route})->to(%{$route->{to}});
   }
   return;
 }
@@ -30,9 +39,11 @@ sub config {
   my $app = shift;
   if (!$app->{config}) {
     $app->read_config();
+
+    #if($DEBUG){warn Dumper($app->{config})}
   }
   if ($_[0]) {
-    return $app->{config}{$_[0]} if exists $app->{config}{$_[0]};
+    return $app->{config}{$_[0]};
   }
   return $app->{config};
 }
@@ -52,11 +63,12 @@ sub read_config {
   }
 
   my ($class, $mode, $home) = (ref($app), $app->mode, $app->home->to_string);
-  { no strict 'refs';
-  $args ||= [@{"${class}::ISA"}];
+  {
+    no strict 'refs';
+    $args ||= [@{"${class}::ISA"}];
   }
-  push @$args,$class;
-  $app->log->debug('@$args: ' . "@$args");
+  push @$args, $class;
+  $app->log->debug('read_config @$args: ' . "@$args");
   for my $i (0 .. @$args - 1) {
     my $filename = $args->[$i];
     $filename =~ s|::|-|g;
@@ -66,21 +78,28 @@ sub read_config {
     push @$args, "$home/conf/local.$mode.yaml";
   }
   my $config = {};
-  $app->log->debug('will read: ' . "@$args");
+
 
   foreach my $filename (@$args) {
     my $conf;
+    $app->log->debug('will try to read: ' . $filename);
+
     if (-r $filename) {
       $conf = YAML::Any::LoadFile($filename);
       $config = $app->merger->merge($config, $conf);
     }
   }
-  if ($config->{secret} &&$config->{secret} ne $class) {
+  if ($config->{secret} && $config->{secret} ne $class) {
     $app->secret(b($config->{secret})->md5_bytes);
   }
   return $app->{config} = $config;
 }
 
+#stolen from List::MoreUtils
+sub _uniq (@) {
+  my %seen = ();
+  grep { not $seen{$_}++ } @_;
+}
 
 1;
 
@@ -102,7 +121,7 @@ shared by the L<cpanel> and L<site> applications.
 
 You can make your own applications which inherit L<MYDLjE> or 
 L<MYDLjE::ControlPanel> and L<MYDLjE::Site> depending on your needs.
-And ofcourse you can inherit directly from L<Mojolicious> and use only 
+And of course you can inherit directly from L<Mojolicious> and use only 
 the bundled files and other perl modules for you own applications
 
 

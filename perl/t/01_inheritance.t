@@ -18,7 +18,8 @@ isa_ok($sitec, 'MYDLjE::Site::C');
 isa_ok($sitec, 'MYDLjE::C');
 isa_ok($sitec, 'Mojolicious::Controller');
 
-use MYDLjE::ControlPanel my $cp = MYDLjE::ControlPanel->new;
+use MYDLjE::ControlPanel;
+my $cp = MYDLjE::ControlPanel->new;
 can_ok('MYDLjE::ControlPanel', ('config'));
 can_ok('MYDLjE::ControlPanel', ('read_config'));
 isa_ok($cp, 'MYDLjE::ControlPanel');

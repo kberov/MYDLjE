@@ -8,7 +8,7 @@ MYDLjE is a lightweight Web-Applications and Content Management Framework.
 It is a collection of Perl, JavaScript, CSS and HTML5 code libraries to form a General Purpose Platform for building Web-Applications.
 We count on several "State Of the Art" open-source software projects to make a powerful platform for building business online.
 
-The framework name is an acronym. It stands for: B<Mojolicious, YAML, DBI*, Locale::Maketext, jQuery, Elastic CSS> which are the main building blocks. B<Template::Alloy> is chosen as view system.
+The framework name is an acronym. It stands for: B<Mojolicious, YAML, DBI*, Locale::Maketext, jQuery, Elastic CSS> which are the main building blocks. B<Template::Alloy> is chosen as view system. B<SILK & FLAG ICONS> are used too.
 
 =head1 APPLICATIONS
 
@@ -97,13 +97,13 @@ http://example.com/where/is/MYDLjE/index.html
 
 =back
 
-=head1 LICENSE and COPYRIGHT
+=head1 LICENSES and COPYRIGHT
 
 This is a package of libraries written by many authors. 
 Krasimir Berov bundled them together and wrote the domain specific parts
 to form something that works as one. The code written by K. Berov 
 is licenced under the LGPLv3. 
-The other people's code is licenced under various 
+The other works are licenced under various 
 Open Source Licences that allow redistribution and modifications.
 See: http://www.perlfoundation.org/artistic_license_2_0, 
 http://www.gnu.org/licenses/lgpl-3.0.txt

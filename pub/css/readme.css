@@ -4,7 +4,6 @@ body {
     color:#136;
     padding:0 30% 0 20%;
     background-color:white;
-
 }
 hr {display:none}
 
@@ -15,11 +14,14 @@ h1,h2,h3 {color:#135;}
   padding: 0 1ex 0 1em ;
   background: url("img/logo3.png") no-repeat scroll;
   background-position:97% 0%;
+  color:#366636;
 }
 #title {
-  padding: 1ex 1ex 1ex 1ex; 
+  padding: 1ex 1ex 1ex 1ex;
   font-size:14pt;
+  border:0px;
   margin-top:0;
+  border-bottom:1px solid #FCEFA1;
 }
 h1 {font-size:17pt;}
 h2 {font-size:15pt;padding-left:1em;}

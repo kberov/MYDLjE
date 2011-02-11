@@ -3,25 +3,31 @@ site_name: MYDLjE
 installed: 0
 #MYDLjE::startup
 plugins:
-  - charset: 
+  charset: 
       charset: 'UTF-8'
-  - validator
-  - pod_renderer
+  validator: 1
+  pod_renderer: 1
   
 #the keys are the methods, the values are their params
 #$r->route('/:action')->to(controller => 'C', action => 'hi', id => 1);
 routes: 
-  - route: '/:action'
+  '/:action':
+    order: 0
     to: 
       controller: C
       action: hi
       id: 1
-  - route: '/:action/:id'
+  '/:action/:id':
+    order: 1
+    via:
+      - get
+      - post
     to: 
       controller: C
       action: hi
       id: 1
-  - route: '/:controller/:action/:id'
+  '/:controller/:action/:id':
+    order: 2
     to: 
       controller: C
       action: hi

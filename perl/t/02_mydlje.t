@@ -11,7 +11,7 @@ BEGIN {
     Cwd::realpath(File::Spec->rel2abs(dirname(__FILE__) . '/../..'));
 }
 use Data::Dumper;
-use Test::More tests => 28;
+use Test::More tests => 37;
 use Test::Mojo;
 
 use MYDLjE;
@@ -32,6 +32,7 @@ for my $app (@apps) {
   my $t    = Test::Mojo->new(app => $app);
   $t->get_ok('/hi')->status_is(200)->content_like(qr/$hi!/, $hi . '!');
   $t->get_ok('/hi/1')->status_is(200)->content_like(qr/$hi!/, $hi . '!');
+  $t->post_ok('/hi/1')->status_is(200)->content_like(qr/$hi!/, $hi . '!');
   $t->get_ok('/c/hi/' . $time)->status_is(200)
     ->content_like(qr/id $time/, 'welcome message on ' . localtime($time));
 }

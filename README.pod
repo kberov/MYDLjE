@@ -49,12 +49,11 @@ Build whatever you want on top of and around it.
 
 =item 1 Unpack the bundle in a directory visible by Apache.
 
-=item 1 Use your browser to access 
-http://example.com/where/is/MYDLjE/index.html
+=item 2 Use your browser to access http://example.com/where/is/MYDLjE/index.html
 
-=item 1 Follow the feather (our mascot).
+=item 3 Follow the feather (our mascot).
 
-=item 1 Enjoy your new site and start building your presence.
+=item 4 Enjoy your new site and start building your presence.
 
 =back
 
@@ -68,27 +67,29 @@ http://example.com/where/is/MYDLjE/index.html
 
 =over
 
-=item 1 Implement the Users/Groups Management plugin;
+=item 1 Implement the Configuration Management controller;
 
-=item 1 Implement the Screens/Pages Management plugin;
+=item 2 Implement the Users/Groups Management controllers;
 
-=item 1 Implement the Content Management plugin;
+=item 3 Implement the Screens/Pages Management plugin;
 
-=item 1 Implement Applications/Plugins Management plugin;
+=item 4 Implement the Content Management plugin;
+
+=item 5 Implement Applications/Plugins Management plugin;
 
 =back
 
-=item 1 Implement the "Site" application
+=item 2 Implement the "Site" application
 
 =over
 
 =item 1 Implement the "Registration" Site plugin;
 
-=item 1 Implement the "Login" Site plugin(with Oauth2 and/or OpenID);
+=item 2 Implement the "Login" Site plugin(with Oauth2 and/or OpenID);
 
-=item 1 Implement the "Profile" Site plugin
+=item 3 Implement the "Profile" Site plugin
 
-=item 1 Implement the "Q&A" Site plugin;
+=item 4 Implement the "Q&A" Site plugin;
 
 
 =back

@@ -14,31 +14,6 @@ GRANT ALL PRIVILEGES ON  `mydlje` . * TO  'mydlje'@'localhost';
 ALTER DATABASE  `mydlje` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
 -- </create_schema_and_user>
 
-DROP TABLE IF EXISTS `my_content`;
-CREATE TABLE IF NOT EXISTS `my_content` (
-  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Primary unique identyfier',
-  `user_id` int(11) NOT NULL DEFAULT '0',
-  `pid` int(11) NOT NULL DEFAULT '0' COMMENT 'Parent Question, Article, Note, Book ID etc',
-  `sorting` int(10) NOT NULL DEFAULT '0' COMMENT 'suitable for sorting articles in a book',
-  `data_type` set('question','answer','book','note','article','chapter') NOT NULL DEFAULT 'note' COMMENT 'data type',
-  `data_format` set('text','html','markdown') NOT NULL DEFAULT 'text',
-  `time_created` int(11) NOT NULL DEFAULT '0' COMMENT 'When this content was inserted',
-  `tstamp` int(11) NOT NULL DEFAULT '0' COMMENT 'Last time the record was touched',
-  `title` varchar(255) NOT NULL DEFAULT '',
-  `body` text NOT NULL,
-  `invisible` tinyint(4) NOT NULL,
-  `language` varchar(2) NOT NULL DEFAULT '',
-  `groups` blob,
-  `protected` char(1) NOT NULL DEFAULT '',
-  `accepted` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Answer accepted?',
-  `bad` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Reported as inapropriate offensive etc.',
-  PRIMARY KEY (`id`),
-  KEY `pid` (`pid`,`data_type`),
-  KEY `tstamp` (`tstamp`,`title`),
-  KEY `user_id` (`user_id`),
-  KEY `language` (`language`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COMMENT='BGCC content elements. Types are used via views.' AUTO_INCREMENT=20 ;
-
 -- <table name="my_users">
 DROP TABLE IF EXISTS `my_users`;
 CREATE TABLE IF NOT EXISTS `my_users` (
@@ -104,11 +79,12 @@ CREATE TABLE IF NOT EXISTS `my_content` (
   `user_id` int(11) NOT NULL DEFAULT '0',
   `pid` int(11) NOT NULL DEFAULT '0' COMMENT 'Parent Question, Article, Note, Book ID etc',
   `sorting` int(10) NOT NULL DEFAULT '0' COMMENT 'suitable for sorting articles in a book',
-  `data_type` set('question','answer','book','note','article','chapter') NOT NULL DEFAULT 'note' COMMENT 'data type',
+  `data_type` set('page','question','answer','book','note','article','chapter') NOT NULL DEFAULT 'note' COMMENT 'data type',
   `data_format` set('text','html','markdown') NOT NULL DEFAULT 'text',
   `time_created` int(11) NOT NULL DEFAULT '0' COMMENT 'When this content was inserted',
   `tstamp` int(11) NOT NULL DEFAULT '0' COMMENT 'Last time the record was touched',
   `title` varchar(255) NOT NULL DEFAULT '',
+  `alias` varchar(255) NOT NULL DEFAULT 'seo friendly id',
   `body` text NOT NULL,
   `invisible` tinyint(4) NOT NULL,
   `language` varchar(2) NOT NULL DEFAULT '',
@@ -119,9 +95,32 @@ CREATE TABLE IF NOT EXISTS `my_content` (
   PRIMARY KEY (`id`),
   KEY `pid` (`pid`,`data_type`),
   KEY `tstamp` (`tstamp`,`title`),
-  KEY `user_id` (`user_id`),
+  KEY `user_id` (`user_id`),  
+  UNIQUE KEY `alias` (`alias`),
   KEY `language` (`language`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COMMENT='BGCC content elements. Types are used via views.' AUTO_INCREMENT=20 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COMMENT='MYDLjE content elements. Types are used via views.' AUTO_INCREMENT=0 ;
 -- </table>
+
+-- <table name="my_users_groups">
+DROP TABLE IF EXISTS `my_users_groups`;
+CREATE TABLE IF NOT EXISTS `my_users_groups` (
+  `uid` int(11) NOT NULL COMMENT 'User  ID',
+  `gid` int(11) NOT NULL COMMENT 'Group ID',
+  PRIMARY KEY (`uid`,`gid`),
+  KEY `gid` (`gid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Which user to which group belongs';
+-- </table>
+
+-- <table name="my_properties">
+DROP TABLE IF EXISTS `my_properties`;
+CREATE TABLE IF NOT EXISTS `my_properties` (
+  `uid` int(11) NOT NULL COMMENT 'User  ID',
+  `gid` int(11) NOT NULL COMMENT 'Group ID',
+  `property` varchar(30) NOT NULL COMMENT 'group or/and user property',
+  `description` varchar(255) NOT NULL COMMENT 'What this property means?',
+  PRIMARY KEY (`uid`,`gid`,`property`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Properties for users and groups.';
+-- </table>
+
 
 -- </queries>

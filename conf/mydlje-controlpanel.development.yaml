@@ -1,3 +1,14 @@
 ---
 installed: 0
 
+routes:
+  /users:
+    order: 2
+    to:
+      controller: C::Users
+      action: list
+  /configs:
+    order: 1
+    to:
+      controller: C::Configs
+      action: list

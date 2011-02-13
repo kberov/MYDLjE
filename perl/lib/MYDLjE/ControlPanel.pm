@@ -1,7 +1,4 @@
 package MYDLjE::ControlPanel;
-
-use strict;
-use warnings FATAL => qw( all );
 use MYDLjE::Base 'MYDLjE';
 
 
@@ -12,9 +9,6 @@ sub startup {
   my $app = shift;
   $app->SUPER::startup;
   my $r = $app->routes;
-
-  #TODO: Define routes using description from config file
-
 }
 
 

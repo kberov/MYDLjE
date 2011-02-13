@@ -1,0 +1,6 @@
+---
+somekey: new value
+another: 
+    deeper: other value
+    more: always
+

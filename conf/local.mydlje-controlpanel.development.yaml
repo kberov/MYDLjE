@@ -1,0 +1,12 @@
+---
+site_name: My site
+
+routes: 
+  /hi:
+    order: 11
+    to: 
+      controller: C
+      action: hi
+      id: 1
+
+

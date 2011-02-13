@@ -21,8 +21,6 @@ my ($APP)  = ($ENV{MOJO_APP}  || 'MYDLjE');
 
 sub new {
   my $self = shift->SUPER::new(@_);
-
-
   $self->read_config_files;
   return $self;
 }
@@ -39,8 +37,8 @@ sub stash {
 }
 
 sub read_config_files {
-  my $self = shift;
-  my $args = $self->{files} || [@_];
+  my ($self,@params) = @_;
+  my $args = $self->{files} || [@params];
 
   if (!$self->{files}) {
     {
@@ -51,12 +49,12 @@ sub read_config_files {
     $self->log->debug('read_config @$args: ' . "@$args");
     for my $i (0 .. @$args - 1) {
       my $filename = $args->[$i];
-      $filename =~ s|::|-|g;
+      $filename =~ s|::|-|gx;
       $args->[$i] = "$HOME/conf/" . lc($filename) . ".$MODE.yaml";
     }
-    if ($args->[-1] !~ /local\./) {
+    if ($args->[-1] !~ /local\./x) {
       my $filename = $APP;
-      $filename =~ s|::|-|g;
+      $filename =~ s|::|-|gx;
       push @$args, "$HOME/conf/local." . lc($filename) . ".$MODE.yaml";
     }
     $self->{files} = $args;
@@ -81,13 +79,14 @@ sub read_config_files {
 
 sub write_config_file {
   my ($self, $filename) = @_;
-  $filename ||= lc('local.' . $APP);
-  $filename =~ s|::|-|g;
+  $filename ||= 'local.' . lc($APP);
+  $filename =~ s|::|-|gx;
   YAML::Any::DumpFile("$HOME/conf/$filename" . ".$MODE.yaml",
     $self->{config});
+  return 1;
 }
 
-sub singleton { $CONFIG ||= shift->new(@_) }
+sub singleton { return $CONFIG ||= shift->new(@_) }
 1;
 
 

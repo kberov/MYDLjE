@@ -6,6 +6,7 @@ use MYDLjE::Base 'MYDLjE::C';
 sub home {
   my $c = shift;
   $c->render(text => 'home');
+  return;
 }
 
 1;

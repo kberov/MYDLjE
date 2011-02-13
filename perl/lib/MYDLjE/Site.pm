@@ -8,9 +8,7 @@ has controller_class => 'MYDLjE::Site::C';
 sub startup {
   my $app = shift;
   $app->SUPER::startup;
-
-  #TODO: Define routes using description from config file
-
+  return;
 }
 
 

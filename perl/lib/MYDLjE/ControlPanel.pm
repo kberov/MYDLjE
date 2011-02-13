@@ -9,6 +9,7 @@ sub startup {
   my $app = shift;
   $app->SUPER::startup;
   my $r = $app->routes;
+  return;
 }
 
 

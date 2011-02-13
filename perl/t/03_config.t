@@ -46,7 +46,7 @@ ok($singleton ne $config, 'singleton is not new');
 my $config2 = $module->new;
 
 is_deeply($config2->stash, $module->singleton->stash,
-  'default settings are allways the same in in different instances');
+  'default settings are allways the same');
 
 #custom configs
 my $config3 = $module->new(

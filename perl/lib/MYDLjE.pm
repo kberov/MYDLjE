@@ -7,7 +7,7 @@ has env              => sub {
   if   ($_[1] && exists $ENV{$_[1]}) { $ENV{$_[1]} }
   else                               { \%ENV }
 };
-our $DEBUG = ((!$ENV{MOJO_MODE} || $ENV{MOJO_MODE} =~ /^dev/) ? 1 : 0);
+our $DEBUG = ((!$ENV{MOJO_MODE} || $ENV{MOJO_MODE} =~ /^dev/x) ? 1 : 0);
 
 my $CONFIG;
 
@@ -25,8 +25,7 @@ sub startup {
 }
 
 sub config {
-  my $app = shift;
-  $CONFIG->stash(@_);
+  shift;  return $CONFIG->stash(@_);
 }
 
 #load plugins from config file
@@ -66,11 +65,6 @@ sub load_routes {
   return;
 }
 
-#stolen from List::MoreUtils
-sub _uniq (@) {
-  my %seen = ();
-  grep { not $seen{$_}++ } @_;
-}
 
 
 1;

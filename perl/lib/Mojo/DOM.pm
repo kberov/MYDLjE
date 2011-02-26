@@ -8,18 +8,18 @@ use Scalar::Util 'weaken';
 
 # "How are the kids supposed to get home?
 #  I dunno. Internet?"
-has charset => 'UTF-8';
+has 'charset';
 has tree => sub { ['root'] };
 
 # Regex
 my $CSS_ESCAPE_RE = qr/\\[^0-9a-fA-F]|\\[0-9a-fA-F]{1,6}/;
 my $CSS_ATTR_RE   = qr/
   \[
-  ((?:$CSS_ESCAPE_RE|\w)+)   # Key
+  ((?:$CSS_ESCAPE_RE|\w)+)      # Key
   (?:
-  (\W)?                      # Operator
+  (\W)?                         # Operator
   =
-  "((?:\\"|[^"])+)"          # Value
+  (?:"((?:\\"|[^"])+)"|(\S+))   # Value
   )?
   \]
 /x;
@@ -28,13 +28,18 @@ my $CSS_ELEMENT_RE      = qr/^((?:\\\.|\\\#|[^\.\#])+)/;
 my $CSS_ID_RE           = qr/\#((?:\\\#|[^\#])+)/;
 my $CSS_PSEUDO_CLASS_RE = qr/(?:\:([\w\-]+)(?:\(((?:\([^\)]+\)|[^\)])+)\))?)/;
 my $CSS_TOKEN_RE        = qr/
-  (\s*,\s*)?                                                   # Separator
-  ((?:[^\[\\\:\s\,]|$CSS_ESCAPE_RE\s?)+)?                      # Element
-  ((?:\:[\w\-]+(?:\((?:\([^\)]+\)|[^\)])+\))?)*)?              # Pseudoclass
-  ((?:\[(?:$CSS_ESCAPE_RE|\w)+(?:\W?="(?:\\"|[^"])+")?\])*)?   # Attributes
+  (\s*,\s*)?                                        # Separator
+  ((?:[^\[\\\:\s\,]|$CSS_ESCAPE_RE\s?)+)?           # Element
+  ((?:\:[\w\-]+(?:\((?:\([^\)]+\)|[^\)])+\))?)*)?   # Pseudoclass
+  ((?:\[
+    (?:$CSS_ESCAPE_RE|\w)+                          # Key
+    (?:\W?=                                         # Operator
+      (?:"(?:\\"|[^"])+"|\S+)                       # Value
+    )?
+  \])*)?
   (?:
   \s*
-  ([\>\+\~])                                                   # Combinator
+  ([\>\+\~])                                        # Combinator
   )?
 /x;
 my $XML_ATTR_RE = qr/
@@ -77,6 +82,20 @@ my $XML_TOKEN_RE = qr/
   )>
   )??
 /xis;
+
+# Optional HTML tags
+my @OPTIONAL_TAGS =
+  qw/body colgroup dd head li optgroup option p rt rp tbody td tfoot th/;
+my $HTML_AUTOCLOSE_RE = join '|', @OPTIONAL_TAGS;
+$HTML_AUTOCLOSE_RE = qr/^(?:$HTML_AUTOCLOSE_RE)$/;
+
+# Tags that break HTML paragraphs
+my @PARAGRAPH_TAGS =
+  qw/address article aside blockquote dir div dl fieldset footer form h1 h2/;
+push @PARAGRAPH_TAGS,
+  qw/h3 h4 h5 h6 header hgroup hr menu nav ol p pre section table or ul/;
+my $HTML_PARAGRAPH_RE = join '|', @PARAGRAPH_TAGS;
+$HTML_PARAGRAPH_RE = qr/^(?:$HTML_PARAGRAPH_RE)$/;
 
 sub add_after  { shift->_add(1, @_) }
 sub add_before { shift->_add(0, @_) }
@@ -121,7 +140,22 @@ sub attrs {
   # Root
   return if $tree->[0] eq 'root';
 
-  return $tree->[2];
+  # Attributes
+  my $attrs = $tree->[2];
+
+  # Hash
+  return $attrs unless @_;
+
+  # Get
+  return $attrs->{$_[0]} unless @_ > 1 || ref $_[0];
+
+  # Set
+  my $values = ref $_[0] ? $_[0] : {@_};
+  for my $key (keys %$values) {
+    $attrs->{$key} = $values->{$key};
+  }
+
+  return $self;
 }
 
 sub children {
@@ -410,6 +444,23 @@ sub _cdata {
   push @$$current, ['cdata', $cdata];
 }
 
+sub _close_table {
+  my ($self, $current) = @_;
+
+  # Check parents
+  my $parent = $$current;
+  while ($parent) {
+    last if $parent->[0] eq 'root' || $parent->[1] eq 'table';
+
+    # Match
+    ($parent->[1] =~ qr/^(col|colgroup|tbody|td|th|thead|tr)$/)
+      and $self->_end($1, $current);
+
+    # Next
+    $parent = $parent->[3];
+  }
+}
+
 sub _comment {
   my ($self, $comment, $current) = @_;
 
@@ -428,10 +479,12 @@ sub _css_equation {
   elsif ($equation eq 'odd') { $num = [2, 1] }
 
   # Equation
-  elsif ($equation =~ /(?:(\-?(?:\d+)?)?n)?\+?(\-?\d+)?$/) {
-    $num->[0] = $1 || 0;
+  elsif ($equation =~ /(?:(\-?(?:\d+)?)?(n))?\s*\+?\s*(\-?\s*\d+)?\s*$/) {
+    $num->[0] = $1;
+    $num->[0] = $2 ? 1 : 0 unless length $num->[0];
     $num->[0] = -1 if $num->[0] eq '-';
-    $num->[1] = $2 || 0;
+    $num->[1] = $3 || 0;
+    $num->[1] =~ s/\s+//g;
   }
 
   return $num;
@@ -496,28 +549,45 @@ sub _end {
   return if $$current->[0] eq 'root';
 
   # Walk backwards
-  while (1) {
+  my $next = $$current;
+  while ($$current = $next) {
 
     # Root
     last if $$current->[0] eq 'root';
 
+    # Next
+    $next = $$current->[3];
+
     # Match
-    return $$current = $$current->[3] if $end eq $$current->[1];
+    if ($end eq $$current->[1]) { return $$current = $$current->[3] }
+
+    # Autoclose optional HTML tags
+    else {
+
+      # Optional tags
+      if ($$current->[1] =~ $HTML_AUTOCLOSE_RE) {
+        $self->_end($$current->[1], $current);
+        next;
+      }
+
+      # Table
+      elsif ($end eq 'table') {
+        $self->_close_table($current);
+        next;
+      }
+    }
 
     # Children to move to parent
     my @buffer = splice @$$current, 4;
 
-    # Parent
-    $$current = $$current->[3];
-
     # Update parent reference
     for my $e (@buffer) {
-      $e->[3] = $$current if $e->[0] eq 'tag';
+      $e->[3] = $next if $e->[0] eq 'tag';
       weaken $e->[3];
     }
 
     # Move children
-    push @$$current, @buffer;
+    push @$next, @buffer;
   }
 }
 
@@ -864,6 +934,7 @@ sub _parse_css {
       my $key   = $self->_css_unescape($1);
       my $op    = $2 || '';
       my $value = $3;
+      $value = $4 unless defined $3;
 
       push @$selector, ['attribute', $key, $self->_css_regex($op, $value)];
     }
@@ -1048,6 +1119,65 @@ sub _render {
 #  or who got exposed to tainted what..."
 sub _start {
   my ($self, $start, $attrs, $current) = @_;
+
+  # Autoclose optional HTML tags
+  if ($$current->[0] ne 'root') {
+
+    # Tag
+    my $t = $$current->[1];
+
+    # "<li>"
+    if ($t eq 'li' && $start eq 'li') { $self->_end('li', $current) }
+
+    # "<p>"
+    elsif ($t eq 'p' && $start =~ $HTML_PARAGRAPH_RE) {
+      $self->_end('p', $current);
+    }
+
+    # "<head>"
+    elsif ($t eq 'head' && $start eq 'body') { $self->_end('head', $current) }
+
+    # "<optgroup>"
+    elsif ($t eq 'optgroup' && $start eq 'optgroup') {
+      $self->_end('optgroup', $current);
+    }
+
+    # "<option>"
+    elsif ($t eq 'option' && ($start eq 'option' || $start eq 'optgroup')) {
+      $self->_end('option', $current);
+      $self->_end('optgroup', $current) if $start eq 'optgroup';
+    }
+
+    # "<colgroup>"
+    elsif ($start eq 'colgroup') { $self->_close_table($current) }
+
+    # "<thead>"
+    elsif ($start eq 'thead') { $self->_close_table($current) }
+
+    # "<tbody>"
+    elsif ($start eq 'tbody') { $self->_close_table($current) }
+
+    # "<tfoot>"
+    elsif ($start eq 'tfoot') { $self->_close_table($current) }
+
+    # "<tr>"
+    elsif ($t eq 'tr' && $start eq 'tr') { $self->_end('tr', $current) }
+
+    # "<th>" and "<td>"
+    elsif (($t eq 'th' || $t eq 'td') && ($start eq 'th' || $start eq 'td')) {
+      $self->_end($t, $current);
+    }
+
+    # "<dt>" and "<dd>"
+    elsif (($t eq 'dt' || $t eq 'dd') && ($start eq 'dt' || $start eq 'dd')) {
+      $self->_end($t, $current);
+    }
+
+    # "<rt>" and "<rp>"
+    elsif (($t eq 'rt' || $t eq 'rp') && ($start eq 'rt' || $start eq 'rp')) {
+      $self->_end($t, $current);
+    }
+  }
 
   # New
   my $new = ['tag', $start, $attrs, $$current];
@@ -1375,6 +1505,9 @@ Find a single element with CSS3 selectors.
 =head2 C<attrs>
 
   my $attrs = $dom->attrs;
+  my $foo   = $dom->attrs('foo');
+  $dom      = $dom->attrs({foo => 'bar'});
+  $dom      = $dom->attrs(foo => 'bar');
 
 Element attributes.
 

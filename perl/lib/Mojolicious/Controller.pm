@@ -32,49 +32,12 @@ our $DEVELOPMENT_NOT_FOUND =
   Mojo::Command->new->get_data('not_found.development.html.ep', __PACKAGE__);
 
 # Reserved stash values
-my $STASH_RE = qr/
-  ^
-  (?:
-  action
-  |
-  app
-  |
-  cb
-  |
-  class
-  |
-  controller
-  |
-  data
-  |
-  exception
-  |
-  extends
-  |
-  format
-  |
-  handler
-  |
-  json
-  |
-  layout
-  |
-  method
-  |
-  namespace
-  |
-  partial
-  |
-  path
-  |
-  status
-  |
-  template
-  |
-  text
-  )
-  $
-  /x;
+my @RESERVED =
+  qw/action app cb class controller data exception extends format/;
+push @RESERVED,
+  qw/handler json layout method namespace partial path status template text/;
+my $STASH_RE = join '|', @RESERVED;
+$STASH_RE = qr/^(?:$STASH_RE)$/;
 
 # "Is all the work done by the children?
 #  No, not the whipping."
@@ -619,7 +582,7 @@ sub req { shift->tx->req }
 sub res { shift->tx->res }
 
 sub send_message {
-  my $self = shift;
+  my ($self, $message, $cb) = @_;
 
   # Transaction
   my $tx = $self->tx;
@@ -629,7 +592,17 @@ sub send_message {
     unless $tx->is_websocket;
 
   # Send
-  $tx->send_message(@_);
+  $tx->send_message(
+    $message,
+    sub {
+
+      # Cleanup
+      shift;
+
+      # Callback
+      $self->$cb(@_) if $cb;
+    }
+  );
 
   # Rendered
   $self->rendered;
@@ -767,23 +740,25 @@ sub url_for {
   $base->userinfo(undef);
 
   # Path
+  my $path = $url->path;
+
+  # Relative URL
   if ($target =~ /^\//) { $url->parse($target) }
 
   # Route
   else {
-    my ($path, $websocket) = $match->path_for($target, @_);
+    my ($p, $ws) = $match->path_for($target, @_);
 
     # Path
-    $url->parse($path) if $path;
+    $path->parse($p) if $p;
 
     # Fix scheme for WebSockets
-    $base->scheme(($base->scheme || '') eq 'https' ? 'wss' : 'ws')
-      if $websocket;
+    $base->scheme(($base->scheme || '') eq 'https' ? 'wss' : 'ws') if $ws;
   }
 
   # Make path absolute
   my $base_path = $base->path;
-  unshift @{$url->path->parts}, @{$base_path->parts};
+  unshift @{$path->parts}, @{$base_path->parts};
   $base_path->parts([]);
 
   return $url;
@@ -872,11 +847,6 @@ __DATA__
         margin-top: 0;
         text-shadow: #ddd 0 1px 0;
       }
-      h1 {
-        font: 1.5em Georgia, Times, serif;
-        margin: 0;
-        text-shadow: #333 0 1px 0;
-      }
       pre {
         margin: 0;
         white-space: pre-wrap;
@@ -942,6 +912,11 @@ __DATA__
         -moz-border-radius-topright: 5px;
         border-top-right-radius: 5px;
       }
+      #showcase pre {
+        font: 1.5em Georgia, Times, serif;
+        margin: 0;
+        text-shadow: #333 0 1px 0;
+      }
       #more, #trace {
         -moz-border-radius-bottomleft: 5px;
         border-bottom-left-radius: 5px;
@@ -980,7 +955,7 @@ __DATA__
       </tr>
     % end
     <div id="showcase" class="code box">
-      <h1><%= $e->message %></h1>
+      <pre><%= $e->message %></pre>
       <div id="context">
         <table>
           % for my $line (@{$e->lines_before}) {
@@ -1090,6 +1065,12 @@ __DATA__
     Page not found, want to go <%= link_to home => url_for->base %>?
   </body>
 </html>
+<!-- a padding to disable MSIE and Chrome friendly error page -->
+<!-- a padding to disable MSIE and Chrome friendly error page -->
+<!-- a padding to disable MSIE and Chrome friendly error page -->
+<!-- a padding to disable MSIE and Chrome friendly error page -->
+<!-- a padding to disable MSIE and Chrome friendly error page -->
+<!-- a padding to disable MSIE and Chrome friendly error page -->
 
 @@ not_found.development.html.ep
 <!doctype html><html>
@@ -1190,7 +1171,7 @@ get '<%= $self->req->url->path->to_abs_string %>' => sub {
           %= link_to 'perldoc Mojolicious::Guides', $guide
         </div>
       </h1>
-      %= image 'amelia.png', alt => 'Amelia'
+      %= image '/amelia.png', alt => 'Amelia'
     </div>
     <div id="footer">
       <h1>And don't forget to have fun!</h1>
@@ -1262,13 +1243,6 @@ A L<Mojo::Client> prepared for the current environment.
   $c->client->post_form('http://kraih.com/login' => {user => 'mojo'});
 
   $c->client->get('http://mojolicio.us' => sub {
-    my $client = shift;
-    $c->render_data($client->res->body);
-  })->start;
-
-Some environments such as L<Mojo::Server::Daemon> even allow async requests.
-
-  $c->client->async->get('http://mojolicio.us' => sub {
     my $client = shift;
     $c->render_data($client->res->body);
   })->start;
@@ -1398,13 +1372,13 @@ Render a data structure as JSON.
 
   $c->render_later;
 
-Disable auto rendering.
+Disable auto rendering, especially for long polling this can be quite useful.
 Note that this method is EXPERIMENTAL and might change without warning!
 
   $c->render_later;
-  $c->client->async->get(
-    'http://mojolicio.us' => sub { $c->render(data => shift->res->body) }
-  )->start;
+  Mojo::IOLoop->singleton->timer(2 => sub {
+    $c->render(text => 'Delayed by 2 seconds!');
+  });
 
 =head2 C<render_not_found>
 
@@ -1436,6 +1410,10 @@ C<public> directory of your application.
 
 Render the given content as Perl characters, which will be encoded to bytes.
 See C<render_data> for an alternative without encoding.
+Note that this does not change the content type of the response, which is
+C<text/html> by default.
+
+  $c->render_text('Hello World!', format => 'txt');
 
 =head2 C<rendered>
 
@@ -1460,6 +1438,7 @@ Usually refers to a L<Mojo::Message::Response> object.
 =head2 C<send_message>
 
   $c = $c->send_message('Hi there!');
+  $c = $c->send_message('Hi there!', sub {...});
 
 Send a message via WebSocket, only works if there is currently a WebSocket
 connection in progress.

@@ -16,9 +16,28 @@ use Time::HiRes 'time';
 # Debug
 use constant DEBUG => $ENV{MOJO_IOLOOP_DEBUG} || 0;
 
-# Perl 5.12 required for "inet_pton"
-use constant PTON => eval 'use 5.012000; 1';
-use constant PTON_AF_INET6 => PTON ? Socket::AF_INET6() : 0;
+# "AF_INET6" requires Socket6 or Perl 5.12
+use constant IPV6_AF_INET6 => eval { Socket::AF_INET6() }
+  || eval { require Socket6 and Socket6::AF_INET6() };
+
+# "inet_pton" requires Socket6 or Perl 5.12
+BEGIN {
+
+  # Socket
+  if (defined &Socket::inet_pton) { *inet_pton = \&Socket::inet_pton }
+
+  # Socket6
+  elsif (eval { require Socket6 and defined &Socket6::inet_pton }) {
+    *inet_pton = \&Socket6::inet_pton;
+  }
+}
+
+# IPv6 DNS support requires "AF_INET6" and "inet_pton"
+use constant IPV6_DNS => defined IPV6_AF_INET6 && defined &inet_pton;
+
+# IPv6 support requires "AF_INET6", "inet_pton" and IO::Socket::IP
+use constant IPV6 => $ENV{MOJO_NO_IPV6} ? 0 : IPV6_DNS
+  && eval 'use IO::Socket::IP 0.06 (); 1';
 
 # Epoll support requires IO::Epoll
 use constant EPOLL => $ENV{MOJO_POLL}
@@ -177,9 +196,6 @@ sub connect {
   # Arguments
   my $args = ref $_[0] ? $_[0] : {@_};
 
-  # TLS check
-  return if $args->{tls} && !TLS;
-
   # Protocol
   $args->{proto} ||= 'tcp';
 
@@ -296,6 +312,9 @@ sub listen {
   my $fd;
   if ($ENV{MOJO_REUSE} =~ /(?:^|\,)$reuse\:(\d+)/) { $fd = $1 }
 
+  # Refresh listen sockets
+  $self->_not_listening;
+
   # Connection
   my $c = {
     file => $args->{file} ? 1 : 0,
@@ -334,11 +353,12 @@ sub listen {
     $options{Proto}     = 'tcp';
     $options{ReuseAddr} = 1;
 
+    # IPv6
+    $options{LocalAddr} =~ s/[\[\]]//g;
+    my $class = IPV6 ? 'IO::Socket::IP' : 'IO::Socket::INET';
+
     # Create socket
-    $socket =
-      defined $fd
-      ? IO::Socket::INET->new
-      : IO::Socket::INET->new(%options)
+    $socket = defined $fd ? $class->new : $class->new(%options)
       or croak "Can't create listen socket: $!";
   }
 
@@ -584,7 +604,7 @@ sub resolve {
   my $ipv4;
   $ipv4 = 1 if $name =~ $Mojo::URL::IPV4_RE;
   my $ipv6;
-  $ipv6 = 1 if PTON && $name =~ $Mojo::URL::IPV6_RE;
+  $ipv6 = 1 if IPV6_DNS && $name =~ $Mojo::URL::IPV6_RE;
 
   # Type
   my $t = $DNS_TYPES->{$type};
@@ -630,7 +650,7 @@ sub resolve {
         # IPv6
         elsif ($ipv6) {
           @parts = reverse 'arpa', 'ip6', split //, unpack 'H32',
-            Socket::inet_pton(PTON_AF_INET6, $name);
+            inet_pton(IPV6_AF_INET6, $name);
         }
       }
 
@@ -683,14 +703,15 @@ sub resolve {
       for (1 .. $packet[3]) {
 
         # Parse
-        (my ($t, $a), $content) = (unpack 'nnnNn/aa*', $content)[1, 4, 5];
+        (my ($t, $ttl, $a), $content) =
+          (unpack 'nnnNn/aa*', $content)[1, 3, 4, 5];
         my @answer = _parse_answer($t, $a, $chunk, $content);
 
         # No answer
         next unless @answer;
 
         # Answer
-        push @answers, \@answer;
+        push @answers, [@answer, $ttl];
 
         # Debug
         warn "ANSWER $answer[0] $answer[1]\n" if DEBUG;
@@ -739,8 +760,11 @@ sub start_tls {
   my $self = shift;
   my $id   = shift;
 
-  # Shortcut
-  $self->drop($id) and return unless TLS;
+  # No TLS support
+  unless (TLS) {
+    $self->_error($id, 'IO::Socket::SSL 1.37 required for TLS support.');
+    return;
+  }
 
   # Arguments
   my $args = ref $_[0] ? $_[0] : {@_};
@@ -754,6 +778,7 @@ sub start_tls {
     SSL_error_trap     => sub { $self->_error($id, $_[1]) },
     SSL_cert_file      => $args->{tls_cert},
     SSL_key_file       => $args->{tls_key},
+    SSL_verify_mode    => 0x00,
     Timeout            => $self->connect_timeout,
     %{$args->{tls_args} || {}}
   );
@@ -845,9 +870,6 @@ sub _accept {
   # Accept
   my $socket = $listen->accept or return;
 
-  # Unlock
-  $self->on_unlock->($self);
-
   # Reverse map
   my $r = $self->{_reverse};
 
@@ -904,23 +926,8 @@ sub _accept {
   my $cb = $c->{on_accept} = $l->{on_accept};
   $self->_run_event('accept', $cb, $id) if $cb && !$l->{tls};
 
-  # Remove listen sockets
-  $listen = $self->{_listen} || {};
-  my $loop = $self->{_loop};
-  for my $lid (keys %$listen) {
-    my $socket = $listen->{$lid}->{handle};
-
-    # Remove listen socket from kqueue
-    if (KQUEUE) {
-      $loop->EV_SET(fileno $socket, KQUEUE_READ, KQUEUE_DELETE);
-    }
-
-    # Remove listen socket from poll or epoll
-    else { $loop->remove($socket) }
-  }
-
-  # Not listening anymore
-  delete $self->{_listening};
+  # Stop listening
+  $self->_not_listening;
 }
 
 sub _add_event {
@@ -970,12 +977,13 @@ sub _connect {
   my $handle;
   unless ($handle = $args->{handle} || $args->{socket}) {
 
+    # IPv6
+    $options{PeerAddr} =~ s/[\[\]]//g if $options{PeerAddr};
+    my $class = IPV6 ? 'IO::Socket::IP' : 'IO::Socket::INET';
+
     # Socket
     return $self->_error($id, "Couldn't connect.")
-      unless $handle = IO::Socket::INET->new(%options);
-
-    # Disable Nagle's algorithm
-    setsockopt $handle, IPPROTO_TCP, TCP_NODELAY, 1;
+      unless $handle = $class->new(%options);
 
     # Timer
     $c->{connect_timer} =
@@ -988,6 +996,9 @@ sub _connect {
 
   # Non-blocking
   $handle->blocking(0);
+
+  # IPv6
+  $handle->connect if IPV6;
 
   # File descriptor
   return unless defined(my $fd = fileno $handle);
@@ -1100,6 +1111,33 @@ sub _hup {
 
   # HUP callback
   $self->_run_event('hup', $event, $id);
+}
+
+sub _not_listening {
+  my $self = shift;
+
+  # Loop
+  return unless my $loop = $self->{_loop};
+
+  # Unlock
+  $self->on_unlock->($self);
+
+  # Remove listen sockets
+  my $listen = $self->{_listen} || {};
+  for my $lid (keys %$listen) {
+    my $socket = $listen->{$lid}->{handle};
+
+    # Remove listen socket from kqueue
+    if (KQUEUE) {
+      $loop->EV_SET(fileno $socket, KQUEUE_READ, KQUEUE_DELETE);
+    }
+
+    # Remove listen socket from poll or epoll
+    else { $loop->remove($socket) }
+  }
+
+  # Not listening anymore
+  delete $self->{_listening};
 }
 
 sub _not_writing {
@@ -1553,6 +1591,9 @@ sub _write {
     my $timer = delete $c->{connect_timer};
     $self->_drop_immediately($timer) if $timer;
 
+    # Disable Nagle's algorithm
+    setsockopt $handle, IPPROTO_TCP, TCP_NODELAY, 1;
+
     # Debug
     warn "CONNECTED $id\n" if DEBUG;
 
@@ -1692,8 +1733,8 @@ L<Mojo::IOLoop> is a very minimalistic reactor that has been reduced to the
 absolute minimal feature set required to build solid and scalable async TCP
 clients and servers.
 
-Optional modules L<IO::KQueue>, L<IO::Epoll> and L<IO::Socket::SSL> are
-supported transparently and used if installed.
+Optional modules L<IO::KQueue>, L<IO::Epoll>, L<IO::Socket::IP> and
+L<IO::Socket::SSL> are supported transparently and used if installed.
 
 A TLS certificate and key are also built right in to make writing test
 servers as easy as possible.
@@ -1813,7 +1854,8 @@ possible.
   );
 
 Open a TCP connection to a remote host.
-Note that TLS support depends on L<IO::Socket::SSL>.
+Note that TLS support depends on L<IO::Socket::SSL> and IPv6 support on
+L<IO::Socket::IP>.
 
 These options are currently available.
 
@@ -1915,7 +1957,8 @@ Check if loop is running.
   );
 
 Create a new listen socket.
-Note that TLS support depends on L<IO::Socket::SSL>.
+Note that TLS support depends on L<IO::Socket::SSL> and IPv6 support on
+L<IO::Socket::IP>.
 
 These options are currently available.
 

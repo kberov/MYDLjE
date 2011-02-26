@@ -37,8 +37,8 @@ EOF
   shift->sessions(@_);
 };
 
-our $CODENAME = 'Snowflake';
-our $VERSION  = '1.02';
+our $CODENAME = 'Smiling Cat Face With Heart-Shaped Eyes';
+our $VERSION  = '1.12';
 
 # "These old doomsday devices are dangerously unstable.
 #  I'll rest easier not knowing where they are."
@@ -375,8 +375,8 @@ magic and no requirements besides Perl 5.8.7.
 
 =item *
 
-Full stack HTTP 1.1 and WebSocket client/server implementation with TLS,
-Bonjour, IDNA, Comet (long polling), chunking and multipart support.
+Full stack HTTP 1.1 and WebSocket client/server implementation with IPv6,
+TLS, Bonjour, IDNA, Comet (long polling), chunking and multipart support.
 
 =item *
 
@@ -456,7 +456,7 @@ structured applications.
     my $r    = $self->routes;
 
     # Route prefix for "MyApp::Example" controller
-    my $example = $r->under('/example')->to('example#');
+    my $example = $r->route('/example')->to('example#');
 
     # GET routes connecting the controller prefix with actions
     $example->get('/hello')->to('#hello');
@@ -790,6 +790,10 @@ Route condition for C<User-Agent> headers.
 
 Change the application charset.
 
+=item L<Mojolicious::Plugin::Config>
+
+Perl-ish configuration files.
+
 =item L<Mojolicious::Plugin::DefaultHelpers>
 
 General purpose helper collection.
@@ -890,6 +894,8 @@ startup.
 Every major release of L<Mojolicious> has a code name, these are the ones
 that have been used in the past.
 
+1.1, C<Smiling Cat Face With Heart-Shaped Eyes> (u1F63B)
+
 1.0, C<Snowflake> (u2744)
 
 0.999930, C<Hot Beverage> (u2615)
@@ -918,6 +924,8 @@ In alphabetical order.
 
 =over 2
 
+Abhijit Menon-Sen
+
 Adam Kennedy
 
 Adriano Ferreira
@@ -945,6 +953,8 @@ Ask Bjoern Hansen
 Audrey Tang
 
 Breno G. de Oliveira
+
+Brian Duggan
 
 Burak Gursoy
 

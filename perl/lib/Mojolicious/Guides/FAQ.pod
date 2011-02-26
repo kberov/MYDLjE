@@ -10,6 +10,41 @@ L<Mojolicious> together with the right answers.
 
 =head1 QUESTIONS
 
+=head2 Why doesn't Mojolicious have any dependencies?
+
+We are optimizing L<Mojolicious> for user-friendliness and development speed
+without compromises.
+While there are no rules in L<Mojolicious::Guides::CodingGuidelines> that
+forbid dependencies, we do currently discourage adding non-optional ones in
+favor of a faster and more painless installation process.
+And we do in fact already use several optional CPAN modules such as
+L<IO::KQueue>, L<IO::Epoll>, L<IO::Socket::IP>, L<IO::Socket::SSL>,
+L<Net::Rendezvous::Publish> and L<Plack> to provide advanced functionality if
+they are installed.
+
+=head2 Why reinvent wheels?
+
+Because we can make them rounder.
+Components specifically designed for user-friendliness and development speed
+are not easy to come by.
+While we are strong believers of the Perl mantra
+"There is more than one way to do it.", we also believe that well designed
+defaults result in a much more pleasant user experience.
+We want the best of both worlds.
+
+=head2 What about backwards compatibility?
+
+In conformance with L<Mojolicious::Guides::CodingGuidelines>, we will always
+deprecate a feature for at least one major release before removing or
+changing it in incompatible ways.
+New features can however be marked as experimental to explicitly exclude them
+from these rules.
+This gives us the necessary freedom to ensure a healthy future for
+L<Mojolicious>.
+So, as long as you are not using anything marked experimental, untested or
+undocumented, you can always count on backwards compatibility, everything
+else would be considered a bug.
+
 =head2 What does the error "Maximum message size exceeded." mean?
 
 To protect your applications from excessively large requests and responses,
@@ -86,5 +121,11 @@ Once thats done you can contact the developers via GitHub
 
 If you decide to fix the bug yourself make sure to also take a look at
 L<Mojolicious::Guides::CodingGuidelines>.
+
+=head1 MORE
+
+You can continue with L<Mojolicious::Guides> now or take a look at the
+Mojolicious wiki L<http://github.com/kraih/mojo/wiki>, which contains a lot
+more documentation and examples by many different authors.
 
 =cut

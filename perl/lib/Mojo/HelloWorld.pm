@@ -1,8 +1,12 @@
 package Mojo::HelloWorld;
 use Mojo::Base 'Mojo';
 
+use Mojo::IOLoop;
 use Mojo::JSON;
 use Mojo::Cookie::Response;
+
+has unmanaged =>
+  sub { shift->client->clone->ioloop(Mojo::IOLoop->singleton)->managed(0) };
 
 # "How is education supposed to make me feel smarter? Besides,
 #  every time I learn something new,
@@ -177,8 +181,15 @@ sub _proxy {
   # Async proxy
   if (my $url = $tx->req->param('async_url')) {
 
+    # Sync environment
+    unless (Mojo::IOLoop->singleton->is_running) {
+      $tx->res->body('Async not available in this deployment environment!');
+      $tx->resume;
+      return;
+    }
+
     # Fetch
-    $self->client->async->get(
+    $self->unmanaged->get(
       $url => sub {
         my ($self, $tx2) = @_;
 
@@ -187,7 +198,7 @@ sub _proxy {
         $tx->res->body($tx2->res->content->asset->slurp);
         $tx->resume;
       }
-    )->start;
+    );
 
     return;
   }
@@ -329,6 +340,17 @@ Mojo::HelloWorld - Hello World!
 
 L<Mojo::HelloWorld> is the default L<Mojo> application, used mostly for
 testing.
+
+=head1 ATTRIBUTES
+
+L<Mojo::HelloWorld> implements the following attributes.
+
+=head2 C<unmanaged>
+
+  my $unmanaged = $hello->unmanaged;
+  $hello        = $hello->unmanaged($unmanaged);
+
+L<Mojo::Client> instance using the global shared L<Mojo::IOLoop> singleton.
 
 =head1 METHODS
 

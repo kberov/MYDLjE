@@ -161,6 +161,13 @@ operations but will also use more memory, defaults to C<256000>.
 
   MOJO_CHUNK_SIZE=1024
 
+=head2 C<MOJO_CONFIG>
+
+Config file to be used by L<Mojolicious::Plugin::Config> and
+L<Mojolicious::Plugin::JsonConfig>, quite useful for testing.
+
+   MOJO_CONFIG=myapp.conf
+
 =head2 C<MOJO_DNS_SERVER>
 
 C<DNS> server to use for non-blocking lookups.
@@ -173,13 +180,6 @@ Home directory for the L<Mojolicious> application, should always contain a
 path like C</home/sri/myapp>.
 
   MOJO_HOME=/home/sri/myapp
-
-=head2 C<MOJO_JSON_CONFIG>
-
-Config file to be used by L<Mojolicious::Plugin::JsonConfig>, quite useful
-for testing.
-
-   MOJO_JSON_CONFIG=myapp.conf
 
 =head2 C<MOJO_LOG_LEVEL>
 
@@ -236,6 +236,13 @@ Disable L<Mojolicious> deployment environment detection.
 
   MOJO_NO_DETECT=1
 
+=head2 C<MOJO_NO_IPV6>
+
+Disable IPv6 support.
+Note that L<IO::Socket::IP> must be installed for IPv6 support.
+
+  MOJO_NO_IPV6=1
+
 =head2 C<MOJO_NO_TLS>
 
 Disable TLS support, this might result in slightly better performance and
@@ -278,12 +285,6 @@ templates, defaults to C<main>.
 
   MOJO_STATIC_CLASS=MyApp
 
-=head2 C<MOJO_TEMPLATE_CACHE>
-
-Number of compiled templates to cache in memory, defaults to C<100>.
-
-  MOJO_TEMPLATE_CACHE=20
-
 =head2 C<MOJO_TEMPLATE_CLASS>
 
 Class the L<Mojolicious> renderer should use to find C<DATA> templates,
@@ -297,5 +298,11 @@ Directory for temporary files like huge uploads, by default a random platform
 specific temporary directory will be used.
 
   MOJO_TMPDIR=/tmp/mojo
+
+=head1 MORE
+
+You can continue with L<Mojolicious::Guides> now or take a look at the
+Mojolicious wiki L<http://github.com/kraih/mojo/wiki>, which contains a lot
+more documentation and examples by many different authors.
 
 =cut

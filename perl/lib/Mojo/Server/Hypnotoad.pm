@@ -13,6 +13,9 @@ use Mojo::Server::Daemon;
 use POSIX qw/setsid WNOHANG/;
 use Scalar::Util 'weaken';
 
+# Preload
+use Mojo::Client;
+
 use constant DEBUG => $ENV{HYPNOTOAD_DEBUG} || 0;
 
 sub DESTROY {
@@ -211,7 +214,7 @@ sub _config {
   $daemon->listen($listen);
 
   # User
-  $daemon->group($c->{user}) if $c->{user};
+  $daemon->user($c->{user}) if $c->{user};
 
   # WebSocket timeout
   $daemon->websocket_timeout($c->{websocket_timeout} || 300);
@@ -488,12 +491,12 @@ Mojo::Server::Hypnotoad - ALL GLORY TO THE HYPNOTOAD!
 
 L<Mojo::Server::Hypnotoad> is a full featured UNIX optimized preforking async
 io HTTP 1.1 and WebSocket server built around the very well tested and
-reliable L<Mojo::Server::Daemon> with C<TLS>, C<Bonjour>, C<epoll>, C<kqueue>
-and hot deployment support that just works.
+reliable L<Mojo::Server::Daemon> with C<IPv6>, C<TLS>, C<Bonjour>, C<epoll>,
+C<kqueue> and hot deployment support that just works.
 
-Optional modules L<IO::KQueue>, L<IO::Epoll>, L<IO::Socket::SSL> and
-L<Net::Rendezvous::Publish> are supported transparently and used if
-installed.
+Optional modules L<IO::KQueue>, L<IO::Epoll>, L<IO::Socket::IP>,
+L<IO::Socket::SSL> and L<Net::Rendezvous::Publish> are supported
+transparently and used if installed.
 
 Note that this module is EXPERIMENTAL and might change without warning!
 

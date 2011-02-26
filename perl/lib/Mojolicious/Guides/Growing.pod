@@ -14,7 +14,7 @@ Essentials every L<Mojolicious> developer should know.
 
 =head2 Model View Controller
 
-MVC is a software architectural pattern for graphical user iterface
+MVC is a software architectural pattern for graphical user interface
 programming originating in Smalltalk-80, that separates application logic,
 presentation and input.
 
@@ -52,7 +52,7 @@ with your browser, you are basically asking the web server for the HTML
 C<representation> of the C<http://mojolicio.us/foo> C<resource>.
 
   .--------.                                .--------.
-  |        | ->  http://mojolici.us/foo  -> |        |
+  |        | -> http://mojolicio.us/foo  -> |        |
   | Client |                                | Server |
   |        | <- <html>Mojo rocks!</html> <- |        |
   '--------'                                '--------'
@@ -323,7 +323,7 @@ against your application.
 
   % ./myapp.pl test
   ...
-  % perl t/login.t
+  % ./myapp.pl test t/login.t
   ...
 
 To make the tests less noisy and limit log output to just C<error> messages
@@ -398,7 +398,7 @@ like this.
     my $user = $self->param('user') || '';
     my $pass = $self->param('pass') || '';
 
-    # Check password and render "index.html.ep" if neccessary
+    # Check password and render "index.html.ep" if necessary
     return $self->render unless $self->users->check($user, $pass);
 
     # Store user name in session
@@ -701,5 +701,11 @@ help with home directory detection, so C<t/login.t> can be simplified.
 
 Test driven development takes a little getting used to, but is very well
 worth it!
+
+=head1 MORE
+
+You can continue with L<Mojolicious::Guides> now or take a look at the
+Mojolicious wiki L<http://github.com/kraih/mojo/wiki>, which contains a lot
+more documentation and examples by many different authors.
 
 =cut

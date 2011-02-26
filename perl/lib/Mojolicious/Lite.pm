@@ -772,7 +772,10 @@ this tutorial applies there too. :)
 
   % mojo generate app
 
-Have fun!
+=head2 More
+
+You can continue with L<Mojolicious::Guides> now, and don't forget to have
+fun!
 
 =head1 FUNCTIONS
 

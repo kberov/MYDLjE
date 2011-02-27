@@ -18,7 +18,7 @@ pod2html(
     "--outfile=$ENV{MOJO_HOME}/README.html"
 );
 my $html_css = '<link rel="stylesheet" type="text/css" 
-    href="pub/css/smoothness/jquery-ui-1.8.9.custom.css" />
+    href="pub/css/ui-lightness/jquery-ui-1.8.10.custom.css" />
     <link rel="stylesheet" type="text/css" href="pub/css/readme.css" />';
 
 my $fh = IO::File->new('< ' . $ENV{MOJO_HOME} . '/README.html');
@@ -43,7 +43,7 @@ $dom->at('[name="index"] p')->replace('');
 while (my $e = $dom->at('hr')) { $e->replace(''); }
 my $body = $dom->at('body')->inner_xml;
 $dom->at('body')
-  ->replace_inner('<div class="ui-widget ui-widget-content ui-corner-all ui-state-highlight">
+  ->replace_inner('<div class="ui-widget ui-widget-content ui-corner-all ">
     <h1 id="title" class="ui-dialog-titlebar ui-widget-header ui-corner-all">' 
       . $title
       . '</h1><div class="inner">'

@@ -1,0 +1,16 @@
+.unit {
+}
+
+#setup,.inner {
+margin:auto;
+
+}
+.inner {
+  padding: 0em 1ex 1em 1em ;
+  background: url("img/logo3.png") no-repeat scroll;
+  background-position:97% 2%;
+  color:#366636;
+  width:60%;
+}
+#system_check_div .ui-widget {margin-top:1em;padding:0.5em}
+#setup ul.oks li {color:green}

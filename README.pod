@@ -22,7 +22,7 @@ Only trusted people (back-end users) should be allowed to use it.
 
 =head2 MYDLjE (mydlje)
 
-This is a bare-bones application. It it is used as the base for the other two.
+This is a bare-bones application. It it is used as the base for the other two and for setting up the system for the first time when you unpack it where it iwill work.
 
 =head2 SITE (site)
 
@@ -49,7 +49,7 @@ Build whatever you want on top of and around it.
 
 =item 1 Unpack the bundle in a directory visible by Apache.
 
-=item 2 Use your browser to access http://example.com/where/is/MYDLjE/index.html
+=item 2 Use your browser to access B<index.xhtml> - see L</SETUP>.
 
 =item 3 Follow the feather (our mascot).
 
@@ -59,11 +59,15 @@ Build whatever you want on top of and around it.
 
 =head1 ROADMAP
 
+Below is the list of things to do. It is possible to work on several things at the same time so feel your self invited to help.
+
 =over
 
 =item 1 Implement the base system. Bundle required libraries and write enough tests to be sure the things work together well.
 
-=item 1 Implement the "Control Panel" application
+=item 2 Implement the MYDLjE initial setup/install.
+
+=item 2 Implement the "Control Panel" application:
 
 =over
 
@@ -79,7 +83,7 @@ Build whatever you want on top of and around it.
 
 =back
 
-=item 2 Implement the "Site" application
+=item 3 Implement the "Site" application:
 
 =over
 
@@ -87,7 +91,7 @@ Build whatever you want on top of and around it.
 
 =item 2 Implement the "Login" Site plugin(with Oauth2 and/or OpenID);
 
-=item 3 Implement the "Profile" Site plugin
+=item 3 Implement the "Profile" Site plugin;
 
 =item 4 Implement the "Q&A" Site plugin;
 
@@ -111,7 +115,45 @@ http://www.gnu.org/licenses/lgpl-3.0.txt
 
 How to understand: http://www.perlfoundation.org/artistic_2_0_notes
 
-(C) Krasimir Berov 2011
+Copyright (C) 2008-2011, Krasimir Berov
+
+=head1 CREDITS
+
+I wish to thank to all who made something that I use to make MYDLjE works. 
+If you think your name should be listed here, please notify me.
+
+=over
+
+=item * Larry Wall conceived Perl - http://www.perl.org/. Thank You!
+
+=item * Sebastian Riedel makes Mojolicious - http://mojolicio.us/perldoc?Mojolicious . Thank You!
+
+=item * YAML thanks to Oren Ben-Kiki, Clark Evans, Ingy döt Net - http://yaml.org/. Thank you all!
+
+=item * Adam Kennedy makes YAML::Tiny - http://search.cpan.org/dist/YAML-Tiny/. Thank you!
+
+=item * Paul Seamons makes Template::Alloy - http://search.cpan.org/dist/Template-Alloy/. Thank You!
+
+=item * John Resig conceived jQuery - http://jquery.org/. Thank You!
+
+=item * jQuery User Interface Team makes jQuery UI - http://jqueryui.com/about . Thank You!
+
+=item * Sean M. Burke conceived Locale::Maketext - http://search.cpan.org/dist/Locale-Maketext/. Thank You! 
+
+=item * Mark James made SILK & FLAG ICONS -  http://www.famfamfam.com/about/. Thank You!
+
+=item * Fernando Trasvia conceived Elastic CSS - http://elasticss.com/suggestions/. Thank You!
+
+=back
+
+=head1 SETUP
+
+=begin html
+
+To begin setting up your system <a href="index.xhtml">go to index.xhtml</a>
+
+=end html
+
 
 -----------------------
 

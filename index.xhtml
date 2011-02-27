@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"
+[
+  <!-- <!ENTITY % locale         "pub/dtd/18n.en.dtd">
+  %locale; -->
+  <!ENTITY system         "MYDLjE">
+  <!ENTITY title "&system;  - Web-presence rethought">
+  <!ENTITY h1         "SETUP &system;">
+  <!ENTITY system_check  "System Check">
+  <!ENTITY db_connect "Databse  Connectivity">
+  <!ENTITY modules_check "Required Modules">
+
+]>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta name="generator" content="HTML Tidy for Linux (vers 25 March 2009), see www.w3.org" />
+    <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <meta name="generator" content="tidy_indexhtml - HTML Tidy for Linux (vers 25 March 2009), see www.w3.org" />
+    <title>&title;</title>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <link href="pub/css/ui-lightness/jquery-ui-current.custom.css" rel="stylesheet" charset="utf-8" type="text/css" />
+    <link href="pub/css/elastic.css" rel="stylesheet" type="text/css" charset="utf-8" />
+    <link href="pub/css/mydlje.css" rel="stylesheet" type="text/css" charset="utf-8" />
+    <script src="pub/js/jquery-current.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="pub/css/elastic.js" type="text/javascript" charset="utf-8"></script>
+    <script src="pub/js/jquery-ui-current.custom.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="pub/js/setup.js" type="text/javascript" charset="utf-8"></script>
+  </head>
+  <body>
+    <div class="unit">
+      <div class="container">
+        <div class="columns inner ui-widget-content ui-corner-all">
+          <div id="setup">
+            <h1>&h1;</h1>
+            <h2 id="system_check_h2">
+              <a name="system_check">&system_check;</a>
+            </h2>
+            <div id="system_check_div">
+              <div class="ui-widget oks" style="display:none">
+                <div class="ui-state-active ui-corner-all ui-priority-secondary">
+                  <p>
+                    <span class="ui-icon ui-icon-check" style="float: left; margin-right: .3em;"></span>
+                    <strong>Operational applications:</strong><ul class="oks"></ul>
+                  </p>
+                </div>
+              </div>
+
+              <div class="ui-widget noks" style="display:none">
+                <div class="ui-state-error ui-corner-all" >
+                  <p>
+                    <span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
+                    <strong>Not operational applications:</strong><ul class="noks"></ul>
+                  </p>
+                </div>
+              </div>
+
+              <div class="ui-widget wrench" style="display:none">
+                <div class="ui-state-highlight ui-corner-all ui-priority-primary" >
+                  <p>
+                    <span class="ui-icon ui-icon-wrench" style="float: left; margin-right: .3em;"></span>
+                    <strong>Possible solution:</strong><ul class="wrench"></ul>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <h2>
+              <a name="second">&modules_check;</a>
+            </h2>
+            <div>we will try to check if the system is operational</div>
+            <h2>
+              <a name="second">&db_connect;</a>
+            </h2>
+            <div>we will try to check if the system is operational</div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

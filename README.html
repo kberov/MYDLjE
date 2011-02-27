@@ -5,10 +5,10 @@
 <title>MYDLjE - Web-presence rethought</title>
 <meta content="text/html; charset=utf-8" http-equiv="content-type" />
 <link href="mailto:krasi@krasi-laptop.(none)" rev="made" />
-<link href="pub/css/smoothness/jquery-ui-1.8.9.custom.css" rel="stylesheet" type="text/css" />
+<link href="pub/css/ui-lightness/jquery-ui-1.8.10.custom.css" rel="stylesheet" type="text/css" />
     <link href="pub/css/readme.css" rel="stylesheet" type="text/css" /></head>
 
-<body style="background-color: white"><div class="ui-widget ui-widget-content ui-corner-all ui-state-highlight">
+<body style="background-color: white"><div class="ui-widget ui-widget-content ui-corner-all ">
     <h1 class="ui-dialog-titlebar ui-widget-header ui-corner-all" id="title">MYDLjE - Web-presence rethought</h1><div class="inner">
 
 
@@ -32,6 +32,8 @@
 	<li><a href="#installation">INSTALLATION</a></li>
 	<li><a href="#roadmap">ROADMAP</a></li>
 	<li><a href="#licenses_and_copyright">LICENSES and COPYRIGHT</a></li>
+	<li><a href="#credits">CREDITS</a></li>
+	<li><a href="#setup">SETUP</a></li>
 </ul>
 
 
@@ -64,7 +66,7 @@ Only trusted people (back-end users) should be allowed to use it.</p>
 <p>
 </p>
 <h2 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="mydlje__mydlje_">MYDLjE (mydlje)</a></h2>
-<p>This is a bare-bones application. It it is used as the base for the other two.</p>
+<p>This is a bare-bones application. It it is used as the base for the other two and for setting up the system for the first time when you unpack it where it iwill work.</p>
 <p>
 </p>
 <h2 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="site__site_">SITE (site)</a></h2>
@@ -93,8 +95,7 @@ Build whatever you want on top of and around it.</p>
 <li><strong><a class="item" name="unpack_the_bundle_in_a_directory_visible_by_apache">Unpack the bundle in a directory visible by Apache.</a></strong>
 
 </li>
-<li><strong><a class="item" name="use_your_browser_to_access_http_example_com_where_is_mydlje_index_html">Use your browser to access 
-<a href="http://example.com/where/is/MYDLjE/index.html">http://example.com/where/is/MYDLjE/index.html</a></a></strong>
+<li><strong><a class="item" name="use_your_browser_to_access_index_xhtml_see_setup">Use your browser to access <strong>index.xhtml</strong> - see <a href="#setup">SETUP</a>.</a></strong>
 
 </li>
 <li><strong><a class="item" name="feather">Follow the feather (our mascot).</a></strong>
@@ -108,11 +109,15 @@ Build whatever you want on top of and around it.</p>
 </p>
 
 <h1 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="roadmap">ROADMAP</a></h1>
+<p>Below is the list of things to do. It is possible to work on several things at the same time so feel your self invited to help.</p>
 <ol>
 <li><strong><a class="item" name="implement_the_base_system_bundle_required_libraries_and_write_enough_tests_to_be_sure_the_things_work_together_well">Implement the base system. Bundle required libraries and write enough tests to be sure the things work together well.</a></strong>
 
 </li>
-<li><strong><a class="item" name="implement_the_control_panel_application">Implement the &quot;Control Panel&quot; application</a></strong>
+<li><strong><a class="item" name="implement_the_mydlje_initial_setup_install">Implement the MYDLjE initial setup/install.</a></strong>
+
+</li>
+<li><strong><a class="item" name="implement_the_control_panel_application">Implement the &quot;Control Panel&quot; application:</a></strong>
 
 <ol>
 <li><strong><a class="item" name="implement_the_configuration_management_controller">Implement the Configuration Management controller;</a></strong>
@@ -132,7 +137,7 @@ Build whatever you want on top of and around it.</p>
 </li>
 </ol>
 </li>
-<li><strong><a class="item" name="implement_the_site_application">Implement the &quot;Site&quot; application</a></strong>
+<li><strong><a class="item" name="implement_the_site_application">Implement the &quot;Site&quot; application:</a></strong>
 
 <ol>
 <li><strong><a class="item" name="implement_the_registration_site_plugin">Implement the &quot;Registration&quot; Site plugin;</a></strong>
@@ -141,7 +146,7 @@ Build whatever you want on top of and around it.</p>
 <li><strong><a class="item" name="plugin">Implement the &quot;Login&quot; Site plugin(with Oauth2 and/or OpenID);</a></strong>
 
 </li>
-<li><strong><a class="item" name="implement_the_profile_site_plugin">Implement the &quot;Profile&quot; Site plugin</a></strong>
+<li><strong><a class="item" name="implement_the_profile_site_plugin">Implement the &quot;Profile&quot; Site plugin;</a></strong>
 
 </li>
 <li><strong><a class="item" name="implement_the_q_a_site_plugin">Implement the &quot;Q&amp;A&quot; Site plugin;</a></strong>
@@ -163,8 +168,50 @@ Open Source Licences that allow redistribution and modifications.
 See: <a href="http://www.perlfoundation.org/artistic_license_2_0,">http://www.perlfoundation.org/artistic_license_2_0,</a> 
 <a href="http://www.gnu.org/licenses/lgpl-3.0.txt">http://www.gnu.org/licenses/lgpl-3.0.txt</a></p>
 <p>How to understand: <a href="http://www.perlfoundation.org/artistic_2_0_notes">http://www.perlfoundation.org/artistic_2_0_notes</a></p>
-<p>(C) Krasimir Berov 2011</p>
-<p>-----------------------</p>
+<p>Copyright (C) 2008-2011, Krasimir Berov</p>
+<p>
+</p>
+
+<h1 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="credits">CREDITS</a></h1>
+<p>I wish to thank to all who made something that I use to make MYDLjE works. 
+If you think your name should be listed here, please notify me.</p>
+<ul>
+<li><strong><a class="item" name="larry_wall_conceived_perl_http_www_perl_org_thank_you">Larry Wall conceived Perl - <a href="http://www.perl.org/.">http://www.perl.org/.</a> Thank You!</a></strong>
+
+</li>
+<li><strong><a class="item" name="sebastian_riedel_makes_mojolicious_http_mojolicio_us_perldoc_mojolicious_thank_you">Sebastian Riedel makes Mojolicious - <a href="http://mojolicio.us/perldoc?Mojolicious">http://mojolicio.us/perldoc?Mojolicious</a> . Thank You!</a></strong>
+
+</li>
+<li><strong><a class="item" name="yaml_thanks_to_oren_ben_kiki_clark_evans_ingy_d_t_net_http_yaml_org_thank_you_all">YAML thanks to Oren Ben-Kiki, Clark Evans, Ingy döt Net - <a href="http://yaml.org/.">http://yaml.org/.</a> Thank you all!</a></strong>
+
+</li>
+<li><strong><a class="item" name="adam_kennedy_makes_yaml_tiny_http_search_cpan_org_dist_yaml_tiny_thank_you">Adam Kennedy makes YAML::Tiny - <a href="http://search.cpan.org/dist/YAML-Tiny/.">http://search.cpan.org/dist/YAML-Tiny/.</a> Thank you!</a></strong>
+
+</li>
+<li><strong><a class="item" name="paul_seamons_makes_template_alloy_http_search_cpan_org_dist_template_alloy_thank_you">Paul Seamons makes Template::Alloy - <a href="http://search.cpan.org/dist/Template-Alloy/.">http://search.cpan.org/dist/Template-Alloy/.</a> Thank You!</a></strong>
+
+</li>
+<li><strong><a class="item" name="john_resig_conceived_jquery_http_jquery_org_thank_you">John Resig conceived jQuery - <a href="http://jquery.org/.">http://jquery.org/.</a> Thank You!</a></strong>
+
+</li>
+<li><strong><a class="item" name="jquery_user_interface_team_makes_jquery_ui_http_jqueryui_com_about_thank_you">jQuery User Interface Team makes jQuery UI - <a href="http://jqueryui.com/about">http://jqueryui.com/about</a> . Thank You!</a></strong>
+
+</li>
+<li><strong><a class="item" name="sean_m_burke_conceived_locale_maketext_http_search_cpan_org_dist_locale_maketext_thank_you">Sean M. Burke conceived Locale::Maketext - <a href="http://search.cpan.org/dist/Locale-Maketext/.">http://search.cpan.org/dist/Locale-Maketext/.</a> Thank You!</a></strong>
+
+</li>
+<li><strong><a class="item" name="mark_james_made_silk_flag_icons_http_www_famfamfam_com_about_thank_you">Mark James made SILK &amp; FLAG ICONS -  <a href="http://www.famfamfam.com/about/.">http://www.famfamfam.com/about/.</a> Thank You!</a></strong>
+
+</li>
+<li><strong><a class="item" name="fernando_trasvia_conceived_elastic_css_http_elasticss_com_suggestions_thank_you">Fernando Trasvia conceived Elastic CSS - <a href="http://elasticss.com/suggestions/.">http://elasticss.com/suggestions/.</a> Thank You!</a></strong>
+
+</li>
+</ul>
+<p>
+</p>
+
+<h1 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="setup">SETUP</a></h1>
+To begin setting up your system <a href="index.xhtml">go to index.xhtml</a><p>-----------------------</p>
 
 </div></div></body>
 

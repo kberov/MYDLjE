@@ -1,0 +1,2 @@
+tidy -utf8 -clean -xml --preserve-entities y \
+ -indent -wrap 120 -modify index.xhtml

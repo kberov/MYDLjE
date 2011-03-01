@@ -31,3 +31,6 @@ statements = 2
 #todo
 [Subroutines::RequireArgUnpacking]
 #allow_delegation_to = next::method _delegate
+#
+[BuiltinFunctions::ProhibitStringyEval]
+allow_includes=1

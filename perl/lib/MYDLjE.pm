@@ -31,6 +31,7 @@ sub config {
 #load plugins from config file
 sub load_plugins {
   my ($app) = @_;
+  $app->plugins->namespaces(['Mojolicious::Plugin','MYDLjE::Plugin']);
   my $plugins = $app->config('plugins') || {};
   foreach my $plugin (keys %$plugins) {
     if ($plugins->{$plugin} && ref($plugins->{$plugin}) eq 'HASH') {
@@ -173,6 +174,6 @@ Example plugins configuration:
 =head1 SEE ALSO
 
 L<MYDLjE::Guides>, L<MYDLjE::ControlPanel>, 
-L<MYDLjE::Site>, L<MYDLjE::Config>,L<Hash::Merge>, L<YAML::Tiny>
+L<MYDLjE::Site>, L<MYDLjE::Config>,L<Hash::Merge::Simple>, L<YAML::Tiny>
 
 

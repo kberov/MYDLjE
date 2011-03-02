@@ -13,4 +13,8 @@ margin:auto;
   width:60%;
 }
 #system_check_div .ui-widget {margin-top:1em;padding:0.5em}
-#setup ul.oks li {color:green}
+#setup ul.oks li {
+  color:green;
+  list-style:none;
+}
+

@@ -24,7 +24,7 @@ sub check_readables {
     else {
       $readables_json->{$d} = {
         ok      => 0,
-        message => "'$home/$d' is either not a directory or is not writable."
+        message => " $home/$d is either not a directory or is not readable."
       };
     }
   }
@@ -45,7 +45,7 @@ sub check_writables {
     else {
       $writables_json->{$d} = {
         ok      => 0,
-        message => "'$home/$d' is either not a directory or is not writable."
+        message => " $home/$d is either not a directory or is not writable."
       };
     }
   }
@@ -74,3 +74,10 @@ sub check_modules {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+MYDLjE::Plugin::SystemSetup - Checks and actions during installation
+

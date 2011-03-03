@@ -98,7 +98,7 @@ MYDLjE::Config - use and manipulate system configuration files.
 
 =head1 DESCRIPTION
 
-This clas provides access to MYDLjE settings. They are available in all controllers as 
+This class provides access to MYDLjE settings. They are available in all controllers as 
 C<$c-E<gt>app-E<gt>config> attribute and in all aplications like C<$app-E<gt>config> attribute.
 It is used also separately to manipulate the local configuration files. 
 MYDLjE configuration files are in YAML format.
@@ -109,9 +109,7 @@ L<MYDLjE::Config> inherits all attributes from L<MYDLjE::Base> and implements/ov
 
 =head2 merger
 
-A singleton instance of L<Hash::Merge> instantiated with 
-'RIGHT_PRECEDENT' as behavior. You can change it for a while but be sure 
-to turn it back as it was so no strange things happen troughout the application.
+Short for L<Hash::Merge::Simple>.
 
 =head2 files
 
@@ -136,7 +134,7 @@ L<read_config_files> to read the config files.
 
 Called in constructor.
 
-  # guess filenames from @ISA
+  # guess filenames from @ISA,$ENV{MOJO_APP} and $ENV{MOJO_MODE}
   my $config = $self->new;
   
   #read specific files
@@ -155,11 +153,13 @@ the list of files I<which could be potentially> read and merged for L<cpanel> is
   $ENV{MOJO_HOME}/conf/local.mydlge-controlpanel.development.yaml
 
 Settings in next file overrides settings in previous file.
-L<Hash::Merge> is used for merging configuration structures.
+L<Hash::Merge::Simple> is used for merging configuration structures.
 
 =head2 stash
 
-Getter and setter for config values. Returns the value. Used internally in L<MYDLjE/config>. 
+Getter and setter for config values. Returns the value. 
+Used internally in L<MYDLjE/config>. 
+Has nothing in common with L<Mojolicious::Controller/stash> but it is practically the same thing.
 
   $value = $config->stash('one', 1);
   $value = $config->stash('one')
@@ -178,6 +178,6 @@ Writes a config file to the given filename.
 
 =head2 SEE ALSO
 
-L<MYDLjE> L<Hash::Merge>, L<YAML::Any> L<YAML::Tiny>
+L<MYDLjE> L<Hash::Merge::Simple>, L<YAML::Any> L<YAML::Tiny>
 
 

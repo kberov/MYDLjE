@@ -1,21 +1,25 @@
 package MYDLjE::Plugin::SystemSetup;
 use MYDLjE::Base 'Mojolicious::Plugin';
 
+my $REQUIRED_MODULES = [qw(DBI DBD::mysql Time::Piece GD)];
+
 sub register {
   my ($self, $app, $conf) = @_;
   return if $app->config->{installed};
+
   # Config
   $conf ||= {};
   $app->routes->get('/check_readables' => \&check_readables);
   $app->routes->get('/check_writables' => \&check_writables);
   $app->routes->get('/check_modules'   => \&check_modules);
+  $app->routes->get('/perl_info'   => \&perl_info);
   return;
 }
 
 sub check_readables {
   my $c              = shift;
   my $home           = $c->app->home;
-  my $readables      = [qw(conf templates log pub pub/home )];
+  my $readables      = [qw(conf log pub/home )];
   my $readables_json = {};
   foreach my $d (@$readables) {
     if (-d "$home/$d" and -w "$home/$d") {
@@ -24,7 +28,7 @@ sub check_readables {
     else {
       $readables_json->{$d} = {
         ok      => 0,
-        message => " $home/$d is either not a directory or is not readable."
+        message => " $home/$d is not readable."
       };
     }
   }
@@ -34,8 +38,8 @@ sub check_readables {
 }
 
 sub check_writables {
-  my $c    = shift;
-  my $home = $c->app->home;
+  my $c              = shift;
+  my $home           = $c->app->home;
   my $writables      = [qw(conf log pub/home tmp )];
   my $writables_json = {};
   foreach my $d (@$writables) {
@@ -45,7 +49,7 @@ sub check_writables {
     else {
       $writables_json->{$d} = {
         ok      => 0,
-        message => " $home/$d is either not a directory or is not writable."
+        message => " $home/$d is not writable."
       };
     }
   }
@@ -55,14 +59,13 @@ sub check_writables {
 
 sub check_modules {
   my $c            = shift;
-  my $modules      = [qw(DBI DBD::mysql Time::Piece GD)];
   my $modules_json = {};
-  foreach my $module (@$modules) {
+  foreach my $module (@$REQUIRED_MODULES) {
     my $ok = eval "require $module";
     if (not $ok or $@) {
       $modules_json->{$module} = {
         ok      => 0,
-        message => 'Ask your hosting provider to install it.'
+        message => 'Not installed. Ask your hosting provider to install it.'
       };
     }
     else {
@@ -70,6 +73,24 @@ sub check_modules {
     }
   }
   $c->render(json => $modules_json);
+  return;
+}
+
+sub perl_info {
+  my $c = shift;
+  foreach my $module (@$REQUIRED_MODULES) {
+    my $ok = eval "require $module";
+    if (not $ok or $@) { next; }
+  }
+
+  my $info_json = {
+    '%ENV'         => \%ENV,
+    '@INC'         => \@INC,
+    '%INC'         => \%INC,
+    Configuration  => $c->app->config(),
+    'Perl Version' => $]
+  };
+  $c->render(json => $info_json);
   return;
 }
 

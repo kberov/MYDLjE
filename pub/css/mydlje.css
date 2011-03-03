@@ -2,7 +2,7 @@
 }
 
 #setup,.inner {
-margin:auto;
+margin: auto;
 
 }
 .inner {
@@ -17,4 +17,6 @@ margin:auto;
   color:green;
   list-style:none;
 }
+.ui-widget p {margin: 1ex;}
+
 

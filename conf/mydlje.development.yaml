@@ -6,6 +6,8 @@ plugins:
     charset: 'UTF-8'
   validator: 1
   pod_renderer: 1
+  #this plugin should be disabled (0) after system setup
+  system_setup: 1
 routes: 
   /:action:
     order: 1000

@@ -17,7 +17,7 @@ sub hi {
       . ' and id '
       . $c->stash('id')
       . ' says Hi!'
-      . ($c->stash('format') || 'no format'));
+      . ($c->stash('format') || ''));
   return;
 }
 

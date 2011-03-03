@@ -8,7 +8,7 @@ margin: auto;
 .inner {
   padding: 0em 1ex 1em 1em ;
   background: url("img/logo3.png") no-repeat scroll;
-  background-position:97% 2%;
+  background-position:97% 5px;
   color:#366636;
   width:60%;
 }

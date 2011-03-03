@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"
+<!DOCTYPE html
 [
   <!-- <!ENTITY % locale         "pub/dtd/18n.en.dtd">
   %locale; -->
@@ -10,6 +9,7 @@
   <!ENTITY system_check  "System Check">
   <!ENTITY db_connect "Databse  Connectivity">
   <!ENTITY modules_check "Required Modules">
+  <!ENTITY perl_info "Perl Info">
 
 ]>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -25,7 +25,7 @@
     <script src="pub/js/jquery-current.min.js" type="text/javascript" charset="utf-8"></script>
     <script src="pub/css/elastic.js" type="text/javascript" charset="utf-8"></script>
     <script src="pub/js/jquery-ui-current.custom.min.js" type="text/javascript" charset="utf-8"></script>
-    <script src="pub/js/setup.js" type="text/javascript" charset="utf-8"></script>
+    <script src="pub/js/system_setup.js" type="text/javascript" charset="utf-8"></script>
   </head>
   <body>
     <div class="unit">
@@ -37,43 +37,112 @@
               <a name="system_check">&system_check;</a>
             </h2>
             <div id="system_check_div">
-              <div class="ui-widget oks" style="display:none">
+              <h3>Checking if the applications are working...</h3>
+              <div class="ui-widget executable_oks" style="display:none">
                 <div class="ui-state-active ui-corner-all ui-priority-secondary">
                   <p>
-                    <span class="ui-icon ui-icon-check" style="float: left; margin-right: .3em;"></span>
-                    <strong>Operational applications:</strong><ul class="oks"></ul>
+                    <b>Operational applications:</b>
+                    <ul class="oks"></ul>
                   </p>
                 </div>
               </div>
-
-              <div class="ui-widget noks" style="display:none">
-                <div class="ui-state-error ui-corner-all" >
+              <div class="ui-widget executable_noks" style="display:none">
+                <div class="ui-state-error ui-corner-all">
                   <p>
-                    <span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
-                    <strong>Not operational applications:</strong><ul class="noks"></ul>
+                    <b>Not operational applications:</b>
+                    <ul class="noks"></ul>
                   </p>
                 </div>
               </div>
-
               <div class="ui-widget wrench" style="display:none">
-                <div class="ui-state-highlight ui-corner-all ui-priority-primary" >
+                <div class="ui-state-highlight ui-corner-all ui-priority-primary">
                   <p>
                     <span class="ui-icon ui-icon-wrench" style="float: left; margin-right: .3em;"></span>
-                    <strong>Possible solution:</strong><ul class="wrench"></ul>
+                    <b>Possible solution:</b>
+                    <ul class="wrench"></ul>
+                  </p>
+                </div>
+              </div>
+              <h3>Checking if directories are readable/writable...</h3>
+              <div class="ui-widget check_readables" style="display:none">
+                <div class="ui-state-active ui-corner-all">
+                  <p>
+                    <b>Readable:</b>
+                    <ul class="oks"></ul>
+                  </p>
+                </div>
+              </div>
+              <div class="ui-widget check_writables" style="display:none">
+                <div class="ui-state-active ui-corner-all">
+                  <p>
+                    <b>Writable:</b>
+                    <ul class="oks"></ul>
+                  </p>
+                </div>
+              </div>
+              <div class="ui-widget check_rw_wrench" style="display:none">
+                <div class="ui-state-highlight ui-corner-all ui-priority-primary">
+                  <p>
+                    <span class="ui-icon ui-icon-wrench" style="float: left; margin-right: .3em;"></span>
+                    <b>Solution:</b>
+                    <ol class="wrench"></ol>
+                  </p>
+                </div>
+              </div>
+              <!-- This div should never be displayed but who knows -->
+              <div class="ui-widget check_rw noks" style="display:none">
+                <div class="ui-state-error ui-corner-all">
+                  <p>
+                    <span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
+                    <b>Error:</b>
+                    <ul class="noks"></ul>
                   </p>
                 </div>
               </div>
             </div>
-
-            <h2>
-              <a name="second">&modules_check;</a>
+            <h2 id="check_modules_h2">
+              <a name="check_modules">&modules_check;</a>
             </h2>
-            <div>we will try to check if the system is operational</div>
+            <div id="check_modules">
+              <h3>Checking if all required Perl modules are installed...</h3>
+              <div class="ui-widget check_modules" style="display:none">
+                <div class="ui-state-active ui-corner-all">
+                  <p>
+                    <b>Modules:</b>
+                    <ul class="oks"></ul>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <h2 id="perl_info_h2">
+              <a name="second">&perl_info;</a>
+            </h2>
+            <div>
+              <table id="perl_info_table" class="ui-widget ui-state-active ui-corner-all" style="padding:5px;">
+                <caption>System Info</caption>
+                <thead>
+                  <tr>
+                    <th colspan="2"></th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+              <table id="perl_inc_hash" class="ui-widget ui-state-active ui-corner-all" style="padding:5px;">
+                <caption>Loaded Libraries (%INC)</caption>
+                <thead>
+                  <tr>
+                    <th colspan="2">The hash 
+                    <code>%INC</code>contains entries for each filename included via the do, require, or use operators.
+                    ...</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
             <h2>
               <a name="second">&db_connect;</a>
             </h2>
             <div>we will try to check if the system is operational</div>
-
           </div>
         </div>
       </div>

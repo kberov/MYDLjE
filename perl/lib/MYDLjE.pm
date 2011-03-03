@@ -2,6 +2,8 @@ package MYDLjE;
 use MYDLjE::Base 'Mojolicious';
 use MYDLjE::Config;
 
+our $VERSION = '0.1';
+
 has controller_class => 'MYDLjE::C';
 has env              => sub {
   if   ($_[1] && exists $ENV{$_[1]}) { $ENV{$_[1]} }

@@ -84,11 +84,18 @@ sub perl_info {
   }
 
   my $info_json = {
+    Home        => $c->app->home,
+    MYDLjE      => $MYDLjE::VERSION,
+    Mojolicious => "$Mojolicious::VERSION ($Mojolicious::CODENAME)",
     '%ENV'         => \%ENV,
     '@INC'         => \@INC,
     '%INC'         => \%INC,
     Configuration  => $c->app->config(),
-    'Perl Version' => $]
+    Perl => $],
+    PID         => $$,
+    Name        => $0,
+    Executable  => $^X,
+    Time        => scalar localtime(time)
   };
   $c->render(json => $info_json);
   return;

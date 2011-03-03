@@ -99,8 +99,28 @@ function check_modules() {
   });
 }//end function check_modules
 
-function perl_info (){
-  
+function perl_info( ){
+
+  $.ajax( { 
+    url : 'mydlje/perl_info', 
+    success : function( data, succsess_code, jqXHR ) {
+      info_keys = ['Home', 'MYDLjE', 'Mojolicious', 'Perl','PID','Name','Executable','Time']; 
+      for( key in info_keys ) {
+      $( '#perl_info_table tbody' ).append( 
+        '<tr><th style="text-align:left">' + info_keys[key] + ': </th><td>' + data[info_keys[key]] + '</td></tr>');
+      }
+      INCHash = data['%INC'];
+      INCHashKeys = [];
+      for(module in INCHash) {INCHashKeys.push(module);}
+      for( key in INCHashKeys.sort() ) {
+        $( '#perl_inc_hash tbody' ).append( 
+          '<tr><td>' + INCHashKeys[key] + '</td><td>' + INCHash[INCHashKeys[key]] + '</td></tr>' );
+      }
+    }, 
+    error : function( jqXHR, textStatus, errorThrown ) {
+      alert(textStatus+': '+errorThrown.toString())
+    }
+  });  
 
 }
 
@@ -111,6 +131,9 @@ function run_actions(event, ui) {
   //ui.oldContent // jQuery object, previous content
   if(ui.newHeader.attr('id')=='check_modules_h2'){
     check_modules()
+  } 
+  else if(ui.newHeader.attr('id')=='perl_info_h2'){
+    perl_info()
   }
 }// end function run_actions(event, ui)
 

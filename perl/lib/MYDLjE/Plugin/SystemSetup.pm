@@ -22,7 +22,7 @@ sub check_readables {
   my $readables      = [qw(conf log pub/home )];
   my $readables_json = {};
   foreach my $d (@$readables) {
-    if (-d "$home/$d" and -w "$home/$d") {
+    if (-d "$home/$d" and -r "$home/$d") {
       $readables_json->{$d} = {ok => 1};
     }
     else {

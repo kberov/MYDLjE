@@ -18,5 +18,28 @@ margin: auto;
   list-style:none;
 }
 .ui-widget p {margin: 1ex;}
+#setup table th { 
+  padding: 1ex;
+  text-align:left;
+}
+#setup table tbody td {
+  padding-left: 2em;
+}
 
-
+#setup form {
+width: 400px;
+margin: auto;
+}
+#setup form label,
+#setup form input,
+#setup form fieldset {
+margin: 0.7ex;margin-top: 1ex;
+}
+#setup form legend {padding: 0.5ex;margin: 0.5ex;}
+#setup form .help {
+font-weight: normal;
+display:none;
+}
+#setup form .buttons {
+  text-align: right;
+}

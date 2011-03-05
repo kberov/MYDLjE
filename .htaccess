@@ -6,16 +6,16 @@ IndexOptions -FancyIndexing
 Options -Indexes +ExecCGI
 
 #We prefer fcgi
-<IfModule !mod_fcgid.c>
+<IfModule !mod_fastcgi.c>
 #set explicitly filenames as cgi scripts
   <Files ~ "(mydlje|cpanel|site)$">
     SetHandler  cgi-script
   </Files>
 </IfModule>
 
-<IfModule mod_fcgid.c>
+<IfModule mod_fastcgi.c>
   <Files ~ "(mydlje|cpanel|site)$">
-    SetHandler  fcgid-script
+    SetHandler  fastcgi-script
   </Files>
 </IfModule>
 

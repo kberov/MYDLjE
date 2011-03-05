@@ -4,7 +4,7 @@
 <head>
 <title>MYDLjE - Web-presence rethought</title>
 <meta content="text/html; charset=utf-8" http-equiv="content-type" />
-<link href="mailto:krasi@krasi-laptop.(none)" rev="made" />
+<link href="mailto:support@ActiveState.com" rev="made" />
 <link href="pub/css/ui-lightness/jquery-ui-1.8.10.custom.css" rel="stylesheet" type="text/css" />
     <link href="pub/css/readme.css" rel="stylesheet" type="text/css" /></head>
 
@@ -77,16 +77,21 @@ Build whatever you want on top of and around it.</p>
 
 <h1 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="minimal_requirements">MINIMAL REQUIREMENTS</a></h1>
 <ul>
-<li><strong><a class="item" name="perl_5_8_8">Perl 5.8.8</a></strong>
+<li><strong><a class="item" name="perl_5_8_8_or_next">Perl 5.8.8 or next;</a></strong>
 
 </li>
-<li><strong><a class="item" name="mod_">Apache with mod_(f)cgi - if you deploy on a cheap, shared hosting.</a></strong>
+<li><strong><a class="item" name="mod_cgi">Apache with mod_cgi (standard) or (better/faster) mod_fcgi/mod_fastcgi;</a></strong>
 
 </li>
-<li><strong><a class="item" name="mysql_or_dbd_sqlite_perl_module">MySQL or DBD::SQLite Perl Module</a></strong>
+<li><strong><a class="item" name="mysql_server_provided_on_every_shared_hosting">MySQL server, provided on every shared hosting;</a></strong>
+
+</li>
+<li><strong><a class="item" name="dbi_dbd_mysql_time_piece_and_gd_perl_modules"><code>DBI</code>, <code>DBD::mysql</code>, <code>Time::Piece</code> and <code>GD</code> Perl Modules.</a></strong>
 
 </li>
 </ul>
+<p>Almost all (even the cheapest) hosting providers meet the system requirements. 
+To make sure, send the list to your (potential) hosting provider and ask them if they meet the requirements below. The setup screen also checks for the requirements. The system automatically runs under mod_fastcgi if available. See the .htaccess file.</p>
 <p>
 </p>
 

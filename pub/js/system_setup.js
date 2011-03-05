@@ -109,12 +109,25 @@ function perl_info( ){
       $( '#perl_info_table tbody' ).append( 
         '<tr><th style="text-align:left">' + info_keys[key] + ': </th><td>' + data[info_keys[key]] + '</td></tr>');
       }
+      INCArray = data['@INC'];
       INCHash = data['%INC'];
       INCHashKeys = [];
+      INCHashPrinted = {};
       for(module in INCHash) {INCHashKeys.push(module);}
-      for( key in INCHashKeys.sort() ) {
-        $( '#perl_inc_hash tbody' ).append( 
-          '<tr><td>' + INCHashKeys[key] + '</td><td>' + INCHash[INCHashKeys[key]] + '</td></tr>' );
+      INCHashKeys = INCHashKeys.sort();
+      for(path in INCArray){
+        $( '#perl_inc_hash tbody' ).append(
+          '<tr><th>&#160;</th></tr>'
+          +  '<tr><th>' + INCArray[path] + '</th></tr>' )
+        
+        for( key in INCHashKeys) { 
+          if( INCHash[INCHashKeys[key]].match(INCArray[path]) 
+            && !INCHashPrinted[INCHashKeys[key]] ) {
+            $( '#perl_inc_hash tbody' ).append( 
+              '<tr><td>' + INCHashKeys[key]  + '</td></tr>' );
+            INCHashPrinted[INCHashKeys[key]] = true;
+          }
+        }
       }
     }, 
     error : function( jqXHR, textStatus, errorThrown ) {
@@ -124,6 +137,24 @@ function perl_info( ){
 
 }
 
+function enhance_form () {
+
+  help_icon = $( '<span><span id="get_secret_help" class="ui-icon ui-icon-help"></span></span>' )
+				.addClass( "ui-corner-all ui-state-active" )
+				.css({display:'inline-block',cursor:'pointer'})
+				.appendTo( '#secret_label' );
+  help_icon.click(function(){$('#secret_help').toggle(200)});
+  
+  $('form input[type="text"]').addClass('ui-corner-all');
+  
+  $( 'form .buttons button[type="reset"]' ).button({ 
+    icons: {primary:'ui-icon-close'} 
+  });
+  $( 'form .buttons button[type="submit"]' ).button({ 
+  icons: {primary:'ui-icon-check'} 
+  });
+}
+
 function run_actions(event, ui) {
   //ui.newHeader // jQuery object, activated header
   //ui.oldHeader // jQuery object, previous header
@@ -131,7 +162,10 @@ function run_actions(event, ui) {
   //ui.oldContent // jQuery object, previous content
   if(ui.newHeader.attr('id')=='check_modules_h2'){
     check_modules()
-  } 
+  }
+  else if(ui.newHeader.attr('id')=='system_check_h2'){
+    scripts_are_executable();
+  }
   else if(ui.newHeader.attr('id')=='perl_info_h2'){
     perl_info()
   }
@@ -147,8 +181,11 @@ $( window ).load( function( ) {
     $( '#setup' ).accordion( { 
         header : 'h2', 
         autoHeight : false,
-        animated: 'bounceslide'
+        animated: 'bounceslide',
+        collapsible: true,
+        active: false
     } ); 
     $('#setup').bind('accordionchange',run_actions);
-    window.setTimeout( scripts_are_executable, 2000 );
+    //window.setTimeout( scripts_are_executable, 200 );
+    enhance_form ();
 } ); 

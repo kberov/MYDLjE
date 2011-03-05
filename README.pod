@@ -35,13 +35,20 @@ Build whatever you want on top of and around it.
 
 =over
 
-=item * Perl 5.8.8
+=item * Perl 5.8.8 or next;
 
-=item * Apache with mod_(f)cgi - if you deploy on a cheap, shared hosting.
+=item * Apache with mod_cgi (standard) or (better/faster) mod_fcgi/mod_fastcgi;
 
-=item * MySQL or DBD::SQLite Perl Module
+=item * MySQL server, provided on every shared hosting;
+
+=item * C<DBI>, C<DBD::mysql>, C<Time::Piece> and C<GD> Perl Modules.
 
 =back
+
+
+Almost all (even the cheapest) hosting providers meet the system requirements. 
+To make sure, send the list to your (potential) hosting provider and ask them if they meet the requirements below. The setup screen also checks for the requirements. The system automatically runs under mod_fastcgi if available. See the .htaccess file.
+
 
 =head1 INSTALLATION
 

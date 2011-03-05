@@ -34,7 +34,7 @@
           <div id="setup">
             <h1>&h1;</h1>
             <h2 id="system_check_h2">
-              <a name="system_check">&system_check;</a>
+              <a name="system_check">1. &system_check;</a>
             </h2>
             <div id="system_check_div">
               <h3>Checking if the applications are working...</h3>
@@ -101,7 +101,7 @@
               </div>
             </div>
             <h2 id="check_modules_h2">
-              <a name="check_modules">&modules_check;</a>
+              <a name="check_modules">2. &modules_check;</a>
             </h2>
             <div id="check_modules">
               <h3>Checking if all required Perl modules are installed...</h3>
@@ -114,8 +114,97 @@
                 </div>
               </div>
             </div>
+            <!-- system_setup start -->
+            <h2>
+              <a name="system_setup">3. System Setup</a>
+            </h2>
+            <div>
+              <form id="system_setup" action="" method="post" 
+              class="ui-widget ui-corner-all ui-state-active">
+                <fieldset class="ui-widget-content ui-corner-all">
+                  <legend class="ui-widget-header ui-corner-all">System Configuration</legend>
+                  <div class="unit on-2 columns">
+                    <div class="fixed column" style="width:150px">
+                      <label>Site Name</label>
+                    </div>
+                    <div class="column">
+                      <input type="text" name="site_name" />
+                    </div>
+                    <div class="fixed column" style="width:150px">
+                      <label id="secret_label">Secret</label>
+                    </div>
+                    <div class="column">
+                      <input type="text" name="secret"/>
+                    </div>
+                    <div class="column span-2">
+                      <div id="secret_help" class="container help">Thanks to Mojolicious, sessions in MYDLjE pretty
+                      much just work out of the box and there is no setup required, but we suggest using a more secure 
+                      <code>secret</code> passphrase. This passphrase is used by the internal algorithm to make signed
+                      cookies secure and can be changed at any time to invalidate all existing sessions.</div>
+                    </div>
+                    <div class="fixed column" style="width:150px">
+                      <label>Database Driver</label>
+                    </div>
+                    <div class="column">
+                      <select name="db_driver">
+                        <option value="DBD::mysql">MySQL</option>
+                        <!-- TODO: help is wellcome :)
+                  <option value="DBD::SQLite">SQLite</option>
+                  <option value="DBD::Pg">PostgreSQL</option>
+                  <option value="DBD::Oracle">Oracle</option>
+                   -->
+                      </select>
+                    </div>
+                    <div class="fixed column" style="width:150px">
+                      <label>Database host</label>
+                    </div>
+                    <div class="column" >
+                      <input type="text" name="db_host" />
+                    </div>
+                    <div class="fixed column" style="width:150px">
+                      <label>Database Name</label>
+                    </div>
+                    <div class="column">
+                      <input type="text" name="db_name"/>
+                    </div>
+                    <div class="fixed column" style="width:150px">
+                      <label>Database User</label>
+                    </div>
+                    <div class="column">
+                      <input type="text" name="db_user"/>
+                    </div>
+                    <div class="fixed column" style="width:150px">
+                      <label>Database Password</label>
+                    </div>
+                    <div class="column">
+                      <input type="text" />
+                    </div>
+                    <div class="fixed column" style="width:150px">
+                      <label>Admin User</label>
+                    </div>
+                    <div class="column">
+                      <input type="text" />
+                    </div>
+                    <div class="fixed column" style="width:150px">
+                      <label>Admin Password</label>
+                    </div>
+                    <div class="column">
+                      <input type="text" />
+                    </div>
+                    <div class="column span-2">
+                      <div class="container buttons">
+                        <button type="reset">Reset!</button>
+                        <button type="submit">Save!</button>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- end div class="unit on-2 columns" -->
+                </fieldset>
+              </form>
+            </div>
+            <!-- system_setup end -->
             <h2 id="perl_info_h2">
-              <a name="second">&perl_info;</a>
+              <a name="perl_info">&perl_info;</a>
             </h2>
             <div>
               <table id="perl_info_table" class="ui-widget ui-state-active ui-corner-all" style="padding:5px;">
@@ -128,10 +217,12 @@
                 <tbody></tbody>
               </table>
               <table id="perl_inc_hash" class="ui-widget ui-state-active ui-corner-all" style="padding:5px;">
-                <caption>Loaded Libraries (%INC)</caption>
+                <caption>Loaded Libraries (@INC,%INC)</caption>
                 <thead>
                   <tr>
-                    <th colspan="2">The hash 
+                    <th>The array @INC contains the list of places that the do EXPR , require, or use constructs look
+                    for their library files...
+                    <br />The hash 
                     <code>%INC</code>contains entries for each filename included via the do, require, or use operators.
                     ...</th>
                   </tr>
@@ -139,10 +230,6 @@
                 <tbody></tbody>
               </table>
             </div>
-            <h2>
-              <a name="second">&db_connect;</a>
-            </h2>
-            <div>we will try to check if the system is operational</div>
           </div>
         </div>
       </div>

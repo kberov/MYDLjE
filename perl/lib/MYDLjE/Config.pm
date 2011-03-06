@@ -148,9 +148,9 @@ converts C<::> to C<->, lowercases it, prepends C<$ENV{MOJO_HOME}/conf/>
 and appends C<.$ENV{MOJO_MODE}> to it. So for example while you develop, 
 the list of files I<which could be potentially> read and merged for L<cpanel> is:
 
-  $ENV{MOJO_HOME}/conf/mydlge.development.yaml
-  $ENV{MOJO_HOME}/conf/mydlge-controlpanel.development.yaml
-  $ENV{MOJO_HOME}/conf/local.mydlge-controlpanel.development.yaml
+  $ENV{MOJO_HOME}/conf/mydlje.development.yaml
+  $ENV{MOJO_HOME}/conf/mydlje-controlpanel.development.yaml
+  $ENV{MOJO_HOME}/conf/local.mydlje-controlpanel.development.yaml
 
 Settings in next file overrides settings in previous file.
 L<Hash::Merge::Simple> is used for merging configuration structures.

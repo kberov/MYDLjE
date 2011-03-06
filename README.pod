@@ -22,7 +22,7 @@ Only trusted people (back-end users) should be allowed to use it.
 
 =head2 MYDLjE (mydlje)
 
-This is a bare-bones application. It it is used as the base for the other two and for setting up the system for the first time when you unpack it where it iwill work.
+This is a bare-bones application. It it is used as the base for the other two and for setting up the system for the first time when you unpack it where it will work.
 
 =head2 SITE (site)
 
@@ -58,7 +58,7 @@ To make sure, send the list to your (potential) hosting provider and ask them if
 
 =item 2 Use your browser to access B<index.xhtml> - see L</SETUP>.
 
-=item 3 Follow the feather (our mascot).
+=item 3 Fill in the "System Configuration" form. You are ready to go.
 
 =item 4 Enjoy your new site and start building your presence.
 

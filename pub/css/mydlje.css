@@ -27,19 +27,36 @@ margin: auto;
 }
 
 #setup form {
-width: 400px;
+width: 500px;
 margin: auto;
 }
-#setup form label,
-#setup form input,
-#setup form fieldset {
-margin: 0.7ex;margin-top: 1ex;
+
+#setup form fieldset {margin:1em;}
+#setup form label{display:block}
+#setup form label, #setup form .field {
+  padding: 1ex;
+}
+#setup form hr {
+margin: 1ex;
+}
+#setup form input {
+  width: 250px;
 }
 #setup form legend {padding: 0.5ex;margin: 0.5ex;}
 #setup form .help {
 font-weight: normal;
 display:none;
+padding: 1ex; padding-top: 0px;
+font-style: italic;
+
+}
+.get_help {
+  margin-left: 1ex;
 }
 #setup form .buttons {
   text-align: right;
+}
+#hello_success {
+  font-size: 105%;
+  font-style: oblique;
 }

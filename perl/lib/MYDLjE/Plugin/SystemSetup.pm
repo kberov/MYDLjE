@@ -13,7 +13,7 @@ sub register {
   $app->routes->get('/check_writables' => \&check_writables);
   $app->routes->get('/check_modules'   => \&check_modules);
   $app->routes->get('/perl_info'       => \&perl_info);
-  $app->routes->post('/system_config' => \&system_config);
+  $app->routes->post('/system_config'  => \&system_config);
   return;
 }
 
@@ -184,7 +184,7 @@ sub _validate_system_config {
     #if($ok->is_valid)
   }
   my $all_ok = $c->validate($validator);
-  if (  $c->stash('validator_errors')
+  if (  not $all_ok
     and $c->stash('validator_errors')->{db_connect}
     and $c->stash('validator_errors')->{db_connect} eq
     'CALLBACK_CONSTRAINT_FAILED')

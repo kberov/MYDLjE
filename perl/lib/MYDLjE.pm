@@ -2,7 +2,7 @@ package MYDLjE;
 use MYDLjE::Base 'Mojolicious';
 use MYDLjE::Config;
 
-our $VERSION = '0.1';
+our $VERSION = '0.2';
 
 has controller_class => 'MYDLjE::C';
 has env              => sub {

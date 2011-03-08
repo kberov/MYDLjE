@@ -15,24 +15,33 @@ var ok_icon = '<span class="ui-icon ui-icon-check" style="float: left; margin-ri
 
 form_fields = ['site_name', 'secret', 'db_driver', 'db_host', 'db_name', 'db_user', 'db_password', 'admin_user', 'admin_password'];
 
+
+/**
+ * Checks if scripts are executable by making GET requests.
+ * In case there are some errors displays the errors in
+ * '#system_check_div div.executable_noks ul.noks'
+ * and tries to give an advice  in '#system_check_div ul.wrench'
+ * on what to do to correct the error.
+ * @return void
+ */
+
 function scripts_are_executable() {
   scripts = ['mydlje', 'cpanel', 'site'];
   for (i in scripts) {
     $.ajax({
       url: scripts[i] + '/hi',
-      success: function (data, succsess_code, jqXHR) {
+      success: function(data, succsess_code, jqXHR) {
         $('#system_check_div div.executable_oks').show('slow').delay(100);
         $('#system_check_div div.executable_oks ul.oks').append('<li>' + ok_icon + scripts[i] + '/hi: ok, ' + data + '</li>');
         successes++;
       },
-      error: function (jqXHR, textStatus, errorThrown) {
+      error: function(jqXHR, textStatus, errorThrown) {
         $('#system_check_div div.executable_noks').show('slow').delay(100);
         $('#system_check_div div.executable_noks ul.noks').append('<li>' + alert_icon + scripts[i] + '/hi.html : ' + textStatus + ', ' + errorThrown + '</li>');
         $('#system_check_div div.wrench').show('slow');
         if (typeof(errorThrown) != 'object' && errorThrown.match('Internal')) {
           $('#system_check_div ul.wrench').append('<li>Change "' + scripts[i] + '" permissions to 0755( rwxr-xr-x )' + ' and refresh this page to see the result.</li>');
-        } else
-        if (typeof(errorThrown) == 'object' && errorThrown.toString().match(/101/) && errors == 0) {
+        } else if (typeof(errorThrown) == 'object' && errorThrown.toString().match(/101/) && errors == 0) {
           $('#system_check_div ul.wrench').append('<li>' + location + ' is accesed locally.<br/>' + 'You need first to move/upload the system in a directory served by an Apache server.</li>');
         }
         errors++;
@@ -47,13 +56,20 @@ function scripts_are_executable() {
 
 } //end function scripts_are_executable()
 
+/**
+ * Checks for readable/writable directories.
+ * In case there aer some errors marks the errors with red color and
+ * tries to give an advice on what to do in
+ * '#system_check_div div.check_rw_wrench'.
+ */
+
 function check_rw() {
   var urls = ['check_readables', 'check_writables'];
   var app = 'mydlje';
   for (action in urls) {
     $.ajax({
       url: app + '/' + urls[action],
-      success: function (data, succsess_code, jqXHR) {
+      success: function(data, succsess_code, jqXHR) {
         $('#system_check_div div.' + urls[action]).show('slow');
         for (dir in data) {
           var ok = data[dir]['ok'];
@@ -66,7 +82,7 @@ function check_rw() {
           }
         }
       },
-      error: function (jqXHR, textStatus, errorThrown) {
+      error: function(jqXHR, textStatus, errorThrown) {
         $('#system_check_div div.check_rw').show('slow');
         $('#system_check_div ul.noks').append('<li>' + app + '/' + urls[action] + ' : ' + textStatus + ', ' + errorThrown + '</li>');
       }
@@ -74,29 +90,40 @@ function check_rw() {
   }
 } // end function check_rw()
 
+/**
+ * Checks for mandatory modules.
+ * In case some are missing, invites the user to install them.
+ */
+
 function check_modules() {
   $('#check_modules div.check_modules ul.oks').html('')
   $.ajax({
     url: 'mydlje/check_modules',
-    success: function (data, succsess_code, jqXHR) {
+    success: function(data, succsess_code, jqXHR) {
       $('#check_modules div.check_modules').show('slow');
       for (module in data) {
         var ok = data[module]['ok'];
         $('#check_modules div.check_modules ul.oks').append('<li ' + (ok == 0 ? ' style="color:red;"' : '') + '>' + (ok == 0 ? alert_icon : ok_icon) + module + ': ' + (ok == 0 ? data[module]['message'] : 'ok') + '</li>');
       }
     },
-    error: function (jqXHR, textStatus, errorThrown) {
+    error: function(jqXHR, textStatus, errorThrown) {
       alert(textStatus + ': ' + errorThrown.toString())
     }
   });
 } //end function check_modules
 
+/**
+ * Displays %INC,@INC and %ENV.
+ */
+
 function perl_info() {
 
   $.ajax({
     url: 'mydlje/perl_info',
-    success: function (data, succsess_code, jqXHR) {
+    success: function(data, succsess_code, jqXHR) {
       info_keys = ['Home', 'MYDLjE', 'Mojolicious', 'Perl', 'PID', 'Name', 'Executable', 'Time'];
+      //clean
+      $('#perl_info_table tbody').html('<!--cleaned -->');
       for (key in info_keys) {
         $('#perl_info_table tbody').append('<tr><th style="text-align:left">' + info_keys[key] + ': </th><td>' + data[info_keys[key]] + '</td></tr>');
       }
@@ -108,6 +135,8 @@ function perl_info() {
         INCHashKeys.push(module);
       }
       INCHashKeys = INCHashKeys.sort();
+      //clean
+      $('#perl_inc_hash tbody').html('<!--cleaned -->');
       for (path in INCArray) {
         $('#perl_inc_hash tbody').append('<tr><th>&#160;</th></tr>' + '<tr><th>' + INCArray[path] + '</th></tr>')
 
@@ -118,8 +147,14 @@ function perl_info() {
           }
         }
       }
+      //clean
+      $('#perl_env_hash tbody').html('<!--cleaned -->');
+      for (key in data['%ENV']) {
+        $('#perl_env_hash tbody').append('<tr><th>' + key + '</th><th>' + data['%ENV'][key] + '</th></tr>');
+      }
     },
-    error: function (jqXHR, textStatus, errorThrown) {
+    error: function(jqXHR, textStatus, errorThrown) {
+      //what else could I do?  
       alert(textStatus + ': ' + errorThrown.toString())
     }
   });
@@ -127,57 +162,63 @@ function perl_info() {
 }
 
 
+/**
+ * Does a POST request to 'mydlje/system_config' 
+ * and fills in error messages under each field.
+ */
+
 function post_form() {
-  
   form = $('#system_setup');
   $('body').animate({
     scrollTop: form.offset().top + 'px'
   }, 800);
   fields = $(':input,select option:selected', form);
-  //alert(fields.serialize());
   $.ajax({
     url: form.attr('action'),
     type: 'POST',
     data: fields.serialize(),
     dataType: 'json',
     //beforeSend: function(jqXHR, settings){$('fieldset').fadeTo('slow', 0.5);},
-    success: function (data, succsess_code, jqXHR) {
-      form.fadeIn();
+    success: function(data, succsess_code, jqXHR) {
       //clean up previous errors
-      $(form_fields).each(function () {
+      $(form_fields).each(function() {
         $('[name=' + this + ']').removeClass('ui-state-highlight').addClass('ui-state-default');
         $('#' + this + '_error').remove();
       });
       var v_errors = data['validator_errors'];
+      var db_connect = v_errors['db_connect']; //only if all db_* are valid
+      $('#db_connect_error').remove();
+      if (db_connect != null) {
+        $('<div id="db_connect_error" class="ui-state-error ui-corner-all" style="margin:0 1ex 1ex 1ex">' + alert_icon + db_connect + '</div>').appendTo($('#db_connect'));
+        delete v_errors['db_connect'];
+      }
       for (e in v_errors) {
-
         $('[name="' + e + '"]').addClass('ui-state-highlight');
         label = $('#' + e + '_label').text();
         label = '"' + label + '"';
         $('<div class="column span-2" style="width:100%;"><div id="' + e + '_error" class="ui-state-error ui-corner-all" style="margin:0 1ex 1ex 1ex">' + alert_icon + v_errors[e].replace(e, label) + '</div></div>').insertAfter($('[name="' + e + '"]').parent().parent());
-
       }
-      $('fieldset').fadeTo('slow', 1);
     },
-    error: function (jqXHR, textStatus, errorThrown) {
+    error: function(jqXHR, textStatus, errorThrown) {
       alert(textStatus + ': ' + errorThrown.toString())
     }
   });
-
-
   return false;
 }
 
-function enhance_form() {
+/**
+ * Enhances the form with jQuery UI.
+ */
 
-  $(form_fields).each(function () {
+function enhance_form() {
+  $(form_fields).each(function() {
     $('[name=' + this + ']').addClass('ui-state-default')
   });
   help_icon = $('<span id="get_system_setup' + '_help" class="get_help"><span class="ui-icon ui-icon-help"></span></span>').addClass("ui-corner-all ui-state-active").css({
     display: 'inline-block',
     cursor: 'pointer'
   }).appendTo('#system_setup legend');
-  help_icon.click(function () {
+  help_icon.click(function() {
     $('.help').toggle(200)
   });
 
@@ -197,6 +238,10 @@ function enhance_form() {
   });
 }
 
+/**
+ * Actions ran onclick on some accordeon headers.
+ */
+
 function run_actions(event, ui) {
   //ui.newHeader // jQuery object, activated header
   //ui.oldHeader // jQuery object, previous header
@@ -210,7 +255,10 @@ function run_actions(event, ui) {
     perl_info()
   }
 } // end function run_actions(event, ui)
-$(window).load(function () {
+/**
+ * Onload!
+ */
+$(window).load(function() {
   $.ajaxSetup({
     async: false,
     cache: false,

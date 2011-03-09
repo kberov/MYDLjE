@@ -8,7 +8,6 @@ plugins:
   pod_renderer: 1
   #this plugin should be disabled (0) after system setup
   system_setup: 1
-  MYDLjE::Plugin::DBIx: 1
 plugins_namespaces:
   - Mojolicious::Plugin
   - MYDLjE::Plugin

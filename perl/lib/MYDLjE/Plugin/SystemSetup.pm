@@ -115,6 +115,7 @@ sub system_config {
     $c->render(json => $c->stash);
     return;
   }
+  _generate_database_tables($c);
   _save_config($c, $validator);
   $c->render(json => $c->stash);
   return;
@@ -131,7 +132,7 @@ sub _save_config {
   delete $config->{plugins}{system_setup};
   $new_config->stash('plugins', $config->{plugins});
   foreach my $field_name (keys %{$validator->values}) {
-    if ($field_name =~ /^db_/) {
+    if ($field_name =~ /^db_/x) {
       $new_config->stash('plugins')->{'MYDLjE::Plugin::DBIx'}{$field_name} =
         $validator->values->{$field_name};
     }
@@ -141,8 +142,13 @@ sub _save_config {
   $new_config->stash('routes',    $config->{routes});
   $new_config->stash('secret',    $validator->values->{secret});
   $new_config->write_config_file(lc(ref($c->app)));
+  return;
 }
 
+sub _generate_database_tables {
+  my ($c) = @_;
+  return
+}
 sub _validate_system_config {
   my ($c, $validator) = @_;
   my @fields = (
@@ -157,14 +163,14 @@ sub _validate_system_config {
         ->message($field->name
           . " is required. Field length must be between 3 and 30 symbols");
       if ($field->name eq 'admin_password') {
-        $field->regexp(qr/[\W]+/)->length(6, 30)
+        $field->regexp(qr/[\W]+/x)->length(6, 30)
           ->message($field->name
             . ' is too simple. The password must contain letters, '
             . 'numbers and at least one special character. '
             . 'The lenght must be at least 6 characters');
       }
       elsif ($field->name eq 'db_driver') {
-        $field->regexp(qr{^(DBI:mysql|DBI:SQLite|DBI:Pg|DBI:Oracle)$})
+        $field->regexp(qr{^(DBI:mysql|DBI:SQLite|DBI:Pg|DBI:Oracle)$}x)
           ->message('Please select a value for ' . $field->name . '.');
       }
     }
@@ -189,11 +195,11 @@ sub _validate_system_config {
           }
         );
 
-        eval { $c->dbix->dbh->ping; };
-        if ($@) {
+        
+        if (not eval { $c->dbix->dbh->ping; 1;}) {
           $db_connect_error =
-            substr($@, 0, 120) . '... Please check if the database 
-          is created and you enterred correctly database username and password.';
+            substr($@, 0, 120) . '... Please check if the database '
+            .'is created and you enterred correctly database username and password.';
           return 0;
         }
         else { $c->app->log->debug('db_connect ok') }

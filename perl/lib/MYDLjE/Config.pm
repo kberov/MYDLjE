@@ -71,7 +71,7 @@ sub read_config_files {
     }
   }
 
-  #if($self->log->is_debug) {$self->log->debug(Dumper($self->{configs}));}
+  #if($self->log->is_debug) {$self->log->debug(Dumper($self->configs));}
   $config = $self->merger->dclone_merge(@{$self->configs});
 
   return $self->{config} = $config;

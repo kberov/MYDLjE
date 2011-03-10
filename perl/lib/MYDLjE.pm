@@ -16,7 +16,7 @@ my $CONFIG;
 sub startup {
   my $app = shift;
   $CONFIG = MYDLjE::Config->singleton(log => $app->log);
-
+  $app->secret($app->config('secret'));
   #Load Plugins
   $app->load_plugins();
 
@@ -33,7 +33,8 @@ sub config {
 #load plugins from config file
 sub load_plugins {
   my ($app) = @_;
-  $app->plugins->namespaces(['Mojolicious::Plugin','MYDLjE::Plugin']);
+  $app->log->debug($app->dumper($app->config('plugins_namespaces')));
+  $app->plugins->namespaces($app->config('plugins_namespaces'));
   my $plugins = $app->config('plugins') || {};
   foreach my $plugin (keys %$plugins) {
     if ($plugins->{$plugin} && ref($plugins->{$plugin}) eq 'HASH') {

@@ -31,7 +31,7 @@ sub register {
 sub dbix {
   my $config = shift;
   if ($DBIX) { return $DBIX; }
-  $config->{dsn}
+  $config->{db_dsn}
     ||= $config->{db_driver}
     . ':database='
     . $config->{db_name}
@@ -39,7 +39,7 @@ sub dbix {
     . $config->{db_host};
 
   $DBIX = DBIx::Simple->connect(
-    $config->{dsn},
+    $config->{db_dsn},
     $config->{db_user},
     $config->{db_password},
     { %COMMON_DBH_HANDLERS,

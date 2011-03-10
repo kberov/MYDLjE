@@ -185,7 +185,7 @@ function post_form() {
         $('[name=' + this + ']').removeClass('ui-state-highlight').addClass('ui-state-default');
         $('#' + this + '_error').remove();
       });
-      var v_errors = data['validator_errors'];
+      var v_errors = (data['validator_errors']||[]);
       var db_connect = v_errors['db_connect']; //only if all db_* are valid
       $('#db_connect_error').remove();
       if (db_connect != null) {
@@ -197,6 +197,10 @@ function post_form() {
         label = $('#' + e + '_label').text();
         label = '"' + label + '"';
         $('<div class="column span-2" style="width:100%;"><div id="' + e + '_error" class="ui-state-error ui-corner-all" style="margin:0 1ex 1ex 1ex">' + alert_icon + v_errors[e].replace(e, label) + '</div></div>').insertAfter($('[name="' + e + '"]').parent().parent());
+      }
+      if(v_errors.length == 0){
+        $('#system_setup').hide('slow');
+        $('.system_setup_oks').show('slow');
       }
     },
     error: function(jqXHR, textStatus, errorThrown) {

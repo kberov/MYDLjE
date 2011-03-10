@@ -13,7 +13,7 @@ sub register {
   $app->routes->get('/check_writables' => \&check_writables);
   $app->routes->get('/check_modules'   => \&check_modules);
   $app->routes->get('/perl_info'       => \&perl_info);
-  $app->routes->post('/system_config'  => \&system_config);
+  $app->routes->post('/system_config' => \&system_config);
   return;
 }
 
@@ -39,18 +39,21 @@ sub check_readables {
 }
 
 sub check_writables {
-  my $c              = shift;
-  my $home           = $c->app->home;
-  my $writables      = [qw(conf log pub/home tmp )];
+  my $c         = shift;
+  my $home      = $c->app->home;
+  my $writables = [
+    'conf', 'log', 'pub/home', 'tmp',
+    'conf/' . lc(ref($c->app) . '.' . $c->app->mode . '.yaml')
+  ];
   my $writables_json = {};
-  foreach my $d (@$writables) {
-    if (-d "$home/$d" and -w "$home/$d") {
-      $writables_json->{$d} = {ok => 1};
+  foreach my $df (@$writables) {
+    if (-w "$home/$df") {
+      $writables_json->{$df} = {ok => 1};
     }
     else {
-      $writables_json->{$d} = {
+      $writables_json->{$df} = {
         ok      => 0,
-        message => " $home/$d is not writable."
+        message => " $home/$df is not writable."
       };
     }
   }
@@ -104,23 +107,40 @@ sub perl_info {
 
 
 sub system_config {
-  my $c                  = shift;
-  my $system_config_json = {};
-  my $validator          = $c->create_validator;
-
+  my $c         = shift;
+  my $validator = $c->create_validator;
   my ($form_ok) = _validate_system_config($c, $validator);
 
   unless ($form_ok) {
     $c->render(json => $c->stash);
     return;
   }
-  my $config = MYDLjE::Config->singleton;
-  foreach my $field_name (keys %{$validator->values}) {
-    $config->stash($field_name, $validator->values->{$field_name});
-  }
-
+  _save_config($c, $validator);
   $c->render(json => $c->stash);
   return;
+}
+
+#write the new configuration to mydlje.yaml so it is shared by all applications
+sub _save_config {
+  my ($c, $validator) = @_;
+  my $config = $c->app->config;
+  my $new_config =
+    MYDLjE::Config->new(files =>
+      [$c->app->home . '/conf/' . lc("$ENV{MOJO_APP}.$ENV{MOJO_MODE}.yaml")]);
+  $new_config->stash('installed', 1);
+  delete $config->{plugins}{system_setup};
+  $new_config->stash('plugins', $config->{plugins});
+  foreach my $field_name (keys %{$validator->values}) {
+    if ($field_name =~ /^db_/) {
+      $new_config->stash('plugins')->{'MYDLjE::Plugin::DBIx'}{$field_name} =
+        $validator->values->{$field_name};
+    }
+  }
+  $new_config->stash('plugins')->{'MYDLjE::Plugin::DBIx'}{db_dsn} = '';
+  $new_config->stash('site_name', $validator->values->{site_name});
+  $new_config->stash('routes',    $config->{routes});
+  $new_config->stash('secret',    $validator->values->{secret});
+  $new_config->write_config_file(lc(ref($c->app)));
 }
 
 sub _validate_system_config {
@@ -139,8 +159,9 @@ sub _validate_system_config {
       if ($field->name eq 'admin_password') {
         $field->regexp(qr/[\W]+/)->length(6, 30)
           ->message($field->name
-            . ' is too simple. The password must contain letters, numbers and at least one special character. The lenght must be at least 6 characters'
-          );
+            . ' is too simple. The password must contain letters, '
+            . 'numbers and at least one special character. '
+            . 'The lenght must be at least 6 characters');
       }
       elsif ($field->name eq 'db_driver') {
         $field->regexp(qr{^(DBI:mysql|DBI:SQLite|DBI:Pg|DBI:Oracle)$})
@@ -168,7 +189,7 @@ sub _validate_system_config {
           }
         );
 
-        eval { $c->dbix->select('my_users', '*'); };
+        eval { $c->dbix->dbh->ping; };
         if ($@) {
           $db_connect_error =
             substr($@, 0, 120) . '... Please check if the database 

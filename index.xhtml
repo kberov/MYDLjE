@@ -33,8 +33,8 @@
         <div class="columns inner ui-widget-content ui-corner-all">
           <div id="setup">
             <h1>&h1;</h1>
-            <p id="hello_success">Hello! Thank you for choosing MYDLjE! Click on titles bellow to check and install the
-            system. 
+            <p id="hello_success">Hello! Thank you for choosing MYDLjE! Click on titles bellow to check and configure
+            the system. 
             <br />We wish you success and fun!</p>
             <h2 id="system_check_h2">
               <a name="system_check">1. &system_check;</a>
@@ -122,6 +122,15 @@
               <a name="system_setup">3. System Setup</a>
             </h2>
             <div>
+              <div class="ui-widget system_setup_oks" style="display:none">
+                <div class="ui-state-active ui-corner-all ui-priority-primary">
+                  <span class="ui-icon ui-icon-info" style="float: left; margin: .3em;"></span>
+                  <h3>System is operational</h3>
+                  <p style="color:green">Now log in to the administration application 
+                  <a href="cpanel">cpanel</a>and start building your site! 
+                  <br />And do not forget to have fun!</p>
+                </div>
+              </div>
               <form id="system_setup" action="mydlje/system_config" method="post"
               class="ui-widget ui-corner-all ui-state-active">
                 <fieldset class="ui-widget-content ui-corner-all">

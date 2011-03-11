@@ -4,6 +4,7 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 --</do>
 
 -- <create_schema_and_user>
+-- Example: not used in perl code
 CREATE USER 'mydlje'@'localhost' IDENTIFIED BY  'mydljep';
 
 GRANT USAGE ON * . * TO  'mydlje'@'localhost' IDENTIFIED BY  'mydljep' WITH MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0 ;
@@ -31,7 +32,7 @@ CREATE TABLE IF NOT EXISTS `my_users` (
   `disabled` tinyint(1) NOT NULL DEFAULT '0',
   `start` int(11) NOT NULL DEFAULT '0',
   `stop` int(11) NOT NULL DEFAULT '0',
-  `properties` text COMMENT 'User properties serialized in a JSON structure. ',
+  `properties` blob  COMMENT 'Serialized/cached properties inherited and overided from group',
   PRIMARY KEY (`id`),
   UNIQUE KEY `login_name` (`login_name`),
   UNIQUE KEY `email` (`email`),
@@ -45,13 +46,13 @@ CREATE TABLE IF NOT EXISTS `my_groups` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL DEFAULT '',
   `description` varchar(255) NOT NULL DEFAULT '',
-  `namespace` set('site','admin') NOT NULL DEFAULT 'site' COMMENT 'site (outsiders), admin(insiders)',
+  `namespace` set('site','cpanel') NOT NULL DEFAULT 'site' COMMENT 'site (outsiders), cpanel(insiders)',
   `created_by` int(11) NOT NULL DEFAULT '1' COMMENT 'id of who created this group?',
   `changed_by` int(11) NOT NULL DEFAULT '1' COMMENT 'id of who changed this group?',
   `disabled` tinyint(1) NOT NULL DEFAULT '0',
   `start` int(11) NOT NULL DEFAULT '0',
   `stop` int(11) NOT NULL DEFAULT '0',
-  `properties` text COMMENT 'Default properties for users  (members of this group) serialized in a JSON structure. ',
+  `properties` blob  COMMENT 'Serialized/cached properties inherited by the users in this group',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
   KEY `created_by` (`created_by`),
@@ -114,13 +115,20 @@ CREATE TABLE IF NOT EXISTS `my_users_groups` (
 -- <table name="my_properties">
 DROP TABLE IF EXISTS `my_properties`;
 CREATE TABLE IF NOT EXISTS `my_properties` (
-  `uid` int(11) NOT NULL COMMENT 'User  ID',
-  `gid` int(11) NOT NULL COMMENT 'Group ID',
   `property` varchar(30) NOT NULL COMMENT 'group or/and user property',
   `description` varchar(255) NOT NULL COMMENT 'What this property means?',
-  PRIMARY KEY (`uid`,`gid`,`property`)
+  PRIMARY KEY (`property`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Properties for users and groups.';
 -- </table>
 
-
+-- <table name="my_user_properties">
+DROP TABLE IF EXISTS `my_users_properties`;
+CREATE TABLE IF NOT EXISTS `my_users_properties` (
+  `uid` int(11) NOT NULL COMMENT 'User  ID',
+  `property` varchar(30) NOT NULL COMMENT 'user property',
+  `property_value` varchar(30) NOT NULL COMMENT 'value interperted depending on business logic',
+  PRIMARY KEY (`uid`,`property`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Users owning properties.';
+-- </table>
+                                        
 -- </queries>

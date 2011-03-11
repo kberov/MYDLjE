@@ -5,9 +5,8 @@ use DBIx::Simple;
 use SQL::Abstract::Limit;
 our $VERSION = '0.01';
 
-#Singleton
-my $DBIX;
-
+#Singletons
+my $DBIX;#DBIx::Simple instance
 my %COMMON_DBH_HANDLERS = (
   RaiseError  => 1,
   HandleError => sub { Carp::confess(shift) },
@@ -24,7 +23,7 @@ sub register {
 
   # Config
   $config ||= {};
-  $app->helper('dbix', sub { dbix($config) });
+  $app->helper('dbix', sub { dbix($config) }); 
   return;
 }    #end register
 
@@ -45,7 +44,7 @@ sub dbix {
     { %COMMON_DBH_HANDLERS,
       %{$DRIVER_DBH_HANDLERS->{$config->{db_driver}} || {}}
     }
-  ) || die $DBI::errstr;
+  );
   $DBIX->lc_columns = 1;
   $DBIX->abstract = SQL::Abstract::Limit->new(limit_dialect => $DBIX->dbh);
   return $DBIX;

@@ -13,7 +13,7 @@ var errors = 0;
 var alert_icon = '<span class="ui-icon ui-icon-alert" style="float: left; margin-right:.3em;"></span>';
 var ok_icon = '<span class="ui-icon ui-icon-check" style="float: left; margin-right:.3em;"></span>';
 
-form_fields = ['site_name', 'secret', 'db_driver', 'db_host', 'db_name', 'db_user', 'db_password', 'admin_user', 'admin_password'];
+form_fields = ['site_name', 'secret', 'db_driver', 'db_host', 'db_name', 'db_user', 'db_password', 'admin_user', 'admin_email', 'admin_password'];
 
 
 /**

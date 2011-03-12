@@ -205,7 +205,7 @@ sub _validate_system_config {
   my @fields = (
     'site_name', 'secret',  'db_driver',   'db_host',
     'db_name',   'db_user', 'db_password', 'admin_user',
-    'admin_password'
+    'admin_email', 'admin_password'
   );
   $validator->field(@fields)->each(
     sub {
@@ -224,6 +224,10 @@ sub _validate_system_config {
         $field->regexp(qr{^(DBI:mysql|DBI:SQLite|DBI:Pg|DBI:Oracle)$}x)
           ->message('Please select a value for ' . $field->name . '.');
       }
+      elsif($field->name eq 'admin_email'){
+        $field->email->message('Please enter a valid email for ' . $field->name . '.');
+      }
+      
     }
   );
 

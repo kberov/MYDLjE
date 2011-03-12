@@ -126,9 +126,10 @@
                 <div class="ui-state-active ui-corner-all ui-priority-primary">
                   <span class="ui-icon ui-icon-info" style="float: left; margin: .3em;"></span>
                   <h3>System is operational</h3>
+                  <p style="color:green">This page will be not visible any more. The "System Setup" plugin is disabled for security reasons.</p>
                   <p style="color:green">Now log in to the administration application 
-                  <a href="cpanel">cpanel</a>and start building your site! 
-                  <br />And do not forget to have fun!</p>
+                  <a href="cpanel">cpanel</a>  
+                  <br />and start building your site! And do not forget to have fun!</p>
                 </div>
               </div>
               <form id="system_setup" action="mydlje/system_config" method="post"
@@ -256,6 +257,17 @@
                     <div class="column span-2">
                       <div class="container help">The user which you will use to login in the 
                       <code>cpanel</code>application and administer the system.</div>
+                    </div>
+                    <div class="fixed column" style="width:150px">
+                      <label id="admin_email_label">Admin Email</label>
+                    </div>
+                    <div class="column">
+                      <div class="container field">
+                        <input type="email" name="admin_email" />
+                      </div>
+                    </div>
+                    <div class="column span-2">
+                      <div class="container help">The email to which system notifications or errors will be sent.</div>
                     </div>
                     <div class="fixed column" style="width:150px">
                       <label id="admin_password_label">Admin Password</label>

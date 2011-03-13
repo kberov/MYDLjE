@@ -1,7 +1,7 @@
 package MYDLjE;
 use MYDLjE::Base 'Mojolicious';
 use MYDLjE::Config;
-
+require Mojo::Util;
 our $VERSION = '0.2';
 
 has controller_class => 'MYDLjE::C';
@@ -16,24 +16,70 @@ my $CONFIG;
 sub startup {
   my $app = shift;
   $CONFIG = MYDLjE::Config->singleton(log => $app->log);
-  $app->secret($app->config('secret'));
+
+  #Fallback to some default secret for today
+  $app->secret($app->config('secret')
+      || $app->home . $app->mode . (localtime())[3]);
+  $app->sessions->cookie_name($app->config('session_cookie_name')
+      || ref($app) . $app->mode);
+
   #Load Plugins
   $app->load_plugins();
 
   # Routes
   $app->load_routes();
 
+  #Hooks
+  $app->hook(before_dispatch => \&before_dispatch);
+  $app->hook(after_dispatch  => \&after_dispatch);
+  return;
+}
+
+#at the beginning of each response
+sub before_dispatch {
+  my $c   = shift;
+  my $app = $c->app;
+  $app->log->debug('New Request:------------------------------------');
+
+  my $base = $c->req->env->{SCRIPT_NAME};
+  $base =~ s{[^/]+$}{}x;
+  $app->sessions->cookie_path($base);
+  $c->stash('base_path', $base);
+
+  #Todo: implement storage in database
+  if (not $c->session('start_time')) {
+    my $time = time;
+    $c->session('start_time', $time);
+    $c->session('id', Mojo::Util::md5_sum(rand($time) . rand($time) . $time));
+  }
+  $c->cookie(session_id => $c->session('id'), {path => $base});
+
+  return;
+}
+
+#at the end of each response
+sub after_dispatch {
+  my $c = shift;
+  $c->session('requests', ($c->session('requests') || 0) + 1);
+
+  #$c->app->log->debug($c->dumper($c->session));
+  $c->app->log->debug('Session:'
+      . $c->app->sessions->cookie_name
+      . ' End Request:'
+      . $c->session('requests')
+      . '--------------------------');
+
   return;
 }
 
 sub config {
-  shift;  return $CONFIG->stash(@_);
+  shift;
+  return $CONFIG->stash(@_);
 }
 
 #load plugins from config file
 sub load_plugins {
   my ($app) = @_;
-  $app->log->debug($app->dumper($app->config('plugins_namespaces')));
   $app->plugins->namespaces($app->config('plugins_namespaces'));
   my $plugins = $app->config('plugins') || {};
   foreach my $plugin (keys %$plugins) {
@@ -68,7 +114,6 @@ sub load_routes {
   }
   return;
 }
-
 
 
 1;

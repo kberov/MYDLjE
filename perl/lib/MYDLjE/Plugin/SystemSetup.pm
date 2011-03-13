@@ -92,7 +92,7 @@ sub perl_info {
     Home          => $c->app->home,
     MYDLjE        => $MYDLjE::VERSION,
     Mojolicious   => "$Mojolicious::VERSION ($Mojolicious::CODENAME)",
-    '%ENV'        => \%ENV,
+    '%ENV'        => $c->req->env,
     '@INC'        => \@INC,
     '%INC'        => \%INC,
     Configuration => $c->app->config(),
@@ -118,7 +118,7 @@ sub system_config {
   }
   _save_config($c, $validator);
   _init_database($c);
-  _create_admin_user($c);
+  _create_admin_user($c, $validator->values);
   _replace_index_xhtml($c);
   $c->render(json => $c->stash);
   return;
@@ -145,7 +145,7 @@ sub _save_config {
   $new_config->stash('routes',    $config->{routes});
   $new_config->stash('secret',    $validator->values->{secret});
 
-  $new_config->write_config_file(lc(ref($c->app)));
+  #$new_config->write_config_file(lc(ref($c->app)));
   #replace config
   $config = {};
   foreach my $key (keys %{$new_config->stash}) {
@@ -181,14 +181,22 @@ sub _init_database {
   for my $e ($dom->find('query[name]')->each) {
     my $query = $e->text;
     $query =~ s/--.*?$//xg;
-    $query =~ s/\)\s*?;\s*?$/)/xg;#beware... VALUES may contain ';'
+    $query =~ s/\)\s*?;\s*?$/)/xg;    #beware... VALUES may contain ';'
     $c->dbix->query($query);
   }
   return;
 }
 
 sub _create_admin_user {
-  my ($c) = @_;
+  my ($c, $values) = @_;
+  $c->app->log->debug($c->dumper($c->stash));
+  $c->dbix->insert(
+    'my_users',
+    { login_name     => $values->{admin_user},
+      email          => $values->{admin_email},
+      login_password => $values->{admin_password}
+    }
+  );
   return;
 }
 
@@ -203,8 +211,8 @@ sub _replace_index_xhtml {
 sub _validate_system_config {
   my ($c, $validator) = @_;
   my @fields = (
-    'site_name', 'secret',  'db_driver',   'db_host',
-    'db_name',   'db_user', 'db_password', 'admin_user',
+    'site_name',   'secret',  'db_driver',   'db_host',
+    'db_name',     'db_user', 'db_password', 'admin_user',
     'admin_email', 'admin_password'
   );
   $validator->field(@fields)->each(
@@ -224,10 +232,11 @@ sub _validate_system_config {
         $field->regexp(qr{^(DBI:mysql|DBI:SQLite|DBI:Pg|DBI:Oracle)$}x)
           ->message('Please select a value for ' . $field->name . '.');
       }
-      elsif($field->name eq 'admin_email'){
-        $field->email->message('Please enter a valid email for ' . $field->name . '.');
+      elsif ($field->name eq 'admin_email') {
+        $field->email->message(
+          'Please enter a valid email for ' . $field->name . '.');
       }
-      
+
     }
   );
 

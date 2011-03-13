@@ -41,18 +41,27 @@ sub before_dispatch {
   my $app = $c->app;
   $app->log->debug('New Request:------------------------------------');
 
+  #TODO: Refactor all session cookies' related code and move it in MYDLjE::Sessions
   my $base = $c->req->env->{SCRIPT_NAME};
   $base =~ s{[^/]+$}{}x;
-  $app->sessions->cookie_path($base);
   $c->stash('base_path', $base);
+  $app->sessions->cookie_path($app->config('session_cookie_path') || $base);
+  $app->sessions->default_expiration(
+         $app->config('session_default_expiration')
+      || $app->sessions->default_expiration);
 
-  #Todo: implement storage in database
+  #TODO: implement storage in database
+  my $time = time;
   if (not $c->session('start_time')) {
-    my $time = time;
     $c->session('start_time', $time);
     $c->session('id', Mojo::Util::md5_sum(rand($time) . rand($time) . $time));
   }
-  $c->cookie(session_id => $c->session('id'), {path => $base});
+  $c->cookie(
+    session_id => $c->session('id'),
+    { path => $app->sessions->cookie_path || $base,
+      expires => $time + $app->sessions->default_expiration
+    }
+  );
 
   return;
 }

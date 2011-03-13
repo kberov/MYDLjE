@@ -1,11 +1,17 @@
 ---
 site_name: MYDLjE
 installed: 0
+
+session_cookie_name: MYDLjESESSION
+session_default_expiration: 3600
+session_cookie_path: ''
+
 plugins:
   charset: 
     charset: 'UTF-8'
   validator: 1
   pod_renderer: 1
+
   #this plugin should be disabled (0) after system setup
   system_setup: 1
 plugins_namespaces:

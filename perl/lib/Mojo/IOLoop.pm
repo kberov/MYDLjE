@@ -193,6 +193,9 @@ sub new {
 sub connect {
   my $self = shift;
 
+  # Singleton
+  $self = $self->singleton unless ref $self;
+
   # Arguments
   my $args = ref $_[0] ? $_[0] : {@_};
 
@@ -250,6 +253,9 @@ sub connection_timeout {
 sub drop {
   my ($self, $id) = @_;
 
+  # Singleton
+  $self = $self->singleton unless ref $self;
+
   # Drop connection gracefully
   if (my $c = $self->{_cs}->{$id}) { return $c->{finish} = 1 }
 
@@ -258,7 +264,6 @@ sub drop {
 }
 
 sub generate_port {
-  my $self = shift;
 
   # Ports
   my $port = 1 . int(rand 10) . int(rand 10) . int(rand 10) . int(rand 10);
@@ -278,12 +283,23 @@ sub generate_port {
   return;
 }
 
-sub is_running { shift->{_running} }
+sub is_running {
+  my $self = shift;
+
+  # Singleton
+  $self = $self->singleton unless ref $self;
+
+  # Running
+  $self->{_running};
+}
 
 # "Fat Tony is a cancer on this fair city!
 #  He is the cancer and I am the… uh… what cures cancer?"
 sub listen {
   my $self = shift;
+
+  # Singleton
+  $self = $self->singleton unless ref $self;
 
   # Arguments
   my $args = ref $_[0] ? $_[0] : {@_};
@@ -424,6 +440,9 @@ sub local_info {
 
 sub lookup {
   my ($self, $name, $cb) = @_;
+
+  # Singleton
+  $self = $self->singleton unless ref $self;
 
   # "localhost"
   return $self->timer(0 => sub { shift->$cb($LOCALHOST) })
@@ -600,6 +619,9 @@ sub remote_info {
 sub resolve {
   my ($self, $name, $type, $cb) = @_;
 
+  # Singleton
+  $self = $self->singleton unless ref $self;
+
   # Regex
   my $ipv4;
   $ipv4 = 1 if $name =~ $Mojo::URL::IPV4_RE;
@@ -744,6 +766,9 @@ sub singleton { $LOOP ||= shift->new(@_) }
 sub start {
   my $self = shift;
 
+  # Singleton
+  $self = $self->singleton unless ref $self;
+
   # Already running
   return if $self->{_running};
 
@@ -813,7 +838,15 @@ sub start_tls {
   return $id;
 }
 
-sub stop { delete shift->{_running} }
+sub stop {
+  my $self = shift;
+
+  # Singleton
+  $self = $self->singleton unless ref $self;
+
+  # Stop
+  delete $self->{_running};
+}
 
 sub test {
   my ($self, $id) = @_;
@@ -835,7 +868,13 @@ sub test {
 }
 
 sub timer {
-  shift->_add_loop_event(timer => pop, after => pop, started => time);
+  my $self = shift;
+
+  # Singleton
+  $self = $self->singleton unless ref $self;
+
+  # Timer
+  $self->_add_loop_event(timer => pop, after => pop, started => time);
 }
 
 sub write {
@@ -1848,6 +1887,10 @@ possible.
 
 =head2 C<connect>
 
+  my $id = Mojo::IOLoop->connect(
+    address => '127.0.0.1',
+    port    => 3000
+  );
   my $id = $loop->connect(
     address => '127.0.0.1',
     port    => 3000
@@ -1917,6 +1960,7 @@ dropped.
 
 =head2 C<drop>
 
+  $loop = Mojo::IOLoop->drop($id)
   $loop = $loop->drop($id);
 
 Drop anything with an id.
@@ -1925,6 +1969,7 @@ data in its write buffer.
 
 =head2 C<generate_port>
 
+  my $port = Mojo::IOLoop->generate_port;
   my $port = $loop->generate_port;
 
 Find a free TCP port, this is a utility function primarily used for tests.
@@ -1938,14 +1983,16 @@ Note that this method is EXPERIMENTAL and might change without warning!
 
 =head2 C<is_running>
 
+  my $running = Mojo::IOLoop->is_running;
   my $running = $loop->is_running;
 
 Check if loop is running.
 
-  exit unless Mojo::IOLoop->singleton->is_running;
+  exit unless Mojo::IOLoop->is_running;
 
 =head2 C<listen>
 
+  my $id = Mojo::IOLoop->listen(port => 3000);
   my $id = $loop->listen(port => 3000);
   my $id = $loop->listen({port => 3000});
   my $id = $loop->listen(file => '/foo/myapp.sock');
@@ -2038,6 +2085,7 @@ The local port.
 
 =head2 C<lookup>
 
+  $loop = Mojo::IOLoop->lookup('mojolicio.us' => sub {...});
   $loop = $loop->lookup('mojolicio.us' => sub {...});
 
 Lookup C<IPv4> or C<IPv6> address for domain.
@@ -2124,6 +2172,7 @@ The remote port.
 
 =head2 C<resolve>
 
+  $loop = Mojo::IOLoop->resolve('mojolicio.us', 'A', sub {...});
   $loop = $loop->resolve('mojolicio.us', 'A', sub {...});
 
 Resolve domain into C<A>, C<AAAA>, C<CNAME>, C<MX>, C<NS>, C<PTR> or C<TXT>
@@ -2136,9 +2185,15 @@ Note that this method is EXPERIMENTAL and might change without warning!
 
 The global loop object, used to access a single shared loop instance from
 everywhere inside the process.
+Many methods also allow you to take shortcuts when using the L<Mojo::IOLoop>
+singleton.
+
+  Mojo::IOLoop->timer(2 => sub { Mojo::IOLoop->stop });
+  Mojo::IOLoop->start;
 
 =head2 C<start>
 
+  Mojo::IOLoop->start;
   $loop->start;
 
 Start the loop, this will block until C<stop> is called or return immediately
@@ -2153,6 +2208,7 @@ Note that TLS support depends on L<IO::Socket::SSL>.
 
 =head2 C<stop>
 
+  Mojo::IOLoop->stop;
   $loop->stop;
 
 Stop the loop immediately, this will not interrupt any existing connections
@@ -2167,6 +2223,7 @@ Note that this method is EXPERIMENTAL and might change without warning!
 
 =head2 C<timer>
 
+  my $id = Mojo::IOLoop->timer(5 => sub {...});
   my $id = $loop->timer(5 => sub {...});
   my $id = $loop->timer(0.25 => sub {...});
 

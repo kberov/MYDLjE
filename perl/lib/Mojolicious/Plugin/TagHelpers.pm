@@ -102,6 +102,7 @@ sub register {
       # Content
       unless (defined $_[-1] && ref $_[-1] eq 'CODE') {
         @url = (shift);
+        xml_escape $content;
         push @_, sub {$content}
       }
 
@@ -255,10 +256,22 @@ sub register {
 }
 
 sub _input {
-  my $self  = shift;
-  my $c     = shift;
-  my $name  = shift;
-  my %attrs = @_;
+  my $self = shift;
+  my $c    = shift;
+  my $name = shift;
+
+  # Attributes
+  my %attrs;
+
+  # Odd
+  if (@_ % 2) {
+    my $value = shift;
+    %attrs = @_;
+    $attrs{value} = $value;
+  }
+
+  # Even
+  else { %attrs = @_ }
 
   # Value
   my $p = $c->param($name);
@@ -339,11 +352,20 @@ Mojolicious::Plugin::TagHelpers - Tag Helpers Plugin
 
 =head1 DESCRIPTION
 
-L<Mojolicous::Plugin::TagHelpers> is a collection of HTML5 tag helpers for
+L<Mojolicious::Plugin::TagHelpers> is a collection of HTML5 tag helpers for
 L<Mojolicious>.
 This is a core plugin, that means it is always enabled and its code a good
 example for learning to build new plugins.
-Note that this module is EXPERIMENTAL and might change without warning!
+
+Most form helpers can automatically pick up previous input values and will
+show them as default.
+You can also use C<param> to set them manually and let necessary attributes
+always be generated automatically.
+
+  <% param country => 'germany' unless param 'country' %>
+  <%= radio_button 'country', value => 'germany' %> Germany
+  <%= radio_button 'country', value => 'france'  %> France
+  <%= radio_button 'country', value => 'uk'      %> UK
 
 =head1 HELPERS
 
@@ -361,6 +383,7 @@ Generate C<base> tag refering to the current base URL.
   <%= check_box employed => 1, id => 'foo' %>
 
 Generate checkbox input element.
+Previous input values will automatically get picked up and shown as default.
 
   <input name="employed" type="checkbox" value="1" />
   <input id="foo" name="employed" type="checkbox" value="1" />
@@ -436,11 +459,12 @@ Generate image tag.
 =head2 C<input_tag>
 
   <%= input_tag 'first_name' %>
-  <%= input_tag 'first_name', value => 'Default name' %>
+  <%= input_tag first_name => 'Default name' %>
   <%= input_tag 'employed', type => 'checkbox' %>
   <%= input_tag 'country', type => 'radio', value => 'germany' %>
 
 Generate form input element.
+Previous input values will automatically get picked up and shown as default.
 
   <input name="first_name" />
   <input name="first_name" value="Default name" />
@@ -498,6 +522,7 @@ Generate password input element.
   <%= radio_button country => 'germany', id => 'foo' %>
 
 Generate radio input element.
+Previous input values will automatically get picked up and shown as default.
 
   <input name="country" type="radio" value="germany" />
   <input id="foo" name="country" type="radio" value="germany" />
@@ -511,6 +536,7 @@ Generate radio input element.
   <%= select_field country => [[Germany => 'de', class => 'europe'], 'en'] %>
 
 Generate select, option and optgroup elements.
+Previous input values will automatically get picked up and shown as default.
 
   <select name="language">
     <option value="de">de</option>
@@ -574,12 +600,15 @@ HTML5 tag generator.
 =head2 C<text_field>
 
   <%= text_field 'first_name' %>
-  <%= text_field 'first_name', value => 'Default name' %>
+  <%= text_field first_name => 'Default name' %>
+  <%= text_field first_name => 'Default name', class => 'user' %>
 
 Generate text input element.
+Previous input values will automatically get picked up and shown as default.
 
   <input name="first_name" />
   <input name="first_name" value="Default name" />
+  <input class="user" name="first_name" value="Default name" />
 
 =head2 C<text_area>
 
@@ -589,6 +618,7 @@ Generate text input element.
   <% end %>
 
 Generate textarea element.
+Previous input values will automatically get picked up and shown as default.
 
   <textarea name="foo"></textarea>
   <textarea name="foo">

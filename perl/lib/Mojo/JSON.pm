@@ -354,8 +354,11 @@ sub _exception {
 
   # Context
   my $context = 'Malformed JSON: ' . shift;
-  $context
-    .= m/\G\z/gc ? ' before end of data' : ' at character offset ' . pos;
+  if (m/\G\z/gc) { $context .= ' before end of data'; }
+  else {
+    my @lines = split /\n/, substr($_, 0, pos);
+    $context .= ' at line ' . @lines . ', offset ' . length(pop @lines || '');
+  }
 
   # Throw
   die "$context.\n";
@@ -365,8 +368,9 @@ sub _exception {
 package Mojo::JSON::_Bool;
 use Mojo::Base -base;
 use overload (
-  '0+' => sub { $_[0]->{_value} },
-  '""' => sub { $_[0]->{_value} }
+  '0+'     => sub { $_[0]->{_value} },
+  '""'     => sub { $_[0]->{_value} },
+  fallback => 1
 );
 
 sub new { shift->SUPER::new(_value => shift) }

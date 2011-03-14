@@ -14,7 +14,7 @@ use POSIX qw/setsid WNOHANG/;
 use Scalar::Util 'weaken';
 
 # Preload
-use Mojo::Client;
+use Mojo::UserAgent;
 
 use constant DEBUG => $ENV{HYPNOTOAD_DEBUG} || 0;
 
@@ -497,8 +497,6 @@ C<kqueue> and hot deployment support that just works.
 Optional modules L<IO::KQueue>, L<IO::Epoll>, L<IO::Socket::IP>,
 L<IO::Socket::SSL> and L<Net::Rendezvous::Publish> are supported
 transparently and used if installed.
-
-Note that this module is EXPERIMENTAL and might change without warning!
 
 See L<Mojolicious::Guides::Cookbook> for deployment recipes.
 

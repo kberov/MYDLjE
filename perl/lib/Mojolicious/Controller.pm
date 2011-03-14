@@ -32,12 +32,21 @@ our $DEVELOPMENT_NOT_FOUND =
   Mojo::Command->new->get_data('not_found.development.html.ep', __PACKAGE__);
 
 # Reserved stash values
-my @RESERVED =
-  qw/action app cb class controller data exception extends format/;
-push @RESERVED,
-  qw/handler json layout method namespace partial path status template text/;
+my @RESERVED = (
+  qw/action app cb class controller data exception extends format handler/,
+  qw/json layout method namespace partial path status template text/
+);
 my $STASH_RE = join '|', @RESERVED;
 $STASH_RE = qr/^(?:$STASH_RE)$/;
+
+# DEPRECATED in Smiling Cat Face With Heart-Shaped Eyes!
+*client = sub {
+  warn <<EOF;
+Mojolicious::Controller->client is DEPRECATED in favor of
+Mojolicious::Controller->ua!!!
+EOF
+  return shift->app->client;
+};
 
 # "Is all the work done by the children?
 #  No, not the whipping."
@@ -56,8 +65,6 @@ sub AUTOLOAD {
 }
 
 sub DESTROY { }
-
-sub client { shift->app->client }
 
 # "For the last time, I don't like lilacs!
 #  Your first wife was the one who liked lilacs!
@@ -708,6 +715,8 @@ sub stash {
   return $self;
 }
 
+sub ua { shift->app->ua }
+
 # "Behold, a time traveling machine.
 #  Time? I can't go back there!
 #  Ah, but this machine only goes forward in time.
@@ -1195,7 +1204,7 @@ Mojolicious::Controller - Controller Base Class
 
 =head1 DESCRIPTION
 
-L<Mojolicous::Controller> is the base class for your L<Mojolicious>
+L<Mojolicious::Controller> is the base class for your L<Mojolicious>
 controllers.
 It is also the default controller class for L<Mojolicious> unless you set
 C<controller_class> in your application.
@@ -1231,21 +1240,6 @@ L<Mojo::Transaction::HTTP> object.
 
 L<Mojolicious::Controller> inherits all methods from L<Mojo::Base> and
 implements the following new ones.
-
-=head2 C<client>
-
-  my $client = $c->client;
-    
-A L<Mojo::Client> prepared for the current environment.
-
-  my $tx = $c->client->get('http://mojolicio.us');
-
-  $c->client->post_form('http://kraih.com/login' => {user => 'mojo'});
-
-  $c->client->get('http://mojolicio.us' => sub {
-    my $client = shift;
-    $c->render_data($client->res->body);
-  })->start;
 
 =head2 C<cookie>
 
@@ -1333,8 +1327,6 @@ It will set a default template to use based on the controller and action name
 or fall back to the route name.
 You can call it with a hash of options which can be preceded by an optional
 template name.
-Note that all render arguments get localized, so stash values won't be
-changed after the render call.
 
 =head2 C<render_data>
 
@@ -1373,10 +1365,9 @@ Render a data structure as JSON.
   $c->render_later;
 
 Disable auto rendering, especially for long polling this can be quite useful.
-Note that this method is EXPERIMENTAL and might change without warning!
 
   $c->render_later;
-  Mojo::IOLoop->singleton->timer(2 => sub {
+  Mojo::IOLoop->timer(2 => sub {
     $c->render(text => 'Delayed by 2 seconds!');
   });
 
@@ -1390,8 +1381,8 @@ status code to C<404>.
 
 =head2 C<render_partial>
 
-  my $output = $c->render_partial;
-  my $output = $c->render_partial(action => 'foo');
+  my $output = $c->render_partial('menubar');
+  my $output = $c->render_partial('menubar', format => 'txt');
     
 Same as C<render> but returns the rendered result.
 
@@ -1411,7 +1402,7 @@ C<public> directory of your application.
 Render the given content as Perl characters, which will be encoded to bytes.
 See C<render_data> for an alternative without encoding.
 Note that this does not change the content type of the response, which is
-C<text/html> by default.
+C<text/html;charset=UTF-8> by default.
 
   $c->render_text('Hello World!', format => 'txt');
 
@@ -1479,6 +1470,21 @@ Non persistent data storage and exchange.
   $c->stash->{foo} = 'bar';
   my $foo = $c->stash->{foo};
   delete $c->stash->{foo};
+
+=head2 C<ua>
+
+  my $ua = $c->ua;
+    
+A L<Mojo::UserAgent> prepared for the current environment.
+
+  my $tx = $c->ua->get('http://mojolicio.us');
+
+  $c->ua->post_form('http://kraih.com/login' => {user => 'mojo'});
+
+  $c->ua->get('http://mojolicio.us' => sub {
+    my $ua = shift;
+    $c->render_data($ua->res->body);
+  });
 
 =head2 C<url_for>
 

@@ -645,16 +645,15 @@ Note that you should use a custom C<secret> to make signed cookies really secure
 
   app->secret('My secret passphrase here!');
 
-=head2 HTTP Client
+=head2 User Agent
 
-A full featured HTTP 1.1 and WebSocket client is built right in.
+A full featured HTTP 1.1 and WebSocket user agent is built right in.
 Especially in combination with L<Mojo::JSON> and L<Mojo::DOM> this can be a
 very powerful tool.
 
   get '/test' => sub {
     my $self = shift;
-    $self->render(
-      data => $self->client->get('http://mojolicio.us')->res->body);
+    $self->render(data => $self->ua->get('http://mojolicio.us')->res->body);
   };
 
 =head2 WebSockets
@@ -746,7 +745,7 @@ For more control the L<Mojolicious> instance can be accessed directly.
 
 =head2 Growing
 
-In case a lite app needs to grow, lite and real L<Mojolicous> applications
+In case a lite app needs to grow, lite and real L<Mojolicious> applications
 can be easily mixed to make the transition process very smooth.
 
   package MyApp::Foo;

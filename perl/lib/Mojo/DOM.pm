@@ -90,10 +90,10 @@ my $HTML_AUTOCLOSE_RE = join '|', @OPTIONAL_TAGS;
 $HTML_AUTOCLOSE_RE = qr/^(?:$HTML_AUTOCLOSE_RE)$/;
 
 # Tags that break HTML paragraphs
-my @PARAGRAPH_TAGS =
-  qw/address article aside blockquote dir div dl fieldset footer form h1 h2/;
-push @PARAGRAPH_TAGS,
-  qw/h3 h4 h5 h6 header hgroup hr menu nav ol p pre section table or ul/;
+my @PARAGRAPH_TAGS = (
+  qw/address article aside blockquote dir div dl fieldset footer form h1 h2/,
+  qw/h3 h4 h5 h6 header hgroup hr menu nav ol p pre section table or ul/
+);
 my $HTML_PARAGRAPH_RE = join '|', @PARAGRAPH_TAGS;
 $HTML_PARAGRAPH_RE = qr/^(?:$HTML_PARAGRAPH_RE)$/;
 
@@ -481,7 +481,7 @@ sub _css_equation {
   # Equation
   elsif ($equation =~ /(?:(\-?(?:\d+)?)?(n))?\s*\+?\s*(\-?\s*\d+)?\s*$/) {
     $num->[0] = $1;
-    $num->[0] = $2 ? 1 : 0 unless length $num->[0];
+    $num->[0] = $2 ? 1 : 0 unless defined($num->[0]) && length($num->[0]);
     $num->[0] = -1 if $num->[0] eq '-';
     $num->[1] = $3 || 0;
     $num->[1] =~ s/\s+//g;

@@ -38,7 +38,7 @@ EOF
 };
 
 our $CODENAME = 'Smiling Cat Face With Heart-Shaped Eyes';
-our $VERSION  = '1.12';
+our $VERSION  = '1.13';
 
 # "These old doomsday devices are dangerously unstable.
 #  I'll rest easier not knowing where they are."
@@ -421,7 +421,7 @@ Web development for humans, making hard things possible and everything fun.
     my $self = shift;
     my $url  = $self->param('url') || 'http://mojolicio.us';
     $self->render(text =>
-      $self->client->get($url)->res->dom->at('head > title')->text);
+      $self->ua->get($url)->res->dom->at('head > title')->text);
   };
 
   # WebSocket echo service
@@ -496,7 +496,7 @@ been separated from action code, especially when working in teams.
     my $self = shift;
     my $url  = $self->param('url') || 'http://mojolicio.us';
     $self->render(text =>
-      $self->client->get($url)->res->dom->at('head > title')->text);
+      $self->ua->get($url)->res->dom->at('head > title')->text);
   }
 
   1;
@@ -654,7 +654,7 @@ Responsible for tracking the types of content you want to serve in your
 application, by default a L<Mojolicious::Types> object.
 You can easily register new types.
 
-  $app->types->type(vti => 'help/vampire');
+  $app->types->type(twitter => 'text/tweet');
 
 =head1 METHODS
 
@@ -677,7 +677,7 @@ Also sets up the renderer, static dispatcher and a default set of plugins.
   $app         = $app->defaults({foo => 'bar'});
   $app         = $app->defaults(foo => 'bar');
 
-Default values for the stash.
+Default values for the stash, assigned for every new request.
 
   $app->defaults->{foo} = 'bar';
   my $foo = $app->defaults->{foo};
@@ -717,7 +717,7 @@ and the application object, as well as a function in C<ep> templates.
 
   $app->hook(after_dispatch => sub { ... });
 
-Add hooks to named events.
+Extend L<Mojolicious> by adding hooks to named events.
 
 The following events are available and run in the listed order.
 

@@ -39,7 +39,7 @@ Build whatever you want on top of and around it.
 
 =item * Apache with mod_cgi (standard) or (better/faster) mod_fcgi/mod_fastcgi;
 
-=item * MySQL server, provided on every shared hosting;
+=item * MySQL >=5.0 server, provided on every shared hosting;
 
 =item * C<DBI>, C<DBD::mysql>, C<Time::Piece> and C<GD> Perl Modules.
 

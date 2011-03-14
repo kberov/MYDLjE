@@ -96,7 +96,8 @@ CREATE TABLE IF NOT EXISTS `my_content` (
   PRIMARY KEY (`id`),
   KEY `pid` (`pid`,`data_type`),
   KEY `tstamp` (`tstamp`,`title`),
-  KEY `user_id` (`user_id`),  
+  KEY `user_id` (`user_id`),
+  KEY `data_type` (`data_type`),
   UNIQUE KEY `alias` (`alias`),
   KEY `language` (`language`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COMMENT='MYDLjE content elements. Types are used via views.' AUTO_INCREMENT=0 ;
@@ -130,5 +131,64 @@ CREATE TABLE IF NOT EXISTS `my_users_properties` (
   PRIMARY KEY (`uid`,`property`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Users owning properties.';
 -- </table>
-                                        
+
+--
+-- Views which will be used instead of directly my_content
+-- Note: MySQL 5 required
+-- 25.09.10 12:44
+--
+-- Note: from selects below are visible interdependencies
+-- 26.09.10 20:43
+
+-- EDITABLE VIEWS
+--<view name="my_varticle">
+DROP VIEW IF EXISTS  my_varticle;
+CREATE OR REPLACE VIEW my_varticle as select 
+    id,user_id,pid,sorting,data_type,
+    data_format,time_created,tstamp,title,body,invisible,
+    language,groups,protected,bad
+from my_content where (data_type = 'article');
+--</view>
+--<view name="my_vchapter">
+DROP VIEW IF EXISTS my_vchapter;
+CREATE OR REPLACE VIEW my_vchapter as select
+    id,user_id,pid,sorting,data_type,
+    data_format,time_created,tstamp,title,body,invisible,
+    language,groups,protected,bad
+from my_content where (data_type = 'chapter');
+--</view>
+--<view name="my_vquestion">
+DROP VIEW IF EXISTS my_vquestion;
+CREATE OR REPLACE VIEW my_vquestion as select
+    id,user_id,pid,data_type,
+    data_format,time_created,tstamp,title,body,invisible,
+    language,groups,protected,bad
+from my_content where (data_type = 'question');
+--</view>
+-- Answers are children of questions so they do not need
+-- groups,protected,title
+--<view name="my_vanswer">
+DROP VIEW IF EXISTS my_vanswer;
+CREATE OR REPLACE VIEW my_vanswer as select 
+    id,user_id,pid,data_type,
+    data_format,time_created,tstamp,body,invisible,
+    language,accepted,bad
+from my_content where (data_type = 'answer');
+--</view>
+--<view name="my_vbook">
+DROP VIEW IF EXISTS my_vbook;
+CREATE OR REPLACE VIEW my_vbook as select
+    id,user_id,pid,data_type,
+    data_format,time_created,tstamp,title,body,invisible,
+    language,groups,protected,bad
+from my_content where (data_type = 'book');
+--</view>
+--<view name="my_vnote">
+DROP VIEW IF EXISTS my_vnote;
+CREATE OR REPLACE VIEW my_vnote as select
+    id,user_id,pid,data_type,
+    data_format,time_created,tstamp,title,body,invisible,
+    language,bad
+from my_content where (data_type = 'note');
+--</view>
 -- </queries>

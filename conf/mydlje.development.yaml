@@ -1,42 +1,44 @@
 ---
-site_name: MYDLjE
 installed: 0
-
 session_cookie_name: MYDLjESESSION
-session_default_expiration: 3600
 session_cookie_path: ''
+session_default_expiration: 3600
 
 plugins:
-  charset: 
-    charset: 'UTF-8'
-  validator: 1
-  pod_renderer: 1
-
-  #this plugin should be disabled (0) after system setup
   system_setup: 1
+  MYDLjE::Plugin::DBIx:
+    db_driver: DBI:mysql
+    db_dsn: ''
+    db_host: localhost
+    db_name: mydlje
+    db_password: mydlje
+    db_user: mydlje
+  charset:
+    charset: UTF-8
+  pod_renderer: 1
+  validator: 1
 plugins_namespaces:
   - Mojolicious::Plugin
   - MYDLjE::Plugin
-
-routes: 
+routes:
   /:action:
     order: 1000
-    to: 
-      controller: C
+    to:
       action: hi
+      controller: C
       id: 1
   /:action/:id:
     order: 1001
+    to:
+      action: hi
+      controller: C
+      id: 1
     via:
       - get
       - post
-    to: 
-      controller: C
-      action: hi
-      id: 1
   /:controller/:action/:id:
     order: 1002
-    to: 
-      controller: C
+    to:
       action: hi
+      controller: C
       id: 1

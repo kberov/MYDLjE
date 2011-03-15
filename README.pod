@@ -26,7 +26,7 @@ This is a bare-bones application. It it is used as the base for the other two an
 
 =head2 SITE (site)
 
-This is your front-end application intended for the public. Build a site or a custom application to be used by your customers. 
+This is your front-end application intended for the public. Build a site or a custom application to be used by your community and/or customers. 
 Build whatever you want on top of and around it.
 
 

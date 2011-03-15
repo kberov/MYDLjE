@@ -16,7 +16,7 @@ my $CONFIG;
 sub startup {
   my $app = shift;
   $CONFIG = MYDLjE::Config->singleton(log => $app->log);
-
+  
   #Fallback to some default secret for today
   $app->secret($app->config('secret')
       || $app->home . $app->mode . (localtime())[3]);
@@ -35,14 +35,24 @@ sub startup {
   return;
 }
 
+sub config {
+  shift;
+  return $CONFIG->stash(@_);
+}
+
 #at the beginning of each response
 sub before_dispatch {
   my $c   = shift;
   my $app = $c->app;
   $app->log->debug('New Request:------------------------------------');
+  _session_start($c,$app);
+  return;
+}
 
+sub _session_start {
+  my ($c,$app) = @_;
   #TODO: Refactor all session cookies' related code and move it in MYDLjE::Sessions
-  my $base = $c->req->env->{SCRIPT_NAME};
+  my $base = $c->req->env->{SCRIPT_NAME} || '';
   $base =~ s{[^/]+$}{}x;
   $c->stash('base_path', $base);
   $app->sessions->cookie_path($app->config('session_cookie_path') || $base);
@@ -51,21 +61,12 @@ sub before_dispatch {
       || $app->sessions->default_expiration);
 
   #TODO: implement storage in database
-  my $time = time;
+  my $time = Time::HiRes::time();
   if (not $c->session('start_time')) {
     $c->session('start_time', $time);
     $c->session('id', Mojo::Util::md5_sum(rand($time) . rand($time) . $time));
-  }
-  $c->cookie(
-    session_id => $c->session('id'),
-    { path => $app->sessions->cookie_path || $base,
-      expires => $time + $app->sessions->default_expiration
-    }
-  );
-
-  return;
+  }  
 }
-
 #at the end of each response
 sub after_dispatch {
   my $c = shift;
@@ -79,11 +80,6 @@ sub after_dispatch {
       . '--------------------------');
 
   return;
-}
-
-sub config {
-  shift;
-  return $CONFIG->stash(@_);
 }
 
 #load plugins from config file

@@ -36,5 +36,6 @@ statements = 2
 allow_includes=1
 
 [Documentation::RequirePodSections]
+source   = book
 lib_sections    = NAME | SYNOPSIS | METHODS | CONFIG | BUGS AND LIMITATIONS | AUTHOR
 script_sections = NAME | USAGE | OPTIONS | AUTHOR

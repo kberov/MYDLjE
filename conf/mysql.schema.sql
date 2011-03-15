@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS `my_sessions` (
   `cid` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Count ID',
   `user_id` int(11) NOT NULL COMMENT 'Which user is this session for?',
   `tstamp` int(11) NOT NULL DEFAULT '0' COMMENT 'last modification time',
-  `a_session` blob NOT NULL,
+  `session_data` blob NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `cid` (`cid`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COMMENT='Users sessions storage table' AUTO_INCREMENT=0 ;

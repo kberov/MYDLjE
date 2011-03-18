@@ -77,30 +77,35 @@ CREATE TABLE IF NOT EXISTS `my_sessions` (
 DROP TABLE IF EXISTS `my_content`;
 CREATE TABLE IF NOT EXISTS `my_content` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Primary unique identyfier',
-  `user_id` int(11) NOT NULL DEFAULT '0',
+  `alias` varchar(255) NOT NULL DEFAULT 'seo friendly id',
   `pid` int(11) NOT NULL DEFAULT '0' COMMENT 'Parent Question, Article, Note, Book ID etc',
+  `user_id` int(11) NOT NULL DEFAULT '0',
   `sorting` int(10) NOT NULL DEFAULT '0' COMMENT 'suitable for sorting articles in a book',
-  `data_type` set('page','question','answer','book','note','article','chapter') NOT NULL DEFAULT 'note' COMMENT 'data type',
+  `data_type` set('page','question','answer','book','note','article','chapter') NOT NULL DEFAULT 'note' COMMENT 'Semantic Content Types. See MYDLjE::M::Content::*.',
   `data_format` set('text','html','markdown') NOT NULL DEFAULT 'text',
   `time_created` int(11) NOT NULL DEFAULT '0' COMMENT 'When this content was inserted',
   `tstamp` int(11) NOT NULL DEFAULT '0' COMMENT 'Last time the record was touched',
   `title` varchar(255) NOT NULL DEFAULT '',
-  `alias` varchar(255) NOT NULL DEFAULT 'seo friendly id',
+  `description` varchar(255) NOT NULL DEFAULT '',
+  `keywords` varchar(255) NOT NULL DEFAULT '',
+  `tags` varchar(100) NOT NULL DEFAULT '',
   `body` text NOT NULL,
-  `invisible` tinyint(4) NOT NULL,
+  `invisible` tinyint(1) NOT NULL,
   `language` varchar(2) NOT NULL DEFAULT '',
   `groups` blob,
   `protected` char(1) NOT NULL DEFAULT '',
+  `featured` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Show on top independently of other sorting.',
   `accepted` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Answer accepted?',
   `bad` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Reported as inapropriate offensive etc.',
   PRIMARY KEY (`id`),
-  KEY `pid` (`pid`,`data_type`),
-  KEY `tstamp` (`tstamp`,`title`),
+  KEY `pid` (`pid`),
+  KEY `tstamp` (`tstamp`),
+  KEY `tags` (`tags`),
   KEY `user_id` (`user_id`),
   KEY `data_type` (`data_type`),
   UNIQUE KEY `alias` (`alias`),
   KEY `language` (`language`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COMMENT='MYDLjE content elements. Types are used via views.' AUTO_INCREMENT=0 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='MYDLjE content elements. Types are used via views.' AUTO_INCREMENT=0 ;
 -- </table>
 
 -- <table name="my_users_groups">
@@ -139,7 +144,8 @@ CREATE TABLE IF NOT EXISTS `my_users_properties` (
 --
 -- Note: from selects below are visible interdependencies
 -- 26.09.10 20:43
-
+-- TODO: make MYDLjE::M::Content wor automatically with views
+-- when a database suports this.
 -- EDITABLE VIEWS
 --<view name="my_varticle">
 DROP VIEW IF EXISTS  my_varticle;

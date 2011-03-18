@@ -8,7 +8,7 @@ use Data::Dumper;
 use Mojo::Log;
 has log     => sub { Mojo::Log->new };
 has files   => sub { [] };
-has configs => sub { [] };
+has configs => sub { [{}] };
 has merger  => 'Hash::Merge::Simple';
 
 #Singleton
@@ -26,18 +26,18 @@ sub new {
 }
 
 sub stash {
-  my $self = shift;
-  if ($_[1]) {
-    return $self->{config}{$_[0]} = $_[1];
+  my ($self, $key, $value) = @_;
+  if ($value) {
+    return $self->{config}{$key} = $value;
   }
-  elsif ($_[0]) {
-    return $self->{config}{$_[0]};
+  elsif ($key) {
+    return $self->{config}{$key};
   }
   return $self->{config};
 }
 
 sub read_config_files {
-  my ($self,@params) = @_;
+  my ($self, @params) = @_;
   my $args = $self->{files} || [@params];
 
   if (!$self->{files}) {
@@ -59,7 +59,6 @@ sub read_config_files {
     }
     $self->{files} = $args;
   }    # end if (!$self->{files})
-  my $config = {};
 
   foreach my $filename (@$args) {
     my $conf;
@@ -72,7 +71,7 @@ sub read_config_files {
   }
 
   #if($self->log->is_debug) {$self->log->debug(Dumper($self->configs));}
-  $config = $self->merger->dclone_merge(@{$self->configs});
+  my $config = $self->merger->dclone_merge(@{$self->configs});
 
   return $self->{config} = $config;
 }

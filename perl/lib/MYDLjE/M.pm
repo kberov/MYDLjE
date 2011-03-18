@@ -25,7 +25,7 @@ sub COLUMNS {
 
 #specific where clause for this class
 #which will be preppended to $where argument for the select() method
-sub WHERE { {} }
+sub WHERE { return {} }
 
 #METHODS
 sub new {
@@ -38,7 +38,7 @@ sub new {
 }
 
 #get data from satabase
-sub select {
+sub select {    ##no critic (Subroutines::ProhibitBuiltinHomonyms)
   my ($self, $where) = get_obj_args(@_);
 
   #instantiate if needed
@@ -69,7 +69,7 @@ sub data {
   }
 
   #a key
-  elsif ($args && not ref $args) {
+  elsif ($args && (!ref $args)) {
     return $self->{data}{$args};
   }
 
@@ -100,11 +100,11 @@ sub make_field_attrs {
     or Carp::croak('Call this method as __PACKAGE__->make_field_attrs()');
   my $code = '';
   foreach my $column (@{$class->COLUMNS()}) {
-    $code .= "sub $class\:\:$column { shift->data('$column', \@_) }$/";
+    next if $class->can($column);    #carefull: no redefine
+    $code .= "sub $class\:\:$column { return shift->data('$column', \@_) }$/";
   }
 
-  #I know what I am doing. I think so...
-  #warn $code;
+  #I know what I am doing. I think so... warn $code;
   if (!eval $code . '1;')
   {    ##no critic (BuiltinFunctions::ProhibitStringyEval)
     Carp::confess($class . " compiler error: $/$code$/$@$/");

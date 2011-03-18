@@ -1,15 +1,16 @@
 package MYDLjE::M::Content::Question;
 use MYDLjE::Base 'MYDLjE::M::Content';
 
-sub COLUMNS {
+has COLUMNS => sub {
   [ qw(
-      id user_id pid
-      data_type data_format time_created tstamp title alias
+      id user_id pid alias tags featured
+      data_type data_format time_created tstamp title
       body invisible language groups protected bad
       )
   ];
-}
-sub WHERE { {data_type => 'question'} }
+};
+
+has WHERE => sub { {data_type => 'question'} };
 
 1;
 

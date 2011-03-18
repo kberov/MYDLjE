@@ -16,7 +16,7 @@ my $CONFIG;
 sub startup {
   my $app = shift;
   $CONFIG = MYDLjE::Config->singleton(log => $app->log);
-  
+
   #Fallback to some default secret for today
   $app->secret($app->config('secret')
       || $app->home . $app->mode . (localtime())[3]);
@@ -45,13 +45,14 @@ sub before_dispatch {
   my $c   = shift;
   my $app = $c->app;
   $app->log->debug('New Request:------------------------------------');
-  _session_start($c,$app);
+  _session_start($c, $app);
   return;
 }
 
 sub _session_start {
-  my ($c,$app) = @_;
-  #TODO: Refactor all session cookies' related code and move it in MYDLjE::Sessions
+  my ($c, $app) = @_;
+
+#TODO: Refactor all session cookies' related code and move it in MYDLjE::Sessions
   my $base = $c->req->env->{SCRIPT_NAME} || '';
   $base =~ s{[^/]+$}{}x;
   $c->stash('base_path', $base);
@@ -65,8 +66,9 @@ sub _session_start {
   if (not $c->session('start_time')) {
     $c->session('start_time', $time);
     $c->session('id', Mojo::Util::md5_sum(rand($time) . rand($time) . $time));
-  }  
+  }
 }
+
 #at the end of each response
 sub after_dispatch {
   my $c = shift;

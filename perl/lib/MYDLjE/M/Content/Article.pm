@@ -1,15 +1,15 @@
 package MYDLjE::M::Content::Article;
 use MYDLjE::Base 'MYDLjE::M::Content';
 
-sub COLUMNS {
+has COLUMNS => sub {
   [ qw(
-      id user_id pid
-      data_type data_format time_created tstamp title alias
+      id user_id pid alias keywords description tags
+      data_type data_format time_created tstamp title
       body invisible language groups protected bad
       )
   ];
-}
-sub WHERE { {data_type => 'article'} }
+};
+has WHERE => sub { {data_type => 'article'} };
 
 1;
 

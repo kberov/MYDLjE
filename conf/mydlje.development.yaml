@@ -22,8 +22,8 @@ plugins:
   pod_renderer: 1
   validator: 1
 plugins_namespaces:
-  - Mojolicious::Plugin
   - MYDLjE::Plugin
+  - Mojolicious::Plugin
 routes:
   /:action:
     order: 1000

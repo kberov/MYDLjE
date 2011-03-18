@@ -1,7 +1,7 @@
 #Apache configuration for MYDLjE
 #set some Variables for MOJO
 #Development:
-SetEnv MOJO_RELOAD 1
+#SetEnv MOJO_RELOAD 1
 SetEnv MOJO_MODE  development
 
 #Production:

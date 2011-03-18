@@ -11,20 +11,9 @@ BEGIN {
     Cwd::realpath(File::Spec->rel2abs(dirname(__FILE__) . '/../..'));
 }
 use Data::Dumper;
-use Test::More tests => 37;
+use Test::More tests => 36;
 use Test::Mojo;
 
-use MYDLjE;
-my $m = MYDLjE->new();
-
-#warn Dumper($m->config);
-#exit;
-SKIP: {
-  my $local = "$ENV{MOJO_HOME}/conf/local.development.yaml";
-  skip '$local exists', 1 if -e $local;
-  cmp_ok($m->config('site_name'),
-    'eq', ref($m), 'site_name is ' . $m->config('site_name'));
-}
 my @apps = ('MYDLjE', 'MYDLjE::ControlPanel', 'MYDLjE::Site');
 for my $app (@apps) {
   my $time = time;

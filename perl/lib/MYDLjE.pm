@@ -67,6 +67,7 @@ sub _session_start {
     $c->session('start_time', $time);
     $c->session('id', Mojo::Util::md5_sum(rand($time) . rand($time) . $time));
   }
+  return;
 }
 
 #at the end of each response

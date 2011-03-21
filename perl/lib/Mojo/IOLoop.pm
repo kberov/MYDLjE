@@ -115,23 +115,31 @@ AnqxHi90n/p912ynLg2SjBq+03GaECeGzC/QqKK2gtA=
 EOF
 
 # DNS server (default to Google Public DNS)
-our $DNS_SERVER = '8.8.8.8';
+my $DNS_SERVERS = ['8.8.8.8', '8.8.4.4'];
 
 # Try to detect DNS server
 if (-r '/etc/resolv.conf') {
   my $file = IO::File->new;
   $file->open('< /etc/resolv.conf');
+  my @servers;
   for my $line (<$file>) {
     if ($line =~ /^nameserver\s+(\S+)$/) {
 
       # New DNS server
-      $DNS_SERVER = $1;
+      push @servers, $1;
 
       # Debug
-      warn qq/DETECTED DNS SERVER ($DNS_SERVER)\n/ if DEBUG;
+      warn qq/DETECTED DNS SERVER ($1)\n/ if DEBUG;
     }
   }
+  unshift @$DNS_SERVERS, @servers;
 }
+
+# User defined DNS server
+unshift @$DNS_SERVERS, $ENV{MOJO_DNS_SERVER} if $ENV{MOJO_DNS_SERVER};
+
+# Always start with first DNS server
+my $CURRENT_DNS_SERVER = 0;
 
 # DNS record types
 my $DNS_TYPES = {
@@ -149,7 +157,6 @@ my $DNS_TYPES = {
 our $LOCALHOST = '127.0.0.1';
 
 has [qw/accept_timeout connect_timeout dns_timeout/] => 3;
-has dns_server => sub { $ENV{MOJO_DNS_SERVER} || $DNS_SERVER };
 has max_accepts     => 0;
 has max_connections => 1000;
 has [qw/on_lock on_unlock/] => sub {
@@ -248,6 +255,27 @@ sub connection_timeout {
   $c->{timeout} = $timeout and return $self if $timeout;
 
   return $c->{timeout};
+}
+
+sub dns_servers {
+  my $self = shift;
+
+  # Singleton
+  $self = $self->singleton unless ref $self;
+
+  # New servers
+  if (@_) {
+    @$DNS_SERVERS       = @_;
+    $CURRENT_DNS_SERVER = 0;
+    return $self;
+  }
+
+  # List all
+  return @$DNS_SERVERS if wantarray;
+
+  # Current server
+  $CURRENT_DNS_SERVER = 0 unless $DNS_SERVERS->[$CURRENT_DNS_SERVER];
+  return $DNS_SERVERS->[$CURRENT_DNS_SERVER];
 }
 
 sub drop {
@@ -452,20 +480,20 @@ sub lookup {
   $self->resolve(
     $name, 'A',
     sub {
-      my ($self, $results) = @_;
+      my ($self, $records) = @_;
 
       # Success
-      my $result = first { $_->[0] eq 'A' } @$results;
+      my $result = first { $_->[0] eq 'A' } @$records;
       return $self->$cb($result->[1]) if $result;
 
       # IPv6
       $self->resolve(
         $name, 'AAAA',
         sub {
-          my ($self, $results) = @_;
+          my ($self, $records) = @_;
 
           # Success
-          my $result = first { $_->[0] eq 'AAAA' } @$results;
+          my $result = first { $_->[0] eq 'AAAA' } @$records;
           return $self->$cb($result->[1]) if $result;
 
           # Pass through
@@ -632,7 +660,7 @@ sub resolve {
   my $t = $DNS_TYPES->{$type};
 
   # Server
-  my $server = $self->dns_server;
+  my $server = $self->dns_servers;
 
   # No lookup required or record type not supported
   if (!$server || !$t || ($t ne $DNS_TYPES->{PTR} && ($ipv4 || $ipv6))) {
@@ -690,6 +718,9 @@ sub resolve {
 
       # Debug
       warn "FAILED $type $name ($server)\n" if DEBUG;
+
+      # Next server
+      $CURRENT_DNS_SERVER++;
 
       $self->drop($timer) if $timer;
       $self->$cb([]);
@@ -751,6 +782,9 @@ sub resolve {
 
       # Debug
       warn "RESOLVE TIMEOUT ($server)\n" if DEBUG;
+
+      # Next server
+      $CURRENT_DNS_SERVER++;
 
       # Abort
       $self->drop($id);
@@ -1798,15 +1832,6 @@ dropped, defaults to C<3>.
 Maximum time in seconds a conenction can take to be connected before being
 dropped, defaults to C<3>.
 
-=head2 C<dns_server>
-
-  my $server = $loop->dns_server;
-  $loop      = $loop->dns_server('8.8.8.8');
-
-IP address of C<DNS> server to use for non-blocking lookups, defaults to the
-value of C<MOJO_DNS_SERVER>, auto detection or C<8.8.8.8>.
-Note that this attribute is EXPERIMENTAL and might change without warning!
-
 =head2 C<dns_timeout>
 
   my $timeout = $loop->dns_timeout;
@@ -1957,6 +1982,17 @@ Path to the TLS key file.
 
 Maximum amount of time in seconds a connection can be inactive before being
 dropped.
+
+=head2 C<dns_servers>
+
+  my @all     = Mojo::IOLoop->dns_servers;
+  my @all     = $loop->dns_servers;
+  my $current = $loop->dns_servers;
+  $loop       = $loop->dns_servers('8.8.8.8', '8.8.4.4');
+
+IP addresses of C<DNS> servers used for non-blocking lookups, defaults to the
+value of C<MOJO_DNS_SERVER>, auto detection, C<8.8.8.8> or C<8.8.4.4>.
+Note that this method is EXPERIMENTAL and might change without warning!
 
 =head2 C<drop>
 

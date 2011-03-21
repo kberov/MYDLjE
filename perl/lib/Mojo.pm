@@ -25,22 +25,6 @@ has ua => sub {
   return $ua;
 };
 
-# DEPRECATED in Smiling Cat Face With Heart-Shaped Eyes!
-*client = sub {
-  warn <<EOF;
-Mojo->client is DEPRECATED in favor of Mojo->us!!!
-EOF
-
-  # Singleton client
-  require Mojo::Client;
-  my $client = Mojo::Client->singleton;
-
-  # Inherit logger
-  $client->log(shift->log);
-
-  return $client;
-};
-
 # "Oh, so they have internet on computers now!"
 sub new {
   my $self = shift->SUPER::new(@_);
@@ -53,6 +37,22 @@ sub new {
     if -w $self->home->rel_file('log');
 
   return $self;
+}
+
+# DEPRECATED in Smiling Cat Face With Heart-Shaped Eyes!
+sub client {
+  warn <<EOF;
+Mojo->client is DEPRECATED in favor of Mojo->us!!!
+EOF
+
+  # Singleton client
+  require Mojo::Client;
+  my $client = Mojo::Client->singleton;
+
+  # Inherit logger
+  $client->log(shift->log);
+
+  return $client;
 }
 
 sub handler { croak 'Method "handler" not implemented in subclass' }
@@ -116,7 +116,7 @@ The logging layer of your application, by default a L<Mojo::Log> object.
 =head2 C<on_build_tx>
 
   my $cb = $app->on_build_tx;
-  $app   = $app->on_build_tx(sub { ... });
+  $app   = $app->on_build_tx(sub {...});
 
 The transaction builder callback, by default it builds a
 L<Mojo::Transaction::HTTP> object.
@@ -124,7 +124,7 @@ L<Mojo::Transaction::HTTP> object.
 =head2 C<on_websocket>
 
   my $cb = $app->on_websocket;
-  $app   = $app->on_websocket(sub { ... });
+  $app   = $app->on_websocket(sub {...});
 
 The websocket handshake callback, by default it builds a
 L<Mojo::Transaction::WebSocket> object and handles the response for the

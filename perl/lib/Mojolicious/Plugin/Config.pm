@@ -26,7 +26,7 @@ sub parse {
   my ($self, $content, $file, $conf, $app) = @_;
 
   # Run Perl code
-  no warnings 'redefine';
+  no warnings;
   die qq/Couldn't parse config file "$file": $@/
     unless my $config = eval "sub app { \$app }; $content";
   die qq/Config file "$file" did not return a hashref.\n/
@@ -95,6 +95,15 @@ sub register {
 
   # Merge
   $config = {%{$conf->{default}}, %$config} if $conf->{default};
+
+  # Add "config" helper
+  $app->helper(
+    config => sub {
+      my $self = shift;
+      return $config unless @_;
+      return $config->{$_[0]};
+    }
+  );
 
   # Default
   $app->defaults(($conf->{stash_key} || 'config') => $config);
@@ -170,6 +179,15 @@ in the application home directory.
   plugin config => {stash_key => 'conf'};
 
 Configuration stash key.
+
+=head1 HELPERS
+
+=head2 C<config>
+
+  <%= config 'something' %>
+  <%= config->{something} %>
+
+Access config values.
 
 =head1 METHODS
 

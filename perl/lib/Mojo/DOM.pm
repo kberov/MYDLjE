@@ -43,43 +43,40 @@ my $CSS_TOKEN_RE        = qr/
   )?
 /x;
 my $XML_ATTR_RE = qr/
-  ([^=\s]+)                                   # Key
-  (?:\s*=\s*(?:"([^"]*)"|'([^']*)'|(\S+)))?   # Value
+  \s*
+  ([^=\s>"']+)     # Key
+  (?:
+    \s*
+    =
+    \s*
+    (?:
+      "([^"]*?)"   # Quotation marks
+      |
+      '([^']*?)'   # Apostrophes
+      |
+      ([^>\s]+)    # Unquoted
+    )
+  )?
+  \s*
 /x;
 my $XML_END_RE   = qr/^\s*\/\s*(.+)\s*/;
 my $XML_START_RE = qr/([^\s\/]+)([\s\S]*)/;
 my $XML_TOKEN_RE = qr/
-  ([^<]*)                  # Text
+  ([^<]*)                    # Text
   (?:
-  <\?(.*?)\?>              # Processing Instruction
-  |
-  <\!--(.*?)-->            # Comment
-  |
-  <\!\[CDATA\[(.*?)\]\]>   # CDATA
-  |
-  <\!DOCTYPE([^>]*)>       # DOCTYPE
-  |
-  <(
-  \s*
-  [^>\s]+                  # Tag
-  (?:
-    \s*
-    [^=\s>"']+           # Key
-    (?:
+    <\?(.*?)\?>              # Processing Instruction
+    |
+    <\!--(.*?)-->            # Comment
+    |
+    <\!\[CDATA\[(.*?)\]\]>   # CDATA
+    |
+    <\!DOCTYPE([^>]*)>       # DOCTYPE
+    |
+    <(
       \s*
-      =
-      \s*
-      (?:
-      "[^"]*?"         # Quotation marks
-      |
-      '[^']*?'         # Apostrophes
-      |
-      [^>\s]+          # Unquoted
-      )
-    )?
-    \s*
-  )*
-  )>
+      [^>\s]+                # Tag
+      (?:$XML_ATTR_RE)*      # Attributes
+    )>
   )??
 /xis;
 
@@ -120,7 +117,7 @@ sub all_text {
     unshift @stack, @$e[4 .. $#$e] and next if $type eq 'tag';
 
     # Text or CDATA
-    if ($type eq 'text' || $type eq 'cdata') {
+    if ($type eq 'text' || $type eq 'cdata' || $type eq 'raw') {
       my $content = $e->[1];
       $text .= $content if $content =~ /\S+/;
     }
@@ -360,7 +357,7 @@ sub text {
     my $type = $e->[0];
 
     # Text or CDATA
-    if ($type eq 'text' || $type eq 'cdata') {
+    if ($type eq 'text' || $type eq 'cdata' || $type eq 'raw') {
       my $content = $e->[1];
       $text .= $content if $content =~ /\S+/;
     }
@@ -444,17 +441,22 @@ sub _cdata {
   push @$$current, ['cdata', $cdata];
 }
 
-sub _close_table {
-  my ($self, $current) = @_;
+sub _close {
+  my ($self, $current, $pattern, $stop) = @_;
+
+  # Default to table pattern
+  $pattern ||= qr/^(col|colgroup|tbody|td|th|thead|tr)$/;
+
+  # Default to table tag
+  $stop ||= 'table';
 
   # Check parents
   my $parent = $$current;
   while ($parent) {
-    last if $parent->[0] eq 'root' || $parent->[1] eq 'table';
+    last if $parent->[0] eq 'root' || $parent->[1] eq $stop;
 
     # Match
-    ($parent->[1] =~ qr/^(col|colgroup|tbody|td|th|thead|tr)$/)
-      and $self->_end($1, $current);
+    ($parent->[1] =~ $pattern) and $self->_end($1, $current);
 
     # Next
     $parent = $parent->[3];
@@ -572,7 +574,7 @@ sub _end {
 
       # Table
       elsif ($end eq 'table') {
-        $self->_close_table($current);
+        $self->_close($current);
         next;
       }
     }
@@ -959,7 +961,7 @@ sub _parse_xml {
   return $tree unless $xml;
 
   # Tokenize
-  while ($xml =~ /$XML_TOKEN_RE/g) {
+  while ($xml =~ m/\G$XML_TOKEN_RE/gcs) {
     my $text    = $1;
     my $pi      = $2;
     my $comment = $3;
@@ -1025,6 +1027,14 @@ sub _parse_xml {
 
       # Empty tag
       $self->_end($start, \$current) if $attr =~ /\/\s*$/;
+
+      # Relaxed "script" or "style"
+      if ($start eq 'script' || $start eq 'style') {
+        if ($xml =~ /\G(.*?)<\s*\/\s*$start\s*>/gcsi) {
+          $self->_raw($1, \$current);
+          $self->_end($start, \$current);
+        }
+      }
     }
   }
 
@@ -1036,6 +1046,13 @@ sub _pi {
 
   # Append
   push @$$current, ['pi', $pi];
+}
+
+sub _raw {
+  my ($self, $raw, $current) = @_;
+
+  # Append
+  push @$$current, ['raw', $raw];
 }
 
 sub _render {
@@ -1050,6 +1067,9 @@ sub _render {
     xml_escape $escaped;
     return $escaped;
   }
+
+  # Raw text
+  return $tree->[1] if $e eq 'raw';
 
   # DOCTYPE
   return "<!DOCTYPE" . $tree->[1] . ">" if $e eq 'doctype';
@@ -1127,7 +1147,7 @@ sub _start {
     my $t = $$current->[1];
 
     # "<li>"
-    if ($t eq 'li' && $start eq 'li') { $self->_end('li', $current) }
+    if ($start eq 'li') { $self->_close($current, qr/^(li)$/, 'ul') }
 
     # "<p>"
     elsif ($t eq 'p' && $start =~ $HTML_PARAGRAPH_RE) {
@@ -1149,19 +1169,21 @@ sub _start {
     }
 
     # "<colgroup>"
-    elsif ($start eq 'colgroup') { $self->_close_table($current) }
+    elsif ($start eq 'colgroup') { $self->_close($current) }
 
     # "<thead>"
-    elsif ($start eq 'thead') { $self->_close_table($current) }
+    elsif ($start eq 'thead') { $self->_close($current) }
 
     # "<tbody>"
-    elsif ($start eq 'tbody') { $self->_close_table($current) }
+    elsif ($start eq 'tbody') { $self->_close($current) }
 
     # "<tfoot>"
-    elsif ($start eq 'tfoot') { $self->_close_table($current) }
+    elsif ($start eq 'tfoot') { $self->_close($current) }
 
     # "<tr>"
-    elsif ($t eq 'tr' && $start eq 'tr') { $self->_end('tr', $current) }
+    elsif (($t eq 'tr' || $t eq 'td') && $start eq 'tr') {
+      $self->_end('tr', $current);
+    }
 
     # "<th>" and "<td>"
     elsif (($t eq 'th' || $t eq 'td') && ($start eq 'th' || $start eq 'td')) {

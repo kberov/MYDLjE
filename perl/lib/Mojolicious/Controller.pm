@@ -39,15 +39,6 @@ my @RESERVED = (
 my $STASH_RE = join '|', @RESERVED;
 $STASH_RE = qr/^(?:$STASH_RE)$/;
 
-# DEPRECATED in Smiling Cat Face With Heart-Shaped Eyes!
-*client = sub {
-  warn <<EOF;
-Mojolicious::Controller->client is DEPRECATED in favor of
-Mojolicious::Controller->ua!!!
-EOF
-  return shift->app->client;
-};
-
 # "Is all the work done by the children?
 #  No, not the whipping."
 sub AUTOLOAD {
@@ -65,6 +56,15 @@ sub AUTOLOAD {
 }
 
 sub DESTROY { }
+
+# DEPRECATED in Smiling Cat Face With Heart-Shaped Eyes!
+sub client {
+  warn <<EOF;
+Mojolicious::Controller->client is DEPRECATED in favor of
+Mojolicious::Controller->ua!!!
+EOF
+  return shift->app->client;
+}
 
 # "For the last time, I don't like lilacs!
 #  Your first wife was the one who liked lilacs!
@@ -1297,7 +1297,13 @@ connection in progress.
   my @foo   = $c->param('foo');
   $c        = $c->param(foo => 'ba;r');
 
-Request parameters and routes captures.
+Access GET/POST parameters and route captures.
+
+  # Only GET parameters
+  my $foo = $c->req->url->query->param('foo');
+
+  # Only GET and POST parameters
+  my $foo = $c->req->param('foo');
 
 =head2 C<redirect_to>
 
@@ -1477,13 +1483,14 @@ Non persistent data storage and exchange.
     
 A L<Mojo::UserAgent> prepared for the current environment.
 
+  # Blocking
   my $tx = $c->ua->get('http://mojolicio.us');
+  my $tx = $c->ua->post_form('http://kraih.com/login' => {user => 'mojo'});
 
-  $c->ua->post_form('http://kraih.com/login' => {user => 'mojo'});
-
+  # Non-blocking
   $c->ua->get('http://mojolicio.us' => sub {
-    my $ua = shift;
-    $c->render_data($ua->res->body);
+    my $tx = pop;
+    $c->render_data($tx->res->body);
   });
 
 =head2 C<url_for>

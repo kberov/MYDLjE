@@ -1,7 +1,18 @@
 #!/usr/bin/env perl;
 use strict;
 use warnings;
-use Test::More tests => 9;
+use File::Basename 'dirname';
+use Cwd;
+
+BEGIN {
+  $ENV{MOJO_MODE} ||= 'development';
+
+  #$ENV{MOJO_MODE}='production';
+  $ENV{MOJO_HOME} = Cwd::abs_path(dirname(__FILE__) . '/../..');
+}
+use lib ("$ENV{MOJO_HOME}/perl/lib", "$ENV{MOJO_HOME}/perl/site/lib");
+
+use Test::More tests => 14;
 
 use_ok('MYDLjE::Base');
 use_ok('MYDLjE');

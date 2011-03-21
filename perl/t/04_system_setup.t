@@ -2,14 +2,16 @@
 use strict;
 use warnings;
 use File::Basename 'dirname';
-use File::Spec;
 use Cwd;
 
 BEGIN {
-  $ENV{MOJO_MODE} = 'development';
-  $ENV{MOJO_HOME} =
-    Cwd::realpath(File::Spec->rel2abs(dirname(__FILE__) . '/../..'));
+  $ENV{MOJO_MODE} ||= 'development';
+
+  #$ENV{MOJO_MODE}='production';
+  $ENV{MOJO_HOME} = Cwd::abs_path(dirname(__FILE__) . '/../..');
 }
+
+use lib ("$ENV{MOJO_HOME}/perl/lib", "$ENV{MOJO_HOME}/perl/site/lib");
 use Test::More tests => 25;
 use Test::Mojo;
 my $t = Test::Mojo->new(app => 'MYDLjE');

@@ -1,0 +1,22 @@
+#!/bin/bash
+MYDLjE_HOME=$(readlink -f $(dirname $0)/../..)
+echo "\$MYDLjE_HOME is $MYDLjE_HOME"
+export PERL5LIB=$MYDLjE_HOME/perl/lib:$MYDLjE_HOME/perl/site/lib
+export PERLCRITIC=$MYDLjE_HOME/.perlcriticrc
+
+echo "perlcritic -------------------------"
+echo
+perlcritic $MYDLjE_HOME/perl/lib/MYDLjE.pm $MYDLjE_HOME/perl/lib/MYDLjE
+echo
+echo "perlcritic done --------------------"
+
+echo "perltidy ---------------------------"
+
+perltidy $MYDLjE_HOME/perl/lib/MYDLjE.pm \
+  `find $MYDLjE_HOME/perl/lib/MYDLjE -name '*.pm'`\
+  `find $MYDLjE_HOME/perl/t -name '*.t'`
+echo "perltidy done ----------------------"
+
+prove -v $MYDLjE_HOME/perl/t
+
+#run this file before each commit as a hook maybe

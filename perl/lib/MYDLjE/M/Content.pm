@@ -24,8 +24,8 @@ sub data_type    { return shift->data('data_type',    @_) }
 sub data_format  { return shift->data('data_format',  @_) }
 sub time_created { return shift->data('time_created', @_) }
 
-sub tstamp { return shift->data('tstamp', @_ ? (@_) : time) }
-sub body { return shift->data('body', @_) }
+sub tstamp    { return shift->data('tstamp',    @_) }
+sub body      { return shift->data('body',      @_) }
 sub invisible { return shift->data('invisible', @_) }
 sub language  { return shift->data('language',  @_) }
 sub groups    { return shift->data('groups',    @_) }

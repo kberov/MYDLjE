@@ -158,12 +158,12 @@ AddCharset utf-8 .xhtml .html .css .js .xml .json .rss
 # includes directories used by version control systems such as Subversion or Git.
 <IfModule mod_rewrite.c>
 
-  #RewriteEngine On
-  #RewriteBase /MYDLjE/ 
-  #RewriteCond %{REQUEST_FILENAME} !-f
-  #RewriteCond %{REQUEST_FILENAME} !-d
-  #RewriteRule (.*) site/$1 [L]
-  #RewriteRule "(^|/)\." - [F]
+  RewriteEngine On
+  RewriteBase /MYDLjE/ 
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule (.*) site/$1 [L]
+  RewriteRule "(^|/)\." - [F]
 </IfModule>
  
 

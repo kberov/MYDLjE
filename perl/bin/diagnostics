@@ -15,6 +15,7 @@ echo "perltidy ---------------------------"
 perltidy $MYDLjE_HOME/perl/lib/MYDLjE.pm \
   `find $MYDLjE_HOME/perl/lib/MYDLjE -name '*.pm'`\
   `find $MYDLjE_HOME/perl/t -name '*.t'`
+rm -rf `find $MYDLjE_HOME/perl -name '*.bak'`
 echo "perltidy done ----------------------"
 
 prove -v $MYDLjE_HOME/perl/t

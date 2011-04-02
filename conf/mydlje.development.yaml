@@ -46,3 +46,7 @@ routes:
       action: hi
       controller: C
       id: 1
+
+#Content-TypeS
+types:
+  xhtml: application/xhtml+xml; charset=utf-8

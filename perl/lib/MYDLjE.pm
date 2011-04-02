@@ -29,6 +29,9 @@ sub startup {
   # Routes
   $app->load_routes();
 
+  #Additional Content-TypeS (formats)
+  $app->add_types();
+
   #Hooks
   $app->hook(before_dispatch => \&before_dispatch);
   $app->hook(after_dispatch  => \&after_dispatch);
@@ -119,6 +122,16 @@ sub load_routes {
       $way->via(@{$routes->{$route}{via}});
     }
     $way->to(%{$routes->{$route}{to}});
+  }
+  return;
+}
+
+sub add_types {
+  my ($app)        = @_;
+  my $types        = $app->types;
+  my $config_types = $app->config('types')||{};
+  foreach my $k(keys %$config_types) {
+    $types->type($k => $config_types->{$k});
   }
   return;
 }

@@ -1,9 +1,11 @@
 package MYDLjE::M;
 use MYDLjE::Base -base;
+use MojoX::Validator;
 use Carp();
 
 has 'dbix' => sub { MYDLjE::Plugin::DBIx::instance() };
 my $SQL;
+my $DEBUG = $MYDLjE::DEBUG;
 
 #conveninece for getting key/vaule arguments
 sub get_args {
@@ -23,6 +25,14 @@ sub COLUMNS {
     "You must add fields in your class: sub COLUMNS {['id','name','etc']}");
 }
 
+has validator => sub { MojoX::Validator->new; };
+
+sub FIELDS_VALIDATION {
+  Carp::confess('You must describe your field validations!'
+      . ' See MYDLjE::M::Content::FIELDS_VALIDATION for example.');
+
+}
+
 #specific where clause for this class
 #which will be preppended to $where argument for the select() method
 sub WHERE { return {} }
@@ -30,10 +40,10 @@ sub WHERE { return {} }
 #METHODS
 sub new {
   my ($class, $fieds) = get_obj_args(@_);
-  my $self = {};
+  my $self = {data => {}};
   bless $self, $class;
-  $self->data($fieds);
   $class->make_field_attrs();
+  $self->data($fieds);
   return $self;
 }
 
@@ -64,7 +74,7 @@ sub data {
             . '! Skipping...');
         next;
       }
-      $self->{data}{$field} = $args->{$field};
+      $self->$field($args->{$field});
     }
   }
 
@@ -83,14 +93,15 @@ sub save {
   #allow data to be passed directly and overwrite current data
   if (keys %$data) { $self->data($data); }
 
-  #TODO: Implement pre_save hooks/checks
   if (!$self->id) {
     $self->dbix->insert($self->TABLE, $self->data);
+    $self->id($self->dbix->last_insert_id(undef, undef, $self->TABLE, 'id'));
+    return $self->id;
   }
   else {
     $self->dbix->update($self->TABLE, $self->data, {id => $self->id});
   }
-  return 1;
+  return $self->id;
 }
 
 #must be executed at the end of each module to make table/or view specific fields
@@ -100,8 +111,19 @@ sub make_field_attrs {
     or Carp::croak('Call this method as __PACKAGE__->make_field_attrs()');
   my $code = '';
   foreach my $column (@{$class->COLUMNS()}) {
-    next if $class->can($column);    #carefull: no redefine
-    $code .= "sub $class\:\:$column { return shift->data('$column', \@_) }$/";
+    next if $class->can($column);    #careful: no redefine
+    Carp::carp('Making sub ' . $column) if $DEBUG;
+    $code .= <<"SUB";
+    sub $column {
+      if(\$_[1]){
+        \$_[0]->{data}{$column} = \$_[0]->validate_field($column=>\$_[1]);
+        #make it chainable
+        return \$_[0];
+      }
+      return \$_[0]->{data}{$column};
+    }
+SUB
+
   }
 
   #I know what I am doing. I think so... warn $code;
@@ -112,6 +134,30 @@ sub make_field_attrs {
   return;
 }
 
+#validates $value for $field against $self->FIELDS_VALIDATION->{$field} rules.
+sub validate_field {
+  my ($self, $field, $value) = @_;
+  my $rules = $self->FIELDS_VALIDATION->{$field};
+
+  return $value unless $rules;    #no validation rules defined
+
+  my $field_obj = $self->validator->field($field);
+
+  if (ref($rules->{constraints}) eq 'ARRAY'
+    && scalar @{$rules->{constraints}})
+  {
+    foreach (@{$rules->{constraints}}) {
+      $field_obj->constraint(%$_);
+    }
+  }
+  $self->validator->validate({$field => $value});
+  if ($self->validator->errors && $self->validator->errors->{$field}) {
+    local $Carp::CarpLevel = 1;
+    Carp::confess($self->validator->errors->{$field});
+  }
+  return $self->validator->values->{$field};
+
+}
 
 #TODO:Utility function used for passing custom SQL in Model Classes.
 #$SQL is loaded from file during initialization

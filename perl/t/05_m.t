@@ -60,7 +60,7 @@ is($content->alias, $alias,         'alias is ' . $alias);
 $data->{body}    = $content->body;
 $data->{user_id} = $content->user_id;
 is_deeply($content->data, $data, 'data is: ' . Dumper($content->data));
-is($content->save, 1, '$content->save ok ');
+ok($content->save >= $content->id, '$content->save ok ' . $content->id);
 
 my $id = $content->dbix->last_insert_id(undef, undef, $content->TABLE, 'id');
 ok($id, 'new id is:' . $id);
@@ -73,9 +73,25 @@ is($note->alias,   $content->alias,   '$note->alias is ' . $note->alias);
 
 require MYDLjE::M::Content::Question;
 my $question = MYDLjE::M::Content::Question->select(id => $id);
-is($question->alias, undef, '$question->alias undef ');
-is($question->id,    undef, '$question->id undef ');
+is($question->id, undef, '$question->id undef ');
+is(
+  $question->title('What can I doooo?')->title,
+  'What can I doooo?',
+  'seting title'
+);
+$question->body('A longer description of the question');
+is($question->alias, 'what-can-i-doooo', 'alias is "what-can-i-doooo"');
+is($question->data_type, 'question', '$question->data_type is "question"');
+
+require MYDLjE::M::Content::Answer;
+my $answer = MYDLjE::M::Content::Answer->new(pid => $question->save);
+is($answer->pid, $question->id, '$answer->pid is $question->id');
+$answer->body('You can not do anything');
+ok($answer->alias, $answer->alias);
+is($answer->data_type, 'answer', '$answer->data_type is "answer"');
+$answer->save();
 
 #cleanup
 $content->dbix->delete($content->TABLE, {alias => {-like => 'test-%-test'}});
-
+$answer->dbix->delete($answer->TABLE, {id => $answer->id});
+$question->dbix->delete($question->TABLE, id => $question->id);

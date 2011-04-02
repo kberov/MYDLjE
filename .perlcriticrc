@@ -40,3 +40,6 @@ allow_includes=1
 source   = book
 lib_sections    = NAME | SYNOPSIS | METHODS | CONFIG | BUGS AND LIMITATIONS | AUTHOR
 script_sections = NAME | USAGE | OPTIONS | AUTHOR
+
+[Variables::ProhibitPackageVars]
+add_packages = Carp

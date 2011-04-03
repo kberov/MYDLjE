@@ -1,7 +1,4 @@
 -- <queries>
---<do>
-SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
---</do>
 
 -- <create_schema_and_user>
 -- Example: not used in perl code
@@ -14,7 +11,10 @@ CREATE DATABASE IF NOT EXISTS  `mydlje` ;
 GRANT ALL PRIVILEGES ON  `mydlje` . * TO  'mydlje'@'localhost';
 ALTER DATABASE  `mydlje` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
 -- </create_schema_and_user>
-
+-- <do id="disable_foreign_key_checks">
+SET FOREIGN_KEY_CHECKS=0;
+SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
+-- </do>
 -- <table name="my_users">
 DROP TABLE IF EXISTS `my_users`;
 CREATE TABLE IF NOT EXISTS `my_users` (
@@ -32,12 +32,12 @@ CREATE TABLE IF NOT EXISTS `my_users` (
   `disabled` tinyint(1) NOT NULL DEFAULT '0',
   `start` int(11) NOT NULL DEFAULT '0',
   `stop` int(11) NOT NULL DEFAULT '0',
-  `properties` blob  COMMENT 'Serialized/cached properties inherited and overided from group',
+  `properties` blob COMMENT 'Serialized/cached properties inherited and overided from group',
   PRIMARY KEY (`id`),
   UNIQUE KEY `login_name` (`login_name`),
   UNIQUE KEY `email` (`email`),
   KEY `created_by` (`created_by`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='This table stores the users' AUTO_INCREMENT=0 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='This table stores the users';
 -- </table>
 
 -- <table name="my_groups">
@@ -52,12 +52,12 @@ CREATE TABLE IF NOT EXISTS `my_groups` (
   `disabled` tinyint(1) NOT NULL DEFAULT '0',
   `start` int(11) NOT NULL DEFAULT '0',
   `stop` int(11) NOT NULL DEFAULT '0',
-  `properties` blob  COMMENT 'Serialized/cached properties inherited by the users in this group',
+  `properties` blob COMMENT 'Serialized/cached properties inherited by the users in this group',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
   KEY `created_by` (`created_by`),
   KEY `namespace` (`namespace`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=0 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 -- </table>
 
 -- <table name="my_sessions">
@@ -71,10 +71,7 @@ CREATE TABLE IF NOT EXISTS `my_sessions` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `cid` (`cid`),
   KEY `user_id` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Users sessions storage table' AUTO_INCREMENT=1 ;
-ALTER TABLE `my_sessions`
-  ADD CONSTRAINT `my_sessions_my_users_id_fk` FOREIGN KEY (`user_id`) REFERENCES `my_users` (`id`) ON UPDATE CASCADE;
-
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Users sessions storage table';
 -- </table>
 
 -- <table name="my_content">
@@ -83,10 +80,10 @@ CREATE TABLE IF NOT EXISTS `my_content` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Primary unique identyfier',
   `alias` varchar(255) NOT NULL DEFAULT 'seo friendly id',
   `pid` int(11) NOT NULL DEFAULT '0' COMMENT 'Parent Question, Article, Note, Book ID etc',
-  `user_id` int(11) NOT NULL DEFAULT '0',
+  `user_id` int(11) NOT NULL DEFAULT '1',
   `sorting` int(10) NOT NULL DEFAULT '0' COMMENT 'suitable for sorting articles in a book',
   `data_type` set('page','question','answer','book','note','article','chapter') NOT NULL DEFAULT 'note' COMMENT 'Semantic Content Types. See MYDLjE::M::Content::*.',
-  `data_format` set('text','html','markdown') NOT NULL DEFAULT 'text',
+  `data_format` set('text','textile','html','markdown') NOT NULL DEFAULT 'text',
   `time_created` int(11) NOT NULL DEFAULT '0' COMMENT 'When this content was inserted',
   `tstamp` int(11) NOT NULL DEFAULT '0' COMMENT 'Last time the record was touched',
   `title` varchar(255) NOT NULL DEFAULT '',
@@ -102,14 +99,15 @@ CREATE TABLE IF NOT EXISTS `my_content` (
   `accepted` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Answer accepted?',
   `bad` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Reported as inapropriate offensive etc.',
   PRIMARY KEY (`id`),
+  UNIQUE KEY `alias` (`alias`,`data_type`),
   KEY `pid` (`pid`),
   KEY `tstamp` (`tstamp`),
   KEY `tags` (`tags`),
   KEY `user_id` (`user_id`),
   KEY `data_type` (`data_type`),
-  UNIQUE KEY `alias` (`alias`),
   KEY `language` (`language`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='MYDLjE content elements. Types are used via views.' AUTO_INCREMENT=0 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='MYDLjE content elements. Different  data_typeS may be used via views.';
+
 -- </table>
 
 -- <table name="my_users_groups">
@@ -127,16 +125,18 @@ DROP TABLE IF EXISTS `my_properties`;
 CREATE TABLE IF NOT EXISTS `my_properties` (
   `property` varchar(30) NOT NULL COMMENT 'group or/and user property',
   `description` varchar(255) NOT NULL COMMENT 'What this property means?',
+  `default_value` varchar(255) NOT NULL DEFAULT '' COMMENT 'Default value for this property?',
   PRIMARY KEY (`property`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Properties for users and groups.';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Properties which can be used as permissions, capabilities or whatever business logic you put in.';
 -- </table>
 
 -- <table name="my_user_properties">
+
 DROP TABLE IF EXISTS `my_users_properties`;
 CREATE TABLE IF NOT EXISTS `my_users_properties` (
   `uid` int(11) NOT NULL COMMENT 'User  ID',
   `property` varchar(30) NOT NULL COMMENT 'user property',
-  `property_value` varchar(30) NOT NULL COMMENT 'value interperted depending on business logic',
+  `property_value` varchar(30) NOT NULL COMMENT 'Value interperted depending on business logic',
   PRIMARY KEY (`uid`,`property`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Users owning properties.';
 -- </table>
@@ -144,13 +144,13 @@ CREATE TABLE IF NOT EXISTS `my_users_properties` (
 --
 -- Views which will be used instead of directly my_content
 -- Note: MySQL 5 required
--- 25.09.10 12:44
+-- 03.04.11 20:00
 --
 -- Note: from selects below are visible interdependencies
--- 26.09.10 20:43
+-- 
 -- TODO: make MYDLjE::M::Content wor automatically with views
 -- when a database suports this.
--- EDITABLE VIEWS
+-- EXAMPLE EDITABLE VIEWS
 --<view name="my_varticle">
 DROP VIEW IF EXISTS  my_varticle;
 CREATE OR REPLACE VIEW my_varticle as select 
@@ -159,46 +159,14 @@ CREATE OR REPLACE VIEW my_varticle as select
     language,groups,protected,bad
 from my_content where (data_type = 'article');
 --</view>
---<view name="my_vchapter">
-DROP VIEW IF EXISTS my_vchapter;
-CREATE OR REPLACE VIEW my_vchapter as select
-    id,user_id,pid,sorting,data_type,
-    data_format,time_created,tstamp,title,body,invisible,
-    language,groups,protected,bad
-from my_content where (data_type = 'chapter');
---</view>
---<view name="my_vquestion">
-DROP VIEW IF EXISTS my_vquestion;
-CREATE OR REPLACE VIEW my_vquestion as select
-    id,user_id,pid,data_type,
-    data_format,time_created,tstamp,title,body,invisible,
-    language,groups,protected,bad
-from my_content where (data_type = 'question');
---</view>
--- Answers are children of questions so they do not need
--- groups,protected,title
---<view name="my_vanswer">
-DROP VIEW IF EXISTS my_vanswer;
-CREATE OR REPLACE VIEW my_vanswer as select 
-    id,user_id,pid,data_type,
-    data_format,time_created,tstamp,body,invisible,
-    language,accepted,bad
-from my_content where (data_type = 'answer');
---</view>
---<view name="my_vbook">
-DROP VIEW IF EXISTS my_vbook;
-CREATE OR REPLACE VIEW my_vbook as select
-    id,user_id,pid,data_type,
-    data_format,time_created,tstamp,title,body,invisible,
-    language,groups,protected,bad
-from my_content where (data_type = 'book');
---</view>
---<view name="my_vnote">
-DROP VIEW IF EXISTS my_vnote;
-CREATE OR REPLACE VIEW my_vnote as select
-    id,user_id,pid,data_type,
-    data_format,time_created,tstamp,title,body,invisible,
-    language,bad
-from my_content where (data_type = 'note');
---</view>
+
 -- </queries>
+--<do id="constraints">
+ALTER TABLE `my_content`
+  ADD CONSTRAINT `my_content_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `my_users` (`id`);
+ALTER TABLE `my_sessions`
+  ADD CONSTRAINT `my_sessions_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `my_users` (`id`) ON UPDATE CASCADE;
+--</do>
+--<do id="enable_foreign_key_checks">
+SET FOREIGN_KEY_CHECKS=1;
+--</do>

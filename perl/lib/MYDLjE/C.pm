@@ -4,7 +4,7 @@ package MYDLjE::C;
 use MYDLjE::Base 'Mojolicious::Controller';
 
 # Say hello.
-# This acction is here only for test purposes.
+# This action is here only for test purposes.
 # no other actions allowed here.
 sub hi {
   my $c = shift;
@@ -19,6 +19,44 @@ sub hi {
       . ' says Hi!'
       . ($c->stash('format') || ''));
   return;
+}
+
+sub hisession {
+  my $c = shift;
+  my $i = ($c->msession('i')||0) + 1;
+  $c->render(text => 'Controller '
+      . $c->stash('controller')
+      . ' $c->msession("i"):'
+      . $c->msession('i', $i));
+  return;
+}
+
+#Controller helper for using MYDLjE session storage along the Mojolicious session
+sub msession {
+  my ($c, $key, $value) = @_;
+  unless ($c->{msession}) {
+    $c->dbix;    #init db connection for sure
+    my $class = 'MYDLjE::M::Session';
+    if (my $e = Mojo::Loader->load($class)) {
+      my $error =
+        ref $e
+        ? qq{Can't load model class "$class": $e}
+        : qq{Model class "$class" doesn't exist.};
+      $c->app->log->error($error);
+      Carp::confess($error);
+    }
+  }
+  my $msession = $c->{msession}
+    ||= MYDLjE::M::Session->select(id => $c->session('id'));
+  unless ($msession->id) { $msession->new_id($c->session('id')); }
+  if (defined $value) {
+    $msession->sessiondata->{$key} = $value;
+    return $msession->sessiondata->{$key};
+  }
+  elsif ($key) {
+    return $msession->sessiondata->{$key};
+  }
+  return $msession;
 }
 
 1;
@@ -37,6 +75,27 @@ MYDLjE::C - Base class for our controllers
 
 L<MYDLjE::C> inherits all attributes from L<Mojolicious::Controller> and implements/overrides the following ones.
 
+=head2 msession
+
+Controller helper for using MYDLjE database-session storage along the L<Mojolicious::Controller/session>.
+
+Regular usage:
+
+  $c->msession('this',$that);
+  my $other_thing = $c->msession('other_thing'); 
+
+Using directly the underlying L<MYDLjE::M::Session>:
+  
+  my $dbsession = $c->msession;
+  my $sid = $c->msession->id;
+  #same as $c->msession above:
+  my $sessiondata = $c->msession->sessiondata;
+  $sessiondata->{this} = $that;
+  #current user is "guest" by default and always available
+  my $current_user = $session_storage->user;
+  
+  #when saving must happen now
+  $c->msession->save();
 
 
 =head1 SEE ALSO

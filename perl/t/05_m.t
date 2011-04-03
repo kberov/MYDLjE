@@ -105,18 +105,26 @@ is($sstorage->id, undef, "No such session id: $session_id");
 #$sstorage->user_id is always the same as $sstorage->user->id
 is($sstorage->user_id, 2,
   "\$sstorage->user_id is guest user_id: " . $sstorage->user->id);
-
+$sstorage->sessiondata->{something} = 'Някакъв текст';
 ok($session_id = $sstorage->save, 'session stored');
 is(
   $sstorage->sessiondata->{user_data}->{login_name},
   $sstorage->user->login_name,
   'sessiondata is freesed and thawed'
 );
+my $login_name = $sstorage->user->login_name;
 
 #retrieve a saved session
 undef($sstorage);
 $sstorage = MYDLjE::M::Session->select(id => $session_id);
 is($session_id, $sstorage->id, 'session restored');
+is(
+  $sstorage->sessiondata->{something},
+  'Някакъв текст',
+  'sessiondata is usable really'
+);
+is($sstorage->user->login_name,
+  $login_name, '$login_name is the same in the restored session');
 undef($sstorage);
 ok($sstorage = MYDLjE::M::Session->new, 'empty session initialised');
 $sstorage->user(MYDLjE::M::User->select(login_name => 'admin'));

@@ -17,13 +17,9 @@ has FIELDS_VALIDATION => sub {
       required => 1,
       inflate  => sub {
         my $self = shift;
-
-        #warn Data::Dumper::Dumper($self->value);
-        if (!ref($self->value)) {
+        if ($self->value && !ref($self->value)) {
           $self->value(_thaw_sessiondata($self->value));
         }
-
-        #warn Data::Dumper::Dumper($self->value);
         return $self->value;
       },
       constraints => [
@@ -45,7 +41,7 @@ sub new_id {
   if ($new_id) {
     Carp::confess('News session id does not look like an md5_sum!')
       unless $new_id =~ m|^[a-f0-9]{32}$|x;
-    my $self->{new_id} = $new_id;
+    $self->{new_id} = $new_id;
   }
   if (!$self->{new_id}) {
     my $time = Time::HiRes::time();
@@ -67,7 +63,6 @@ sub user_id {
     return $self->{data}{user_id};
   }
   $self->{data}{user_id} ||= $self->user->id;
-  warn $self->{data}{user_id};
 
   #we always have a user id - "guest user id" by default
   return $self->{data}{user_id};
@@ -121,11 +116,16 @@ sub save {
     return $self->id;
   }
   else {
-    $self->data->{tstamp} = $self->tstamp;
-    $self->data(sessiondata => _freeze_sessiondata($self->sessiondata));
-    $self->dbix->update($self->TABLE, $self->data, {id => $self->id});
+    $self->dbix->update(
+      $self->TABLE,
+      { id          => $self->id,
+        tstamp      => time,
+        user_id     => $self->user_id,
+        sessiondata => _freeze_sessiondata($self->sessiondata)
+      },
+      {id => $self->id}
+    );
   }
-  $self->data(sessiondata => _thaw_sessiondata($self->sessiondata));
   return $self->id;
 }
 
@@ -138,14 +138,23 @@ sub select {    ##no critic (Subroutines::ProhibitBuiltinHomonyms)
   }
   $where = {%{$self->WHERE}, %$where};
 
-  #TODO: Implement restoring object from session state
+  #TODO: Implement restoring user object from session state
   $self->data(
     $self->dbix->select($self->TABLE, $self->COLUMNS, $where)->hash);
   if ($self->sessiondata && !ref($self->sessiondata)) {
     $self->data(sessiondata => _thaw_sessiondata($self->sessiondata));
   }
+
+  #Restore user object from sessiondata
+  if ($self->sessiondata->{user_data}) {
+    $self->user(MYDLjE::M::User->new($self->sessiondata->{user_data}));
+  }
   return $self;
 }
+
+#hopefully this will get called when the object goes out of scope
+sub DESTROY { shift->save(); return; }
+
 1;
 
 __END__
@@ -164,10 +173,16 @@ MYDLjE::M::Session - MYDLjE::M based Session storage for MYDLjE
   if ($user->login_name ne 'quest'){
       #Do something specific with the user
   }
+
+
 =head1 DESCRIPTION
 
 MYDLjE::M::Session is to store session data in the MYDLjE database.
 It is just an implementation of the abstract class L<MYDLjE::M>.
+This functionality is internally used by L<MYDLjE::C/msession>, so if you need database based session storage use L<MYDLjE::C/msession>.
 
+=head1 SEE ALSO
+
+L<MYDLjE::C/msession>
 
 

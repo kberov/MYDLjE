@@ -30,7 +30,7 @@ statements = 2
 #Perl::Critic::Policy::Subroutines::RequireArgUnpacking - Always unpack @_ first.
 #todo
 [Subroutines::RequireArgUnpacking]
-allow_delegation_to = get_obj_args get_args
+allow_delegation_to = get_obj_args get_args MYDLjE::M::get_obj_args MYDLjE::M::get_args
 short_subroutine_statements = 2
 #
 [BuiltinFunctions::ProhibitStringyEval]

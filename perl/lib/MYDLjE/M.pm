@@ -80,10 +80,10 @@ sub data {
 
   #a key
   elsif ($args && (!ref $args)) {
-    return $self->{data}{$args};
+    return $self->$args;
   }
 
-  #they want all
+  #they want all what we have in $self->{data}
   return $self->{data};
 }
 
@@ -141,12 +141,16 @@ sub validate_field {
 
   return $value unless $rules;    #no validation rules defined
 
-  my $field_obj = $self->validator->field($field);
+  my $field_obj   = $self->validator->field($field);
+  my $constraints = delete $rules->{constraints};
+  for my $method (keys %$rules) {
+    $field_obj->$method($rules->{$method});
+  }
 
-  if (ref($rules->{constraints}) eq 'ARRAY'
-    && scalar @{$rules->{constraints}})
+  if (ref($constraints) eq 'ARRAY'
+    && scalar @$constraints)
   {
-    foreach (@{$rules->{constraints}}) {
+    foreach (@$constraints) {
       $field_obj->constraint(%$_);
     }
   }

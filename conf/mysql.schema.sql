@@ -61,16 +61,20 @@ CREATE TABLE IF NOT EXISTS `my_groups` (
 -- </table>
 
 -- <table name="my_sessions">
-DROP TABLE IF EXISTS `my sessions`;
+DROP TABLE IF EXISTS `my_sessions`;
 CREATE TABLE IF NOT EXISTS `my_sessions` (
-  `id` varchar(32) NOT NULL DEFAULT '',
-  `cid` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Count ID',
+  `id` varchar(32) NOT NULL DEFAULT '' COMMENT 'md5_sum-med session id',
+  `cid` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Count ID - number of unique visitors so far.',
   `user_id` int(11) NOT NULL COMMENT 'Which user is this session for?',
-  `tstamp` int(11) NOT NULL DEFAULT '0' COMMENT 'last modification time',
-  `session_data` blob NOT NULL,
+  `tstamp` int(11) NOT NULL DEFAULT '0' COMMENT 'Last modification time - last visit.',
+  `sessiondata` blob NOT NULL COMMENT 'Session data freezed with Storable and packed with Base64',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `cid` (`cid`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COMMENT='Users sessions storage table' AUTO_INCREMENT=0 ;
+  UNIQUE KEY `cid` (`cid`),
+  KEY `user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Users sessions storage table' AUTO_INCREMENT=1 ;
+ALTER TABLE `my_sessions`
+  ADD CONSTRAINT `my_sessions_my_users_id_fk` FOREIGN KEY (`user_id`) REFERENCES `my_users` (`id`) ON UPDATE CASCADE;
+
 -- </table>
 
 -- <table name="my_content">

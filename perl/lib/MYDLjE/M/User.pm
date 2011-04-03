@@ -17,12 +17,17 @@ has FIELDS_VALIDATION => sub {
       {required => 1, constraints => [{regexp => qr/^\p{IsAlnum}{4,100}$/x}]},
     login_password =>
       {required => 1, constraints => [{regexp => qr/^[a-f0-9]{32}$/x}]},
-    email       => {required => 1, constraints => [{'email' => 'email'},]},
-    description => {required => 0, constraints => [{length  => [0, 100]},]},
-    created_by => {required => 0, regexp => qr/^\d+$/},
-    changed_by => {required => 0, regexp => qr/^\d+$/},
+    email => {required => 1, constraints => [{'email' => 'email'},]},
     first_name => {constraints => [{length => [3, 100]}]},
     last_name  => {constraints => [{length => [3, 100]}]},
+    description => {required => 0, constraints => [{length => [0, 100]},]},
+    created_by  => {required => 0, regexp      => qr/^\d+$/x},
+    changed_by  => {required => 0, regexp      => qr/^\d+$/x},
+    disabled => {required => 0, regexp => qr/^[01]$/x},
+    start    => {required => 0, regexp => qr/^\d+$/x},
+    stop     => {required => 0, regexp => qr/^\d+$/x},
+
+    #TODO: properties
   };
 };
 

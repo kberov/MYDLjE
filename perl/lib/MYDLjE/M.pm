@@ -57,7 +57,6 @@ sub select {    ##no critic (Subroutines::ProhibitBuiltinHomonyms)
   }
   $where = {%{$self->WHERE}, %$where};
 
-  #TODO: Implement restoring object from session state
   $self->data(
     $self->dbix->select($self->TABLE, $self->COLUMNS, $where)->hash);
   return $self;
@@ -104,23 +103,23 @@ sub save {
   return $self->id;
 }
 
-#must be executed at the end of each module to make table/or view specific fields
 sub make_field_attrs {
   my $class = shift;
   (!ref $class)
-    or Carp::croak('Call this method as __PACKAGE__->make_field_attrs()');
+    || Carp::croak('Call this method as __PACKAGE__->make_field_attrs()');
   my $code = '';
   foreach my $column (@{$class->COLUMNS()}) {
     next if $class->can($column);    #careful: no redefine
-    Carp::carp('Making sub ' . $column) if $DEBUG;
+
+    #Carp::carp('Making sub ' . $column) if $DEBUG;
     $code .= <<"SUB";
     sub $column {
-      if(\$_[1]){
+      if(\$_[1]){ #setting value
         \$_[0]->{data}{$column} = \$_[0]->validate_field($column=>\$_[1]);
         #make it chainable
         return \$_[0];
       }
-      return \$_[0]->{data}{$column};
+      return \$_[0]->{data}{$column};#getting value
     }
 SUB
 
@@ -180,11 +179,15 @@ __END__
 
 =head1 NAME
 
-MYDLjE::M - an oversimplified database-based objects class
+MYDLjE::M - an oversimplified database-based objects class.
 
 =head1 DESCRIPTION
 
-This is the base class which all classes representing  a row in a L<MYDLjE> database table should inherit. It provides some useful methods which simplify representing rows from tables as Perl objects. It is not intended to be a full featured ORM. It simply saves you from writing SQl to construct well known MYDLjE objects. If you have to do something complicated you can use L<DBIx::Simple> to issue custom SQL queries.
+This is the base class for all calsses that store they data in a L<MYDLjE> database table. It was written in order to not increase dependencies from cpan modules and keep MYDLjE small and light.
+
+The class provides some useful methods which simplify representing rows from tables as Perl objects. It is not intended to be a full featured ORM at all. It simply saves you from writing SQl to construct well known MYDLjE objects stored in tables. If you have to do complicated  SQL queries use L<DBIx::Simple/query> method. Use this base class if you want to have perl objects which store their data in table rows. That's it.
+
+This code is fresh and may change at any time but I will try to keep the API relatively stable if I like it.
 
 =head1 SYNOPSIS
 
@@ -194,19 +197,146 @@ This is the base class which all classes representing  a row in a L<MYDLjE> data
   package MYDLjE::M::Content::Note;
   use MYDLjE::Base 'MYDLjE::M::Content';
 
-  sub COLUMNS {[qw(
-    id user_id	pid
-    data_type data_format time_created tstamp title
-    body invisible language bad
-  )]}
+  has TABLE => 'my_content';
+  has COLUMNS => sub {
+    [ qw(
+        id user_id pid
+        data_type data_format time_created tstamp title alias
+        body invisible language groups protected bad
+        )
+    ];
+  };
+  has WHERE => sub { {data_type => 'note'} };
+  
+  sub FIELDS_VALIDATION {
+  return {
+    id      => {required => 0, constraints => [{regexp => qr/^\d+$/x},]},
+    user_id => {required => 1, constraints => [{regexp => qr/^\d+$/x},]},
+    alias   => {
+      required    => 1,
+      constraints => [{regexp => qr/^[\-_a-z0-9]{2,255}$/x},]
+    },
+    #...
+  }
+}
 
-  #...somwhere in your application
-  MYDLjE::M::Content::Note->select({id=>5});
+
+  #...somewhere in your application or controller or a custom script
+  my $note = MYDLjE::M::Content::Note->select({id=>5});
+  #or
+  my $user = MYDLjE::M::User->select(login_name => 'guest')
+  $user->password(Mojo::Util::md5_sum('myverysecReTPasWord123'));
+  
+  #do whatwever you do with this object, then save it
+  $user->save;
+  
+  #or create something really fresh
+  my $question = MYDLjE::M::Content::Question->new(
+    user_id => $c->msession->user_id,
+    title   => 'How to cook with MYDljE?',
+    body    => '<p>I really want to know where to start from. Should I....</p>'
+    ...
+  );
   
   
 =head1 ATTRIBUTES
 
+=head2 dbix
+
+This is an L<MYDLjE::Plugin::DBIx/instance> and (as you guessed) provides direct access
+to the current DBIx::Simple instance with L<SQL::Abstract> support.
+
+=head2 TABLE
+
+You must define this attribute in your subclass. This is the table where your object
+will store its data. Must return a string - the table name.
+
+  has TABLE => 'my_users';
+
+=head2 COLUMNS
+
+You must define this attribute in your subclass. 
+It must return an ARRAYREF with table columns to which the data is written.
+
+  has COLUMNS => sub { [qw(id cid user_id tstamp sessiondata)] };
+
+=head2 FIELDS_VALIDATION
+
+You must define this attribute in your subclass. 
+It must return a HASHREF with column names as keys and "types" constratints as values
+interpretted by L</validate_field> which will check and validate the value of a column
+each time a new value is set.
+
+  has FIELDS_VALIDATION => sub {
+    { login_name =>
+        {required => 1, constraints => [{regexp => qr/^\p{IsAlnum}{4,100}$/x}]},
+      login_password =>
+        {required => 1, constraints => [{regexp => qr/^[a-f0-9]{32}$/x}]},
+      email => {required => 1, constraints => [{'email' => 'email'},]},
+      first_name => {constraints => [{length => [3, 100]}]},
+      last_name  => {constraints => [{length => [3, 100]}]},
+      #...
+    }
+  };
+  
+=head2 validator
+
+MojoX::Validator instance used to validate the fields as described in L</FIELDS_VALIDATION>.
+
+=head2 WHERE
+
+Specific C<WHERE> clause for your class which will be prepended to C<where> arguments for the L</select> method. Empty by default.
+
+  has WHERE => sub { {data_type => 'note'} };
+
+
 =head1 METHODS
+
+=head2 new
+
+The constructor. Instantiates a fresh MYDLjE::M based object. Generates getters and setters for the fields described in L</COLUMNS>. Sets the passed parameters as fields if they exists as column names.
+
+  #Restore user object from sessiondata
+  if($self->sessiondata->{user_data}){
+    $self->user(MYDLjE::M::User->new($self->sessiondata->{user_data}));
+  }
+
+=head2 select
+
+Restores a saved in the database object by constructing an SQL query based on the parameters. The API is the same as for L<DBIx::Simple/select> or L<SQL::Abstract/select> which is used internally. Prepends the L</WHERE> clause defined by you to the parameters. If a row is found puts in L</data>. Returns C<$self>.
+
+  my $user = MYDLjE::M::User->select(id => $user_id);
+  
+=head2 data
+
+Common getter/setter for all L</COLUMNS>.
+
+In L</select>:
+
+  $self->data($self->dbix->select($self->TABLE, $self->COLUMNS, $where)->hash);
+  
+But also use the autogenereated or defined by you getters/setters.
+
+  my $title = $self->data->{title};
+  $self->data('title','My Title');
+  $self->title('My Title');
+  $self->title; # My Title
+
+=head2 save
+
+DWIM saver. If the object is fresh inserts it in the L</TABLE>, otherwise updates it.
+
+=head2 make_field_attrs
+
+Called by L</new>. Prepares class specific COLUMNS based getters/setters.
+You could overrride it in your specific class if you want to do something special.
+
+=head2 validate_field
+
+Validates C<$value> for $field against C<$self-E<gt>FIELDS_VALIDATION-E<gt>{$field}> rules.
+Called each time a field is set either by the specific field setter or by L</data>.
 
 
 =head1 SEE ALSO
+
+L<MYDLjE::M::User>, L<MYDLjE::M::Session>, L<MYDLjE::M::Content>

@@ -5,6 +5,7 @@ session_cookie_path: ''
 session_default_expiration: 3600
 
 plugins:
+  #plugin      Enabled: 1 / Disabled: 0 /Config:
   system_setup: 1
   MYDLjE::Plugin::DBIx:
     db_driver: DBI:mysql

@@ -166,6 +166,9 @@ sub _init_database {
     ->slurp;
   my $dom = Mojo::DOM->new;
   $dom->parse($xml_sql);
+  my ($disable_foreign_key_checks) = $dom->at('#disable_foreign_key_checks');
+  my @start_init = split(/;/x, $disable_foreign_key_checks->text);
+  $c->dbix->dbh->do($_) for @start_init;
 
   # Loop
   for my $e ($dom->find('table[name],view[name]')->each) {
@@ -173,6 +176,12 @@ sub _init_database {
     $c->dbix->dbh->do($drop);
     $c->dbix->dbh->do($create);
   }
+  my ($constraints) = $dom->at('#constraints');
+  my @constraints = split(/;/x, $constraints->text);
+  $c->dbix->dbh->do($_) for @constraints;
+  my ($enable_foreign_key_checks) = $dom->at('#enable_foreign_key_checks');
+  my @end_init = split(/;/x, $enable_foreign_key_checks->text);
+  $c->dbix->dbh->do($_) for @end_init;
 
   #fill the tables with some initial data
   $xml_sql =

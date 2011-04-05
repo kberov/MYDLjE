@@ -106,22 +106,23 @@ sub load_plugins {
 
 #load routes, described in config
 sub load_routes {
-  my ($app) = @_;
-  my $r = $app->routes;
-  my $routes = $app->config('routes') || {};
+  my ($app,$app_routes,$config_routes) = @_;
+  $app_routes    ||= $app->routes;
+  $config_routes ||= $app->config('routes') || {};
+
   foreach my $route (
-    sort { $routes->{$a}{order} <=> $routes->{$b}{order} }
-    keys %$routes
+    sort { ($config_routes->{$a}{order}||0) <=> ($config_routes->{$b}{order}||0) }
+    keys %$config_routes
     )
   {
 
-    my $way = $r->route($route);
+    my $way = $app_routes->route($route);
 
     #TODO: support other routes descriptions beside 'via'
-    if ($routes->{$route}{via}) {
-      $way->via(@{$routes->{$route}{via}});
+    if ($config_routes->{$route}{via}) {
+      $way->via(@{$config_routes->{$route}{via}});
     }
-    $way->to(%{$routes->{$route}{to}});
+    $way->to(%{$config_routes->{$route}{to}});
   }
   return;
 }

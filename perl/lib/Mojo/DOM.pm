@@ -23,9 +23,14 @@ my $CSS_ATTR_RE   = qr/
   )?
   \]
 /x;
-my $CSS_CLASS_RE        = qr/\.((?:\\\.|[^\.])+)/;
+my $CSS_CLASS_ID_RE = qr/
+  (?:
+    (?:\.((?:\\\.|[^\#\.])+))   # Class
+  |
+    (?:\#((?:\\\#|[^\.\#])+))   # ID
+  )
+/x;
 my $CSS_ELEMENT_RE      = qr/^((?:\\\.|\\\#|[^\.\#])+)/;
-my $CSS_ID_RE           = qr/\#((?:\\\#|[^\#])+)/;
 my $CSS_PSEUDO_CLASS_RE = qr/(?:\:([\w\-]+)(?:\(((?:\([^\)]+\)|[^\)])+)\))?)/;
 my $CSS_TOKEN_RE        = qr/
   (\s*,\s*)?                                        # Separator
@@ -62,20 +67,25 @@ my $XML_ATTR_RE = qr/
 my $XML_END_RE   = qr/^\s*\/\s*(.+)\s*/;
 my $XML_START_RE = qr/([^\s\/]+)([\s\S]*)/;
 my $XML_TOKEN_RE = qr/
-  ([^<]*)                    # Text
+  ([^<]*)                                           # Text
   (?:
-    <\?(.*?)\?>              # Processing Instruction
+    <\?(.*?)\?>                                     # Processing Instruction
     |
-    <\!--(.*?)-->            # Comment
+    <\!--(.*?)-->                                   # Comment
     |
-    <\!\[CDATA\[(.*?)\]\]>   # CDATA
+    <\!\[CDATA\[(.*?)\]\]>                          # CDATA
     |
-    <\!DOCTYPE([^>]*)>       # DOCTYPE
+    <!DOCTYPE(
+      \s+\w+
+      (?:(?:\s+\w+)?(?:\s+(?:"[^"]*"|'[^']*'))+)?   # External ID
+      (?:\s+\[.+?\])?                               # Int Subset
+      \s*
+    )>
     |
     <(
       \s*
-      [^>\s]+                # Tag
-      (?:$XML_ATTR_RE)*      # Attributes
+      [^>\s]+                                       # Tag
+      (?:$XML_ATTR_RE)*                             # Attributes
     )>
   )??
 /xis;
@@ -238,7 +248,7 @@ sub namespace {
     }
 
     # Namespace attribute
-    if (my $namespace = $attrs->{xmlns}) { return $namespace }
+    elsif (defined $attrs->{xmlns}) { return $attrs->{xmlns} || undef }
 
     # Parent
     $current = $current->[3];
@@ -908,14 +918,16 @@ sub _parse_css {
     # Tag
     push @$selector, ['tag', $tag];
 
-    # Classes
-    while ($element =~ /$CSS_CLASS_RE/g) {
-      push @$selector, ['attribute', 'class', $self->_css_regex('~', $1)];
-    }
+    # Class or ID
+    while ($element =~ /$CSS_CLASS_ID_RE/g) {
 
-    # ID
-    if ($element =~ /$CSS_ID_RE/) {
-      push @$selector, ['attribute', 'id', $self->_css_regex('', $1)];
+      # Class
+      push @$selector, ['attribute', 'class', $self->_css_regex('~', $1)]
+        if defined $1;
+
+      # ID
+      push @$selector, ['attribute', 'id', $self->_css_regex('', $2)]
+        if defined $2;
     }
 
     # Pseudo classes
@@ -1427,9 +1439,21 @@ An C<E> element, only child of its parent.
 
 =head2 C<E:only-of-type>
 
-an C<E> element, only sibling of its type.
+An C<E> element, only sibling of its type.
 
   my $lonely = $dom->at('div p:only-of-type');
+
+=head2 C<E.warning>
+
+  my $warning = $dom->at('div.warning');
+
+An C<E> element whose class is "warning".
+
+=head2 C<E#myid>
+
+  my $foo = $dom->at('div#foo');
+
+An C<E> element with C<ID> equal to "myid".
 
 =head2 C<E:not(s)>
 

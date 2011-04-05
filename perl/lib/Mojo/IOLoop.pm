@@ -359,17 +359,6 @@ sub listen {
   # Refresh listen sockets
   $self->_not_listening;
 
-  # Connection
-  my $c = {
-    file => $args->{file} ? 1 : 0,
-    on_accept => $args->{on_accept},
-    on_error  => $args->{on_error},
-    on_hup    => $args->{on_hup},
-    on_read   => $args->{on_read},
-  };
-  (my $id) = "$c" =~ /0x([\da-f]+)/;
-  $self->{_listen}->{$id} = $c;
-
   # Allow file descriptor inheritance
   local $^F = 1000;
 
@@ -416,6 +405,19 @@ sub listen {
     $reuse = ",$reuse" if length $ENV{MOJO_REUSE};
     $ENV{MOJO_REUSE} .= "$reuse:$fd";
   }
+
+  # Connection
+  my $c = {
+    file => $args->{file} ? 1 : 0,
+    on_accept => $args->{on_accept},
+    on_error  => $args->{on_error},
+    on_hup    => $args->{on_hup},
+    on_read   => $args->{on_read},
+  };
+  (my $id) = "$c" =~ /0x([\da-f]+)/;
+  $self->{_listen}->{$id} = $c;
+
+  # File descriptor
   $self->{_fds}->{$fd} = $id;
 
   # Socket
@@ -2213,6 +2215,8 @@ The remote port.
 
 Resolve domain into C<A>, C<AAAA>, C<CNAME>, C<MX>, C<NS>, C<PTR> or C<TXT>
 records, C<*> will query for all at once.
+Since this is a "stub resolver" it depends on a recursive name server for DNS
+resolution.
 Note that this method is EXPERIMENTAL and might change without warning!
 
 =head2 C<singleton>

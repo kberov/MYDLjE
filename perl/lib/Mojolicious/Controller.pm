@@ -320,37 +320,14 @@ sub render_exception {
   # Recursion
   return if $self->stash->{'mojo.exception'};
 
-  # Request
-  my $filtered_stash = {};
-  my $stash          = $self->stash;
+  # Filtered stash snapshot
+  my $snapshot = {};
+  my $stash    = $self->stash;
   for my $key (keys %$stash) {
     next if $key =~ /^mojo\./;
     next unless defined(my $value = $stash->{$key});
-    $filtered_stash->{$key} = $value;
+    $snapshot->{$key} = $value;
   }
-  my $req     = $self->req;
-  my $url     = $req->url;
-  my @request = (
-    Method     => $req->method,
-    Path       => $url->to_string,
-    Base       => $url->base->to_string,
-    Parameters => $self->dumper($req->params->to_hash),
-    Stash      => $self->dumper($filtered_stash),
-    Session    => $self->dumper($self->session),
-    Version    => $req->version
-  );
-
-  # Info
-  my @info = (
-    Perl        => "$] ($^O)",
-    Mojolicious => "$Mojolicious::VERSION ($Mojolicious::CODENAME)",
-    Home        => $self->app->home,
-    Include     => $self->dumper(\@INC),
-    PID         => $$,
-    Name        => $0,
-    Executable  => $^X,
-    Time        => scalar localtime(time)
-  );
 
   # Mode
   my $mode = $self->app->mode;
@@ -363,8 +340,7 @@ sub render_exception {
     status           => 500,
     layout           => undef,
     extends          => undef,
-    request          => \@request,
-    info             => \@info,
+    snapshot         => $snapshot,
     exception        => $e,
     'mojo.exception' => 1
   };
@@ -831,15 +807,28 @@ __DATA__
 
 @@ exception.html.ep
 <!doctype html><html>
-  <head><title>Exception</title></head>
-  <body>Page temporarily unavailable, please come back later.</body>
+  <head><title>Server Error</title></head>
+   %= stylesheet begin
+      body { background-color: #caecf6; }
+      #raptor {
+        background: url(<%= url_for '/failraptor.png' %>);
+        height: 488px;
+        left: 50%;
+        margin-left: -371px;
+        margin-top: -244px;
+        position:absolute;
+        top: 50%;
+        width: 743px;
+      }
+    % end
+  <body><div id="raptor"></div></body>
 </html>
 
 @@ exception.development.html.ep
 % my $e = delete $self->stash->{'exception'};
 <!doctype html><html>
   <head>
-    <title>Exception</title>
+    <title>Server Error</title>
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="-1">
     %= javascript '/js/jquery.js'
@@ -1032,11 +1021,15 @@ __DATA__
     </div>
     <div class="box infobox" id="request">
       <table>
-        % for (my $i = 0; $i < @$request; $i += 2) {
-          % my $key = $request->[$i];
-          % my $value = $request->[$i + 1];
-          %== $kv->($key, $value)
-        % }
+        % my $req = $self->req;
+        %== $kv->(Method => $req->method)
+        % my $url = $req->url;
+        %== $kv->(Path => $url->to_string)
+        %== $kv->(Base => $url->base->to_string)
+        %== $kv->(Parameters => dumper $req->params->to_hash)
+        %== $kv->(Stash => dumper $snapshot)
+        %== $kv->(Session => dumper session)
+        %== $kv->(Version => $req->version)
         % for my $name (@{$self->req->headers->names}) {
           % my $value = $self->req->headers->header($name);
           %== $kv->($name, $value)
@@ -1046,9 +1039,16 @@ __DATA__
     <div class="box infobox" id="more">
       <div id="infos">
         <table>
-          % for (my $i = 0; $i < @$info; $i += 2) {
-            %== $kv->($info->[$i], $info->[$i + 1])
-          % }
+          %== $kv->(Perl => "$] ($^O)")
+          % my $version  = $Mojolicious::VERSION;
+          % my $codename = $Mojolicious::CODENAME;
+          %== $kv->(Mojolicious => "$version ($codename)")
+          %== $kv->(Home => app->home)
+          %== $kv->(Include => dumper \@INC)
+          %== $kv->(PID => $$)
+          %== $kv->(Name => $0)
+          %== $kv->(Executable => $^X)
+          %== $kv->(Time => scalar localtime(time))
         </table>
       </div>
       <div class="tap">tap for more</div>
@@ -1069,9 +1069,31 @@ __DATA__
 
 @@ not_found.html.ep
 <!doctype html><html>
-  <head><title>Not Found</title></head>
+  <head><title>Page Not Found</title></head>
+   %= stylesheet begin
+      a img { border: 0; }
+      body { background-color: #caecf6; }
+      #noraptor {
+        left: 0%;
+        position: fixed;
+        top: 60%;
+      }
+      #notfound {
+        background: url(<%= url_for '/mojolicious-notfound.png' %>);
+        height: 62px;
+        left: 50%;
+        margin-left: -153px;
+        margin-top: -31px;
+        position:absolute;
+        top: 50%;
+        width: 306px;
+      }
+    % end
   <body>
-    Page not found, want to go <%= link_to home => url_for->base %>?
+    %= link_to url_for->base => begin
+      %= image '/mojolicious-noraptor.png', alt => 'Bye!', id => 'noraptor'
+    % end
+    <div id="notfound"></div>
   </body>
 </html>
 <!-- a padding to disable MSIE and Chrome friendly error page -->
@@ -1084,7 +1106,7 @@ __DATA__
 @@ not_found.development.html.ep
 <!doctype html><html>
   <head>
-    <title>Not Found</title>
+    <title>Page Not Found</title>
     %= stylesheet '/css/prettify-mojo.css'
     %= javascript '/js/prettify.js'
     %= stylesheet begin

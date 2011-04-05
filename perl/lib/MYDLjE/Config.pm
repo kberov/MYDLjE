@@ -62,7 +62,6 @@ sub read_config_files {
 
   foreach my $filename (@$args) {
     my $conf;
-    $self->log->debug('will try: ' . $filename);
     if (-r $filename) {
       $self->log->debug('reading: ' . $filename);
       $conf = YAML::Any::LoadFile($filename);

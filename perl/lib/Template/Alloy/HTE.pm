@@ -188,6 +188,17 @@ sub parse_tree_hte {
                         $$str_ref =~ m{ \G $quote }gcx
                             || $self->throw('parse', "Missing close quote ($quote)", undef, pos($$str_ref));
                     }
+                    if ($func eq 'INCLUDE') {
+                        $node->[0] = 'PROCESS'; # no need to localize the stash
+                        $node->[3] = [[[undef, '{}'],0], $node->[3]];
+                    } elsif ($func eq 'UNLESS') {
+                        $node->[0] = 'IF';
+                        $node->[3] = [[undef, '!', $node->[3]], 0];
+                    }
+                    if ($self->{'AUTO_FILTER'}) {
+                        $node->[3] = [[undef, '~', $node->[3]], 0] if ! ref $node->[3];
+                        push @{ $node->[3] }, '|', $self->{'AUTO_FILTER'}, 0 if @{ $node->[3] } < 3 || $node->[3]->[-3] ne '|';
+                    }
 
                 ### handle "normal" NAME attributes
                 } else {
@@ -217,7 +228,15 @@ sub parse_tree_hte {
                     }
 
                     $self->throw('parse', 'Error while looking for NAME', undef, pos($$str_ref)) if ! defined($name) || ! length($name);
-                    $node->[3] = $func eq 'INCLUDE' ? $name : [$name, 0]; # set the variable
+                    if ($func eq 'INCLUDE') {
+                        $node->[0] = 'PROCESS'; # no need to localize the stash
+                        $node->[3] = [[[undef, '{}'],0], $name];
+                    } elsif ($func eq 'UNLESS') {
+                        $node->[0] = 'IF';
+                        $node->[3] = [[undef, '!', [$name, 0]], 0];
+                    } else {
+                        $node->[3] = [$name, 0]; # set the variable
+                    }
                     $node->[3] = [[undef, '||', $node->[3], $default], 0] if $default;
 
                     ### dress up node before finishing
@@ -231,18 +250,12 @@ sub parse_tree_hte {
                         } elsif ($escape eq 'js') {
                             push @{ $node->[3] }, '|', 'js', 0;
                         }
+                    } elsif ($self->{'AUTO_FILTER'}) {
+                        push @{ $node->[3] }, '|', $self->{'AUTO_FILTER'}, 0;
                     }
                 }
                 $node->[2] = pos $$str_ref;
 
-                ### fixup DIRECTIVE storage
-                if ($func eq 'INCLUDE') {
-                    $node->[0] = 'PROCESS'; # no need to localize the stash
-                    $node->[3] = [[[undef, '{}'],0], $node->[3]];
-                } elsif ($func eq 'UNLESS') {
-                    $node->[0] = 'IF';
-                    $node->[3] = [[undef, '!', $node->[3]], 0];
-                }
 
             ### handle TT Directive extensions
             } else {

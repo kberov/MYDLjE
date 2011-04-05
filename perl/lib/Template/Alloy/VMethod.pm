@@ -48,6 +48,7 @@ our $SCALAR_OPS = our $ITEM_OPS = {
     lower    => sub { lc $_[0] },
     match    => \&vmethod_match,
     new      => sub { defined $_[0] ? $_[0] : '' },
+    none     => sub { $_[0] },
     null     => sub { '' },
     oct      => sub { no warnings; oct $_[0] },
     print    => sub { no warnings; "@_" },
@@ -642,6 +643,14 @@ In Template::Alloy and TT3 you can use regular expressions notation as well.
 
 Note that you can't use the 'g' regex modifier - you must pass the second
 argument to turn on global match.
+
+=item none
+
+Returns the item without modification.  This was added as a compliment case
+when the AUTO_FILTER configuration is specified.  Note that it must be
+called as a filter to bypass the application of the AUTO_FILTER.
+
+    [% item | none %] Returns the item without modification.
 
 =item null
 

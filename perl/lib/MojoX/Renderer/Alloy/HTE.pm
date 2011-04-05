@@ -5,7 +5,7 @@ BEGIN {
   $MojoX::Renderer::Alloy::HTE::AUTHORITY = 'cpan:AJGB';
 }
 BEGIN {
-  $MojoX::Renderer::Alloy::HTE::VERSION = '1.103450';
+  $MojoX::Renderer::Alloy::HTE::VERSION = '1.110180';
 }
 #ABSTRACT: Template::Alloy's HTML::Template::Expr renderer
 
@@ -101,7 +101,7 @@ MojoX::Renderer::Alloy::HTE - Template::Alloy's HTML::Template::Expr renderer
 
 =head1 VERSION
 
-version 1.103450
+version 1.110180
 
 =head1 SYNOPSIS
 

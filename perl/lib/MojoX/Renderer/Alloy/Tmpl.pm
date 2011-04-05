@@ -5,7 +5,7 @@ BEGIN {
   $MojoX::Renderer::Alloy::Tmpl::AUTHORITY = 'cpan:AJGB';
 }
 BEGIN {
-  $MojoX::Renderer::Alloy::Tmpl::VERSION = '1.103450';
+  $MojoX::Renderer::Alloy::Tmpl::VERSION = '1.110180';
 }
 #ABSTRACT: Template::Alloy's Text::Tmpl renderer
 
@@ -102,7 +102,7 @@ MojoX::Renderer::Alloy::Tmpl - Template::Alloy's Text::Tmpl renderer
 
 =head1 VERSION
 
-version 1.103450
+version 1.110180
 
 =head1 SYNOPSIS
 

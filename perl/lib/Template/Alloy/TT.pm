@@ -261,6 +261,10 @@ sub parse_tree_tt3 {
                     die $err;
                 }
             } else {
+                if ($self->{'AUTO_FILTER'}) {
+                    $var = [[undef, '~', $var], 0] if ! ref $var;
+                    push @$var, '|', $self->{'AUTO_FILTER'}, 0 if @$var < 3 || $var->[-3] ne '|';
+                }
                 $node->[0] = 'GET';
                 $node->[3] = $var;
             }

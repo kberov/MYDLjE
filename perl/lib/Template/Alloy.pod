@@ -990,6 +990,7 @@ The following compile time configuration options may be set:
 
     ANYCASE
     AUTO_EVAL
+    AUTO_FILTER
     CACHE_STR_REFS
     ENCODING
     INTERPOLATE
@@ -1996,6 +1997,29 @@ Boolean.  Default 1.  Clear blocks that were set during the process method.
 
 Boolean.  Default 0 (default 1 in Velocity syntax).  If set to true,
 double quoted strings will automatically be passed to the eval filter.
+This configurtation option may also be passed to the CONFIG directive.
+
+=item AUTO_FILTER
+
+Can be the name of any filter.  Default undef.  Any variable returned by a
+GET directive (including implicit GET) will be passed to the named filter.
+This configurtation option may also be passed to the CONFIG directive.
+
+    # with AUTO_FILTER => 'html'
+
+    [% f = "&"; GET f %] prints &amp;
+    [% f = "&"; f %]     prints &amp; (implicit GET)
+
+If a variable already has another filter applied the AUTO_FILTER is not applied.
+The "none" scalar virtual method has been added to allow for using variables
+without reapplying filters.
+
+    # with AUTO_FILTER => 'html'
+
+    [% f = "&";  f | none %] prints &
+    [% f = "&"; g = f; g %]  prints &amp;
+    [% f = "&"; g = f; g | none %]  prints & (because g = f is a SET directive)
+    [% f = "&"; g = GET f; g | none %]  prints &amp; (because the actual GET directive was called)
 
 =item BLOCKS
 
@@ -2935,6 +2959,12 @@ Controls the type of escape used on named variables in TMPL_VAR
 directives.  Can be one of HTML, URL, or JS.  The values of
 TMPL_VAR directives will be encoded with this type unless
 they specify their own type via an ESCAPE attribute.
+
+You may alternately use the AUTO_FILTER directive which can be
+any of the item vmethod filters (you must use lower case when
+specifying the AUTO_FILTER directive).  The AUTO_FILTER directive
+will also be applied to TMPL_VAR EXPR and TMPL_GET items while
+DEFAULT_ESCAPE only applies to TMPL_VAR NAME items.
 
 =item NO_TT
 

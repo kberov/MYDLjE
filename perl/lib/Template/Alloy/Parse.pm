@@ -810,6 +810,10 @@ sub parse_GET {
     my ($self, $str_ref) = @_;
     my $ref = $self->parse_expr($str_ref);
     $self->throw('parse', "Missing variable name", undef, pos($$str_ref)) if ! defined $ref;
+    if ($self->{'AUTO_FILTER'}) {
+        $ref = [[undef, '~', $ref], 0] if ! ref $ref;
+        push @$ref, '|', $self->{'AUTO_FILTER'}, 0 if @$ref < 3 || $ref->[-3] ne '|';
+    }
     return $ref;
 }
 

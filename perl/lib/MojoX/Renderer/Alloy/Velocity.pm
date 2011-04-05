@@ -5,7 +5,7 @@ BEGIN {
   $MojoX::Renderer::Alloy::Velocity::AUTHORITY = 'cpan:AJGB';
 }
 BEGIN {
-  $MojoX::Renderer::Alloy::Velocity::VERSION = '1.103450';
+  $MojoX::Renderer::Alloy::Velocity::VERSION = '1.110180';
 }
 #ABSTRACT: Template::Alloy's Velocity renderer
 
@@ -56,7 +56,7 @@ MojoX::Renderer::Alloy::Velocity - Template::Alloy's Velocity renderer
 
 =head1 VERSION
 
-version 1.103450
+version 1.110180
 
 =head1 SYNOPSIS
 

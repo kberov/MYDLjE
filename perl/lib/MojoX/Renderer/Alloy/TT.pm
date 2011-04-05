@@ -5,7 +5,7 @@ BEGIN {
   $MojoX::Renderer::Alloy::TT::AUTHORITY = 'cpan:AJGB';
 }
 BEGIN {
-  $MojoX::Renderer::Alloy::TT::VERSION = '1.103450';
+  $MojoX::Renderer::Alloy::TT::VERSION = '1.110180';
 }
 #ABSTRACT: Template::Alloy's Template-Toolkit renderer
 
@@ -53,7 +53,7 @@ MojoX::Renderer::Alloy::TT - Template::Alloy's Template-Toolkit renderer
 
 =head1 VERSION
 
-version 1.103450
+version 1.110180
 
 =head1 SYNOPSIS
 

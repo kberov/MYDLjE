@@ -13,10 +13,10 @@ BEGIN {
 
 use lib ("$ENV{MOJO_HOME}/perl/lib", "$ENV{MOJO_HOME}/perl/site/lib");
 use Data::Dumper;
-use Test::More tests => 54;
+use Test::More qw(no_plan);
 use Test::Mojo;
 
-my @apps = ('MYDLjE', 'MYDLjE::ControlPanel', 'MYDLjE::Site');
+my @apps = ('MYDLjE',  'MYDLjE::Site');
 my $i = 0;
 for my $app (@apps) {
   my $time = time;
@@ -27,13 +27,14 @@ for my $app (@apps) {
   $t->post_ok('/hi/1')->status_is(200)->content_like(qr/$hi!/, $hi . '!');
   $t->get_ok('/c/hi/' . $time)->status_is(200)
     ->content_like(qr/id $time/, 'welcome message on ' . localtime($time));
+
   #Test msession
   my $i = 0;
   $i++;
   $t->get_ok('/hisession')->status_is(200)
-    ->content_like(qr/\:$i/, 'mession is: '.$i );
+    ->content_like(qr/\:$i/, 'msession is: ' . $i);
   $i++;
   $t->get_ok('/hisession')->status_is(200)
-    ->content_like(qr/\:$i/, 'mession is: '.$i );
+    ->content_like(qr/\:$i/, 'msession is: ' . $i);
 }
 

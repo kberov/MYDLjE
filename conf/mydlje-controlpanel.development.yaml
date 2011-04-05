@@ -1,14 +1,37 @@
 ---
-installed: 0
-
+plugins:
+  alloy_renderer:
+    syntax: TT
+    template_options:
+      TRIM: 1
+      #Note: INCLUDE_PATH works only from within templates
+      INCLUDE_PATH:
+        - templates
+        - templates/cpanel
+      DEBUG: 1
 routes:
+  /loginscreen:
+    to:
+      controller: Auth
+      action: loginscreen
+  /isauthenticated:
+    to:
+      controller: Auth
+      action: isauthenticated
+      
+#almost all routes in the cpanel app require authentication
+login_required_routes:
+  /home:
+    to:
+      controller: Home
+      action: home
   /users:
     order: 2
     to:
-      controller: C::Users
+      controller: Users
       action: list
   /configs:
     order: 1
     to:
-      controller: C::Configs
+      controller: Configs
       action: list

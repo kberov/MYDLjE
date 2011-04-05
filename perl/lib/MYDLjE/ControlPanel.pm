@@ -4,14 +4,49 @@ use MYDLjE::Base 'MYDLjE';
 
 has controller_class => 'MYDLjE::ControlPanel::C';
 
+#TODO:: think of better config implementation - may be subclass Mojolicious::Plugin::Config
+my $CONFIG;
 
 sub startup {
   my $app = shift;
-  $app->SUPER::startup;
+  $CONFIG = MYDLjE::Config->singleton(log => $app->log);
+  $app->secret($app->config('secret'));
+  $app->sessions->cookie_name($app->config('session_cookie_name'));
+
+  #Load Plugins
+  my $INCLUDE_PATH = $app->config('plugins')->{alloy_renderer}
+    && $app->config('plugins')
+    ->{alloy_renderer}{template_options}{INCLUDE_PATH};
+  do { $_ = $app->home->rel_dir($_) for (@$INCLUDE_PATH) } if $INCLUDE_PATH;
+  $app->load_plugins();
+
+  # Routes
   my $r = $app->routes;
+  $r->namespace($app->controller_class);
+  my $bridge_to = $app->config('routes')->{'/isauthenticated'}->{to};
+  my $login_required_routes = $r->bridge('/')->to(%$bridge_to);
+  $login_required_routes->namespace($app->controller_class);
+
+  #Login Required Routes (bridged trough login)
+  $app->load_routes($login_required_routes,
+    $app->config('login_required_routes'));
+
+  $app->load_routes();
+
+  #Additional Content-TypeS (formats)
+  $app->add_types();
+
+  #Hooks
+  $app->hook(before_dispatch => \&MYDLjE::before_dispatch);
+  $app->hook(after_dispatch  => \&MYDLjE::after_dispatch);
+
   return;
 }
 
+sub config {
+  shift;
+  return $CONFIG->stash(@_);
+}
 
 1;
 

@@ -23,7 +23,7 @@ sub hi {
 
 sub hisession {
   my $c = shift;
-  my $i = ($c->msession('i')||0) + 1;
+  my $i = ($c->msession('i') || 0) + 1;
   $c->render(text => 'Controller '
       . $c->stash('controller')
       . ' $c->msession("i"):'

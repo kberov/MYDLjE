@@ -106,12 +106,15 @@ sub load_plugins {
 
 #load routes, described in config
 sub load_routes {
-  my ($app,$app_routes,$config_routes) = @_;
-  $app_routes    ||= $app->routes;
+  my ($app, $app_routes, $config_routes) = @_;
+  $app_routes ||= $app->routes;
   $config_routes ||= $app->config('routes') || {};
 
   foreach my $route (
-    sort { ($config_routes->{$a}{order}||0) <=> ($config_routes->{$b}{order}||0) }
+    sort {
+      ($config_routes->{$a}{order} || 0)
+        <=> ($config_routes->{$b}{order} || 0)
+    }
     keys %$config_routes
     )
   {
@@ -128,10 +131,10 @@ sub load_routes {
 }
 
 sub add_types {
-  my ($app)        = @_;
-  my $types        = $app->types;
-  my $config_types = $app->config('types')||{};
-  foreach my $k(keys %$config_types) {
+  my ($app) = @_;
+  my $types = $app->types;
+  my $config_types = $app->config('types') || {};
+  foreach my $k (keys %$config_types) {
     $types->type($k => $config_types->{$k});
   }
   return;

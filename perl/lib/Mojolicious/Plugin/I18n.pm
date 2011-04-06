@@ -20,8 +20,11 @@ sub register {
 
   # Initialize
   eval "package $namespace; use Mojo::Base 'Locale::Maketext'; 1;";
-  eval "package ${namespace}::$default; use Mojo::Base '$namespace';"
-    . 'our %Lexicon = (_AUTO => 1); 1;';
+  unless(eval "require ${namespace}::$default;1;"){
+    Carp::carp($@);
+    eval "package ${namespace}::$default; use Mojo::Base '$namespace';"
+      . 'our %Lexicon = (_AUTO => 1); 1;';
+  }
   die qq/Couldn't initialize I18N class "$namespace": $@/ if $@;
 
   # Start timer

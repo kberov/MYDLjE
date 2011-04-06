@@ -3,6 +3,7 @@ installed: 0
 session_cookie_name: MYDLjE
 session_cookie_path: ''
 session_default_expiration: 3600
+site_name: MYDLjE
 
 plugins:
   #plugin      Enabled: 1 / Disabled: 0 /Config:
@@ -14,12 +15,13 @@ plugins:
     db_name: mydlje
     db_password: mydlje
     db_user: mydlje
-  i18n:
-    default: en
-  powered_by:
-    name: 'MYDLjE (Mojolicious (Perl))'
   charset:
     charset: UTF-8
+  i18n:
+    default: en
+    namespace: MYDLjE::I18N
+  powered_by:
+    name: 'MYDLjE (Mojolicious (Perl))'
   pod_renderer: 1
   validator: 1
 plugins_namespaces:

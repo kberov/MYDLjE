@@ -1,4 +1,6 @@
 ---
+site_name: MYDLjE
+
 plugins:
   alloy_renderer:
     syntax: TT
@@ -9,6 +11,7 @@ plugins:
         - templates
         - templates/cpanel
       DEBUG: 1
+      PRE_PROCESS: cpanel_pre_process.tt 
 routes:
   /loginscreen:
     to:

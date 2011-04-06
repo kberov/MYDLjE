@@ -14,10 +14,6 @@ sub startup {
   $app->sessions->cookie_name($app->config('session_cookie_name'));
 
   #Load Plugins
-  my $INCLUDE_PATH = $app->config('plugins')->{alloy_renderer}
-    && $app->config('plugins')
-    ->{alloy_renderer}{template_options}{INCLUDE_PATH};
-  do { $_ = $app->home->rel_dir($_) for (@$INCLUDE_PATH) } if $INCLUDE_PATH;
   $app->load_plugins();
 
   # Routes

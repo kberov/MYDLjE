@@ -1,0 +1,8 @@
+[%#
+    This file is for setting up variables, blocks, macros, etc which are available for
+    all templates used in the MYDLjE::ControlPanel application.
+%][%
+    app = c.app;
+    MOJO_APP = app.env.MOJO_APP;
+    MOJO_APP_AT_SITE = MOJO_APP _ '@'_ app.config('site_name');
+~%]

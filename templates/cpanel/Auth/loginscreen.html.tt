@@ -1,2 +1,58 @@
-[% template.name %]<br />
-[% component.name %]
+[%- WRAPPER 'layouts/cpanel_layout.html.tt' -%]
+<!-- start loginscreen -->
+<script>
+/**
+ * Onload!
+ */
+$(window).load(function() {
+enhance_form();
+});
+</script>
+<div class="columns">
+  <div class="column">
+    <form id="login_form" action="[% url_for('/loginscreen') %]" method="post"
+    class="ui-widget ui-corner-all ui-state-active">
+      <fieldset class="ui-widget-content ui-corner-all">
+        <legend class="ui-widget-header ui-corner-all">[% c.l('Login') %]
+        <span class="help_icon ui-corner-all ui-state-active" style="display: inline-block; cursor: pointer;">
+          <span class="ui-icon ui-icon-help"></span>
+        </span></legend>
+        <div class="unit on-2 columns">
+          <div class="fixed column" style="width:150px">
+            <label id="login_name_label">[% c.l('login_name') %]</label>
+          </div>
+          <div class="elastic column">
+            <div class="container field">
+              <input type="text" name="login_name" />
+            </div>
+          </div>
+          <div class="column span-2">
+            <div class="container help">[% c.l('Please enter your username for the MYDLjE::ControlPanel application.')
+            %]</div>
+          </div>
+          <div class="fixed column" style="width:150px;">
+            <label for="login_password" id="login_password_label">[% c.l('login_password') %]</label>
+          </div>
+          <div class="elastic column">
+            <div class="container field">
+              <input type="text" name="login_password" />
+              <input type="hidden" name="login_password_md5" />
+            </div>
+          </div>
+          <div class="column span-2" style="width: 469.4px;">
+            <div class="container help">[% c.l('Please enter your password. It is NOT transmitted in plain text even if
+            you are not using HTTPS protocol.') %]</div>
+          </div>
+          <div class="column span-2">
+            <div class="container buttons">
+              <button type="submit">[% c.l('Login') %]</button>
+            </div>
+          </div>
+        </div>
+        <!-- end div class="unit on-2 columns" -->
+      </fieldset>
+    </form>
+  </div>
+</div>
+<!-- end loginscreen -->
+[% END %]

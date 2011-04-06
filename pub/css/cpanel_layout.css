@@ -1,0 +1,51 @@
+body {height:100%;}
+.layout {
+    min-width: 780px;
+    margin: auto;
+    width: 99%;
+    max-width: 1300px;
+    min-height: 99%;
+    height: 99%;
+}
+/*
+  TODO: Think if some directives should be moved in a separate file "cpanel_skin.css"
+  so we can achieve complete separation of layout and theme/skin.
+*/
+#main-container {
+    padding: 2px;
+    m
+    height:100%;
+}
+#main-header {
+    padding: 3px;
+}
+#title-main-header a {float: left;}
+#login_form {
+  margin:1em auto 1em auto;
+  width: 500px;
+  
+}
+#login_form fieldset {margin: 1em;}
+#login_form legend {
+    margin: 0.5ex;
+    padding: 0.5ex;
+}
+.help_icon {
+  margin-left: 0.5ex;
+}
+#login_form label {display: block;}
+#login_form label, #login_form .field, #login_form .buttons {
+    padding: 1ex;
+}
+#login_form .field input {width:100%;}
+
+#login_form .buttons {
+    text-align: right;
+}
+
+.help {
+    display: none;
+    font-style: italic;
+    font-weight: normal;
+    padding: 0 1ex 1ex;
+}

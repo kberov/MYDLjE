@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <base href="[% base_url %]"/>
+    <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>[% MOJO_APP_AT_SITE %]</title>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <link href="pub/css/ui-lightness/jquery-ui-current.custom.css" rel="stylesheet" charset="utf-8" type="text/css" />
+    <link href="pub/css/elastic.css" rel="stylesheet" type="text/css" charset="utf-8" />
+    <link href="pub/css/cpanel_layout.css" rel="stylesheet" type="text/css" charset="utf-8" />
+    <script src="pub/js/jquery-current.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="pub/css/elastic.js" type="text/javascript" charset="utf-8"></script>
+    <script src="pub/js/jquery-ui-current.custom.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="pub/js/cpanel.js" type="text/javascript" charset="utf-8"></script>
+    <script src="pub/js/md5-min.js" type="text/javascript" charset="utf-8"></script>
+  </head>
+  <body>
+    <noscript>This page requires JavaScript.</noscript>
+    <div class="unit layout">
+      <div class="container ui-widget ui-widget-content ui-corner-all" id="main-container">
+      <div class="columns">
+        <div class="elastic column">
+          <div class="container ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix" id="main-header">
+            <span class="ui-dialog-title" id="title-main-header">
+              <a href="[% url_for('/home') %]" title="[% MOJO_APP_AT_SITE %]"><img
+            src="pub/css/img/logo3_16x16.png"
+            width="16" height="16" alt="[% MOJO_APP_AT_SITE %]"/></a>
+            
+              [% MOJO_APP_AT_SITE %]</span>
+            
+            <!-- TA generates this -->
+          </div>
+        </div>
+      </div>
+
+[% content %]
+
+      </div><!-- end div id="main-container" -->
+    </div><!-- end div class="unit layout" -->
+  </body>
+</html>

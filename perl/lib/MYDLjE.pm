@@ -49,6 +49,8 @@ sub before_dispatch {
   my $app = $c->app;
   $app->log->debug('New Request:------------------------------------');
   _session_start($c, $app);
+  $c->stash('base_url', $c->req->url->base);
+  $c->stash->{base_url} =~ s{[^/]+/$}{}x;
   return;
 }
 

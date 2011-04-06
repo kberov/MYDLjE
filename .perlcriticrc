@@ -42,4 +42,4 @@ lib_sections    = NAME | SYNOPSIS | METHODS | CONFIG | BUGS AND LIMITATIONS | AU
 script_sections = NAME | USAGE | OPTIONS | AUTHOR
 
 [Variables::ProhibitPackageVars]
-add_packages = Carp
+add_packages = Carp MYDLjE::I18N::bg MYDLjE::I18N::en

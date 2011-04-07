@@ -1,22 +1,20 @@
 [%- WRAPPER 'layouts/cpanel_layout.html.tt' -%]
 <!-- start loginscreen -->
-<script>
+<script>function validate_and_post_form (form_object){ return false; }
 /**
- * Onload!
- */
+  * Onload!
+  */
 $(window).load(function() {
-enhance_form();
-});
-</script>
+  enhance_form();
+  submit_buton = $('#login_form .buttons button[type="submit"]');
+  submit_buton.click(validate_and_post_form);
+});</script>
 <div class="columns">
   <div class="column">
     <form id="login_form" action="[% url_for('/loginscreen') %]" method="post"
     class="ui-widget ui-corner-all ui-state-active">
       <fieldset class="ui-widget-content ui-corner-all">
-        <legend class="ui-widget-header ui-corner-all">[% c.l('Login') %]
-        <span class="help_icon ui-corner-all ui-state-active" style="display: inline-block; cursor: pointer;">
-          <span class="ui-icon ui-icon-help"></span>
-        </span></legend>
+        <legend class="ui-widget-header ui-corner-all">[% c.l('Login') %]</legend>
         <div class="unit on-2 columns">
           <div class="fixed column" style="width:150px">
             <label id="login_name_label">[% c.l('login_name') %]</label>
@@ -39,7 +37,7 @@ enhance_form();
               <input type="hidden" name="session_id" value="[% c.session('id') %]" />
             </div>
           </div>
-          <div class="column span-2" >
+          <div class="column span-2">
             <div class="container help">[% c.l('login_password_help') %]</div>
           </div>
           <div class="column span-2">
@@ -50,6 +48,30 @@ enhance_form();
         </div>
         <!-- end div class="unit on-2 columns" -->
       </fieldset>
+    </form>
+    <!-- for testing cpanel.js enhance_form() only -->
+    <form id="other_form" style="width:300px;display:none;" class="columns on-2">
+      <legend class="ui-widget-header ui-corner-all">for testing cpanel.js only</legend>
+      <div class="column">first field</div>
+      <div class="column">
+        <input type="text" />
+      </div>
+      <div class="column span-2">
+        <div class="container help">[% c.l('login_name_help') %]</div>
+      </div>
+      <div class="column">second field</div>
+      <div class="column">
+        <input type="text" />
+      </div>
+      <div class="column span-2">
+        <div class="container help">[% c.l('login_name_help') %]</div>
+      </div>
+      <div class="column span-2">
+        <div class="container buttons">
+          <button type="reset">Reset</button>
+          <button type="submit">Submit</button>
+        </div>
+      </div>
     </form>
   </div>
 </div>

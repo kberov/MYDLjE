@@ -16,7 +16,7 @@ MACRO link_to_ui_language(language) BLOCK;
 #TODO: Leverage I18N::LangTags::List and add translations to supported languages
 #example: en => English, bg=> Bulgarian
 %]
-<a href="[% c.url_for(action).query(ui_language =>language) %]"
+<a href="[% c.url_for(action).query(ui_language => language) %]"
   title="[% language %]">
   <img src="pub/css/icons/flags/[% language %].png"
     [% IF c.languages() eq language %]class="active"[% END %]

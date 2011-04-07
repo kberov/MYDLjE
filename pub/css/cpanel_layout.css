@@ -53,5 +53,5 @@ body {height:100%;}
     font-weight: normal;
     padding: 0 1ex 1ex;
 }
-
+#menu_languages .active { border: 1px outset silver;}
 /**/

@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <base href="[% base_url %]"/>
+    <base href="[% base_url %]" />
     <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
     <title>[% MOJO_APP_AT_SITE %]</title>
     <meta content="text/html; charset=utf-8" http-equiv="content-type" />
@@ -18,25 +18,26 @@
   <body>
     <noscript>This page requires JavaScript.</noscript>
     <div class="unit layout">
-      <div class="container ui-widget ui-widget-content ui-corner-all" id="main-container">
-      <div class="columns">
-        <div class="elastic column">
-          <div class="container ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix" id="main-header">
+      <div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix" id="main-header">
+        <div class="columns">
+          <div class="fixed column">
             <span class="ui-dialog-title" id="title-main-header">
-              <a href="[% url_for('/home') %]" title="[% MOJO_APP_AT_SITE %]"><img
-            src="pub/css/img/logo3_16x16.png"
-            width="16" height="16" alt="[% MOJO_APP_AT_SITE %]"/></a>
-            
-              [% MOJO_APP_AT_SITE %]</span>
-            
+            <a href="[% url_for('/home') %]" title="[% MOJO_APP_AT_SITE %]">
+              <img src="pub/css/img/logo3_16x16.png" width="16" height="16" alt="[% MOJO_APP_AT_SITE %]" />
+            </a>[% MOJO_APP_AT_SITE %]</span>
             <!-- TA generates this -->
+          </div>
+          <div class="elastic column">
+            <div class="container" id="main-right-menu">[% menu_languages() %] 
+            <span class="main_help_icon ui-corner-all ui-state-active" style="display: inline-block; cursor: pointer;">
+              <span class="ui-icon ui-icon-help"></span>
+            </span></div>
           </div>
         </div>
       </div>
-
-[% content %]
-
-      </div><!-- end div id="main-container" -->
-    </div><!-- end div class="unit layout" -->
+      <div class="container ui-widget ui-widget-content ui-corner-all" id="main-container">[% content %]</div>
+      <!-- end div id="main-container" -->
+    </div>
+    <!-- end div class="unit layout" -->
   </body>
 </html>

@@ -7,6 +7,10 @@ our %Lexicon = (
   _AUTO          => 1,
   login_name     => 'User',
   login_password => 'Pasword',
+  login_name_help =>
+    'Please enter your username for the MYDLjE::ControlPanel application.',
+  login_password_help =>
+    'Please enter your password. It is NOT transmitted in plain text even if you are not using HTTPS protocol.',
 );
 
 1;

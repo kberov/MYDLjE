@@ -66,11 +66,28 @@ sub _session_start {
          $app->config('session_default_expiration')
       || $app->sessions->default_expiration);
 
-  #TODO: implement storage in database
+#NOTE: Storage in database is supported trough $c->msession. See MYDLjE::C::msession.
   my $time = Time::HiRes::time();
   if (not $c->session('start_time')) {
     $c->session('start_time', $time);
     $c->session('id', Mojo::Util::md5_sum(rand($time) . rand($time) . $time));
+  }
+
+  #Switch ui_language if language is supported.
+  my ($ui_language) =
+    ($c->req->param('ui_language') || $c->session('ui_language'));
+  if ($ui_language) {
+    for (@{$app->config('languages')}) {
+      if ($ui_language eq $_) {
+        $c->languages($ui_language);
+        $c->session('ui_language', $ui_language);
+        last;
+      }
+    }
+  }
+  if ($DEBUG) {
+
+    #$app->log->debug($c->dumper($c->session));
   }
   return;
 }

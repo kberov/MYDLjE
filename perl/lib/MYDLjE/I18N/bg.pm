@@ -10,10 +10,10 @@ our %Lexicon = (
   Login          => 'Вписване',
   login_name     => 'Потребител',
   login_password => 'Парола',
-  'Please enter your username for the MYDLjE::ControlPanel application.' =>
-    'Моля, въведете Вашето потребителско име за приложението MYDLjE::ControlPanel',
-  'Please enter your password. It is NOT transmitted in plain text even if you are not using HTTPS protocol.'
-    => 'Моля въведете Вашата парола. Тя е защитена дори ако не ползвате HTTPS протокола',
+  login_name_help =>
+    'Моля въведете Вашето потребителско име за приложението MYDLjE::ControlPanel',
+  login_password_help =>
+    'Моля въведете Вашата парола. Тя е защитена дори ако не ползвате HTTPS протокола.',
 
 
 );

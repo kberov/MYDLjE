@@ -18,8 +18,12 @@ body {height:100%;}
 }
 #main-header {
     padding: 3px;
+    margin-bottom:1ex;
 }
 #title-main-header a {float: left;}
+#main-right-menu{
+    text-align:right;
+}
 #login_form {
   margin:1em auto 1em auto;
   width: 500px;
@@ -49,3 +53,5 @@ body {height:100%;}
     font-weight: normal;
     padding: 0 1ex 1ex;
 }
+
+/**/

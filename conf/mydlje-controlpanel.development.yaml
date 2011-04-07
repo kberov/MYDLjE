@@ -11,7 +11,10 @@ plugins:
         - templates
         - templates/cpanel
       DEBUG: 1
-      PRE_PROCESS: cpanel_pre_process.tt 
+      PRE_PROCESS:
+        - cpanel_pre_process.tt
+        - macros_pre_process.tt
+        - cpanel_macros_pre_process.tt
 routes:
   /loginscreen:
     to:

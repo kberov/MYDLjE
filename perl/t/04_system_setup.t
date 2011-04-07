@@ -12,8 +12,15 @@ BEGIN {
 }
 
 use lib ("$ENV{MOJO_HOME}/perl/lib", "$ENV{MOJO_HOME}/perl/site/lib");
-use Test::More tests => 25;
+use Test::More;
 use Test::Mojo;
+use MYDLjE::Config;
+if (MYDLjE::Config->new->stash('installed')) {
+  plan skip_all => 'System is already installed. Will not test system_setup.';
+}
+else {
+  plan tests => 25;
+}
 my $t = Test::Mojo->new(app => 'MYDLjE');
 
 for (qw(/check_readables /check_writables /check_modules)) {

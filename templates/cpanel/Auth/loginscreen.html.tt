@@ -27,8 +27,7 @@ enhance_form();
             </div>
           </div>
           <div class="column span-2">
-            <div class="container help">[% c.l('Please enter your username for the MYDLjE::ControlPanel application.')
-            %]</div>
+            <div class="container help">[% c.l('login_name_help') %]</div>
           </div>
           <div class="fixed column" style="width:150px;">
             <label for="login_password" id="login_password_label">[% c.l('login_password') %]</label>
@@ -37,11 +36,11 @@ enhance_form();
             <div class="container field">
               <input type="text" name="login_password" />
               <input type="hidden" name="login_password_md5" />
+              <input type="hidden" name="session_id" value="[% c.session('id') %]" />
             </div>
           </div>
-          <div class="column span-2" style="width: 469.4px;">
-            <div class="container help">[% c.l('Please enter your password. It is NOT transmitted in plain text even if
-            you are not using HTTPS protocol.') %]</div>
+          <div class="column span-2" >
+            <div class="container help">[% c.l('login_password_help') %]</div>
           </div>
           <div class="column span-2">
             <div class="container buttons">

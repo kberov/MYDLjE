@@ -11,7 +11,7 @@ function enhance_form() {
   $('form').each(function() {
     var form_object = this;
     help_icon = $('<span id="'+ form_object.id+
-      '_help" class="get_help"><span class="ui-icon '+
+      '_help" class="help_icon"><span class="ui-icon '+
       'ui-icon-help"></span></span>')
         .addClass("ui-corner-all ui-state-active")
           .css({display: 'inline-block', cursor: 'pointer'

@@ -1,6 +1,50 @@
 [%- WRAPPER 'layouts/cpanel_layout.html.tt' -%]
 <!-- start loginscreen -->
-<script>function validate_and_post_form (form_object){ return false; }
+<script>
+  var error_messages = {
+    login_name: '[% c.l("login_field_error",c.l("login_name")) %]',
+    login_password: '[% c.l("login_field_error",c.l("login_password")) %]'
+  };
+  
+function validate_and_post_form (){
+  
+  var session_id = $('#session_id').val();
+  var login_name = $('#login_name').val();
+  var login_password = $('#login_password').val();
+  var errors = 0;
+  var messages = '';
+  $('#login_name,#login_password').each(function(){
+    $('#error-dialog').html(' ');
+    var current_value = $(this).val();
+    if(current_value == '' || current_value.length<4){
+      errors++;
+      $(this).addClass('ui-state-error');
+      messages += '<p class="ui-state-error ui-corner-all"><span class="ui-icon ui-icon-alert" '+
+        'style="float: left; margin-right: 0.3em;"></span>'+
+        error_messages[this.id] + '</p>';
+    }
+  });
+  if(errors>0){
+    $( "#error-dialog" ).html(messages);
+    $( "#error-dialog" ).dialog({
+    dialogClass: 'alert',
+    modal: true,
+    buttons: {
+        Ok: function() {
+            $( this ).dialog( "close" );
+        }
+    }
+    });
+    return false;
+  }else {
+    var temp_login_password = hex_md5(login_name + login_password );
+    
+    $('#login_password_md5').val(hex_md5(session_id + temp_login_password));
+    $('#login_password').val('');
+    return true;
+  }
+  return false;
+}
 /**
   * Onload!
   */
@@ -16,12 +60,16 @@ $(window).load(function() {
       <fieldset class="ui-widget-content ui-corner-all">
         <legend class="ui-widget-header ui-corner-all">[% c.l('Login') %]</legend>
         <div class="unit on-2 columns">
+          <div class="column span-2" style="display: [%
+          validator_errors ? 'block;':'none;' %]">
+            <div class="ui-state-error ui-corner-all">
+              [% validator_errors.values.join('<br/>') %]</div></div>
           <div class="fixed column" style="width:150px">
-            <label id="login_name_label">[% c.l('login_name') %]</label>
+            <label for="login_name" id="login_name_label">[% c.l('login_name') %]</label>
           </div>
           <div class="elastic column">
             <div class="container field">
-              <input type="text" name="login_name" />
+              <input type="text" id="login_name" name="login_name" />
             </div>
           </div>
           <div class="column span-2">
@@ -32,9 +80,9 @@ $(window).load(function() {
           </div>
           <div class="elastic column">
             <div class="container field">
-              <input type="text" name="login_password" />
-              <input type="hidden" name="login_password_md5" />
-              <input type="hidden" name="session_id" value="[% c.session('id') %]" />
+              <input type="password" id="login_password" name="login_password" />
+              <input type="hidden" id="login_password_md5" name="login_password_md5" />
+              <input type="hidden" id="session_id" name="session_id" value="[% c.session('id') %]" />
             </div>
           </div>
           <div class="column span-2">
@@ -49,6 +97,9 @@ $(window).load(function() {
         <!-- end div class="unit on-2 columns" -->
       </fieldset>
     </form>
+    <div id="error-dialog" style="display:none"title="[% c.l('Error') %]">
+    </div>
+    
     <!-- for testing cpanel.js enhance_form() only -->
     <form id="other_form" style="width:300px;display:none;" class="columns on-2">
       <legend class="ui-widget-header ui-corner-all">for testing cpanel.js only</legend>

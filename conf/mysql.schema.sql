@@ -19,8 +19,8 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 DROP TABLE IF EXISTS `my_users`;
 CREATE TABLE IF NOT EXISTS `my_users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `login_name` varchar(255) NOT NULL DEFAULT '',
-  `login_password` varchar(100) NOT NULL,
+  `login_name` varchar(255) NOT NULL,
+`login_password` varchar(100) NOT NULL COMMENT 'Mojo::Util::md5_sum($login_name.$login_password)',
   `first_name` varchar(255) NOT NULL DEFAULT '',
   `last_name` varchar(255) NOT NULL DEFAULT '',
   `email` varchar(255) NOT NULL DEFAULT 'email@site.com',

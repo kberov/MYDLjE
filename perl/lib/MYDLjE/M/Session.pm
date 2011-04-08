@@ -103,7 +103,7 @@ sub _thaw_sessiondata {
 
 sub tstamp { return $_[0]->{data}{tstamp} = time; }
 
-sub guest{return $_[0]->user->login_name eq 'guest';}
+sub guest { return $_[0]->user->login_name eq 'guest'; }
 
 sub save {
   my $self = shift;

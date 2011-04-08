@@ -46,7 +46,8 @@ sub read_config_files {
       $args = [@{"${APP}::ISA"}] if (@{"${APP}::ISA"} && !@$args);
     }
     push @$args, $APP;
-    $self->log->debug('read_config @$args: ' . "@$args");
+
+    #$self->log->debug('read_config @$args: ' . "@$args");
     for my $i (0 .. @$args - 1) {
       my $filename = $args->[$i];
       $filename =~ s|::|-|gx;
@@ -63,7 +64,8 @@ sub read_config_files {
   foreach my $filename (@$args) {
     my $conf;
     if (-r $filename) {
-      $self->log->debug('reading: ' . $filename);
+
+      #$self->log->debug('reading: ' . $filename);
       $conf = YAML::Any::LoadFile($filename);
       push @{$self->configs}, $conf;
     }

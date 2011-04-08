@@ -1,0 +1,14 @@
+[%- WRAPPER 'layouts/cpanel_layout.html.tt' -%]
+<div class="columns on-2">
+  <div class="column fixed" id="main-left-menu">
+    <div class="container ui-widget ui-corner-all ui-state-default">
+      lcxvmx
+    </div>
+  </div>
+  <div class="column elastic" id="main-working-area">
+    <div class="container ui-widget ui-corner-all ui-state-active">
+    fdgadsgdfg
+    </div>
+  </div>
+</div>  
+[% END %]

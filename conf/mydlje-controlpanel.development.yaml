@@ -27,6 +27,12 @@ routes:
       
 #almost all routes in the cpanel app require authentication
 login_required_routes:
+  /logout:
+    via:
+      - get
+    to:
+      controller: Auth
+      action: logout
   /home:
     to:
       controller: Home

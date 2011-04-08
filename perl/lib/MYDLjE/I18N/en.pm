@@ -11,6 +11,9 @@ our %Lexicon = (
     'Please enter your username for the MYDLjE::ControlPanel application.',
   login_password_help =>
     'Please enter your password. It is NOT transmitted in plain text even if you are not using HTTPS protocol.',
+  login_field_error => 'Please enter valid value for the field "[_1]"!',
+  session_id_error  => 'Invalid session. Please try again!',
+
 );
 
 1;

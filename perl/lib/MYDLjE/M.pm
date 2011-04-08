@@ -113,7 +113,7 @@ sub make_field_attrs {
 
     #Carp::carp('Making sub ' . $column) if $DEBUG;
     $code .= <<"SUB";
-    sub $column {
+    sub $class\::$column {
       if(\$_[1]){ #setting value
         \$_[0]->{data}{$column} = \$_[0]->validate_field($column=>\$_[1]);
         #make it chainable

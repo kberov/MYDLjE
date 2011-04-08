@@ -4,7 +4,7 @@ use MYDLjE::Base 'MYDLjE::ControlPanel::C';
 
 sub home {
   my $c = shift;
-  $c->render(text => 'home');
+  $c->render(template => 'cpanel/home');
   return;
 }
 

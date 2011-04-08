@@ -18,7 +18,7 @@ BEGIN {
 
 use lib ("$ENV{MOJO_HOME}/perl/lib", "$ENV{MOJO_HOME}/perl/site/lib");
 
-use Test::More qw(no_plan);
+use Test::More tests => 32;
 use MYDLjE::Config;
 use MYDLjE::Plugin::DBIx;
 use MYDLjE::M::Content;
@@ -131,4 +131,9 @@ $sstorage->user(MYDLjE::M::User->select(login_name => 'admin'));
 is($sstorage->user->id, $sstorage->user_id,
   '$sstorage->user->id  is always the same as $sstorage->user_id');
 is($sstorage->new_id, $sstorage->save,
-  '$sstorage->new_id is returned by $sstorage->save')
+  '$sstorage->new_id is returned by $sstorage->save');
+
+#Switched user(Login)
+$sstorage = MYDLjE::M::Session->select(id => $sstorage->new_id);
+is($sstorage->user->login_name,
+  'admin', 'session restored again with newly logged in user');

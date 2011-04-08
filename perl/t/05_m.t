@@ -18,7 +18,7 @@ BEGIN {
 
 use lib ("$ENV{MOJO_HOME}/perl/lib", "$ENV{MOJO_HOME}/perl/site/lib");
 
-use Test::More tests => 32;
+use Test::More tests => 34;
 use MYDLjE::Config;
 use MYDLjE::Plugin::DBIx;
 use MYDLjE::M::Content;
@@ -101,7 +101,7 @@ require MYDLjE::M::Session;
 my $session_id = Mojo::Util::md5_sum(1234567890);
 my $sstorage = MYDLjE::M::Session->select(id => $session_id);
 is($sstorage->id, undef, "No such session id: $session_id");
-
+ok($sstorage->guest,'$sstorage->guest - yes');
 #$sstorage->user_id is always the same as $sstorage->user->id
 is($sstorage->user_id, 2,
   "\$sstorage->user_id is guest user_id: " . $sstorage->user->id);
@@ -137,3 +137,4 @@ is($sstorage->new_id, $sstorage->save,
 $sstorage = MYDLjE::M::Session->select(id => $sstorage->new_id);
 is($sstorage->user->login_name,
   'admin', 'session restored again with newly logged in user');
+ok(!$sstorage->guest,'$sstorage->guest - no');

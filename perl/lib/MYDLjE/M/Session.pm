@@ -62,7 +62,12 @@ sub user_id {
     }
     return $self->{data}{user_id};
   }
-  $self->{data}{user_id} ||= $self->user->id;
+
+  #user may be switched meanwhile
+  elsif (!$self->{data}{user_id} || $self->{data}{user_id} != $self->user->id)
+  {
+    $self->{data}{user_id} = $self->user->id;
+  }
 
   #we always have a user id - "guest user id" by default
   return $self->{data}{user_id};
@@ -98,13 +103,14 @@ sub _thaw_sessiondata {
 
 sub tstamp { return $_[0]->{data}{tstamp} = time; }
 
+sub guest{return $_[0]->user->login_name eq 'guest';}
+
 sub save {
   my $self = shift;
 
-  $self->sessiondata->{user_data} ||= $self->user->data;
+  $self->sessiondata->{user_data} = $self->user->data;
   if (!$self->id) {    #a fresh new session
     $self->id($self->new_id());
-
     $self->dbix->insert(
       $self->TABLE,
       { id          => $self->id,
@@ -180,6 +186,35 @@ MYDLjE::M::Session - MYDLjE::M based Session storage for MYDLjE
 MYDLjE::M::Session is to store session data in the MYDLjE database.
 It is just an implementation of the abstract class L<MYDLjE::M>.
 This functionality is internally used by L<MYDLjE::C/msession>, so if you need database based session storage use L<MYDLjE::C/msession>.
+
+=head1 ATTRIBUTES
+
+=head1 guest
+
+Use this attribute to check if we have a logged in user or  the current user is guest
+
+  sub isauthenticated {
+    my $c = shift;
+    if (!$c->msession->guest) {
+      return 1;
+    }
+    else{
+      $c->redirect_to('/loginscreen');
+    }
+    return 0;
+  }
+
+=head2 tstamp
+
+Always returns current second since the epoch. This is stored in C<my_sessions.tstamp> field. 
+
+...
+
+
+=head1 METHODS
+
+....
+
 
 =head1 SEE ALSO
 

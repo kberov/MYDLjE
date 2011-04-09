@@ -25,8 +25,11 @@ my $config = MYDLjE::Config->new(
     $ENV{MOJO_HOME} . '/conf/mydlje-controlpanel.development.yaml'
   ]
 );
-unless ($config->stash('installed')) {
+if( not $config->stash('installed')) {
   plan skip_all => 'System is not installed. Will not test i18n.';
+}
+elsif(not -w "$ENV{MOJO_HOME}/tmp/ctpl"){
+  plan skip_all => "$ENV{MOJO_HOME}/tmp/ctpl is not writable. All tests will die.";  
 }
 else {
   plan tests => 12;

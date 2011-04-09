@@ -17,18 +17,18 @@ IndexOptions -FancyIndexing
 Options -Indexes +ExecCGI
 
 #We prefer fastcgi
-<IfModule !mod_fastcgi.c>
+#<IfModule !mod_fastcgi.c>
 #set explicitly filenames as cgi scripts
   <Files ~ "(mydlje|cpanel|site)$">
     SetHandler  cgi-script
   </Files>
-</IfModule>
+#</IfModule>
 
-<IfModule mod_fastcgi.c>
-  <Files ~ "(mydlje|cpanel|site)$">
-    SetHandler  fastcgi-script
-  </Files>
-</IfModule>
+#<IfModule mod_fastcgi.c>
+#  <Files ~ "(mydlje|cpanel|site)$">
+#    SetHandler  fastcgi-script
+#  </Files>
+#</IfModule>
 
 DirectoryIndex index.xhtml index.html site
 # Redefine the mime type for the most common types of scripts

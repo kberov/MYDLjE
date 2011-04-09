@@ -6,7 +6,7 @@ use utf8;
 our %Lexicon = (
   _AUTO          => 1,
   login_name     => 'User',
-  login_password => 'Pasword',
+  login_password => 'Password',
   login_name_help =>
     'Please enter your username for the MYDLjE::ControlPanel application.',
   login_password_help =>

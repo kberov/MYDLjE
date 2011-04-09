@@ -8,6 +8,8 @@ our %Lexicon = (
 
   #cpanel/loginscreen.html.tt
   Login          => 'Вписване',
+  Logout => 'Изход',
+  Help =>'Помощ',
   login_name     => 'Потребител',
   login_password => 'Парола',
   login_name_help =>

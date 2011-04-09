@@ -13,8 +13,24 @@ plugins:
       DEBUG: 1
       PRE_PROCESS:
         - cpanel_pre_process.tt
+        - form_macros_pre_process.tt
         - macros_pre_process.tt
         - cpanel_macros_pre_process.tt
+      COMPILE_PERL: 2
+      LOAD_PERL: 1
+      DEFAULT: template_not_found.tt
+      ENCODING: 'UTF-8'
+      #EVAL_PERL: *true      #use perl in templates only as last resort - not recommended
+      #PLUGINS:
+      #TODO if needed 
+      #
+      POST_CHOMP: '~'
+      PRE_CHOMP: '~'
+      SEMICOLONS: 0
+      SHOW_UNDEFINED_INTERP: 0
+
+test_utf8: 试验,δοκιμή,проба 
+
 routes:
   /loginscreen:
     to:

@@ -23,6 +23,7 @@ function enhance_form() {
   
 
   $('form input[type="text"]').addClass('ui-corner-all');
+  $('form input[type="password"]').addClass('ui-corner-all');
 
   $('form .buttons button[type="reset"]').button({
     icons: {

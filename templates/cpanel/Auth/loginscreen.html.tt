@@ -64,30 +64,8 @@ $(window).load(function() {
           validator_errors ? 'block;':'none;' %]">
             <div class="ui-state-error ui-corner-all">
               [% validator_errors.values.join('<br/>') %]</div></div>
-          <div class="fixed column" style="width:150px">
-            <label for="login_name" id="login_name_label">[% c.l('login_name') %]</label>
-          </div>
-          <div class="elastic column">
-            <div class="container field">
-              <input type="text" id="login_name" name="login_name" />
-            </div>
-          </div>
-          <div class="column span-2">
-            <div class="container help">[% c.l('login_name_help') %]</div>
-          </div>
-          <div class="fixed column" style="width:150px;">
-            <label for="login_password" id="login_password_label">[% c.l('login_password') %]</label>
-          </div>
-          <div class="elastic column">
-            <div class="container field">
-              <input type="password" id="login_password" name="login_password" />
-              <input type="hidden" id="login_password_md5" name="login_password_md5" />
-              <input type="hidden" id="session_id" name="session_id" value="[% c.session('id') %]" />
-            </div>
-          </div>
-          <div class="column span-2">
-            <div class="container help">[% c.l('login_password_help') %]</div>
-          </div>
+          [% text_field('login_name',{required => 1}) %]
+          [% password_field('login_password',{required => 1}) %]
           <div class="column span-2">
             <div class="container buttons">
               <button type="submit">[% c.l('Login') %]</button>
@@ -95,6 +73,8 @@ $(window).load(function() {
           </div>
         </div>
         <!-- end div class="unit on-2 columns" -->
+        <input type="hidden" id="login_password_md5" name="login_password_md5" />
+        <input type="hidden" id="session_id" name="session_id" value="[% c.session('id') %]" />
       </fieldset>
     </form>
     <div id="error-dialog" style="display:none"title="[% c.l('Error') %]">

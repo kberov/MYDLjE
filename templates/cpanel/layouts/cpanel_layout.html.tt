@@ -6,7 +6,7 @@
     <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
     <title>[% MOJO_APP_AT_SITE %]</title>
     <meta content="text/html; charset=utf-8" http-equiv="content-type" />
-    <link href="pub/css/ui-lightness/jquery-ui-current.custom.css" rel="stylesheet" charset="utf-8" type="text/css" />
+    <link href="pub/css/[% JQ_UI_THEME %]/jquery-ui-current.custom.css" rel="stylesheet" charset="utf-8" type="text/css" />
     <link href="pub/css/elastic.css" rel="stylesheet" type="text/css" charset="utf-8" />
     <link href="pub/css/cpanel_layout.css" rel="stylesheet" type="text/css" charset="utf-8" />
     <script src="pub/js/jquery-current.min.js" type="text/javascript" charset="utf-8"></script>
@@ -29,7 +29,7 @@
           </div>
           <div class="elastic column">
             <div class="container" id="main-right-menu">[% menu_languages() %] 
-            <span class="main_help_icon ui-corner-all ui-state-active" style="display: inline-block; cursor: pointer;">
+            <span class="main_help_icon ui-corner-all ui-state-active" style="display: inline-block; cursor: pointer;" title="[% c.l('Help') %]">
               <span class="ui-icon ui-icon-help"></span>
             </span>
             [% UNLESS c.msession.guest %]
@@ -43,7 +43,9 @@
           </div>
         </div>
       </div>
-      <div class="container ui-widget ui-widget-content ui-corner-all" id="main-container">[% content %]</div>
+      <div class="container ui-widget ui-widget-content ui-corner-all" id="main-container">
+        [% content %]
+      </div>
       <!-- end div id="main-container" -->
     </div>
     <!-- end div class="unit layout" -->

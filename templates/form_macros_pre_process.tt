@@ -1,0 +1,148 @@
+[%#
+form_macros_pre_process.tt
+
+Here we place only macros which are used for building forms.
+
+This file can be preprocessed by any application (cpanel, site etc... )
+and hopefully only different stylesheets will be needed to make the 
+look and feel of the widgets different.
+
+You may add your own newly created complex widgets here.
+You may use simple widgets to build more complex widgets.
+
+%]
+
+[% MACRO text_field(arg,params) BLOCK %]
+[% name_and_id =  arg||params.name; 
+field_error =${ name_and_id _ '_error' };
+params.value ||= form.${name_and_id};
+
++%]
+    <div class="column span-2" style="[% field_error?'':'display:none;'%]" 
+    id="[% name_and_id %]_error">
+      <div class="container ui-state-error ui-corner-all ">[% field_error %]</div>
+    </div>
+    <div class="fixed column label">
+    <label for="[% params.id || name_and_id %]" id="[% name_and_id _ '_label' %]">
+            [% params.label|| c.l(name_and_id).ucfirst %]
+            [% params.required ? ':&nbsp;*' : ':' %]
+        </label>
+    </div>
+    <div class="elastic column">
+      <div class="container field">
+        <input type="text" class="textbox" id="[% params.id || name_and_id %]" 
+        name="[% name_and_id %]" value="[% params.value %]"
+        [% params.readonly ?' readonly="readonly" ':'' %] />
+      </div>
+    </div>
+    <div class="column span-2">
+      <div class="container help">[% c.l(name_and_id _ '_help') %]</div>
+    </div>
+[%+ END %]
+
+[%# this must be called like this:
+\[\%  WRAPPER password_field
+                arg = 'login_password'; params = {required => 1};\%\]
+                Your html here
+          \[\% END \%\]
+%]
+[% MACRO password_field(arg, params) BLOCK %]
+[% name_and_id =  arg||params.name; 
+field_error =${ name_and_id _ '_error' };
++%]
+    <div class="column span-2" style="[% field_error?'':'display:none;'%]" 
+    id="[% name_and_id %]_error">
+      <div class="container ui-state-error ui-corner-all ">[% field_error %]</div>
+    </div>
+    <div class="fixed column label">
+    <label for="[% params.id || name_and_id %]">
+            [% params.label|| c.l(name_and_id).ucfirst%]
+            [% params.required ? ':&nbsp;*' : ':' %]
+        </label>
+    </div>
+    <div class="elastic column ">
+      <div class="container field">
+        <input type="password" class="textbox" id="[% params.id || name_and_id %]" 
+        name="[% name_and_id %]" />
+      </div>
+    </div>
+    <div class="column span-2">
+      <div class="container help">[% c.l(name_and_id _ '_help') %]</div>
+    </div>
+[%+ END %]
+
+[% MACRO file_field(arg,params) BLOCK %]
+[% name_and_id =  arg||params.name; 
+field_error =${ name_and_id _ '_error' };
++%]
+    <div class="column span-2" style="[% field_error?'':'display:none;'%]" 
+    id="[% name_and_id %]_error">
+      <div class="container ui-state-error ui-corner-all ">[% field_error %]</div>
+    </div>
+    <div class="fixed column label">
+    <label for="[% params.id || name_and_id %]">
+            [% params.label || c.l(name_and_id).ucfirst%]
+            [% params.required ? ':&nbsp;*' : ':' %]
+        </label>
+    </div>
+    <div class="elastic column ">
+      <div class="container field">
+        <input type="file" id="[% name_and_id %]" 
+        name="[% name_and_id %]" />
+      </div>
+    </div>
+        <div class="column span-2">
+      <div class="container help">[% c.l(name_and_id _ '_help') %]</div>
+    </div>
+[% END %]
+
+[% MACRO select_field(arg,params) BLOCK %]
+[% name_and_id =  arg||params.name; 
+field_error =${ name_and_id _ '_error' };
+params.selected ||= form.${name_and_id};
++%]
+    <div class="column span-2" style="[% field_error?'':'display:none;'%]" 
+    id="[% name_and_id %]_error">
+      <div class="container ui-state-error ui-corner-all ">[% field_error %]</div>
+    </div>
+    <div class="fixed column label">
+    <label for="[% params.id || name_and_id %]">
+            [% params.label|| c.l(name_and_id).ucfirst%]
+            [% params.required ? ':&nbsp;*' : ':' %]
+        </label>
+    </div>
+    <div class="elastic column ">
+        <select  for="[% params.id || name_and_id %]" name="[% name_and_id %]" >
+            [% FOR row IN params.options %]
+            <option [%+
+                params.selected eq row.value ? 'selected="selected"' : '' 
+                +%]
+                value="[% row.value %]">[%
+                c.l(row.label || row.value).xml
+                %]</option>
+            [% END %]
+        </select>
+    </div>
+[%+ END %]
+
+[%MACRO textarea(arg,params) BLOCK%]
+[% name_and_id =  arg||params.name; 
+field_error =${ name_and_id _ '_error' };
+params.value ||= form.${name_and_id};
++%]
+    <div class="column span-2" style="[% field_error?'':'display:none;'%]" 
+    id="[% name_and_id %]_error">
+      <div class="container ui-state-error ui-corner-all ">[% field_error %]</div>
+    </div>
+    <div class="fixed column label">
+    <label for="[% params.id || name_and_id %]" id="[% name_and_id _ '_label' %]">
+            [% params.label|| c.l(name_and_id).ucfirst %]
+            [% params.required ? ':&nbsp;*' : ':' %]
+        </label>
+    </div>
+    <div class="elastic column ">
+      <textarea id="[% params.id || name_and_id %]" name="[% name_and_id %]" class="textarea" 
+        style="height:[% params.height||'100px' %];width:99%;" >
+        [% params.value %]</textarea>
+    </div>
+[%+ END %]

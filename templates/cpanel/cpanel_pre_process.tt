@@ -5,5 +5,6 @@
     app = c.app;
     MOJO_APP = app.env.MOJO_APP;
     MOJO_APP_AT_SITE = MOJO_APP _ '@'_ app.config('site_name');
-    USER_AT_MOJO_APP_AT_SITE = c.msession.user.login_name _'@' _ MOJO_APP_AT_SITE
+    USER_AT_MOJO_APP_AT_SITE = c.msession.user.login_name _'@' _ MOJO_APP_AT_SITE;
+    JQ_UI_THEME = app.config('jq_ui_theme');
 ~%]

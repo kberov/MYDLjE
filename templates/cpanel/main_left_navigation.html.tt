@@ -1,11 +1,10 @@
 [%#
-Here is implemented the functionality to show menu items with links
+Here is implemented the functionality to show menu-items with links
 to modules and plugins. The modules workarea is in the elastic right
 column while this column is fixed.
 
 This column is visibile only by a logged in user.
-TODO:
-Further, depending on user permissions some menuitems will be visible for certain users while others - not.
+TODO: Further, depending on user permissions some menu-items will be visible for certain users while others - will not.
 
 %]
 [%
@@ -34,11 +33,11 @@ $(window).load(function() {
   <div id="main-left-navigation" class="container">
   <div id="accordion"><!-- Accordion -->
  
-[% FOREACH section = menu_data %]
+[% FOREACH section IN menu_data %]
   <h4>[% c.l(section.header).xml %]</h4>
   <div>
-    <ul>
-    [% FOREACH item = section.items%]
+    <ul id="[% section.header.lower().replace('\W','_') %]">
+    [% FOREACH item IN section.items%]
       <li  style="list-style-image: url(pub/css/icons/[% item.icon %])">
         [% c.link_to(c.l(item.title),item.route) %]
       </li>
@@ -46,43 +45,6 @@ $(window).load(function() {
     </ul>
   </div>
 [% END %]
-
-
-    <h4>System</h4>
-    <div>
-      <ul>
-       
-        <li>Plugins</li>
-        <li>System log</li>
-      </ul>
-    </div>
-    <h4>Personal</h4>
-    <div>
-      <ul>
-        <li>Preferences</li>
-        <li>Cache</li>
-        <li>Plugins</li>
-      </ul>
-    </div>
-    <h4>A big Plugin</h4>
-    <div>
-      <ul>
-        <li>Preferences</li>
-        <li>Cache</li>
-        <li>FooBar Foo</li>
-      </ul>
-    </div>
-    <h4>eCommerce</h4>
-    <div>
-      <ul>
-        <li>Stores Configuration</li>
-        <li>Product Management</li>
-        <li>Rules &amp; Coupons</li>
-      </ul>
-    </div>
-    
-    
-    
     </div><!-- end #accordion -->
   </div> <!-- end div id="main-left-navigation" -->
 </div>

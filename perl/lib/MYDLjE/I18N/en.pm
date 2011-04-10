@@ -13,6 +13,13 @@ our %Lexicon = (
     'Please enter your password. It is NOT transmitted in plain text even if you are not using HTTPS protocol.',
   login_field_error => 'Please enter valid value for the field "[_1]"!',
   session_id_error  => 'Invalid session. Please try again!',
+  list_pages        => 'List of pages',
+  list_questions    => 'List of questions',
+  list_answers      => 'List of answers',
+  list_articles     => 'List of articles',
+  list_notes        => 'List of notes',
+  list_books        => 'List of books',
+
 
 );
 

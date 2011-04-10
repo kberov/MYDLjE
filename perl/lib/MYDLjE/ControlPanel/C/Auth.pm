@@ -16,6 +16,7 @@ sub loginscreen {
   my $c = shift;
   if ($c->req->method eq 'GET') {
     $c->render(
+
       #template => 'Auth/loginscreen'
     );
   }
@@ -26,8 +27,9 @@ sub loginscreen {
     }
     else {
       $c->render(
-                 #template => 'loginscreen'
-                 );
+
+        #template => 'loginscreen'
+      );
       return;
     }
   }

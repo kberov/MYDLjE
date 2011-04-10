@@ -65,12 +65,11 @@ login_required_routes:
       controller: Configs
       action: list
 
-  #We describe here the items in main_left_navigation.html.tt
-  #All plugins must/should provide their items if they want to be present in this menu
-  #all menu items will be output as c.l('Item'). So menu items can be translated.
-  #"icons" are in $MOJO_HOME/pub/css/icons/
-  #"routes" are routes and are expected to have controllers wich will handle them
-
+#We describe here the items in main_left_navigation.html.tt
+#All plugins must/should provide their items if they want to be present in this menu.
+#All menu items will be output as c.l('Item'). So menu items can be translated.
+#"icons" are in $MOJO_HOME/pub/css/icons/
+#"routes" are routes and are expected to have controllers wich will handle them.
 main_left_navigation:
   -
     header: Content
@@ -124,7 +123,7 @@ main_left_navigation:
       -
         title: Cache
         icon: database_refresh.png
-        rout: /cache
+        route: /cache_management
       -
         title: File Management
         icon: folder_page.png

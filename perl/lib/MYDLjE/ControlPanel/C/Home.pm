@@ -5,6 +5,7 @@ use MYDLjE::Base 'MYDLjE::ControlPanel::C';
 sub home {
   my $c = shift;
   $c->render(
+
     #template => 'Home/home'
   );
   return;

@@ -23,11 +23,12 @@ my $config = MYDLjE::Config->new(
     $ENV{MOJO_HOME} . '/conf/mydlje-controlpanel.development.yaml'
   ]
 );
-if ( not $config->stash('installed')) {
+if (not $config->stash('installed')) {
   plan skip_all => 'System is not installed. Will not test cpanel.';
 }
-elsif(not -w "$ENV{MOJO_HOME}/tmp/ctpl"){
-  plan skip_all => "$ENV{MOJO_HOME}/tmp/ctpl is not writable. All tests will die.";  
+elsif (not -w "$ENV{MOJO_HOME}/tmp/ctpl") {
+  plan skip_all =>
+    "$ENV{MOJO_HOME}/tmp/ctpl is not writable. All tests will die.";
 }
 else {
   plan tests => 19;
@@ -49,22 +50,30 @@ $t->get_ok('/loginscreen')->status_is(200)
 
   #Check other hidden form for testing JS
   ->element_exists('form#other_form');
-my $dom = $t->tx->res->dom;
+my $dom   = $t->tx->res->dom;
 my $style = $dom->at('form#other_form')->attrs->{style};
 ok($style =~ m/display\:none;/x, 'form#other_form is hidden');
+
 #Does it seem usable?
-like($dom->at('label#login_name_label')->text, qr/User/x,'Label reads: "User:"');
-like($dom->at('label#login_password_label')->text, qr/Password/x,'Label reads: "Password:"');
-is($dom->at('button[type="submit"]')->text, 'Login','Button reads: "Login"');
+like($dom->at('label#login_name_label')->text,
+  qr/User/x, 'Label reads: "User:"');
+like($dom->at('label#login_password_label')->text,
+  qr/Password/x, 'Label reads: "Password:"');
+is($dom->at('button[type="submit"]')->text, 'Login', 'Button reads: "Login"');
 
 #And mainly does it work?
 $t->post_form_ok(
-    '/loginscreen',
-    'UTF-8',
-    {login_name   => 'admin',
-     login_password   => 'admin',
-     },
-  )->element_exists('div[class="ui-state-error ui-corner-all"]');
+  '/loginscreen',
+  'UTF-8',
+  { login_name     => 'admin',
+    login_password => 'admin',
+  },
+)->element_exists('div[class="ui-state-error ui-corner-all"]');
 $dom = $t->tx->res->dom;
-ok($dom->at('div[class="ui-state-error ui-corner-all"]')->text =~ m/Invalid\ssession/x,'Invalid session');
+ok(
+  $dom->at('div[class="ui-state-error ui-corner-all"]')->text
+    =~ m/Invalid\ssession/x,
+  'Invalid session'
+);
+
 #TODO: Tests for all error messages and tests for the full login/logout flow.

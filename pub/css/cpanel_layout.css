@@ -56,7 +56,7 @@ form .buttons {
 /* Style for main left navigation menu/accordeon */
 #main-left-navigation {
     margin-right:1ex;
-    padding:0.3.ex;
+    padding:0.3ex;
 }
 #main-left-navigation #accordion h4 {
     font-weight:bold;
@@ -72,4 +72,9 @@ form .buttons {
 }
 #main-left-navigation #accordion .ui-accordion-content ul {
     padding: 0 1em;
+}
+#main-working-area h3 {
+    padding: 1ex 1ex 1ex 1ex;
+    margin: 2px; 
+    
 }

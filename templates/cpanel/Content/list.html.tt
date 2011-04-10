@@ -1,0 +1,16 @@
+[% WRAPPER ${TEMPLATE_WRAPPER} %]
+<!-- start [% action %] -->
+<div class="container ui-corner-all ui-widget-content">
+<h3 class="ui-widget-header ui-corner-all ui-helper-clearfix">
+  [% c.l('list_' _ action) %]
+<a href="[% c.url_for('/content/edit_' _ data_type _ '/0') %]"
+   title="[% c.l('New [_1]', data_type ) %]"
+   style="float:right;"><span class="ui-icon" style="background-image: url(pub/css/icons/add.png) "></span></a>
+</h3>
+
+
+[]
+list [% action %]
+
+</div><!-- end [% action %] -->
+[% END %]

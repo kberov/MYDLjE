@@ -51,20 +51,21 @@ login_required_routes:
       controller: Auth
       action: logout
   /home:
+    order: 100001
     to:
       controller: Home
       action: home
-  /users:
-    order: 2
+  /content/:action:
+    order: 10
     to:
-      controller: Users
-      action: list
-  /configs:
-    order: 1
-    to:
-      controller: Configs
-      action: list
+      controller: Content
 
+  /:controller/:action: 
+    order: 1000
+    namespace: MYDLjE::ControlPanel::C
+  /:controller/:action/:id: 
+    order: 10000
+    namespace: MYDLjE::ControlPanel::C
 #We describe here the items in main_left_navigation.html.tt
 #All plugins must/should provide their items if they want to be present in this menu.
 #All menu items will be output as c.l('Item'). So menu items can be translated.
@@ -77,56 +78,100 @@ main_left_navigation:
       -
         title: Pages 
         icon: page.png
-        route: /pages
+        route: /content/pages
       -
         title: Books
         icon: book.png
-        route: /books
+        route: /content/books
       -
         title: Articles
         icon: page_white.png
-        route: /books
+        route: /content/articles
       -
         title: Questions
         icon: help.png
-        route: /questions
+        route: /content/questions
       -
         title: Notes
         icon: note.png
-        route: /notes
+        route: /content/notes
       -
         title: I18N&L10N
         icon: text_letter_omega.png
-        route: /books  
+        route: /content/i18nl10n  
   -
     header: Users
     items:
       -
         title: Users
         icon: user.png
-        route: /users
+        route: /accounts/users
       -
         title: Groups
         icon: group.png
-        route: /books
+        route: /accounts/groups
       -
         title: Properties
         icon: brick.png
-        route: /properties
+        route: /accounts/properties
   -
     header: System
     items:
       -
         title: Settings
         icon: wrench.png
-        route: /settings
+        route: /sytem/settings
       -
         title: Cache
         icon: database_refresh.png
-        route: /cache_management
+        route: /sytem/cache_management
+      -
+        title: Plugins
+        icon: plugin.png
+        route: /sytem/plugins
+      -
+        title: Log
+        icon: page_error.png
+        route: /sytem/log
       -
         title: File Management
         icon: folder_page.png
-        route: /file_management
+        route: /sytem/file_management
+  -
+    header: Personal
+    items:
+      -
+        title: Preferences
+        icon: wrench.png
+        route: /personal/preferences
+
+#TODO: Implement eCommerce as a MYDLjE::Plugin::Ecommerce
+  -
+    header: eCommerce
+    items:
+      -
+        title: Stores
+        icon: cart_edit.png
+        #list stores
+        route: /ecommerce/stores
+      -
+        title: Merchants
+        icon: user_suit.png
+        route: /ecommerce/merchants
+      -
+        title: Products
+        icon: box.png
+        route: /ecommerce/products
+      -
+        title: Rules and Coupons
+        icon: tag_blue_edit.png
+        route: /ecommerce/rulescoupons
+  -
+    header: Another Plugin
+    items:
+      -
+        title: Settings
+        icon: wrench.png
+        route: /someplugin/settings
 
 

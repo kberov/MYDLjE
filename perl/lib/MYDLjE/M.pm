@@ -93,6 +93,7 @@ sub save {
   if (keys %$data) { $self->data($data); }
 
   if (!$self->id) {
+    delete $self->{data}{id} if exists $self->{data}{id};
     $self->dbix->insert($self->TABLE, $self->data);
     $self->id($self->dbix->last_insert_id(undef, undef, $self->TABLE, 'id'));
     return $self->id;

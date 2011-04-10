@@ -4,7 +4,7 @@
   <head>
     <base href="[% base_url %]" />
     <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
-    <title>[% MOJO_APP_AT_SITE %]</title>
+    <title>[% MOJO_APP_AT_SITE TITLE ? _'/'_ TITLE: '' %]</title>
     <meta content="text/html; charset=utf-8" http-equiv="content-type" />
     <link href="pub/css/[% JQ_UI_THEME %]/jquery-ui-current.custom.css" rel="stylesheet" charset="utf-8" type="text/css" />
     <link href="pub/css/elastic.css" rel="stylesheet" type="text/css" charset="utf-8" />
@@ -28,7 +28,7 @@
             <!-- TA generates this -->
           </div>
           <div class="elastic column">
-            <div class="container" id="main-right-menu">[% menu_languages() %] 
+            <div class="container" id="main-top-right-menu">[% menu_languages() %] 
             <span class="main_help_icon ui-corner-all ui-state-active" style="display: inline-block; cursor: pointer;" title="[% c.l('Help') %]">
               <span class="ui-icon ui-icon-help"></span>
             </span>
@@ -39,12 +39,27 @@
               <span class="ui-icon ui-icon-power"></span>
             </a>
             [% END %]
+            [%# c.link_to('GGGGG','/logout') %]
             </div>
           </div>
         </div>
       </div>
-      <div class="container ui-widget ui-widget-content ui-corner-all" id="main-container">
+      <div class="container ui-widget ui-widget-content ui-corner-all"
+           id="main-container">
+        <div class="unit columns">
+        
+        [%
+        UNLESS c.msession.guest;
+          PROCESS 'main_left_navigation.html.tt';
+        END;
+        # will produce a
+        # div class="fixed column" id="main-left-menu"
+        # for logged in users only
+        %]
+        <div class="elastic column" id="main-working-area">
         [% content %]
+        </div>
+        </div>
       </div>
       <!-- end div id="main-container" -->
     </div>

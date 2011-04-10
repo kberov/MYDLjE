@@ -1,16 +1,17 @@
 ---
 site_name: MYDLjE
-
+templates_root: templates/cpanel
 plugins:
   alloy_renderer:
     syntax: TT
     template_options:
       TRIM: 1
       #Note: INCLUDE_PATH works only from within templates
+      #INCLUDE_PATH is relative to MOJO_HOME(for now).
       INCLUDE_PATH:
         - templates
         - templates/cpanel
-      DEBUG: 1
+      #DEBUG: 1
       PRE_PROCESS:
         - cpanel_pre_process.tt
         - form_macros_pre_process.tt
@@ -63,3 +64,70 @@ login_required_routes:
     to:
       controller: Configs
       action: list
+
+  #We describe here the items in main_left_navigation.html.tt
+  #All plugins must/should provide their items if they want to be present in this menu
+  #all menu items will be output as c.l('Item'). So menu items can be translated.
+  #"icons" are in $MOJO_HOME/pub/css/icons/
+  #"routes" are routes and are expected to have controllers wich will handle them
+
+main_left_navigation:
+  -
+    header: Content
+    items:
+      -
+        title: Pages 
+        icon: page.png
+        route: /pages
+      -
+        title: Books
+        icon: book.png
+        route: /books
+      -
+        title: Articles
+        icon: page_white.png
+        route: /books
+      -
+        title: Questions
+        icon: help.png
+        route: /questions
+      -
+        title: Notes
+        icon: note.png
+        route: /notes
+      -
+        title: I18N&L10N
+        icon: text_letter_omega.png
+        route: /books  
+  -
+    header: Users
+    items:
+      -
+        title: Users
+        icon: user.png
+        route: /users
+      -
+        title: Groups
+        icon: group.png
+        route: /books
+      -
+        title: Properties
+        icon: brick.png
+        route: /properties
+  -
+    header: System
+    items:
+      -
+        title: Settings
+        icon: wrench.png
+        route: /settings
+      -
+        title: Cache
+        icon: database_refresh.png
+        rout: /cache
+      -
+        title: File Management
+        icon: folder_page.png
+        route: /file_management
+
+

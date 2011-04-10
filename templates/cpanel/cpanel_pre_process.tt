@@ -7,4 +7,9 @@
     MOJO_APP_AT_SITE = MOJO_APP _ '@'_ app.config('site_name');
     USER_AT_MOJO_APP_AT_SITE = c.msession.user.login_name _'@' _ MOJO_APP_AT_SITE;
     JQ_UI_THEME = app.config('jq_ui_theme');
+    DEFAULT_WRAPPER = 'layouts/cpanel_layout.html.tt';
+    UNLESS TEMPLATE_WRAPPER;
+      TEMPLATE_WRAPPER = 'layouts/cpanel_layout.html.tt'
+    END;
+    TITLE = app.routes.namespace _'::' _ controller _ '/' _ action;
 ~%]

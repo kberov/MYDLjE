@@ -20,7 +20,7 @@ body {height:100%;}
     margin-bottom:1ex;
 }
 #title-main-header a {float: left;}
-#main-right-menu{
+#main-top-right-menu{
     text-align:right;
 }
 #login_form {
@@ -28,7 +28,7 @@ body {height:100%;}
   width: 500px;
   
 }
-form fieldset {margin: 1em;}
+form fieldset {margin: 0.3ex;}
 form legend {
     margin: 0.5ex;
     padding: 0.5ex;
@@ -53,4 +53,23 @@ form .buttons {
     padding: 0 1ex 1ex;
 }
 #menu_languages .active { border: 1px outset silver;}
-/**/
+/* Style for main left navigation menu/accordeon */
+#main-left-navigation {
+    margin-right:1ex;
+    padding:0.3.ex;
+}
+#main-left-navigation #accordion h4 {
+    font-weight:bold;
+    padding-left: 2em;
+}
+#main-left-navigation #accordion ul li {
+    list-style-type: none;
+    margin: 0px 0px 0px 0px;
+
+}
+#main-left-navigation #accordion .ui-accordion-content{
+    padding: 0px;
+}
+#main-left-navigation #accordion .ui-accordion-content ul {
+    padding: 0 1em;
+}

@@ -29,6 +29,8 @@ sub startup {
 
   $app->load_routes();
 
+  $app->renderer->root( $app->home.'/'.$app->config('templates_root')) if $app->config('templates_root');
+  
   #Additional Content-TypeS (formats)
   $app->add_types();
 

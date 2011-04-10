@@ -1,0 +1,34 @@
+<!-- start not_found -->
+[%
+IF c.msession.guest;
+  PROCESS 'Auth/loginscreen.html.tt';
+
+ELSE;
+  WRAPPER ${TEMPLATE_WRAPPER}; %]
+  <h1 class="ui-dialog-titlebar ui-widget-header ui-corner-all" style="margin:0 0 1ex; 0;">[%
+    TITLE = c.l('Resource "[_1]" Not Found',TITLE);TITLE
+  %]</h1>
+  <div class="container ui-state-error ui-corner-all">
+  [% IF app.mode.match('dev') %]
+    <p class="strong ">MOJO_MODE:[% app.mode %]</p>
+    <p><span style="float: left; margin-right: .3em;" class="ui-icon ui-icon-alert"></span>
+    [% c.l('Resource for controller "[_1]", with action "[_2]" in namespace "[_3]" was not found.',
+    controller,action,app.routes.namespace) %]
+    <br/>
+    [% c.l('Below is a DUMP of the current stash.') %]
+    </p>
+    <p><span style="float: left; margin-right: .3em;" class="ui-icon ui-icon-alert"></span>
+      [% DUMP(c.stash) %]
+    </p>
+  [% ELSE;
+  #TODO: Make this more user-friendly for the casual user
+  %]
+    <p> <span style="float: left; margin-right: .3em;" class="ui-icon ui-icon-alert"></span>
+    Please contact administrator.</p>
+  [% END %]
+  </div>
+[%  
+  END;
+END;
+%]
+<!-- end not_found -->

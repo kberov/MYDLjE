@@ -1,0 +1,22 @@
+[%- WRAPPER ${TEMPLATE_WRAPPER} -%]
+[%# DUMP(c.stash) %]
+  <div class="container ui-widget-content ui-corner-all">
+
+<div id="lipsum">
+<p>
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin eu velit ipsum, vitae facilisis justo. Donec iaculis porta erat, nec lacinia mi iaculis vel. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Duis a mauris vitae metus vehicula condimentum. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Integer scelerisque cursus est, at interdum nisi interdum ut. Aliquam dapibus justo sem, eget iaculis massa. Phasellus et enim eget magna consectetur suscipit dapibus a libero. Fusce vitae mauris et odio euismod elementum. Quisque mi eros, rutrum eu gravida sit amet, rhoncus in dui. Vestibulum luctus orci sed eros condimentum dapibus. Pellentesque pellentesque est quis orci iaculis aliquam. Vivamus mollis consectetur tempus. Etiam elit lorem, semper dictum volutpat a, tincidunt vel sem. Phasellus consequat nisl ut dui fermentum vulputate. Nam facilisis pharetra dui, ac pretium nibh egestas ac. Phasellus dignissim dapibus ipsum, at ultrices lacus fringilla varius. Phasellus sit amet dolor et ipsum pretium semper sed ut orci.
+</p>
+<p>
+Nullam mi dui, malesuada tincidunt imperdiet vitae, consequat id diam. Ut vitae auctor turpis. Quisque mollis turpis vitae diam malesuada mattis non facilisis purus. Mauris est augue, accumsan in pretium id, suscipit non est. Etiam nec magna ante, in sagittis nisl. Phasellus vel erat justo. In commodo tempor urna at fermentum. Pellentesque non urna tortor. Nullam ut sapien nibh, a semper elit. In hac habitasse platea dictumst. Nunc in metus neque, vitae fermentum quam. Fusce cursus libero vel sem imperdiet eget tincidunt massa ultricies. Maecenas accumsan, dui in rhoncus viverra, tellus metus imperdiet ante, at sodales risus dui id odio. Ut rutrum, odio vitae consequat bibendum, risus odio elementum quam, non vulputate nunc justo rutrum ipsum. Proin ut leo ipsum. Etiam posuere sapien eu mi porta placerat. Pellentesque ut tincidunt sem. Phasellus eu neque congue nibh aliquet dignissim sit amet eget nunc. Maecenas eu justo sem.
+</p>
+<p>
+Phasellus aliquam mi eleifend dolor tincidunt quis rutrum neque mollis. Mauris sapien mauris, mollis vel euismod ac, auctor vel arcu. Fusce nulla nulla, semper sed ultrices id, lacinia sed nulla. Proin volutpat odio quis tortor molestie pretium. Pellentesque porttitor aliquet tortor, nec gravida metus vestibulum iaculis. Suspendisse sed viverra dolor. Quisque hendrerit, augue a molestie pulvinar, tellus enim posuere tortor, a bibendum felis enim at turpis. Sed sit amet venenatis ligula. Morbi vestibulum vestibulum ultrices. Quisque volutpat turpis ac odio vehicula dictum. Mauris lacus enim, scelerisque nec pharetra sed, porttitor eu tortor.
+</p>
+<p>
+Nullam velit nibh, tristique vel bibendum eu, vehicula ut est. Proin iaculis pharetra augue et vulputate. Vivamus posuere euismod lectus quis sagittis. Proin interdum placerat nisi et porttitor. Vivamus elementum eros non augue sodales nec scelerisque ante auctor. Phasellus nunc neque, eleifend nec fringilla quis, hendrerit eu dui. Ut varius libero nec dolor ultricies vel faucibus erat tempor. Donec est quam, iaculis nec suscipit ut, vehicula quis neque. Nulla at laoreet tellus. Suspendisse vel neque quam, a fermentum ligula. Vestibulum urna velit, convallis sed fringilla ac, fringilla eget massa.
+</p>
+</div>
+
+
+  </div>
+[% END %]

@@ -2,13 +2,16 @@ body {
     font-family:sans-serif;
     font-size:95%;
     color:#136;
-    padding:0 30% 0 20%;
     background-color:white;
 }
 hr {display:none}
 
 h1,h2,h3 {color:#135;}
 .ui-widget-content {
+    min-width:760px;
+    width:90%;
+    max-width:960px;
+    margin:auto;
 }
 .inner {
   padding: 0 1ex 0 1em ;

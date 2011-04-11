@@ -70,44 +70,43 @@ Below is the list of things to do. It is possible to work on several things at t
 
 =over
 
-=item 1 Implement the base system. Bundle required libraries and write enough tests to be sure the things work together well (done).
+=item * Implement the base system. Bundle required libraries and write enough tests to be sure the things work together well (done).
 
-=item 2 Implement the MYDLjE initial setup/install (done).
+=item * Implement the MYDLjE initial setup/install (done).
 
-=item 2 Implement the "Control Panel" application (in progress):
-
-=over
-
-=item 1 Implement the Configuration Management controller;
-
-=item 2 Implement the Users/Groups Management controllers;
-
-=item 3 Implement the Screens/Pages Management plugin;
-
-=item 4 Implement the Content Management controllers (in progress);
-
-=item 5 Implement Applications/Plugins Management plugin;
-
-=back
-
-=item 3 Implement the "Site" application:
+=item * Implement the "Control Panel" application (in progress):
 
 =over
 
-=item 1 Implement the "Registration" Site plugin;
+=item * Implement the Configuration Management controller;
 
-=item 2 Implement the "Login" Site plugin(with Oauth2 and/or OpenID);
+=item * Implement the Users/Groups Management controllers;
 
-=item 3 Implement the "Profile" Site plugin;
+=item * Implement the Screens/Pages Management plugin;
 
-=item 4 Implement the "Q&A" Site plugin;
+=item * Implement the Content Management controllers (in progress);
+
+=item * Implement Applications/Plugins Management plugin;
+
+=back
+
+=item * Implement the "Site" application:
+
+=over
+
+=item * Implement the "Registration" Site plugin;
+
+=item * Implement the "Login" Site plugin(with Oauth2 and/or OpenID);
+
+=item * Implement the "Profile" Site plugin;
+
+=item * Implement the "Q&A" Site plugin;
 
 
 =back
 
-
-
 =back
+
 
 =head1 LICENSES and COPYRIGHT
 

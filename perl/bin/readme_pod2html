@@ -54,5 +54,5 @@ $dom->at('body')
       . '</div></div>');
 
 $fh = IO::File->new('> ' . $ENV{MOJO_HOME} . '/README.html');
-($fh->binmode and $fh->print($dom->to_xml) and $fh->close) or die $!;
+($fh->binmode and $fh->print("$dom") and $fh->close) or die $!;
 

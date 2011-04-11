@@ -7,9 +7,11 @@ use IO::File;
 use Cwd;
 
 BEGIN {
-    $ENV{MOJO_HOME} = Cwd::realpath(File::Spec->rel2abs(dirname(__FILE__) . '/../../'));
+    $ENV{MOJO_HOME} = Cwd::abs_path(dirname(__FILE__) . '/../..');
 }
+
 use lib ("$ENV{MOJO_HOME}/perl/lib");
+use MYDLjE::Config;
 use Mojo::DOM;
 use Pod::Html;
 pod2html(
@@ -17,8 +19,9 @@ pod2html(
     "--infile=$ENV{MOJO_HOME}/README.pod",
     "--outfile=$ENV{MOJO_HOME}/README.html"
 );
+my $config = MYDLjE::Config->new(files =>[$ENV{MOJO_HOME}.'/conf/mydlje.development.yaml']);
 my $html_css = '<link rel="stylesheet" type="text/css" 
-    href="pub/css/ui-lightness/jquery-ui-1.8.10.custom.css" />
+    href="pub/css/'.$config->stash('jq_ui_theme').'/jquery-ui-current.custom.css" />
     <link rel="stylesheet" type="text/css" href="pub/css/readme.css" />';
 
 my $fh = IO::File->new('< ' . $ENV{MOJO_HOME} . '/README.html');

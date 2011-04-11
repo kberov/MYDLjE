@@ -2,11 +2,11 @@
 
 =head1 DESCRIPTION
 
-B<NOTE: Everything below is just a TODO-list for now.>
+B<NOTE: Almost everything below is just a TODO-list for now.>
 
 MYDLjE is a lightweight Web-Applications and Content Management Framework.
-It is a collection of Perl, JavaScript, CSS and HTML5 code libraries to form a General Purpose Platform for building Web-Applications.
-We count on several "State Of the Art" open-source software projects to make a powerful platform for building business online.
+It is a collection of Perl, JavaScript, CSS and HTML5 code to make a General Purpose Platform for building Web-Applications.
+We build on top of several I<"State Of the Art"> open-source software projects to make a powerful platform for starting your own business online.
 
 The framework name is an acronym. It stands for: B<Mojolicious, YAML, DBI*, Locale::Maketext, jQuery, Elastic CSS> which are the main building blocks. B<Template::Alloy> is chosen as view system. B<SILK & FLAG ICONS> are used too.
 
@@ -17,12 +17,12 @@ The applications are intended to be easy to use (intuitive) for the average comp
 
 =head2 CONTROL PANEL (cpanel)
 
-This application is for managing your platform. You access and manage your users, customers, site, pages, content, applications etc.  
+This application is for managing your online presence. You access and manage your users, customers, site, pages, content, applications etc.  
 Only trusted people (back-end users) should be allowed to use it.
 
 =head2 MYDLjE (mydlje)
 
-This is a bare-bones application. It it is used as the base for the other two and for setting up the system for the first time when you unpack it where it will work.
+This is a bare-bones application. It is used as the base for the other two applications and for setting up the system for the first time when you unpack it where it will work.
 
 =head2 SITE (site)
 
@@ -47,7 +47,7 @@ Build whatever you want on top of and around it.
 
 
 Almost all (even the cheapest) hosting providers meet the system requirements. 
-To make sure, send the list to your (potential) hosting provider and ask them if they meet the requirements below. The setup screen also checks for the requirements. The system automatically runs under mod_fastcgi if available. See the .htaccess file.
+To make sure, send the list to your (potential) hosting provider and ask them if they meet the requirements below. The setup screen also checks for the requirements. The system runs under mod_cgi by default, but cen be configured very easily to run under mod_fastcgi (or mod_fcgi) if available. See the .htaccess file in the project root directory.
 
 
 =head1 INSTALLATION
@@ -70,11 +70,11 @@ Below is the list of things to do. It is possible to work on several things at t
 
 =over
 
-=item 1 Implement the base system. Bundle required libraries and write enough tests to be sure the things work together well.
+=item 1 Implement the base system. Bundle required libraries and write enough tests to be sure the things work together well (done).
 
-=item 2 Implement the MYDLjE initial setup/install.
+=item 2 Implement the MYDLjE initial setup/install (done).
 
-=item 2 Implement the "Control Panel" application:
+=item 2 Implement the "Control Panel" application (in progress):
 
 =over
 
@@ -84,7 +84,7 @@ Below is the list of things to do. It is possible to work on several things at t
 
 =item 3 Implement the Screens/Pages Management plugin;
 
-=item 4 Implement the Content Management plugin;
+=item 4 Implement the Content Management controllers (in progress);
 
 =item 5 Implement Applications/Plugins Management plugin;
 

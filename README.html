@@ -1,11 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" />
 <head>
 <title>MYDLjE - Web-presence rethought</title>
 <meta content="text/html; charset=utf-8" http-equiv="content-type" />
 <link href="mailto:support@ActiveState.com" rev="made" />
-<link href="pub/css/ui-lightness/jquery-ui-1.8.10.custom.css" rel="stylesheet" type="text/css" />
+<link href="pub/css/humanity/jquery-ui-current.custom.css" rel="stylesheet" type="text/css" />
     <link href="pub/css/readme.css" rel="stylesheet" type="text/css" /></head>
 
 <body style="background-color: white"><div class="ui-widget ui-widget-content ui-corner-all ">
@@ -47,10 +47,10 @@
 </p>
 
 <h1 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="description">DESCRIPTION</a></h1>
-<p><strong>NOTE: Everything below is just a TODO-list for now.</strong></p>
+<p><strong>NOTE: Almost everything below is just a TODO-list for now.</strong></p>
 <p>MYDLjE is a lightweight Web-Applications and Content Management Framework.
-It is a collection of Perl, JavaScript, CSS and HTML5 code libraries to form a General Purpose Platform for building Web-Applications.
-We count on several &quot;State Of the Art&quot; open-source software projects to make a powerful platform for building business online.</p>
+It is a collection of Perl, JavaScript, CSS and HTML5 code to make a General Purpose Platform for building Web-Applications.
+We build on top of several <em>&quot;State Of the Art&quot;</em> open-source software projects to make a powerful platform for starting your own business online.</p>
 <p>The framework name is an acronym. It stands for: <strong>Mojolicious, YAML, DBI*, Locale::Maketext, jQuery, Elastic CSS</strong> which are the main building blocks. <strong>Template::Alloy</strong> is chosen as view system. <strong>SILK &amp; FLAG ICONS</strong> are used too.</p>
 <p>
 </p>
@@ -61,16 +61,16 @@ The applications are intended to be easy to use (intuitive) for the average comp
 <p>
 </p>
 <h2 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="control_panel__cpanel_">CONTROL PANEL (cpanel)</a></h2>
-<p>This application is for managing your platform. You access and manage your users, customers, site, pages, content, applications etc.  
+<p>This application is for managing your online presence. You access and manage your users, customers, site, pages, content, applications etc.  
 Only trusted people (back-end users) should be allowed to use it.</p>
 <p>
 </p>
 <h2 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="mydlje__mydlje_">MYDLjE (mydlje)</a></h2>
-<p>This is a bare-bones application. It it is used as the base for the other two and for setting up the system for the first time when you unpack it where it will work.</p>
+<p>This is a bare-bones application. It is used as the base for the other two applications and for setting up the system for the first time when you unpack it where it will work.</p>
 <p>
 </p>
 <h2 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="site__site_">SITE (site)</a></h2>
-<p>This is your front-end application intended for the public. Build a site or a custom application to be used by your customers. 
+<p>This is your front-end application intended for the public. Build a site or a custom application to be used by your community and/or customers. 
 Build whatever you want on top of and around it.</p>
 <p>
 </p>
@@ -91,7 +91,7 @@ Build whatever you want on top of and around it.</p>
 </li>
 </ul>
 <p>Almost all (even the cheapest) hosting providers meet the system requirements. 
-To make sure, send the list to your (potential) hosting provider and ask them if they meet the requirements below. The setup screen also checks for the requirements. The system automatically runs under mod_fastcgi if available. See the .htaccess file.</p>
+To make sure, send the list to your (potential) hosting provider and ask them if they meet the requirements below. The setup screen also checks for the requirements. The system runs under mod_cgi by default, but cen be configured very easily to run under mod_fastcgi (or mod_fcgi) if available. See the .htaccess file in the project root directory.</p>
 <p>
 </p>
 
@@ -116,16 +116,16 @@ To make sure, send the list to your (potential) hosting provider and ask them if
 <h1 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="roadmap">ROADMAP</a></h1>
 <p>Below is the list of things to do. It is possible to work on several things at the same time so feel your self invited to help.</p>
 <ol>
-<li><strong><a class="item" name="implement_the_base_system_bundle_required_libraries_and_write_enough_tests_to_be_sure_the_things_work_together_well">Implement the base system. Bundle required libraries and write enough tests to be sure the things work together well.</a></strong>
+<li><strong><a class="item" name="well">Implement the base system. Bundle required libraries and write enough tests to be sure the things work together well (done).</a></strong>
 
 </li>
-<li><strong><a class="item" name="implement_the_mydlje_initial_setup_install">Implement the MYDLjE initial setup/install.</a></strong>
+<li><strong><a class="item" name="install">Implement the MYDLjE initial setup/install (done).</a></strong>
 
 </li>
-<li><strong><a class="item" name="implement_the_control_panel_application">Implement the &quot;Control Panel&quot; application:</a></strong>
+<li><strong><a class="item" name="application">Implement the &quot;Control Panel&quot; application (in progress):</a></strong>
 
-<ol>
-<li><strong><a class="item" name="implement_the_configuration_management_controller">Implement the Configuration Management controller;</a></strong>
+<ol />
+</li><li><strong><a class="item" name="implement_the_configuration_management_controller">Implement the Configuration Management controller;</a></strong>
 
 </li>
 <li><strong><a class="item" name="implement_the_users_groups_management_controllers">Implement the Users/Groups Management controllers;</a></strong>
@@ -134,18 +134,18 @@ To make sure, send the list to your (potential) hosting provider and ask them if
 <li><strong><a class="item" name="implement_the_screens_pages_management_plugin">Implement the Screens/Pages Management plugin;</a></strong>
 
 </li>
-<li><strong><a class="item" name="implement_the_content_management_plugin">Implement the Content Management plugin;</a></strong>
+<li><strong><a class="item" name="controllers">Implement the Content Management controllers (in progress);</a></strong>
 
 </li>
 <li><strong><a class="item" name="implement_applications_plugins_management_plugin">Implement Applications/Plugins Management plugin;</a></strong>
 
 </li>
 </ol>
-</li>
+</div></div></body>
 <li><strong><a class="item" name="implement_the_site_application">Implement the &quot;Site&quot; application:</a></strong>
 
-<ol>
-<li><strong><a class="item" name="implement_the_registration_site_plugin">Implement the &quot;Registration&quot; Site plugin;</a></strong>
+<ol />
+</li><li><strong><a class="item" name="implement_the_registration_site_plugin">Implement the &quot;Registration&quot; Site plugin;</a></strong>
 
 </li>
 <li><strong><a class="item" name="plugin">Implement the &quot;Login&quot; Site plugin(with Oauth2 and/or OpenID);</a></strong>
@@ -157,9 +157,9 @@ To make sure, send the list to your (potential) hosting provider and ask them if
 <li><strong><a class="item" name="implement_the_q_a_site_plugin">Implement the &quot;Q&amp;A&quot; Site plugin;</a></strong>
 
 </li>
-</ol>
-</li>
-</ol>
+
+
+
 <p>
 </p>
 
@@ -218,6 +218,6 @@ If you think your name should be listed here, please notify me.</p>
 <h1 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="setup">SETUP</a></h1>
 To begin setting up your system <a href="index.xhtml">go to index.xhtml</a><p>-----------------------</p>
 
-</div></div></body>
 
-</html>
+
+

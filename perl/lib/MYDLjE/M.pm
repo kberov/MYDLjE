@@ -184,11 +184,12 @@ MYDLjE::M - an oversimplified database-based objects class.
 
 =head1 DESCRIPTION
 
-This is the base class for all calsses that store they data in a L<MYDLjE> database table. It was written in order to not increase dependencies from cpan modules and keep MYDLjE small and light.
+This is the base class for all classes that store they data in a L<MYDLjE> database table. It was written in order to not increase dependencies from CPAN modules and keep MYDLjE small and light.
 
 The class provides some useful methods which simplify representing rows from tables as Perl objects. It is not intended to be a full featured ORM at all. It simply saves you from writing SQl to construct well known MYDLjE objects stored in tables. If you have to do complicated  SQL queries use L<DBIx::Simple/query> method. Use this base class if you want to have perl objects which store their data in table rows. That's it.
 
 This code is fresh and may change at any time but I will try to keep the API relatively stable if I like it.
+And of course you can always overwite all methods from the base class at will and embed complex SQL queries in your subclasses.
 
 =head1 SYNOPSIS
 
@@ -250,22 +251,33 @@ to the current DBIx::Simple instance with L<SQL::Abstract> support.
 =head2 TABLE
 
 You must define this attribute in your subclass. This is the table where your object
-will store its data. Must return a string - the table name.
+will store its data. Must return a string - the table name. It is used  internally in L<select>
+when retreiving a row from the database and when saving object data.
 
   has TABLE => 'my_users';
+  # in select()
+  $self->data(
+    $self->dbix->select($self->TABLE, $self->COLUMNS, $where)->hash);
+
+  
 
 =head2 COLUMNS
 
 You must define this attribute in your subclass. 
 It must return an ARRAYREF with table columns to which the data is written.
+It is used  internally in L<select> when retreiving a row from the database and when saving object data.
 
   has COLUMNS => sub { [qw(id cid user_id tstamp sessiondata)] };
+  # in select()
+  $self->data(
+    $self->dbix->select($self->TABLE, $self->COLUMNS, $where)->hash);
+
 
 =head2 FIELDS_VALIDATION
 
 You must define this attribute in your subclass. 
 It must return a HASHREF with column names as keys and "types" constratints as values
-interpretted by L</validate_field> which will check and validate the value of a column
+interpretted by L<validate_field> which will check and validate the value of a column
 each time a new value is set.
 
   has FIELDS_VALIDATION => sub {

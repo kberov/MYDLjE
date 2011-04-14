@@ -230,4 +230,8 @@ __END__
 
 =head1 NAME
 
-MYDLjE::M::Content - Base class for all content data_types
+MYDLjE::M::Content - Base class for all semantic content data_types
+
+=head1 DESCRIPTION
+
+

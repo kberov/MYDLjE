@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS `my_content` (
   `pid` int(11) NOT NULL DEFAULT '0' COMMENT 'Parent Question, Article, Note, Book ID etc',
   `user_id` int(11) NOT NULL DEFAULT '1',
   `sorting` int(10) NOT NULL DEFAULT '0' COMMENT 'suitable for sorting articles in a book',
-  `data_type` set('page','question','answer','book','note','article','chapter') NOT NULL DEFAULT 'note' COMMENT 'Semantic Content Types. See MYDLjE::M::Content::*.',
+  `data_type` varchar(32) NOT NULL DEFAULT 'note' COMMENT 'Semantic Content Types. See MYDLjE::M::Content::*.',
   `data_format` set('text','textile','html','markdown') NOT NULL DEFAULT 'text',
   `time_created` int(11) NOT NULL DEFAULT '0' COMMENT 'When this content was inserted',
   `tstamp` int(11) NOT NULL DEFAULT '0' COMMENT 'Last time the record was touched',

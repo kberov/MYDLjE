@@ -15,11 +15,12 @@ END
 MACRO link_to_ui_language(language) BLOCK;
 #TODO: Leverage I18N::LangTags::List and add translations to supported languages
 #example: en => English, bg=> Bulgarian
+#LANGUAGE is defined in cpanel_macros_pre_process.tt
 %]
 <a href="[% c.url_for().query(ui_language => language) %]"
   title="[% language %]">
   <img src="pub/css/icons/flags/[% language %].png"
-    [%- IF c.languages() eq language; ' class="active" '; END; -%]
+    [%- IF LANGUAGE eq language; ' class="active" '; END; -%]
     alt="[% language %]" />
 </a>
 [% END ~%]

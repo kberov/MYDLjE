@@ -81,7 +81,8 @@ $(window).load(function() {
     </div>
     
     <!-- for testing cpanel.js enhance_form() only -->
-    <form id="other_form" style="width:300px;display:none;" class="columns on-2">
+    <form id="other_form" style="width:300px;display:none;" class="columns on-2" action="">
+      <fieldset class="ui-widget-content ui-corner-all">
       <legend class="ui-widget-header ui-corner-all">for testing cpanel.js only</legend>
       <div class="column">first field</div>
       <div class="column">
@@ -103,6 +104,7 @@ $(window).load(function() {
           <button type="submit">Submit</button>
         </div>
       </div>
+      </fieldset>
     </form>
   </div><!-- end div class="container ui-widget ui-corner-all ui-state-active" -->
 <!-- end loginscreen -->

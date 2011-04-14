@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="[% LANGUAGE %]">
   <head>
     <base href="[% base_url %]" />
     <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
@@ -16,15 +16,15 @@
     <script src="pub/js/md5-min.js" type="text/javascript" charset="utf-8"></script>
   </head>
   <body>
-    <noscript>This page requires JavaScript.</noscript>
+    <noscript><p>This page requires JavaScript.</p></noscript>
     <div class="unit layout">
       <div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix" id="main-header">
         <div class="columns">
           <div class="fixed column">
             <span class="ui-dialog-title" id="title-main-header">
-            <h4><a href="[% c.url_for('/home') %]" title="[% MOJO_APP_AT_SITE %]">
+            <a href="[% c.url_for('/home') %]" title="[% MOJO_APP_AT_SITE %]">
               <img src="pub/css/img/logo3.png" width="22" height="22" alt="[% MOJO_APP_AT_SITE %]" />
-            </a>[% USER_AT_MOJO_APP_AT_SITE %]</h4></span>
+            </a>[% USER_AT_MOJO_APP_AT_SITE %]</span>
             <!-- TA generates this -->
           </div>
           <div class="elastic column">
@@ -39,7 +39,6 @@
               <span class="ui-icon ui-icon-power"></span>
             </a>
             [% END %]
-            [%# c.link_to('GGGGG','/logout') %]
             </div>
           </div>
         </div>

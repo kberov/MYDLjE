@@ -19,7 +19,7 @@ MACRO link_to_ui_language(language) BLOCK;
 <a href="[% c.url_for().query(ui_language => language) %]"
   title="[% language %]">
   <img src="pub/css/icons/flags/[% language %].png"
-    [% IF c.languages() eq language; ' class="active" '; END; %]
+    [%- IF c.languages() eq language; ' class="active" '; END; -%]
     alt="[% language %]" />
 </a>
 [% END ~%]

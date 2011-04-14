@@ -25,7 +25,7 @@ params.value ||= form.${name_and_id};
     <div class="fixed column label">
     <label for="[% params.id || name_and_id %]" id="[% name_and_id _ '_label' %]">
             [% params.label|| c.l(name_and_id).ucfirst %]
-            [% params.required ? ':&nbsp;*' : ':' %]
+            [% params.required ? ':&#160;*' : ':' %]
         </label>
     </div>
     <div class="elastic column">
@@ -57,7 +57,7 @@ field_error =${ name_and_id _ '_error' };
     <div class="fixed column label">
     <label for="[% params.id || name_and_id %]">
             [% params.label|| c.l(name_and_id).ucfirst%]
-            [% params.required ? ':&nbsp;*' : ':' %]
+            [% params.required ? ':&#160;*' : ':' %]
         </label>
     </div>
     <div class="elastic column ">
@@ -82,7 +82,7 @@ field_error =${ name_and_id _ '_error' };
     <div class="fixed column label">
     <label for="[% params.id || name_and_id %]">
             [% params.label || c.l(name_and_id).ucfirst%]
-            [% params.required ? ':&nbsp;*' : ':' %]
+            [% params.required ? ':&#160;*' : ':' %]
         </label>
     </div>
     <div class="elastic column ">
@@ -108,7 +108,7 @@ params.selected ||= form.${name_and_id};
     <div class="fixed column label">
     <label for="[% params.id || name_and_id %]">
             [% params.label|| c.l(name_and_id).ucfirst%]
-            [% params.required ? ':&nbsp;*' : ':' %]
+            [% params.required ? ':&#160;*' : ':' %]
         </label>
     </div>
     <div class="elastic column ">

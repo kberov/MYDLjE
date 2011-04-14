@@ -1,6 +1,6 @@
 [%- WRAPPER ${TEMPLATE_WRAPPER} -%]
 <!-- start loginscreen -->
-<script>
+<script  type="text/javascript">//<![CDATA[
   var error_messages = {
     login_name: '[% c.l("login_field_error",c.l("login_name")) %]',
     login_password: '[% c.l("login_field_error",c.l("login_password")) %]'
@@ -52,7 +52,8 @@ $(window).load(function() {
   enhance_form();
   submit_buton = $('#login_form .buttons button[type="submit"]');
   submit_buton.click(validate_and_post_form);
-});</script>
+});
+//]]></script>
   <div class="container ui-corner-all ui-widget-content">
     <form id="login_form" action="[% c.url_for('/loginscreen') %]" method="post"
     class="ui-widget-content ui-corner-all">
@@ -76,7 +77,7 @@ $(window).load(function() {
         <input type="hidden" id="session_id" name="session_id" value="[% c.session('id') %]" />
       </fieldset>
     </form>
-    <div id="error-dialog" style="display:none"title="[% c.l('Error') %]">
+    <div id="error-dialog" style="display:none" title="[% c.l('Error') %]">
     </div>
     
     <!-- for testing cpanel.js enhance_form() only -->

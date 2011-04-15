@@ -36,8 +36,8 @@ my @RESERVED = (
   qw/action app cb class controller data exception extends format handler/,
   qw/json layout method namespace partial path status template text/
 );
-my $STASH_RE = join '|', @RESERVED;
-$STASH_RE = qr/^(?:$STASH_RE)$/;
+my %RESERVED;
+$RESERVED{$_}++ for @RESERVED;
 
 # "Is all the work done by the children?
 #  No, not the whipping."
@@ -545,11 +545,11 @@ sub rendered {
     # Application
     my $app = $self->app;
 
-    # Hook
-    $app->plugins->run_hook_reverse(after_dispatch => $self);
-
     # Session
     $app->sessions->store($self);
+
+    # Hook
+    $app->plugins->run_hook_reverse(after_dispatch => $self);
 
     # Finished
     $stash->{'mojo.finished'} = 1;
@@ -684,7 +684,7 @@ sub stash {
   my $values = ref $_[0] ? $_[0] : {@_};
   for my $key (keys %$values) {
     $self->app->log->debug(qq/Careful, "$key" is a reserved stash value./)
-      if $key =~ $STASH_RE;
+      if $RESERVED{$key};
     $self->{stash}->{$key} = $values->{$key};
   }
 

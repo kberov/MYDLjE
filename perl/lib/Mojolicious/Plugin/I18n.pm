@@ -19,13 +19,13 @@ sub register {
   my $default = $conf->{default} || 'en';
 
   # Initialize
-  eval "package $namespace; use Mojo::Base 'Locale::Maketext'; 1;";
-  unless(eval "require ${namespace}::$default;1;"){
-    Carp::carp($@);
-    eval "package ${namespace}::$default; use Mojo::Base '$namespace';"
+  eval "package $namespace; use base 'Locale::Maketext'; 1;";
+  eval "require ${namespace}::${default};";
+  unless (eval "\%${namespace}::${default}::Lexicon") {
+    eval "package ${namespace}::$default; use base '$namespace';"
       . 'our %Lexicon = (_AUTO => 1); 1;';
+    die qq/Couldn't initialize I18N class "$namespace": $@/ if $@;
   }
-  die qq/Couldn't initialize I18N class "$namespace": $@/ if $@;
 
   # Start timer
   $app->hook(
@@ -122,6 +122,21 @@ classes as you need.
 Languages can usually be detected automatically from the C<Accept-Languages>
 request header.
 
+This plugin can save a lot of typing, since it will generate the following
+code by default.
+
+  # $self->plugin('i18n');
+  package MyApp::I18N;
+  use base 'Locale::Maketext';
+  package MyApp::I18N::en;
+  use base 'MyApp::I18N';
+  our %Lexicon = (_AUTO => 1);
+  1;
+
+Namespace and default language of generated code are affected by their
+respective options.
+The default lexicon class will only be generated if it doesn't already exist.
+
 =head1 OPTIONS
 
 =head2 C<default>
@@ -129,14 +144,14 @@ request header.
   # Mojolicious::Lite
   plugin i18n => {default => 'en'};
 
-Default language.
+Default language, defaults to C<en>.
 
 =head2 C<namespace>
 
   # Mojolicious::Lite
   plugin i18n => {namespace => 'MyApp::I18N'};
 
-Lexicon namespace.
+Lexicon namespace, defaults to the application class followed by C<::I18N>.
 
 =head1 HELPERS
 

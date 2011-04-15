@@ -6,20 +6,23 @@ use overload '""' => sub { shift->to_xml }, fallback => 1;
 use Mojo::Util qw/decode encode html_unescape xml_escape/;
 use Scalar::Util 'weaken';
 
+# Debug
+use constant DEBUG => $ENV{MOJO_DOM_DEBUG} || 0;
+
 # "How are the kids supposed to get home?
 #  I dunno. Internet?"
-has 'charset';
+has [qw/charset xml/];
 has tree => sub { ['root'] };
 
 # Regex
 my $CSS_ESCAPE_RE = qr/\\[^0-9a-fA-F]|\\[0-9a-fA-F]{1,6}/;
 my $CSS_ATTR_RE   = qr/
   \[
-  ((?:$CSS_ESCAPE_RE|\w)+)      # Key
+  ((?:$CSS_ESCAPE_RE|\w)+)        # Key
   (?:
-  (\W)?                         # Operator
-  =
-  (?:"((?:\\"|[^"])+)"|(\S+))   # Value
+    (\W)?                         # Operator
+    =
+    (?:"((?:\\"|[^"])+)"|(\S+))   # Value
   )?
   \]
 /x;
@@ -33,23 +36,18 @@ my $CSS_CLASS_ID_RE = qr/
 my $CSS_ELEMENT_RE      = qr/^((?:\\\.|\\\#|[^\.\#])+)/;
 my $CSS_PSEUDO_CLASS_RE = qr/(?:\:([\w\-]+)(?:\(((?:\([^\)]+\)|[^\)])+)\))?)/;
 my $CSS_TOKEN_RE        = qr/
-  (\s*,\s*)?                                        # Separator
-  ((?:[^\[\\\:\s\,]|$CSS_ESCAPE_RE\s?)+)?           # Element
-  ((?:\:[\w\-]+(?:\((?:\([^\)]+\)|[^\)])+\))?)*)?   # Pseudoclass
-  ((?:\[
-    (?:$CSS_ESCAPE_RE|\w)+                          # Key
-    (?:\W?=                                         # Operator
-      (?:"(?:\\"|[^"])+"|\S+)                       # Value
-    )?
-  \])*)?
+  (\s*,\s*)?                                # Separator
+  ((?:[^\[\\\:\s\,]|$CSS_ESCAPE_RE\s?)+)?   # Element
+  ($CSS_PSEUDO_CLASS_RE*)?                  # Pseudoclass
+  ((?:$CSS_ATTR_RE)*)?                      # Attributes
   (?:
   \s*
-  ([\>\+\~])                                        # Combinator
+  ([\>\+\~])                                # Combinator
   )?
 /x;
 my $XML_ATTR_RE = qr/
   \s*
-  ([^=\s>"']+)     # Key
+  ([^=\s>]+)       # Key
   (?:
     \s*
     =
@@ -93,16 +91,39 @@ my $XML_TOKEN_RE = qr/
 # Optional HTML tags
 my @OPTIONAL_TAGS =
   qw/body colgroup dd head li optgroup option p rt rp tbody td tfoot th/;
-my $HTML_AUTOCLOSE_RE = join '|', @OPTIONAL_TAGS;
-$HTML_AUTOCLOSE_RE = qr/^(?:$HTML_AUTOCLOSE_RE)$/;
+my %HTML_OPTIONAL;
+$HTML_OPTIONAL{$_}++ for @OPTIONAL_TAGS;
 
 # Tags that break HTML paragraphs
 my @PARAGRAPH_TAGS = (
   qw/address article aside blockquote dir div dl fieldset footer form h1 h2/,
   qw/h3 h4 h5 h6 header hgroup hr menu nav ol p pre section table or ul/
 );
-my $HTML_PARAGRAPH_RE = join '|', @PARAGRAPH_TAGS;
-$HTML_PARAGRAPH_RE = qr/^(?:$HTML_PARAGRAPH_RE)$/;
+my %HTML_PARAGRAPH;
+$HTML_PARAGRAPH{$_}++ for @PARAGRAPH_TAGS;
+
+# HTML table tags
+my @TABLE_TAGS = qw/col colgroup tbody td th thead tr/;
+my %HTML_TABLE;
+$HTML_TABLE{$_}++ for @TABLE_TAGS;
+
+# HTML5 void tags
+my @VOID_TAGS = (
+  qw/area base br col command embed hr img input keygen link meta param/,
+  qw/source track wbr/
+);
+my %HTML_VOID;
+$HTML_VOID{$_}++ for @VOID_TAGS;
+
+# HTML5 block tags + "<head>" + "<html>"
+my @BLOCK_TAGS = (
+  qw/article aside blockquote body br button canvas caption col colgroup dd/,
+  qw/div dl dt embed fieldset figcaption figure footer form h1 h2 h3 h4 h5/,
+  qw/h6 head header hgroup hr html li map object ol output p pre progress/,
+  qw/section table tbody textarea tfooter th thead tr ul video/
+);
+my %HTML_BLOCK;
+$HTML_BLOCK{$_}++ for @BLOCK_TAGS;
 
 sub add_after  { shift->_add(1, @_) }
 sub add_before { shift->_add(0, @_) }
@@ -126,11 +147,15 @@ sub all_text {
 
     unshift @stack, @$e[4 .. $#$e] and next if $type eq 'tag';
 
-    # Text or CDATA
-    if ($type eq 'text' || $type eq 'cdata' || $type eq 'raw') {
-      my $content = $e->[1];
-      $text .= $content if $content =~ /\S+/;
-    }
+    # Text
+    my $content = '';
+    if ($type eq 'text') { $content = $self->_trim($e->[1], $text =~ /\S$/) }
+
+    # CDATA or raw text
+    elsif ($type eq 'cdata' || $type eq 'raw') { $content = $e->[1] }
+
+    # Append
+    $text .= $content if $content =~ /\S+/;
   }
 
   return $text;
@@ -366,11 +391,15 @@ sub text {
     # Type
     my $type = $e->[0];
 
-    # Text or CDATA
-    if ($type eq 'text' || $type eq 'cdata' || $type eq 'raw') {
-      my $content = $e->[1];
-      $text .= $content if $content =~ /\S+/;
-    }
+    # Text
+    my $content = '';
+    if ($type eq 'text') { $content = $self->_trim($e->[1], $text =~ /\S$/) }
+
+    # CDATA or raw text
+    elsif ($type eq 'cdata' || $type eq 'raw') { $content = $e->[1] }
+
+    # Append
+    $text .= $content if $content =~ /\S+/;
   }
 
   return $text;
@@ -452,10 +481,10 @@ sub _cdata {
 }
 
 sub _close {
-  my ($self, $current, $pattern, $stop) = @_;
+  my ($self, $current, $tags, $stop) = @_;
 
-  # Default to table pattern
-  $pattern ||= qr/^(col|colgroup|tbody|td|th|thead|tr)$/;
+  # Default to table tags
+  $tags ||= \%HTML_TABLE;
 
   # Default to table tag
   $stop ||= 'table';
@@ -466,7 +495,7 @@ sub _close {
     last if $parent->[0] eq 'root' || $parent->[1] eq $stop;
 
     # Match
-    ($parent->[1] =~ $pattern) and $self->_end($1, $current);
+    $tags->{$parent->[1]} and $self->_end($parent->[1], $current);
 
     # Next
     $parent = $parent->[3];
@@ -557,11 +586,35 @@ sub _doctype {
 sub _end {
   my ($self, $end, $current) = @_;
 
+  # Debug
+  warn "END $end\n" if DEBUG;
+
   # Root
   return if $$current->[0] eq 'root';
 
+  # Search stack for start tag
+  my $found = 0;
+  my $next  = $$current;
+  while ($next) {
+
+    # Root
+    last if $next->[0] eq 'root';
+
+    # Found
+    ++$found and last if $next->[1] eq $end;
+
+    # HTML inline tags stop here
+    return if !$self->xml && $HTML_BLOCK{$next->[1]} && !$HTML_BLOCK{$end};
+
+    # Next
+    $next = $next->[3];
+  }
+
+  # Ignore useless end tag
+  return unless $found;
+
   # Walk backwards
-  my $next = $$current;
+  $next = $$current;
   while ($$current = $next) {
 
     # Root
@@ -573,33 +626,16 @@ sub _end {
     # Match
     if ($end eq $$current->[1]) { return $$current = $$current->[3] }
 
-    # Autoclose optional HTML tags
-    else {
-
-      # Optional tags
-      if ($$current->[1] =~ $HTML_AUTOCLOSE_RE) {
-        $self->_end($$current->[1], $current);
-        next;
-      }
-
-      # Table
-      elsif ($end eq 'table') {
-        $self->_close($current);
-        next;
-      }
+    # Optional tags
+    elsif ($HTML_OPTIONAL{$$current->[1]}) {
+      $self->_end($$current->[1], $current);
     }
 
-    # Children to move to parent
-    my @buffer = splice @$$current, 4;
+    # Table
+    elsif ($end eq 'table') { $self->_close($current) }
 
-    # Update parent reference
-    for my $e (@buffer) {
-      $e->[3] = $next if $e->[0] eq 'tag';
-      weaken $e->[3];
-    }
-
-    # Move children
-    push @$next, @buffer;
+    # Missing end tag
+    $self->_end($$current->[1], $current);
   }
 }
 
@@ -627,8 +663,12 @@ sub _match_element {
       # Parent only ">"
       if ($c eq '>') {
         $parentonly += 2;
-        $marker   = $i - 1   unless defined $marker;
-        $snapback = $current unless $snapback;
+
+        # Can't go back to the first
+        unless ($first) {
+          $marker   = $i       unless defined $marker;
+          $snapback = $current unless $snapback;
+        }
       }
 
       # Preceding siblings "~" and "+"
@@ -657,7 +697,7 @@ sub _match_element {
 
     # Walk backwards
     while (1) {
-      $first-- if $first != 0;
+      $first-- if $first > 0;
 
       # Next sibling
       if ($siblings) {
@@ -689,7 +729,12 @@ sub _match_element {
 
       # Parent only
       if ($parentonly) {
-        $i        = $marker - 1;
+
+        # First parent needs to match
+        return unless defined $marker;
+
+        # Reset
+        $i        = $marker - 2;
         $current  = $snapback;
         $snapback = undef;
         $marker   = undef;
@@ -893,8 +938,8 @@ sub _parse_css {
     my $separator  = $1;
     my $element    = $2;
     my $pc         = $3;
-    my $attributes = $4;
-    my $combinator = $5;
+    my $attributes = $6;
+    my $combinator = $11;
 
     # Trash
     next
@@ -1038,7 +1083,8 @@ sub _parse_xml {
       $self->_start($start, $attrs, \$current);
 
       # Empty tag
-      $self->_end($start, \$current) if $attr =~ /\/\s*$/;
+      $self->_end($start, \$current)
+        if (!$self->xml && $HTML_VOID{$start}) || $attr =~ /\/\s*$/;
 
       # Relaxed "script" or "style"
       if ($start eq 'script' || $start eq 'style') {
@@ -1055,6 +1101,9 @@ sub _parse_xml {
 
 sub _pi {
   my ($self, $pi, $current) = @_;
+
+  # Try to detect XML
+  $self->xml(1) if !defined $self->xml && $pi =~ /xml/i;
 
   # Append
   push @$$current, ['pi', $pi];
@@ -1116,7 +1165,7 @@ sub _render {
       my $value = $tree->[2]->{$key};
 
       # No value
-      push @attrs, $key and next unless $value;
+      push @attrs, $key and next unless defined $value;
 
       # Escape
       xml_escape $value;
@@ -1152,30 +1201,26 @@ sub _render {
 sub _start {
   my ($self, $start, $attrs, $current) = @_;
 
+  # Debug
+  warn "START $start\n" if DEBUG;
+
   # Autoclose optional HTML tags
   if ($$current->[0] ne 'root') {
 
-    # Tag
-    my $t = $$current->[1];
-
     # "<li>"
-    if ($start eq 'li') { $self->_close($current, qr/^(li)$/, 'ul') }
+    if ($start eq 'li') { $self->_close($current, {li => 1}, 'ul') }
 
     # "<p>"
-    elsif ($t eq 'p' && $start =~ $HTML_PARAGRAPH_RE) {
-      $self->_end('p', $current);
-    }
+    elsif ($HTML_PARAGRAPH{$start}) { $self->_end('p', $current) }
 
     # "<head>"
-    elsif ($t eq 'head' && $start eq 'body') { $self->_end('head', $current) }
+    elsif ($start eq 'body') { $self->_end('head', $current) }
 
     # "<optgroup>"
-    elsif ($t eq 'optgroup' && $start eq 'optgroup') {
-      $self->_end('optgroup', $current);
-    }
+    elsif ($start eq 'optgroup') { $self->_end('optgroup', $current) }
 
     # "<option>"
-    elsif ($t eq 'option' && ($start eq 'option' || $start eq 'optgroup')) {
+    elsif ($start eq 'option' || $start eq 'optgroup') {
       $self->_end('option', $current);
       $self->_end('optgroup', $current) if $start eq 'optgroup';
     }
@@ -1193,23 +1238,24 @@ sub _start {
     elsif ($start eq 'tfoot') { $self->_close($current) }
 
     # "<tr>"
-    elsif (($t eq 'tr' || $t eq 'td') && $start eq 'tr') {
-      $self->_end('tr', $current);
-    }
+    elsif ($start eq 'tr') { $self->_end('tr', $current) }
 
     # "<th>" and "<td>"
-    elsif (($t eq 'th' || $t eq 'td') && ($start eq 'th' || $start eq 'td')) {
-      $self->_end($t, $current);
+    elsif ($start eq 'th' || $start eq 'td') {
+      $self->_end('th', $current);
+      $self->_end('td', $current);
     }
 
     # "<dt>" and "<dd>"
-    elsif (($t eq 'dt' || $t eq 'dd') && ($start eq 'dt' || $start eq 'dd')) {
-      $self->_end($t, $current);
+    elsif ($start eq 'dt' || $start eq 'dd') {
+      $self->_end('dt', $current);
+      $self->_end('dd', $current);
     }
 
     # "<rt>" and "<rp>"
-    elsif (($t eq 'rt' || $t eq 'rp') && ($start eq 'rt' || $start eq 'rp')) {
-      $self->_end($t, $current);
+    elsif ($start eq 'rt' || $start eq 'rp') {
+      $self->_end('rt', $current);
+      $self->_end('rp', $current);
     }
   }
 
@@ -1227,6 +1273,20 @@ sub _text {
 
   # Append
   push @$$current, ['text', $text];
+}
+
+sub _trim {
+  my ($self, $text, $ws) = @_;
+
+  # Trim whitespace
+  $text =~ s/^\s*\n+\s*//;
+  $text =~ s/\s*\n+\s*$//;
+  $text =~ s/\s*\n+\s*/\ /g;
+
+  # Add leading whitespace
+  $text = " $text" if $ws;
+
+  return $text;
 }
 
 package Mojo::DOM::_Collection;
@@ -1514,6 +1574,15 @@ Charset used for decoding and encoding XML.
   $dom      = $dom->tree(['root', ['text', 'lalala']]);
 
 Document Object Model.
+
+=head2 C<xml>
+
+  my $xml = $dom->xml;
+  $dom    = $dom->xml(1);
+
+Disable HTML5 semantics in parser, defaults to auto detection based on
+processing instructions.
+Note that this attribute is EXPERIMENTAL and might change without warning!
 
 =head1 METHODS
 

@@ -295,18 +295,18 @@ sub _websocket {
           alert(data);
         }
         function wsopen(event) {
-          ws.send("test 123");
+          ws.send("WebSocket support works!");
         }
         ws.onmessage = wsmessage;
         ws.onopen = wsopen;
       }
       else {
-        alert("Sorry, your browser does not support WebSocket.");
+        alert("Sorry, your browser does not support WebSockets.");
       }
     </script>
   </head>
   <body>
-    Testing WebSocket, please make sure you have JavaScript enabled.
+    Testing WebSockets, please make sure you have JavaScript enabled.
   </body>
 </html>
 EOF

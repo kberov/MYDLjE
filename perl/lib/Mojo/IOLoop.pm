@@ -708,7 +708,7 @@ sub resolve {
 
       # Query (Internet)
       for my $part (@parts) {
-        $req .= pack 'C/a', $part if defined $part;
+        $req .= pack 'C/a*', $part if defined $part;
       }
       $req .= pack 'Cnn', 0, $t, 0x0001;
 
@@ -1469,7 +1469,8 @@ sub _prepare_loop {
 
   # Dummy handle to make empty poll respect the timeout and block
   $self->{_loop}
-    ->mask(IO::Socket::INET->new(Listen => 1), EPOLL ? EPOLL_POLLIN : POLLIN);
+    ->mask(IO::Socket::INET->new(Listen => 1, LocalAddr => '127.0.0.1'),
+    EPOLL ? EPOLL_POLLIN : POLLIN);
 
   return $self->{_loop};
 }

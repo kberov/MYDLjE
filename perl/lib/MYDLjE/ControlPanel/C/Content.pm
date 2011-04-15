@@ -69,7 +69,7 @@ sub get_list {
     . ($params->{offset} ? " $params->{offset}, " : '')
     . ($params->{rows} || 50);
 
-  $c->app->log->debug("\n\$sql: $sql\n" . "@bind\n\n");
+  #$c->app->log->debug("\n\$sql: $sql\n" . "@bind\n\n");
   $c->stash('list', $c->dbix->query($sql, @bind)->hashes);
   return;
 }

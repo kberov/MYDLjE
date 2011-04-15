@@ -18,7 +18,7 @@ BEGIN {
 
 use lib ("$ENV{MOJO_HOME}/perl/lib", "$ENV{MOJO_HOME}/perl/site/lib");
 
-use Test::More tests => 34;
+use Test::More tests => 36;
 use MYDLjE::Config;
 use MYDLjE::Plugin::DBIx;
 use MYDLjE::M::Content;
@@ -82,6 +82,8 @@ is(
 $question->body('A longer description of the question');
 is($question->alias, 'what-can-i-doooo', 'alias is "what-can-i-doooo"');
 is($question->data_type, 'question', '$question->data_type is "question"');
+is($question->user_id($note->user_id)->user_id,
+  $note->user_id, 'question has owner');
 
 require MYDLjE::M::Content::Answer;
 my $answer = MYDLjE::M::Content::Answer->new(pid => $question->save);
@@ -89,6 +91,9 @@ is($answer->pid, $question->id, '$answer->pid is $question->id');
 $answer->body('You can not do anything');
 ok($answer->alias, $answer->alias);
 is($answer->data_type, 'answer', '$answer->data_type is "answer"');
+is($answer->user_id($note->user_id)->user_id,
+  $note->user_id, 'answer has owner');
+
 $answer->save();
 
 #cleanup

@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS `my_content` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Primary unique identyfier',
   `alias` varchar(255) NOT NULL DEFAULT 'seo friendly id',
   `pid` int(11) NOT NULL DEFAULT '0' COMMENT 'Parent Question, Article, Note, Book ID etc',
-  `user_id` int(11) NOT NULL DEFAULT '1',
+  `user_id` int(11) NOT NULL COMMENT 'User that created it initially.',
   `sorting` int(10) NOT NULL DEFAULT '0' COMMENT 'suitable for sorting articles in a book',
   `data_type` varchar(32) NOT NULL DEFAULT 'note' COMMENT 'Semantic Content Types. See MYDLjE::M::Content::*.',
   `data_format` set('text','textile','html','markdown') NOT NULL DEFAULT 'text',
@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS `my_content` (
   `body` text NOT NULL,
   `invisible` tinyint(1) NOT NULL,
   `language` varchar(2) NOT NULL DEFAULT '',
-  `groups` blob,
+  `group_id` int(11) NOT NULL DEFAULT '1' COMMENT 'The group of this content.',
   `protected` char(1) NOT NULL DEFAULT '',
   `featured` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Show on top independently of other sorting.',
   `accepted` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Answer accepted?',
@@ -156,7 +156,7 @@ DROP VIEW IF EXISTS  my_varticle;
 CREATE OR REPLACE VIEW my_varticle as select 
     id,user_id,pid,sorting,data_type,
     data_format,time_created,tstamp,title,body,invisible,
-    language,groups,protected,bad
+    language,group_id,protected,bad
 from my_content where (data_type = 'article');
 --</view>
 

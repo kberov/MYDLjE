@@ -5,7 +5,7 @@ has COLUMNS => sub {
   [ qw(
       id user_id pid alias tags featured
       data_type data_format time_created tstamp title
-      body invisible language groups protected bad
+      body invisible language group_id protected bad
       )
   ];
 };

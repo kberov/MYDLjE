@@ -203,11 +203,12 @@ sub _init_database {
 sub _create_admin_user {
   my ($c, $values) = @_;
   $c->app->log->debug($c->dumper($c->stash));
+  my $password = Mojo::Util::md5_sum($values->{admin_user}.$values->{admin_password});
   $c->dbix->insert(
     'my_users',
     { login_name     => $values->{admin_user},
       email          => $values->{admin_email},
-      login_password => $values->{admin_password}
+      login_password => $password
     }
   );
   return;

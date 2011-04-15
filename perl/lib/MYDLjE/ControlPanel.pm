@@ -18,6 +18,7 @@ sub startup {
 
   # Routes
   my $r = $app->routes;
+  $r->route('/hi')->to(action=>'hi',controller=>'Home');
   $r->namespace($app->controller_class);
   my $bridge_to = $app->config('routes')->{'/isauthenticated'}->{to};
   my $login_required_routes = $r->bridge('/')->to(%$bridge_to);

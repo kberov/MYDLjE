@@ -26,21 +26,21 @@ form_fields = ['site_name', 'secret', 'db_driver', 'db_host', 'db_name', 'db_use
  */
 
 function scripts_are_executable() {
-  scripts = ['mydlje', 'cpanel', 'site'];
+  scripts = {mydlje: '/hi', cpanel: '/hi', site: '/hi'};
   for (i in scripts) {
     $.ajax({
-      url: scripts[i] + '/hi',
+      url: i + scripts[i],
       success: function(data, succsess_code, jqXHR) {
         $('#system_check_div div.executable_oks').show('slow').delay(100);
-        $('#system_check_div div.executable_oks ul.oks').append('<li>' + ok_icon + scripts[i] + '/hi: ok, ' + data + '</li>');
+        $('#system_check_div div.executable_oks ul.oks').append('<li>' + ok_icon + i + scripts[i] + ': ok, ' + data + '</li>');
         successes++;
       },
       error: function(jqXHR, textStatus, errorThrown) {
         $('#system_check_div div.executable_noks').show('slow').delay(100);
-        $('#system_check_div div.executable_noks ul.noks').append('<li>' + alert_icon + scripts[i] + '/hi.html : ' + textStatus + ', ' + errorThrown + '</li>');
+        $('#system_check_div div.executable_noks ul.noks').append('<li>' + alert_icon + i + scripts[i] + ' : ' + textStatus + ', ' + errorThrown + '</li>');
         $('#system_check_div div.wrench').show('slow');
         if (typeof(errorThrown) != 'object' && errorThrown.match('Internal')) {
-          $('#system_check_div ul.wrench').append('<li>Change "' + scripts[i] + '" permissions to 0755( rwxr-xr-x )' + ' and refresh this page to see the result.</li>');
+          $('#system_check_div ul.wrench').append('<li>Change "' + i + '" permissions to 0755( rwxr-xr-x )' + ' and refresh this page to see the result.</li>');
         } else if (typeof(errorThrown) == 'object' && errorThrown.toString().match(/101/) && errors == 0) {
           $('#system_check_div ul.wrench').append('<li>' + location + ' is accesed locally.<br/>' + 'You need first to move/upload the system in a directory served by an Apache server.</li>');
         }

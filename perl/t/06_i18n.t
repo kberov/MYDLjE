@@ -28,7 +28,7 @@ my $config = MYDLjE::Config->new(
 if (not $config->stash('installed')) {
   plan skip_all => 'System is not installed. Will not test i18n.';
 }
-elsif (not -w "$ENV{MOJO_HOME}/tmp/ctpl") {
+elsif (-d "$ENV{MOJO_HOME}/tmp/ctpl" and not -w "$ENV{MOJO_HOME}/tmp/ctpl") {
   plan skip_all =>
     "$ENV{MOJO_HOME}/tmp/ctpl is not writable. All tests will die.";
 }
@@ -39,13 +39,15 @@ my $t = Test::Mojo->new(app => $ENV{MOJO_APP});
 
 $t->get_ok('/loginscreen')->status_is(200)
   ->content_like(qr/MYDLjE\:\:ControlPanel\@MYDLjE/x)
-  ->text_is('#login_name_label', 'User')->element_exists('#menu_languages');
+  ->text_like('#login_name_label', qr/^User/)
+  ->element_exists('#menu_languages');
 $t->get_ok('/loginscreen?ui_language=bg')->status_is(200)
-  ->text_is('#login_name_label', 'Потребител');
+  ->text_like('#login_name_label', qr/^Потребител\:\s\*$/);
+
 
 #State is kept in $c->session
 $t->get_ok('/loginscreen')->status_is(200)
-  ->text_is('#login_name_label', 'Потребител');
+  ->text_like('#login_name_label', qr/^Потребител/);
 
 #active language is visible
 my $active_language =

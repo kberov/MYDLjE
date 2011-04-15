@@ -26,7 +26,7 @@ my $config = MYDLjE::Config->new(
 if (not $config->stash('installed')) {
   plan skip_all => 'System is not installed. Will not test cpanel.';
 }
-elsif (not -w "$ENV{MOJO_HOME}/tmp/ctpl") {
+elsif (-d "$ENV{MOJO_HOME}/tmp/ctpl" and not -w "$ENV{MOJO_HOME}/tmp/ctpl") {
   plan skip_all =>
     "$ENV{MOJO_HOME}/tmp/ctpl is not writable. All tests will die.";
 }

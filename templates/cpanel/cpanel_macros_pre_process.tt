@@ -23,4 +23,14 @@ MACRO link_to_ui_language(language) BLOCK;
     [%- IF LANGUAGE eq language; ' class="active" '; END; -%]
     alt="[% language %]" />
 </a>
-[% END ~%]
+[% END %]
+
+[%
+#outputs recursively lists of content elements - usually pages
+MACRO content_tree(resultset,levels,limit)  BLOCK;
+levels ||= 20; limit ||= 100;
+%]
+<ul class="tree">
+  <li></li>
+</ul>
+[% END %]

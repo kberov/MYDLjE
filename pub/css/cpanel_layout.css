@@ -70,8 +70,20 @@ form .buttons {
 #main-left-navigation #accordion .ui-accordion-content{
     padding: 0px;
 }
-#main-left-navigation #accordion .ui-accordion-content ul {
+#main-left-navigation #accordion ul {
     padding: 0 1em;
+    margin: 1ex 1ex 1ex 2em;
+}
+#main-left-navigation #accordion ul li {
+  height: 1.5em;
+}
+#main-left-navigation #accordion a{
+  font-weight: bold;
+  text-decoration: none;
+  font-size: smaller;
+  display:block;
+  padding: 0.2ex;
+  padding-left: 1ex;  
 }
 #main-working-area h3 {
     padding: 1ex 1ex 1ex 1ex;

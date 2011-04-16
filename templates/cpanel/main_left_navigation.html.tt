@@ -14,6 +14,18 @@ menu_data = app.config('main_left_navigation');
 %]
 <script type="text/javascript">
 $(window).load(function() {
+    var context = '#main-left-navigation #accordion ul li';
+  //menuitems
+  $('a',context).hover(
+    function () {
+      $(this).addClass("ui-state-hover ui-corner-all");
+    },
+    function () {
+      $(this).removeClass("ui-state-hover ui-corner-all");
+    }
+  );
+  $('a[href$="[% action %]"]',context).addClass("ui-state-active");
+
   // Accordion
   $('#accordion').accordion({
     header: 'h4',
@@ -22,10 +34,12 @@ $(window).load(function() {
     //active: true,
     //icons: { 'header': 'ui-icon-plus', 'headerSelected': 'ui-icon-minus' },
     //event: 'mouseover',
-    //autoHeight: false,
+    autoHeight: false,
     navigation: true,
     //clearStyle: true
   });
+
+  
 });
 </script>
 
@@ -38,7 +52,7 @@ $(window).load(function() {
   <div>
     <ul id="[% section.header.lower().replace('\W','_') %]">
     [% FOREACH item IN section.items%]
-      <li  style="list-style-image: url(pub/css/icons/[% item.icon %])">
+      <li style="list-style-image: url(pub/css/icons/[% item.icon %])">
         [% c.link_to(c.l(item.title),item.route) %]
       </li>
     [% END %]
@@ -48,8 +62,6 @@ $(window).load(function() {
     </div><!-- end #accordion -->
   </div> <!-- end div id="main-left-navigation" -->
 </div>
-
-
 
 
 

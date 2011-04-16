@@ -144,7 +144,7 @@ params.value ||= form.${name_and_id};
     </div>
     <div class="elastic column ">
       <textarea id="[% params.id || name_and_id %]" name="[% name_and_id %]" class="textarea" 
-        style="height:[% params.height||'100px' %];width:99%;" >
+        style="height:[% params.height||'100px' %];width:100%;" >
         [% params.value %]</textarea>
     </div>
 [%+ END %]

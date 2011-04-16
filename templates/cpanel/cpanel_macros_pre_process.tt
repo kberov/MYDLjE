@@ -11,11 +11,12 @@ END
 [% END ~%]
 
 [%~
-#outputs a language flag with link to switch the current language
+# Outputs a language flag with link to switch the current language
 MACRO link_to_ui_language(language) BLOCK;
-#TODO: Leverage I18N::LangTags::List and add translations to supported languages
-#example: en => English, bg=> Bulgarian
-#LANGUAGE is defined in cpanel_macros_pre_process.tt
+
+# TODO: Leverage I18N::LangTags::List and add translations to supported languages
+# example: en => English, bg=> Bulgarian
+# LANGUAGE is defined in cpanel_macros_pre_process.tt
 %]
 <a href="[% c.url_for().query(ui_language => language) %]"
   title="[% language %]">
@@ -26,11 +27,12 @@ MACRO link_to_ui_language(language) BLOCK;
 [% END %]
 
 [%
-#outputs recursively lists of content elements - usually pages
+
+# Outputs recursively lists of content elements - usually pages
 MACRO content_tree(resultset,levels,limit)  BLOCK;
 levels ||= 20; limit ||= 100;
 %]
 <ul class="tree">
-  <li></li>
+<li class="[% action %]"></li>
 </ul>
 [% END %]

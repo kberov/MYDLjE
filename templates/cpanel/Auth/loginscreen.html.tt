@@ -53,7 +53,8 @@ $(window).load(function() {
   submit_buton = $('#login_form .buttons button[type="submit"]');
   submit_buton.click(validate_and_post_form);
 });
-//]]></script>
+//]]>
+</script>
   <div class="container ui-corner-all ui-widget-content">
     <form id="login_form" action="[% c.url_for('/loginscreen') %]" method="post"
     class="ui-widget-content ui-corner-all">

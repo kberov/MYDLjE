@@ -12,7 +12,7 @@ menu_data = app.config('main_left_navigation');
 
 #DUMP(menu_data);
 %]
-<script type="text/javascript">
+<script type="text/javascript">//<![CDATA[
 $(window).load(function() {
     var context = '#main-left-navigation #accordion ul li';
   //menuitems
@@ -41,6 +41,7 @@ $(window).load(function() {
 
   
 });
+//]]>
 </script>
 
 <div class="fixed column" style="width:220px;">

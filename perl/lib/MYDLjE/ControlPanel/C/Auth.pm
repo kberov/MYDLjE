@@ -49,10 +49,24 @@ sub _validate_and_login {
 
   #TODO: Implement authorisation and access lists
   # See http://www.perl.com/pub/2008/02/13/elements-of-access-control.html
-  my $user = MYDLjE::M::User->select(
-    login_name => $params->{login_name},
-    disabled   => 0
-  );
+  my $user = MYDLjE::M::User->new();
+  $user->TABLE($user->TABLE . ' AS u');
+  
+  # only enabled users belonging to any group with namespace='cpanel'
+  my $where = <<"SQL";
+    EXISTS(
+        SELECT g.gid FROM my_users_groups g 
+        WHERE g.uid=u.id AND 
+        g.gid IN(SELECT id FROM my_groups WHERE namespace='cpanel')
+    )
+SQL
+
+  $user->WHERE({
+      login_name => $params->{login_name},
+      disabled  => 0,
+      -bool =>$where
+  });
+  $user->select();
 
   unless ($user->id) {
     $c->app->log->error('No such user:' . $params->{login_name});

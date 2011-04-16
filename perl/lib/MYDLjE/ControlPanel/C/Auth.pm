@@ -51,7 +51,7 @@ sub _validate_and_login {
   # See http://www.perl.com/pub/2008/02/13/elements-of-access-control.html
   my $user = MYDLjE::M::User->new();
   $user->TABLE($user->TABLE . ' AS u');
-  
+
   # only enabled users belonging to any group with namespace='cpanel'
   my $where = <<"SQL";
     EXISTS(
@@ -61,11 +61,12 @@ sub _validate_and_login {
     )
 SQL
 
-  $user->WHERE({
-      login_name => $params->{login_name},
-      disabled  => 0,
-      -bool =>$where
-  });
+  $user->WHERE(
+    { login_name => $params->{login_name},
+      disabled   => 0,
+      -bool      => $where
+    }
+  );
   $user->select();
 
   unless ($user->id) {

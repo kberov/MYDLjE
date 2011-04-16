@@ -222,14 +222,16 @@ sub _create_admin_user {
   $c->dbix->insert('my_users_groups', {uid => $uid, gid => 1});
 
   #change existing "admin" password
-  $c->dbix->update('my_users',
+  $c->dbix->update(
+    'my_users',
     {login_password => Mojo::Util::md5_sum(rand(Time::HiRes::time()))},
     {login_name     => 'admin'}
   );
-  
+
   #change existing "guest" password
-  $c->dbix->update('my_users',
-    {login_password => Mojo::Util::md5_sum(rand(0.1+Time::HiRes::time()))},
+  $c->dbix->update(
+    'my_users',
+    {login_password => Mojo::Util::md5_sum(rand(0.1 + Time::HiRes::time()))},
     {login_name     => 'guest'}
   );
   return;

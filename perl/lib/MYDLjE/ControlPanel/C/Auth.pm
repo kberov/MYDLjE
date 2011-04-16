@@ -46,7 +46,13 @@ sub _validate_and_login {
     return 0;
   }
   $params->{login_name} =~ s/[^\p{IsAlnum}]//gx;
-  my $user = MYDLjE::M::User->select(login_name => $params->{login_name});
+
+  #TODO: Implement authorisation and access lists
+  # See http://www.perl.com/pub/2008/02/13/elements-of-access-control.html
+  my $user = MYDLjE::M::User->select(
+    login_name => $params->{login_name},
+    disabled   => 0
+  );
 
   unless ($user->id) {
     $c->app->log->error('No such user:' . $params->{login_name});

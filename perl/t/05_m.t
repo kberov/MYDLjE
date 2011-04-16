@@ -18,7 +18,7 @@ BEGIN {
 
 use lib ("$ENV{MOJO_HOME}/perl/lib", "$ENV{MOJO_HOME}/perl/site/lib");
 
-use Test::More tests => 36;
+use Test::More tests => 39;
 use MYDLjE::Config;
 use MYDLjE::Plugin::DBIx;
 use MYDLjE::M::Content;
@@ -144,3 +144,34 @@ $sstorage = MYDLjE::M::Session->select(id => $sstorage->new_id);
 is($sstorage->user->login_name,
   'admin', 'session restored again with newly logged in user');
 ok(!$sstorage->guest, '$sstorage->guest - no');
+
+#test WHERE
+my $user = MYDLjE::M::User->new();
+
+$user->WHERE({disabled => 0});
+
+#$user->dbix->{debug}=1;
+$user->select(login_name => 'admin');
+is($user->id, undef, "WHERE my_user.disabled=0 AND login_name='admin'");
+$user = MYDLjE::M::User->new();
+$user->WHERE({disabled => 0});
+$user->select(login_name => 'guest');
+is($user->id, 2, "WHERE my_user.disabled=0 AND login_name='guest'");
+
+#try with foreign keys
+$user = MYDLjE::M::User->new();
+$user->TABLE($user->TABLE . ' AS u');
+
+#select a user only if he is from a group with id 2(guest)
+$user->WHERE(
+  { disabled => 0,
+    -and     => [
+      \"EXISTS (SELECT g.gid FROM my_users_groups g WHERE g.uid=u.id and g.gid=2)"
+    ]
+  }
+);
+
+#TODO: request DBIx::Simple feature.
+#$user->dbix->{debug} =1;
+$user->select(login_name => 'guest');
+is($user->id, 2, "custom WHERE with literal SQL");

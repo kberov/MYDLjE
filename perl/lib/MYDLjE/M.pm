@@ -35,7 +35,7 @@ sub FIELDS_VALIDATION {
 
 #specific where clause for this class
 #which will be preppended to $where argument for the select() method
-sub WHERE { return {} }
+has WHERE => sub { {} };
 
 #METHODS
 sub new {
@@ -55,7 +55,7 @@ sub select {    ##no critic (Subroutines::ProhibitBuiltinHomonyms)
   unless (ref $self) {
     $self = $self->new();
   }
-  $where = {%{$self->WHERE}, %$where};
+  $where = {%$where, %{$self->WHERE}};
 
   $self->data(
     $self->dbix->select($self->TABLE, $self->COLUMNS, $where)->hash);
@@ -70,7 +70,8 @@ sub data {
       unless (grep { $field eq $_ } @{$self->COLUMNS()}) {
         Carp::cluck("There is not such field $field in table "
             . $self->TABLE
-            . '! Skipping...');
+            . '! Skipping...')
+          if $DEBUG;
         next;
       }
       $self->$field($args->{$field});
@@ -298,10 +299,15 @@ MojoX::Validator instance used to validate the fields as described in L</FIELDS_
 
 =head2 WHERE
 
-Specific C<WHERE> clause for your class which will be prepended to C<where> arguments for the L</select> method. Empty by default.
+Specific C<WHERE> clause for your class which will be appended to C<where> arguments for the L</select> method. Empty by default.
 
   has WHERE => sub { {data_type => 'note'} };
 
+You can redefine the WHERE clause for the object data population just after instatntiating an empty object and before calling select to populate it with data.
+
+    my $user =MYDLjE::M::User->new();
+    $user->WHERE({disabled =>0, });
+    $user->select(id=>1);
 
 =head1 METHODS
 

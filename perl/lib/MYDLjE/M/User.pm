@@ -20,7 +20,7 @@ has FIELDS_VALIDATION => sub {
     email => {required => 1, constraints => [{'email' => 'email'},]},
     first_name => {constraints => [{length => [3, 100]}]},
     last_name  => {constraints => [{length => [3, 100]}]},
-    description => {required => 0, constraints => [{length => [0, 100]},]},
+    description => {required => 0, constraints => [{length => [0, 255]},]},
     created_by  => {required => 0, regexp      => qr/^\d+$/x},
     changed_by  => {required => 0, regexp      => qr/^\d+$/x},
     disabled => {required => 0, regexp => qr/^[01]$/x},

@@ -166,6 +166,10 @@ ALTER TABLE `my_content`
   ADD CONSTRAINT `my_content_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `my_users` (`id`);
 ALTER TABLE `my_sessions`
   ADD CONSTRAINT `my_sessions_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `my_users` (`id`) ON UPDATE CASCADE;
+ALTER TABLE `my_users_groups`
+  ADD CONSTRAINT `my_users_groups_group_id_fk` FOREIGN KEY (`gid`) REFERENCES `my_groups` (`id`),
+  ADD CONSTRAINT `my_users_groups_user_id_fk` FOREIGN KEY (`uid`) REFERENCES `my_users` (`id`);
+
 --</do>
 --<do id="enable_foreign_key_checks">
 SET FOREIGN_KEY_CHECKS=1;

@@ -138,7 +138,7 @@ sub _die {
 sub query {
     my ($self, $query, @binds) = @_;
     $self->{success} = 0;
-
+    Carp::carp($query) if $self->{debug};
     $self->_replace_omniholder(\$query, \@binds);
 
     my $st;

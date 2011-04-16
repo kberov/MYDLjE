@@ -190,7 +190,7 @@ sub _init_database {
   $dom = Mojo::DOM->new;
   $dom->parse($xml_sql);
 
-  # Loop
+# Loop over named(!) queries only in the order they are defined in the document.
   for my $e ($dom->find('query[name]')->each) {
     my $query = $e->text;
     $query =~ s/--.*?$//xg;
@@ -205,12 +205,32 @@ sub _create_admin_user {
   $c->app->log->debug($c->dumper($c->stash));
   my $password =
     Mojo::Util::md5_sum($values->{admin_user} . $values->{admin_password});
+
   $c->dbix->insert(
     'my_users',
     { login_name     => $values->{admin_user},
       email          => $values->{admin_email},
-      login_password => $password
+      login_password => $password,
+      tstamp         => time(),
+      reg_tstamp     => time(),
     }
+  );
+
+  #add user to admin group
+  my $uid = $c->dbix->last_insert_id(undef, undef, 'my_users', 'id');
+
+  $c->dbix->insert('my_users_groups', {uid => $uid, gid => 1});
+
+  #change existing "admin" password
+  $c->dbix->update('my_users',
+    {login_password => Mojo::Util::md5_sum(rand(Time::HiRes::time()))},
+    {login_name     => 'admin'}
+  );
+  
+  #change existing "guest" password
+  $c->dbix->update('my_users',
+    {login_password => Mojo::Util::md5_sum(rand(0.1+Time::HiRes::time()))},
+    {login_name     => 'guest'}
   );
   return;
 }

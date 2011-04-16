@@ -55,7 +55,7 @@ sub _validate_and_login {
   # only enabled users belonging to any group with namespace='cpanel'
   my $where = <<"SQL";
     EXISTS(
-        SELECT g.gid FROM my_users_groups g 
+        SELECT count(g.gid) FROM my_users_groups g 
         WHERE g.uid=u.id AND 
         g.gid IN(SELECT id FROM my_groups WHERE namespace='cpanel')
     )

@@ -1,20 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="[% LANGUAGE %]">
-  <head>
-    <base href="[% base_url %]" />
-    <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
-    <title>[% MOJO_APP_AT_SITE TITLE ? _'/'_ TITLE: '' %]</title>
-    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
-    <link href="pub/css/[% JQ_UI_THEME %]/jquery-ui-current.custom.css" rel="stylesheet" charset="utf-8" type="text/css" />
-    <link href="pub/css/elastic.css" rel="stylesheet" type="text/css" charset="utf-8" />
-    <link href="pub/css/cpanel_layout.css" rel="stylesheet" type="text/css" charset="utf-8" />
-    <script src="pub/js/jquery-current.min.js" type="text/javascript" charset="utf-8"></script>
-    <script src="pub/css/elastic.js" type="text/javascript" charset="utf-8"></script>
-    <script src="pub/js/jquery-ui-current.custom.min.js" type="text/javascript" charset="utf-8"></script>
-    <script src="pub/js/cpanel.js" type="text/javascript" charset="utf-8"></script>
-    <script src="pub/js/md5-min.js" type="text/javascript" charset="utf-8"></script>
-  </head>
+[% PROCESS 'layouts/head.tt' %]
   <body>
     <noscript><p>This page requires JavaScript.</p></noscript>
     <div class="unit layout">

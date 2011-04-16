@@ -122,7 +122,7 @@ sub save {
     return $self->id;
   }
   else {
-    $self->dbix->update(
+    return $self->dbix->update(
       $self->TABLE,
       { id          => $self->id,
         tstamp      => time,
@@ -132,7 +132,7 @@ sub save {
       {id => $self->id}
     );
   }
-  return $self->id;
+  return;
 }
 
 sub select {    ##no critic (Subroutines::ProhibitBuiltinHomonyms)

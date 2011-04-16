@@ -99,9 +99,9 @@ sub save {
     return $self->id;
   }
   else {
-    $self->dbix->update($self->TABLE, $self->data, {id => $self->id});
+    return $self->dbix->update($self->TABLE, $self->data, {id => $self->id});
   }
-  return $self->id;
+  return;
 }
 
 sub make_field_attrs {

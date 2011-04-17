@@ -20,18 +20,96 @@ sub answers   { goto &list_content }
 sub notes     { goto &list_content }
 
 #all types of content are edited using a single template(for now)
-sub edit_content {
+sub edit {
   my $c = shift;
-  $c->stash->{id} ||= 0;
+
+  $c->stash(TEMPLATE_WRAPPER => 'cpanel/layouts/'
+      . ucfirst($c->stash('controller')) . '/'
+      . $c->stash('action')
+      . '.tt');
+
+  my $data_type = lc($c->req->param('data_type'));
+  my $modules   = Mojo::Loader->search('MYDLjE::M::Content');
+  my $data_object;
+  for (@$modules) {
+    if ($_ =~ /\:$data_type$/xi) {
+      $c->stash('data_type', $data_type);
+      Mojo::Loader->load($_);
+      my $class = ucfirst($data_type);
+      $class = "MYDLjE::M::Content::$class";
+      if ($c->stash('id')) {
+        $data_object = $class->select(id => $c->stash('id'));
+      }
+      else {
+        $data_object = $class->new();
+      }
+      $c->stash('data_object', $data_object);
+      last;
+    }
+  }
+
+  if ($c->req->method eq 'POST') {
+    $c->edit_post();
+  }
   $c->render(template => 'Content/edit');
   return;
 }
-sub edit_page     { goto &edit_content }
-sub edit_book     { goto &edit_content }
-sub edit_article  { goto &edit_content }
-sub edit_question { goto &edit_content }
-sub edit_answer   { goto &edit_content }
-sub edit_note     { goto &edit_content }
+
+#handles POST. Saves form data using the appropriate Content object
+sub edit_post {
+  my ($c) = @_;
+  my $app = $c->app;
+  $app->log->debug($c->dumper($c->req->body_params->to_hash));
+
+  #validate
+  #TODO: Implement FIELDS_VALIDATION like in MYDLjE::M
+  my $fields_ui_data = $app->config('MYDLjE::Content::Form::ui');
+  my $v              = $c->create_validator;
+  $v->field('title')->required(1)->length(3, 255);
+  $v->field('keywords')->inflate(
+    sub {
+      my $filed = shift;
+      my $value = $filed->value;
+      $value =~ s/[^\p{IsAlnum}\,\s]//gxi;
+      my @words = split /[\,\s]/xi, $value;
+      $value = join ", ", @words;
+      return $value;
+    }
+  );
+  $v->field('description')->inflate(
+    sub {
+      my $filed = shift;
+      my $value = $filed->value;
+
+      #remove everything strange
+      $value =~ s/[^\p{IsAlnum}\,\s\-\!\.\?\(\);]//gxi;
+      return $value;
+    }
+  );
+  $v->field('data_type')->in(@{$fields_ui_data->{data_type}});
+  $v->field('data_format')->in(@{$fields_ui_data->{data_format}});
+  $v->field('language')->in(@{$app->config('languages')});
+  my $form = $c->req->body_params->to_hash;
+  my $ok = $c->validate($v, $form);
+  $app->log->debug($c->dumper($c->stash('validator_errors'), $v->errors));
+  $c->stash('form', {%$form, %{$v->values}});
+
+  return unless $ok;
+
+  #save
+  my $data_object = $c->stash('data_object');
+  $data_object->data($c->stash('form'));
+  my $user = $c->msession->user;
+  $data_object->user_id($user->id)->group_id(
+    $c->dbix->select(
+      'my_users_groups', 'gid',
+      {uid  => $user->id},
+      {-asc => 'id'}
+      )->hash->{gid}
+  );
+  $data_object->save();
+  return;
+}
 
 sub get_list {
   my ($c, $params, $class) = @_;
@@ -70,7 +148,7 @@ sub get_list {
     . ($params->{rows} || 50);
 
   #$c->app->log->debug("\n\$sql: $sql\n" . "@bind\n\n");
-  $c->stash('list', $c->dbix->query($sql, @bind)->hashes);
+  $c->stash('list_data', $c->dbix->query($sql, @bind)->hashes);
   return;
 }
 1;

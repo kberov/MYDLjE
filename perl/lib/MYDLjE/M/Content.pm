@@ -29,7 +29,7 @@ sub FIELDS_VALIDATION {
     },
     data_format => {
       required    => 1,
-      constraints => [{regexp => qr/(textile|text|html|markdown)/x},]
+      constraints => [{regexp => qr/(textile|text|html|markdown,template)/x},]
     },
     language => {required => 1, constraints => [{regexp => qr/[a-z]{2}/x},]}
 

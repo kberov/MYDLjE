@@ -3,14 +3,57 @@
 <div class="container ui-corner-all ui-widget-content">
 <h3 class="ui-widget-header ui-corner-all ui-helper-clearfix">
   [% c.l('list_' _ action) %]
-<a href="[% c.url_for('/content/edit_' _ data_type _ '/0') %]"
+<a href="[% c.url_for('/content/edit/0').query('data_type' =>data_type ) %]"
    title="[% c.l('New [_1]', data_type ) %]"
-   style="float:right;"><span class="ui-icon" style="background-image: url(pub/css/icons/add.png) "></span></a>
+   style="float:right;"
+   id="[%'new_' _ data_type %]"
+   class="new_content"
+   >
+   <span class="ui-icon" 
+   style="background-image: url(pub/css/icons/add.png) "></span></a>
 </h3>
 
+<div id="edit-form-dialog" title="[% c.l('New [_1]', c.l(data_type) ) %]" style="display:none">
+<iframe id="edit-form-dialog-iframe" src="about:blank"></iframe>
 
-[]
-list [% action %]
+</div>
+<script  type="text/javascript">//<![CDATA[
+function open_edit_dialog(){
+//$(".ui-dialog-titlebar").hide();
+$('#edit-form-dialog-iframe').attr('src',$("#[%'new_' _ data_type %]").attr('href'));
+$( '#edit-form-dialog' ).dialog( 'open' );
 
-</div><!-- end [% action %] -->
+}
+function save_data(){
+  var edit_content_form = $('#edit-form-dialog-iframe').contents().find('#edit_content_form');
+  edit_content_form.trigger('submit');
+}
+//end open_edit_dialog()
+$(window).load(function() {
+    $("#[%'new_' _ data_type %]").click(function(){open_edit_dialog(); return false});
+    $( '#edit-form-dialog' ).dialog({
+        autoOpen: false,
+        modal: true,
+        minHeight: 300,
+        minWidth: 450,
+        height: $(window).height() -20,
+        width: $(window).width()-150,
+        buttons: {
+          "[% c.l('Save') %]": function() {
+            save_data();
+          },
+          "[% c.l('Save and close') %]": function() {
+            $( this ).dialog( "close" );
+          },
+          "[% c.l('Cancel') %]": function() {
+            $( this ).dialog( "close" );
+          }
+        }
+			
+    })
+});
+//]]>
+</script>
+<!-- end [% action %] -->
 [% END %]
+

@@ -5,6 +5,7 @@ use warnings;
 use utf8;
 
 our %Lexicon = (
+  _AUTO => 1,
 
   #cpanel/loginscreen.html.tt
   Login          => 'Вписване',
@@ -20,6 +21,9 @@ our %Lexicon = (
     'Моля въведете валидна стойност за полето "[_1]"!',
   session_id_error =>
     'Невалидна сесия. Моля опитайте отново!',
+
+  #Main left menu items
+  #main_left_navigation.html.tt
   Content        => 'Съдържание',
   Pages          => 'Страници',
   Books          => 'Книги',
@@ -33,6 +37,36 @@ our %Lexicon = (
   list_articles  => 'Списък със статии',
   list_notes     => 'Списък с бележки',
   list_books     => 'Списък с книги',
+  'New [_1]'     => 'Ново съдържание ([_1])',
+  'Edit [_1]'    => 'Редакция на съдържание ([_1])',
+  page           => 'Страница',
+  book           => 'Книга',
+  article        => 'Статия',
+  chapter        => 'Глава',
+  question       => 'Въпрос',
+  answer         => 'Отговор',
+  note           => 'Бележка',
+
+  #MYDLjE::M::Content fields
+  title        => 'Заглавие/Име',
+  tags         => 'Етикети',
+  featured     => 'Препоръчано',
+  sorting      => 'Подредба',
+  data_type    => 'Семантичен Тип',
+  data_format  => 'Формат на Данните',
+  time_created => 'Време на създаване',
+  tstamp       => 'Време на Промяна',
+  body         => 'Съдържание (тяло)',
+  invisible    => 'Невидимо',
+  language     => 'Език',
+  group_id     => 'Група',
+  protected    => 'Защитено',
+  bad          => 'Лошо съдържание',
+
+  #TODO: use I18N::LangTags::List better
+  bg => 'Български',
+  en => 'Английски',
+
 
 );
 

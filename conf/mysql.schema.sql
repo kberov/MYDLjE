@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS `my_content` (
   `user_id` int(11) NOT NULL COMMENT 'User that created it initially.',
   `sorting` int(10) NOT NULL DEFAULT '0' COMMENT 'suitable for sorting articles in a book',
   `data_type` varchar(32) NOT NULL DEFAULT 'note' COMMENT 'Semantic Content Types. See MYDLjE::M::Content::*.',
-  `data_format` set('text','textile','html','markdown') NOT NULL DEFAULT 'text',
+  `data_format` set('text','textile','markdown','html','template') NOT NULL DEFAULT 'text',
   `time_created` int(11) NOT NULL DEFAULT '0' COMMENT 'When this content was inserted',
   `tstamp` int(11) NOT NULL DEFAULT '0' COMMENT 'Last time the record was touched',
   `title` varchar(255) NOT NULL DEFAULT '',

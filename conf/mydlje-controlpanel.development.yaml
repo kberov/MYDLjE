@@ -38,6 +38,7 @@ routes:
       controller: Auth
       action: loginscreen
   /isauthenticated:
+    
     to:
       controller: Auth
       action: isauthenticated
@@ -174,4 +175,19 @@ main_left_navigation:
         icon: wrench.png
         route: /someplugin/settings
 
-
+MYDLjE::Content::Form::ui:
+  data_type:
+    - page
+    - book
+    - chapter
+    - article
+    - question
+    - answer
+    - note
+  data_format:
+    - text
+    - textile
+    - markdown
+    - html
+    - template
+    

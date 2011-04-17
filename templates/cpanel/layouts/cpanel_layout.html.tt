@@ -4,6 +4,9 @@
   <body>
     <noscript><p>This page requires JavaScript.</p></noscript>
     <div class="unit layout">
+      <div class="container ui-widget ui-widget-content ui-corner-all"
+           id="main-container">
+<!-- start main-header -->
       <div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix" id="main-header">
         <div class="columns">
           <div class="fixed column">
@@ -29,9 +32,8 @@
           </div>
         </div>
       </div>
-      <div class="container ui-widget ui-widget-content ui-corner-all"
-           id="main-container">
-        <div class="unit columns">
+<!-- end main header -->
+       <div class="unit columns">
         
         [%
         UNLESS c.msession.guest;

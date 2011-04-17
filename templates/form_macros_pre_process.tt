@@ -11,7 +11,11 @@ You may add your own newly created complex widgets here.
 You may use simple widgets to build more complex widgets.
 
 %]
-[% form = c.req.params.to_hash %]
+[% 
+
+#Allow custom "form" to be passed to the STASH
+form ||= c.req.params.to_hash;
+%]
 [% MACRO text_field(arg,params) BLOCK %]
 [% name_and_id =  arg||params.name; 
 field_error =${ name_and_id _ '_error' };
@@ -22,14 +26,14 @@ params.value ||= form.${name_and_id};
     id="[% name_and_id %]_error">
       <div class="container ui-state-error ui-corner-all ">[% field_error %]</div>
     </div>
-    <div class="fixed column label">
+    <div class="fixed column label" id="[% name_and_id _ '_label_column' %]">
     <label for="[% params.id || name_and_id %]" id="[% name_and_id _ '_label' %]">
       [% params.label|| c.l(name_and_id).ucfirst;
          params.required ? ':&#160;*' : ':';
       %]
     </label>
     </div>
-    <div class="elastic column">
+    <div class="elastic column"  id="[% name_and_id _ '_field_column' %]">
       <div class="container field">
         <input type="text" class="textbox" id="[% params.id || name_and_id %]" 
         name="[% name_and_id %]" value="[% params.value %]"
@@ -114,10 +118,15 @@ params.selected ||= form.${name_and_id};
         </label>
     </div>
     <div class="elastic column ">
-        <select  for="[% params.id || name_and_id %]" name="[% name_and_id %]" >
+        <select  for="[% params.id || name_and_id %]" name="[% name_and_id %]"
+        [% params.readonly? ' readonly="readonly"':'' %]
+        >
             [% FOR row IN params.options %]
             <option [%+
-                params.selected eq row.value ? 'selected="selected"' : '' 
+                params.selected eq row.value ? ' selected="selected"' : '' 
+                +%]
+                [%+
+                row.disabled ? '  disabled="disabled"' : '' 
                 +%]
                 value="[% row.value %]">[%
                 c.l(row.label || row.value).xml
@@ -127,24 +136,44 @@ params.selected ||= form.${name_and_id};
     </div>
 [%+ END %]
 
-[%MACRO textarea(arg,params) BLOCK%]
-[% name_and_id =  arg||params.name; 
-field_error =${ name_and_id _ '_error' };
-params.value ||= form.${name_and_id};
+[%MACRO textarea(arg,params) BLOCK;
+  name_and_id =  arg||params.name; 
+  field_error =${ name_and_id _ '_error' };
+  params.value ||= form.${name_and_id};
 +%]
     <div class="column span-2" style="[% field_error?'':'display:none;'%]" 
     id="[% name_and_id %]_error">
       <div class="container ui-state-error ui-corner-all ">[% field_error %]</div>
     </div>
-    <div class="fixed column label">
+    <div class="fixed column label" id="[% name_and_id _ '_label_column' %]">
     <label for="[% params.id || name_and_id %]" id="[% name_and_id _ '_label' %]">
             [% params.label|| c.l(name_and_id).ucfirst %]
-            [% params.required ? ':&nbsp;*' : ':' %]
+            [% params.required ? ':&#160;*' : ':' %]
         </label>
     </div>
-    <div class="elastic column ">
+    <div class="elastic column " id="[% name_and_id _ '_field_column' %]"><div class="container field">
       <textarea id="[% params.id || name_and_id %]" name="[% name_and_id %]" class="textarea" 
-        style="height:[% params.height||'100px' %];width:100%;" >
+        style="height:[% params.height||'200px' %];width:100%;" >
         [% params.value %]</textarea>
+    </div></div>
+[%+ END %]
+[%MACRO checkbox_field(arg,params) BLOCK;
+  name_and_id =  arg||params.name; 
+  field_error =${ name_and_id _ '_error' };
+  params.value ||= form.${name_and_id};
++%]
+    <div class="column" style="[% field_error?'':'display:none;'%]" 
+    id="[% name_and_id %]_error">
+      <div class="container ui-state-error ui-corner-all ">[% field_error %]</div>
     </div>
+    <div class="fixed column label" id="[% name_and_id _ '_label_column' %]">&#160;
+    <input type="checkbox" class="checkbox"
+    id="[% name_and_id %]" name="[% name_and_id %]" value="1" />
+    <label for="[% params.id || name_and_id %]" id="[% name_and_id _ '_label' %]" 
+    style="display: inline-block;">
+      [% params.label|| c.l(name_and_id).ucfirst %]
+      [% params.required ? '&#160;*' : '' %]
+    </label>
+    </div>
+    
 [%+ END %]

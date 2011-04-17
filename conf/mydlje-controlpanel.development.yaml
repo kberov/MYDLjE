@@ -51,6 +51,11 @@ login_required_routes:
     to:
       controller: Auth
       action: logout
+  /:
+    order: 100001
+    to:
+      controller: Home
+      action: home
   /home:
     order: 100001
     to:
@@ -60,7 +65,7 @@ login_required_routes:
     order: 10
     to:
       controller: Content
-
+      action: pages
   /:controller/:action: 
     order: 1000
     namespace: MYDLjE::ControlPanel::C
@@ -86,11 +91,11 @@ main_left_navigation:
         route: /content/books
       -
         title: Articles
-        icon: page_white.png
+        icon: article.png
         route: /content/articles
       -
         title: Questions
-        icon: help.png
+        icon: question.png
         route: /content/questions
       -
         title: Notes

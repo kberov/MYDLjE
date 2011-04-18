@@ -3,8 +3,7 @@ use strict;
 use warnings;
 use utf8;
 use Mojo::Util;
-
-#shamelesly stollen from Contao. #Do not know from where Leo got it :}.
+our $VERSION = 0.1;
 my $UTF8_LOOKUP_TABLE = {
   'uc' => {
     'ｚ' => 'Ｚ',
@@ -1351,58 +1350,68 @@ my $UTF8_LOOKUP_TABLE = {
   'unidecode' => {
 
     #ASCII
-    A => q{A},
-    B => q{B},
-    C => q{C},
-    D => q{D},
-    E => q{E},
-    F => q{F},
-    G => q{G},
-    H => q{H},
-    I => q{I},
-    J => q{J},
-    K => q{K},
-    L => q{L},
-    M => q{M},
-    N => q{N},
-    O => q{O},
-    P => q{P},
-    Q => q{Q},
-    R => q{R},
-    S => q{S},
-    T => q{T},
-    U => q{U},
-    V => q{V},
-    W => q{W},
-    X => q{X},
-    Y => q{Y},
-    Z => q{Z},
-    a => q{a},
-    b => q{b},
-    c => q{c},
-    d => q{d},
-    e => q{e},
-    f => q{f},
-    g => q{g},
-    h => q{h},
-    i => q{i},
-    j => q{j},
-    k => q{k},
-    l => q{l},
-    m => q{m},
-    n => q{n},
-    o => q{o},
-    p => q{p},
-    q => q{q},
-    r => q{r},
-    s => q{s},
-    t => q{t},
-    u => q{u},
-    v => q{v},
-    w => q{w},
-    x => q{x},
-    y => q{y},
-    z => q{z},
+    1   => 1,
+    2   => 2,
+    3   => 3,
+    4   => 4,
+    5   => 5,
+    6   => 6,
+    7   => 7,
+    8   => 8,
+    9   => 9,
+    '0' => '0',
+    A   => q{A},
+    B   => q{B},
+    C   => q{C},
+    D   => q{D},
+    E   => q{E},
+    F   => q{F},
+    G   => q{G},
+    H   => q{H},
+    I   => q{I},
+    J   => q{J},
+    K   => q{K},
+    L   => q{L},
+    M   => q{M},
+    N   => q{N},
+    O   => q{O},
+    P   => q{P},
+    Q   => q{Q},
+    R   => q{R},
+    S   => q{S},
+    T   => q{T},
+    U   => q{U},
+    V   => q{V},
+    W   => q{W},
+    X   => q{X},
+    Y   => q{Y},
+    Z   => q{Z},
+    a   => q{a},
+    b   => q{b},
+    c   => q{c},
+    d   => q{d},
+    e   => q{e},
+    f   => q{f},
+    g   => q{g},
+    h   => q{h},
+    i   => q{i},
+    j   => q{j},
+    k   => q{k},
+    l   => q{l},
+    m   => q{m},
+    n   => q{n},
+    o   => q{o},
+    p   => q{p},
+    q   => q{q},
+    r   => q{r},
+    s   => q{s},
+    t   => q{t},
+    u   => q{u},
+    v   => q{v},
+    w   => q{w},
+    x   => q{x},
+    y   => q{y},
+    z   => q{z},
 
     # Lower accents
     'à'  => 'a',
@@ -2486,13 +2495,47 @@ my $UTF8_LOOKUP_TABLE = {
 #please make sure to decode the string before passing it to this function.
 #Mojo::Util::decode('UTF-8', $word);
 sub unidecode {
-  my ($word) = @_;
-  return '' unless $word;
+  my ($words) = @_;
+  return '' unless $words;
   my (@from, @to);
-  @from = split //, $word;
+  @from = split //, $words;
   @to = map { $UTF8_LOOKUP_TABLE->{'unidecode'}{$_} || '-' } @from;
   return join('', @to);
 }
 
 
 1;
+
+__END__
+
+=head1 NAME
+
+MYDLjE::Unidecode - Transliterate Unicode characters to plain ASCII equivalents
+
+=head1 DESCRIPTION
+
+This is the Unicode lookup table defined as a HASHREF which is used by L<MYDLjE> to make plain ascii aliases out of content element titles.
+The table is ported from Contao CMS - L<http://www.contao.org>. The variable C<$UTF8_LOOKUP_TABLE> is private to the package C<MYDLjE::Unidecode> so it is not accessible from outside. Instead various subroutines can be written to retreive and use characters from it.
+I know there is L<Text::Unidecode>, but now is 2011.
+
+=head1 SUBROUTINES
+
+=head2 unidecode($sting);
+
+This is the only subroutine currently defined. It is not exported into the caller's namespace. Accept one parameter - scalar(string). Returns the converted string. Please make sure to decode the string before passing it to this function.
+
+  Mojo::Util::decode('UTF-8', $string);
+
+  MYDLjE::Unidecode::unidecode("Депутатката, написала 5 на премиера: Има и две двойки");
+  #"Deputatkata--napisala-5-na-premiera--Ima-i-dve-dvojki"
+
+=head1 SEE ALSO
+
+L<Text::Unidecode>
+
+=head1 AUTHOR AND COPYRIGHT
+
+(c) 2011 Krasimir Berov 
+
+Ported from Leo Feyer's Contao: (c) Leo Feyer 2005-2010
+

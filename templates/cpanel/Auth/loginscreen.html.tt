@@ -55,7 +55,6 @@ $(window).load(function() {
 });
 //]]>
 </script>
-  <div class="container ui-corner-all ui-widget-content">
     <form id="login_form" action="[% c.url_for('/loginscreen') %]" method="post"
     class="ui-widget-content ui-corner-all">
       <fieldset class="ui-widget-content ui-corner-all">
@@ -80,7 +79,7 @@ $(window).load(function() {
     </form>
     <div id="error-dialog" style="display:none" title="[% c.l('Error') %]">
     </div>
-    
+[% IF app.mode.match('dev') %]
     <!-- for testing cpanel.js enhance_form() only -->
     <form id="other_form" style="width:300px;display:none;" class="columns on-2" action="">
       <fieldset class="ui-widget-content ui-corner-all">
@@ -107,6 +106,6 @@ $(window).load(function() {
       </div>
       </fieldset>
     </form>
-  </div><!-- end div class="container ui-widget ui-corner-all ui-state-active" -->
+[% END %]
 <!-- end loginscreen -->
 [% END %]

@@ -1,6 +1,8 @@
 
 html, body {
 height:100%;
+padding:0;
+margin:0;
 }
 
 .layout {
@@ -10,6 +12,7 @@ height:100%;
     width: 99%;
     max-width: 1300px;
     height: 99%;
+    min-height: 350px;
 }
 /*
   TODO: Think if some directives should be moved in a separate file "cpanel_skin.css"
@@ -30,7 +33,8 @@ height:100%;
     text-align:right;
 }
 #login_form {
-  margin:1em auto 1em auto;
+
+  margin:5em auto;
   width: 500px;
   
 }

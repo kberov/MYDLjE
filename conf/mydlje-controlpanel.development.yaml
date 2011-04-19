@@ -1,6 +1,9 @@
 ---
 site_name: MYDLjE
 templates_root: templates/cpanel
+#get MORE strict
+types:
+  html: 'application/xhtml+xml; charset=utf-8'
 plugins:
   alloy_renderer:
     syntax: TT

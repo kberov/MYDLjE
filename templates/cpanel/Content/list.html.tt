@@ -1,22 +1,22 @@
 [% WRAPPER ${TEMPLATE_WRAPPER} %]
-<!-- start [% action %] -->
-<div class="container ui-corner-all ui-widget-content">
-<h3 class="ui-widget-header ui-corner-all ui-helper-clearfix">
-  [% c.l('list_' _ action) %]
-<a href="[% c.url_for('/content/edit/0').query('data_type' =>data_type ) %]"
-   title="[% c.l('New [_1]', data_type ) %]"
-   style="float:right;"
-   id="[%'new_' _ data_type %]"
-   class="new_content"
-   >
-   <span class="ui-icon" 
-   style="background-image: url(pub/css/icons/add.png) "></span></a>
-</h3>
-
-<div id="edit-form-dialog" title="[% c.l('New [_1]', c.l(data_type) ) %]" style="display:none">
-<iframe id="edit-form-dialog-iframe" src="about:blank"></iframe>
-
-</div>
+<!-- start [%+ action %] -->
+<div id="[% action %]-area" class="container ui-corner-all ui-widget-content">
+  <h3 class="ui-widget-header ui-corner-all ui-helper-clearfix">
+    [% c.l('list_' _ action) %]
+  <a href="[% c.url_for('/content/edit/0').query('data_type' =>data_type ) %]"
+     title="[% c.l('New [_1]', data_type ) %]"
+     style="float:right;"
+     id="[%'new_' _ data_type %]"
+     class="new_content"
+     >
+     <span class="ui-icon" 
+     style="background-image: url(pub/css/icons/add.png) "></span></a>
+  </h3>
+  <div id="edit-form-dialog"
+       title="[% c.l('New [_1]', c.l(data_type) ) %]"
+       style="display:none">
+    <iframe id="edit-form-dialog-iframe" src="about:blank"></iframe>
+  </div>
 [%#
 TODO: Make a dialog for each data type that may be in the content list of this page 
 Make it work in the same window only usin JS.
@@ -64,6 +64,7 @@ $(window).load(function() {
 });
 //]]>
 </script>
-<!-- end [% action %] -->
+</div><!-- end div id="main-right-area" -->
+<!-- end [%+ action %] -->
 [% END %]
 

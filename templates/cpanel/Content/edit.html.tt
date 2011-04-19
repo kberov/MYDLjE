@@ -1,6 +1,7 @@
 [% WRAPPER ${TEMPLATE_WRAPPER} %]
 <!-- start [% action %] -->
 [% 
+
 data_type_locale = c.l(data_type);
 edit_data_type = c.l('Edit [_1]', data_type_locale );
 new_data_type = c.l('New [_1]', data_type_locale );
@@ -29,9 +30,9 @@ END;
 %]
     <form id="edit_content_form" action="[% c.url_for('/content/edit/' _ id) %]" 
         method="post" class="unit on-2 columns" >
-      <div class="column span-2" style="display: [%
-      validator_errors ? 'block;':'none;' %]">
-        <div class="ui-state-error ui-corner-all"></div></div>
+      <div class="column span-2" style="display: [% validator_errors ? 'block;':'none;' %]">
+        <div class="ui-state-error ui-corner-all"></div>
+      </div>
       [% text_field('title') ; textarea('body'); %]
       <div class="column span-2">
         <div class="unit on-4 columns">
@@ -49,12 +50,13 @@ END;
       </div>
         <div class="unit on-6 columns">
           [% 
-          select_field('language', { options => language_options });
+          select_field('language', { options => language_options } );
           select_field('data_type', 
-            {readonly=>1, selected => data_type, options => data_type_options});
-          select_field('data_format', {options => data_format_options}) %]
+            {readonly=>1, selected => data_type, options => data_type_options} );
+          select_field('data_format', {options => data_format_options} );
+          %]
         </div>
-        [% c.hidden_field('id',id);c.hidden_field('id',id) %]
+        [% c.hidden_field('id',id); c.hidden_field('id',id) %]
     </form>
 <!-- end [%+ action +%] -->
 

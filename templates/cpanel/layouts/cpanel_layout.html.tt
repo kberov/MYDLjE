@@ -1,55 +1,19 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="[% LANGUAGE %]">
-[% PROCESS 'layouts/head.tt' %]
-  <body>
-    <noscript><p>This page requires JavaScript.</p></noscript>
+  [% PROCESS 'layouts/head.tt' %]
+  <body> <noscript><p>This page requires JavaScript.</p></noscript>
     <div class="unit layout">
-      <div class="container ui-widget ui-widget-content ui-corner-all"
-           id="main-container">
-<!-- start main-header -->
-      <div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix" id="main-header">
-        <div class="columns">
-          <div class="fixed column">
-            <span class="ui-dialog-title" id="title-main-header">
-            <a href="[% c.url_for('/home') %]" title="[% MOJO_APP_AT_SITE %]">
-              <img src="pub/css/img/logo3.png" width="22" height="22" alt="[% MOJO_APP_AT_SITE %]" />
-            </a>[% USER_AT_MOJO_APP_AT_SITE %]</span>
-            <!-- TA generates this -->
-          </div>
-          <div class="elastic column">
-            <div class="container" id="main-top-right-menu">[% menu_languages() %] 
-            <span class="main_help_icon ui-corner-all ui-state-active" style="display: inline-block; cursor: pointer;" title="[% c.l('Help') %]">
-              <span class="ui-icon ui-icon-help"></span>
-            </span>
-            [% UNLESS c.msession.guest %]
-            <a class=" ui-corner-all ui-state-active" title="[% c.l('Logout') %]"
-               style="display: inline-block; cursor: pointer;"
-            href="[% c.url_for('/logout') %]">
-              <span class="ui-icon ui-icon-power"></span>
-            </a>
-            [% END %]
-            </div>
-          </div>
-        </div>
-      </div>
-<!-- end main header -->
-       <div class="unit columns">
-        
-        [%
-        UNLESS c.msession.guest;
-          PROCESS 'main_left_navigation.html.tt';
-        END;
-        # will produce a
-        # div class="fixed column" id="main-left-menu"
-        # for logged in users only
-        %]
-        <div class="elastic column" id="main-working-area">
-        [% content %]
-        </div>
-        </div>
-      </div>
-      <!-- end div id="main-container" -->
-    </div>
-    <!-- end div class="unit layout" -->
+      <div id="main-container" class="container ui-widget ui-widget-content ui-corner-all">
+        <!-- start main header -->
+        [% PROCESS 'layouts/main_header.tt' %]
+        <!-- end main header -->
+        <div id="main-columns" class="unit columns">
+          [% UNLESS c.msession.guest; PROCESS 'main_left_navigation.html.tt'; END %]
+          <div id="main-working-area" class="elastic column">
+          [% content %]
+          </div><!-- end div id="main-working-area" -->
+        </div><!-- end div id="main-columns" -->
+      </div><!-- end div id="main-container" -->
+    </div><!-- end div class="unit layout" -->
   </body>
 </html>

@@ -20,7 +20,7 @@ sub FIELDS_VALIDATION {
     user_id => {required => 1, constraints => [{regexp => qr/^\d+$/x},]},
     alias   => {
       required    => 1,
-      constraints => [{regexp => qr/^[\-_a-z0-9]{2,255}$/x},]
+      constraints => [{regexp => qr/^[\-_a-zA-Z0-9]{3,255}$/x},]
     },
     data_type => {
       required => 1,

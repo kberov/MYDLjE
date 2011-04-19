@@ -1,5 +1,6 @@
 package MYDLjE::ControlPanel::C::Content;
 use MYDLjE::Base 'MYDLjE::ControlPanel::C';
+use Mojo::ByteStream qw(b);
 
 #all types of content are listed by a single template(for now)
 sub list_content {
@@ -49,14 +50,14 @@ sub edit {
   }
 
   if ($c->req->method eq 'POST') {
-    $c->edit_post();
+    $c->_edit_post();
   }
   $c->render(template => 'Content/edit');
   return;
 }
 
 #handles POST. Saves form data using the appropriate Content object
-sub edit_post {
+sub _edit_post {
   my ($c) = @_;
   my $app = $c->app;
   $app->log->debug($c->dumper($c->req->body_params->to_hash));
@@ -65,7 +66,14 @@ sub edit_post {
   #TODO: Implement FIELDS_VALIDATION like in MYDLjE::M
   my $fields_ui_data = $app->config('MYDLjE::Content::Form::ui');
   my $v              = $c->create_validator;
-  $v->field('title')->required(1)->length(3, 255);
+  $v->field('title')->required(1)->inflate(
+    sub {
+
+      #strip any ML
+      my $value = Mojo::DOM->new->parse(shift->value)->text;
+      return b($value)->html_escape;
+    }
+  )->length(3, 255);
   $v->field('keywords')->inflate(
     sub {
       my $filed = shift;
@@ -90,15 +98,24 @@ sub edit_post {
   $v->field('data_format')->in(@{$fields_ui_data->{data_format}});
   $v->field('language')->in(@{$app->config('languages')});
   my $form = $c->req->body_params->to_hash;
+  $form->{id} = $form->{id}[0]
+    if (ref($form->{id}) && ref($form->{id}) eq 'ARRAY');
   my $ok = $c->validate($v, $form);
   $app->log->debug($c->dumper($c->stash('validator_errors'), $v->errors));
   $c->stash('form', {%$form, %{$v->values}});
+  $form = $c->stash('form');
 
   return unless $ok;
 
   #save
   my $data_object = $c->stash('data_object');
-  $data_object->data($c->stash('form'));
+  $data_object->data($form);
+
+  #new content needs alias
+  if ($form->{id} == 0) {
+    require MYDLjE::Unidecode;
+    $data_object->alias(MYDLjE::Unidecode::unidecode($form->{title}));
+  }
   my $user = $c->msession->user;
   $data_object->user_id($user->id)->group_id(
     $c->dbix->select(

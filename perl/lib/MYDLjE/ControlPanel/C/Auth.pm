@@ -49,25 +49,27 @@ sub _validate_and_login {
 
   #TODO: Implement authorisation and access lists
   # See http://www.perl.com/pub/2008/02/13/elements-of-access-control.html
-  my $user = MYDLjE::M::User->new();
-  $user->TABLE($user->TABLE . ' AS u');
-
-  # only enabled users belonging to any group with namespace='cpanel'
-  my $where = <<"SQL";
-    EXISTS(
-        SELECT count(g.gid) FROM my_users_groups g 
-        WHERE g.uid=u.id AND 
-        g.gid IN(SELECT id FROM my_groups WHERE namespace='cpanel')
-    )
-SQL
-
-  $user->WHERE(
-    { login_name => $params->{login_name},
-      disabled   => 0,
-      -bool      => $where
-    }
+  # User is logged in if all conditions below apply:
+  #1. A user with this login name exists.
+  #2. Password md5_sum matches,
+  #3. Is not disabled
+  #4. Is within allowed period of existence if there is such
+  #5. Some of his groups namespaces allows this
+  my $mojo_app = $c->app->env->{MOJO_APP};
+  my $time     = time;
+  $c->dbix->{debug} = 1;
+  my $user = MYDLjE::M::User->select(
+    login_name => $params->{login_name},
+    -and       => [
+      \qq|disabled=0|,
+      \qq|EXISTS (
+    SELECT g.id FROM my_groups g WHERE g.namespaces LIKE '%$mojo_app%' AND
+    g.id IN( SELECT ug.gid FROM my_users_groups ug WHERE ug.uid=id)
+    )|,
+      \qq|((start=0 OR start<$time) AND (stop=0 OR stop>$time))|,
+    ],
   );
-  $user->select();
+  $c->dbix->{debug} = 0;
 
   unless ($user->id) {
     $c->app->log->error('No such user:' . $params->{login_name});

@@ -200,26 +200,17 @@ sub _init_database {
   return;
 }
 
+#TODO: Make this to be done in a transaction
 sub _create_admin_user {
   my ($c, $values) = @_;
   $c->app->log->debug($c->dumper($c->stash));
-  my $password =
-    Mojo::Util::md5_sum($values->{admin_user} . $values->{admin_password});
-
-  $c->dbix->insert(
-    'my_users',
-    { login_name     => $values->{admin_user},
-      email          => $values->{admin_email},
-      login_password => $password,
-      tstamp         => time(),
-      reg_tstamp     => time(),
-    }
+  require MYDLjE::M::User;
+  MYDLjE::M::User->add(
+    login_name     => $values->{admin_user},
+    login_password => $values->{admin_password},
+    group_ids      => [1],                         #admin group
+    email          => $values->{admin_email},
   );
-
-  #add user to admin group
-  my $uid = $c->dbix->last_insert_id(undef, undef, 'my_users', 'id');
-
-  $c->dbix->insert('my_users_groups', {uid => $uid, gid => 1});
 
   #change existing "admin" password
   $c->dbix->update(

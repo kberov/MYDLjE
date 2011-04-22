@@ -15,17 +15,38 @@ ALTER DATABASE  `mydlje` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
 SET FOREIGN_KEY_CHECKS=0;
 SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 -- </do>
+-- <table name="my_groups">
+DROP TABLE IF EXISTS `my_groups`;
+CREATE TABLE IF NOT EXISTS `my_groups` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL DEFAULT '',
+  `description` varchar(255) NOT NULL DEFAULT '',
+  `namespaces` varchar(255) NOT NULL DEFAULT 'MYDLjE::Site' COMMENT 'MYDLjE::Site (outsiders), MYDLjE::ControlPanel (insiders)',
+  `created_by` int(11) NOT NULL DEFAULT '1' COMMENT 'id of who created this group.',
+  `changed_by` int(11) NOT NULL DEFAULT '1' COMMENT 'id of who changed this group.',
+  `disabled` tinyint(1) NOT NULL DEFAULT '0',
+  `start` int(11) NOT NULL DEFAULT '0',
+  `stop` int(11) NOT NULL DEFAULT '0',
+  `properties` blob COMMENT 'Serialized/cached properties inherited by the users in this group',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`),
+  KEY `created_by` (`created_by`),
+  KEY `namespaces` (`namespaces`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+-- </table>
+
 -- <table name="my_users">
 DROP TABLE IF EXISTS `my_users`;
 CREATE TABLE IF NOT EXISTS `my_users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `login_name` varchar(255) NOT NULL,
-`login_password` varchar(100) NOT NULL COMMENT 'Mojo::Util::md5_sum($login_name.$login_password)',
+  `group_id` int(11) NOT NULL COMMENT 'Primary group for this user',
+  `login_name` varchar(100) NOT NULL,
+  `login_password` varchar(100) NOT NULL COMMENT 'Mojo::Util::md5_sum($login_name.$login_password)',
   `first_name` varchar(255) NOT NULL DEFAULT '',
   `last_name` varchar(255) NOT NULL DEFAULT '',
   `email` varchar(255) NOT NULL DEFAULT 'email@site.com',
   `description` varchar(255) DEFAULT NULL,
-  `created_by` int(11) NOT NULL DEFAULT '0',
+  `created_by` int(11) NOT NULL DEFAULT '1'  COMMENT 'id of who created this user.',
   `changed_by` int(11) NOT NULL DEFAULT '1' COMMENT 'Who modified this user the last time?',
   `tstamp` int(11) NOT NULL DEFAULT '0' COMMENT 'last modification time',
   `reg_tstamp` int(11) NOT NULL DEFAULT '0' COMMENT 'registration time',
@@ -36,29 +57,11 @@ CREATE TABLE IF NOT EXISTS `my_users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `login_name` (`login_name`),
   UNIQUE KEY `email` (`email`),
-  KEY `created_by` (`created_by`)
+  KEY `group_id` (`group_id`),
+  KEY `reg_tstamp` (`reg_tstamp`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='This table stores the users';
 -- </table>
 
--- <table name="my_groups">
-DROP TABLE IF EXISTS `my_groups`;
-CREATE TABLE IF NOT EXISTS `my_groups` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL DEFAULT '',
-  `description` varchar(255) NOT NULL DEFAULT '',
-  `namespace` set('site','cpanel') NOT NULL DEFAULT 'site' COMMENT 'site (outsiders), cpanel(insiders)',
-  `created_by` int(11) NOT NULL DEFAULT '1' COMMENT 'id of who created this group?',
-  `changed_by` int(11) NOT NULL DEFAULT '1' COMMENT 'id of who changed this group?',
-  `disabled` tinyint(1) NOT NULL DEFAULT '0',
-  `start` int(11) NOT NULL DEFAULT '0',
-  `stop` int(11) NOT NULL DEFAULT '0',
-  `properties` blob COMMENT 'Serialized/cached properties inherited by the users in this group',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`),
-  KEY `created_by` (`created_by`),
-  KEY `namespace` (`namespace`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
--- </table>
 
 -- <table name="my_sessions">
 DROP TABLE IF EXISTS `my_sessions`;
@@ -166,9 +169,12 @@ ALTER TABLE `my_content`
   ADD CONSTRAINT `my_content_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `my_users` (`id`);
 ALTER TABLE `my_sessions`
   ADD CONSTRAINT `my_sessions_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `my_users` (`id`) ON UPDATE CASCADE;
+ALTER TABLE `my_users`
+  ADD CONSTRAINT `my_users_group_id_fk` FOREIGN KEY (`group_id`) REFERENCES `my_groups` (`id`);
+
 ALTER TABLE `my_users_groups`
-  ADD CONSTRAINT `my_users_groups_group_id_fk` FOREIGN KEY (`gid`) REFERENCES `my_groups` (`id`),
-  ADD CONSTRAINT `my_users_groups_user_id_fk` FOREIGN KEY (`uid`) REFERENCES `my_users` (`id`);
+  ADD CONSTRAINT `my_users_groups_group_id_fk` FOREIGN KEY (`gid`) REFERENCES `my_groups` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `my_users_groups_user_id_fk` FOREIGN KEY (`uid`) REFERENCES `my_users` (`id`) ON DELETE CASCADE ;
 
 --</do>
 --<do id="enable_foreign_key_checks">

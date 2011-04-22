@@ -18,7 +18,7 @@ BEGIN {
 
 use lib ("$ENV{MOJO_HOME}/perl/lib", "$ENV{MOJO_HOME}/perl/site/lib");
 
-use Test::More tests => 39;
+use Test::More tests => 45;
 use MYDLjE::Config;
 use MYDLjE::Plugin::DBIx;
 use MYDLjE::M::Content;
@@ -36,8 +36,8 @@ my $config =
 #print Dumper();
 my $dbix = MYDLjE::Plugin::DBIx::dbix(
   $config->stash('plugins')->{'MYDLjE::Plugin::DBIx'});
-
-my $alias = 'test-' . time . '-test';
+my $time  = time;
+my $alias = 'test-' . $time . '-test';
 my $data  = {
   user_id     => 1,
   data_type   => 'note',
@@ -156,7 +156,11 @@ is($user->id, undef, "WHERE my_user.disabled=0 AND login_name='admin'");
 $user = MYDLjE::M::User->new();
 $user->WHERE({disabled => 0});
 $user->select(login_name => 'guest');
-is($user->id, 2, "WHERE my_user.disabled=0 AND login_name='guest'");
+is($user->id, 2, " id WHERE my_user.disabled=0 AND login_name='guest'");
+is($user->group_id, 2,
+  " group_id WHERE my_user.disabled=0 AND login_name='guest'");
+
+my $group_id = $user->group_id;
 
 #try with foreign keys
 $user = MYDLjE::M::User->new();
@@ -166,12 +170,101 @@ $user->TABLE($user->TABLE . ' AS u');
 $user->WHERE(
   { disabled => 0,
     -and     => [
-      \"EXISTS (SELECT g.gid FROM my_users_groups g WHERE g.uid=u.id and g.gid=2)"
-    ]
+      \"EXISTS (SELECT g.gid FROM my_users_groups g WHERE g.uid=u.id and g.gid=u.group_id)"
+    ],
   }
 );
 
-#TODO: request DBIx::Simple feature.
+#TODO: leverage $dbh->{Callbacks} for debugging.
 #$user->dbix->{debug} =1;
 $user->select(login_name => 'guest');
 is($user->id, 2, "custom WHERE with literal SQL");
+
+
+#Add a new user
+#test1 with minimum params
+$login_name = 'perko' . $sstorage->cid . 'I';
+
+my $login_password = rand($time) . $login_name;
+my $new_user       = MYDLjE::M::User->add(
+  login_name     => $login_name,
+  login_password => $login_password,
+  email          => $login_name . '@localhost.com',
+);
+my @added_users = ($login_name);
+ok($new_user->id,
+  'addedd user with id:' . $new_user->id . ' and with minimal params.');
+is(
+  $new_user->email,
+  $dbix->select('my_users', '*', {id => $new_user->id})->hash->{email},
+  'user ok in database'
+);
+
+#$dbix->delete('my_users',  {login_name => $login_name});
+#$dbix->delete('my_groups', {name       => $login_name});
+$login_name .= $new_user->id;
+
+# more groups
+$new_user = MYDLjE::M::User->add(
+  login_name     => $login_name,
+  login_password => $login_password,
+  group_ids      => [3, 4],
+  email          => $login_name . '@localhost.com',
+);
+push @added_users, $login_name;
+ok($new_user->id,
+  'added user with id:' . $new_user->id . ' and with more group_ids.');
+
+#$dbix->delete('my_users',  {login_name => $login_name});
+#$dbix->delete('my_groups', {name       => $login_name});
+
+# more namespaces
+$login_name .= $new_user->id;
+$new_user = MYDLjE::M::User->add(
+  login_name     => $login_name,
+  login_password => $login_password,
+  group_ids      => [3, 4],
+  email          => $login_name . '@localhost.com',
+  namespaces     => $ENV{MOJO_APP} . ', MYDLjE::Site'
+);
+push @added_users, $login_name;
+ok($new_user->id,
+  'added user with id:' . $new_user->id . ' and with more namespaces.');
+
+
+#Log In strictly a newly created user
+#TODO: make this a ready SQL when stable enough
+$sstorage->user(
+  MYDLjE::M::User->select(
+    login_name     => $login_name,
+    login_password => Mojo::Util::md5_sum($login_name . $login_password),
+    -and           => [
+      \qq|disabled=0|,
+      \qq|EXISTS (
+    SELECT g.id FROM my_groups g WHERE g.namespaces LIKE '%$ENV{MOJO_APP}%' AND
+    g.id IN( SELECT ug.gid FROM my_users_groups ug WHERE ug.uid=id)
+    )|,
+      \qq|((start=0 OR start<$time) AND (stop=0 OR stop>$time))|,
+    ],
+  )
+);
+
+# User is logged in if all conditions below apply:
+#1. A user with this login name exists.
+#2. Password md5_sum matches,
+#3. Is not disabled
+#4. Is within allowed period of existence if there is such
+#5. Some of his groups namespaces allows this
+is($sstorage->user->login_name,
+  $login_name, "user $login_name logged in accordingly");
+
+#=pod
+
+$dbix->delete('my_sessions', {id => $sstorage->id});
+foreach my $u (@added_users) {
+  $dbix->delete('my_users',  {login_name => $u});
+  $dbix->delete('my_groups', {name       => $u});
+}
+
+#=cut
+

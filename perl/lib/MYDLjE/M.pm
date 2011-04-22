@@ -3,7 +3,7 @@ use MYDLjE::Base -base;
 use MojoX::Validator;
 use Carp();
 
-has 'dbix' => sub { MYDLjE::Plugin::DBIx::instance() };
+sub dbix { return MYDLjE::Plugin::DBIx::instance() }
 my $SQL;
 my $DEBUG = $MYDLjE::DEBUG;
 
@@ -236,7 +236,7 @@ And of course you can always overwite all methods from the base class at will an
   #or create something really fresh
   my $question = MYDLjE::M::Content::Question->new(
     user_id => $c->msession->user_id,
-    title   => 'How to cook with MYDljE?',
+    title   => 'How to cook with MYDLjE?',
     body    => '<p>I really want to know where to start from. Should I....</p>'
     ...
   );

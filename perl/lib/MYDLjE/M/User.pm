@@ -133,9 +133,7 @@ Returns a HASHREF with column-names as keys and L<MojoX::Validator> constraints 
 
 =head2 add
 
-Inserts a new user row in C<my_users>.
-
-A new primary group is created for the new user.
+Inserts a new user row in C<my_users> and adds a new primary group for the new user.
 
 Returns an instance of L<MYDLjE::M::User> - the newly created user.
 
@@ -143,10 +141,10 @@ In case of database error croaks with C<ERROR adding user(rolling back):[$@]>.
 
 Parameters:
 
-    All columns can be passed as  key-value pairs like MYDLjE::M::select.
-    group_ids - ARRAYREF with additional ids of groups to which the new user will belong
-    namespaces - STRING - comma sparated list ofapplications to which 
-        the new user group will have login acces - $ENV{MOJO_APP} by default 
+    #All columns can be passed as  key-value pairs like MYDLjE::M::select.
+    #group_ids - ARRAYREF with additional ids of groups to which the new user will belong
+    #namespaces - STRING - comma sparated list ofapplications to which 
+    #    the new user group will have login acces - $ENV{MOJO_APP} by default 
 
 Example:
 

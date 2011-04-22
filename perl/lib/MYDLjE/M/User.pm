@@ -109,7 +109,7 @@ This class is used to instantiate user objects.
 
 This class inherits all attributes from MYDLjE::M and overrides the ones listed below.
 
-Note also that all columns are available as setters and getters for thee instantiated object.
+Note also that all columns are available as setters and getters for the instantiated object.
 
   id login_name login_password first_name last_name email
   description created_by changed_by tstamp reg_tstamp
@@ -135,9 +135,29 @@ Returns a HASHREF with column-names as keys and L<MojoX::Validator> constraints 
 
 Inserts a new user row in C<my_users>.
 
-In addition a new primary group is created for the new user.
+A new primary group is created for the new user.
 
 Returns an instance of L<MYDLjE::M::User> - the newly created user.
 
-In case of database error croacks with C<ERROR adding user(rolling back):[$@]>.
+In case of database error croaks with C<ERROR adding user(rolling back):[$@]>.
+
+Parameters:
+
+    All columns can be passed as  key-value pairs like MYDLjE::M::select.
+    group_ids - ARRAYREF with additional ids of groups to which the new user will belong
+    namespaces - STRING - comma sparated list ofapplications to which 
+        the new user group will have login acces - $ENV{MOJO_APP} by default 
+
+Example:
+
+  require MYDLjE::M::User;
+  my $new_user = MYDLjE::M::User->add(
+    login_name     => $values->{admin_user},
+    login_password => $values->{admin_password},
+    group_ids      => [1],                         #admin group
+    email          => $values->{admin_email},
+  );
+    
+
+    
 

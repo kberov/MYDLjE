@@ -200,7 +200,6 @@ sub _init_database {
   return;
 }
 
-#TODO: Make this to be done in a transaction
 sub _create_admin_user {
   my ($c, $values) = @_;
   $c->app->log->debug($c->dumper($c->stash));

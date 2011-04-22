@@ -160,7 +160,6 @@ is($user->id, 2, " id WHERE my_user.disabled=0 AND login_name='guest'");
 is($user->group_id, 2,
   " group_id WHERE my_user.disabled=0 AND login_name='guest'");
 
-my $group_id = $user->group_id;
 
 #try with foreign keys
 $user = MYDLjE::M::User->new();
@@ -177,7 +176,7 @@ $user->WHERE(
 
 #TODO: leverage $dbh->{Callbacks} for debugging.
 #$user->dbix->{debug} =1;
-$user->select(login_name => 'guest');
+$user->select(login_name => 'guest', group_id => 2);
 is($user->id, 2, "custom WHERE with literal SQL");
 
 

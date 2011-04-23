@@ -117,13 +117,7 @@ sub _edit_post {
     $data_object->alias(MYDLjE::Unidecode::unidecode($form->{title}));
   }
   my $user = $c->msession->user;
-  $data_object->user_id($user->id)->group_id(
-    $c->dbix->select(
-      'my_users_groups', 'gid',
-      {uid  => $user->id},
-      {-asc => 'id'}
-      )->hash->{gid}
-  );
+  $data_object->user_id($user->id)->group_id($user->group_id );
   $data_object->save();
   return;
 }

@@ -7,21 +7,50 @@ has TABLE => 'my_content';
 
 has COLUMNS => sub {
   [ qw(
-      id user_id group_id pid alias title tags featured
-      sorting data_type data_format time_created tstamp
-      body invisible language protected bad
+      id alias pid user_id sorting data_type data_format
+      time_created tstamp title description keywords tags
+      body invisible language group_id protected
+      featured accepted bad
       )
   ];
 };
+my $id_constraints = {constraints => [{regexp => qr/^\d+$/x},]};
+
+sub _no_markup_inflate {
+  my $filed = shift;
+  my $value = $filed->value || '';
+
+  #remove everything strange
+  $value =~ s/[^\p{IsAlnum}\,\s\-\!\.\?\(\);]//gxi;
+  $value = substr($value, 0, 255) if length($value) > 255;
+  return $value;
+}
+
+sub _tags_inflate {
+  my $filed = shift;
+  my $value = $filed->value || '';
+  $value =~ s/[^\p{IsAlnum}\,\s]//gxi;
+  my @words = split /[\,\s]/xi, $value;
+  $value = join ", ", @words;
+  return $value;
+}
+
 
 sub FIELDS_VALIDATION {
   return {
-    id      => {required => 0, constraints => [{regexp => qr/^\d+$/x},]},
-    user_id => {required => 1, constraints => [{regexp => qr/^\d+$/x},]},
+    id      => {required => 0, %$id_constraints},
+    pid     => {required => 0, %$id_constraints},
+    user_id => {required => 1, %$id_constraints},
+    sorting => {required => 0, %$id_constraints},
     alias   => {
       required    => 1,
       constraints => [{regexp => qr/^[\-_a-zA-Z0-9]{3,255}$/x},]
     },
+    title       => {required => 0, inflate => \&_no_markup_inflate},
+    tags        => {required => 0, inflate => \&_tags_inflate},
+    keywords    => {required => 0, inflate => \&_tags_inflate},
+    description => {required => 0, inflate => \&_no_markup_inflate},
+
     data_type => {
       required => 1,
       constraints =>
@@ -130,95 +159,94 @@ sub tags {
   return $self->{data}{tags};               #getting
 }
 
+sub keywords { goto &tags; }
+
 sub featured {
   my ($self, $value) = @_;
   if ($value) {                             #setting
-    $self->{data}{featured} = $self->validate_field(featured => $value);
+    $self->{data}{featured} = 1;
     return $self;
   }
-  return $self->{data}{featured};           #getting
+  return $self->{data}{featured} if defined $self->{data}{featured};  #getting
+  return $self->{data}{featured} = 0;                                 #default
 }
 
 sub sorting {
   my ($self, $value) = @_;
-  if ($value) {                             #setting
+  if ($value) {                                                       #setting
     $self->{data}{sorting} = $self->validate_field(sorting => $value);
     return $self;
   }
-  return $self->{data}{sorting};            #getting
+  return $self->{data}{sorting};                                      #getting
 }
 
 sub data_format {
   my ($self, $value) = @_;
-  if ($value) {                             #setting
+  if ($value) {                                                       #setting
     $self->{data}{data_format} = $self->validate_field(data_format => $value);
     return $self;
   }
-  return $self->{data}{data_format};        #getting
+  return $self->{data}{data_format};                                  #getting
 }
 
 sub time_created {
   my ($self, $value) = @_;
-  if ($value) {                             #setting
-    if ($value =~ /(\d{10,})/x) { $self->{data}{time_created} = $1 }
+  if ($value) {                                                       #setting
+    if   ($value =~ /(\d{10,})/x) { $self->{data}{time_created} = $1 }
+    else                          { $self->{data}{time_created} = time; }
     return $self;
   }
-  return $self->{data}{time_created} ||= time;    #getting
+  return $self->{data}{time_created} ||= time;                        #getting
 }
 
 sub body {
   my ($self, $value) = @_;
-  if ($value) {                                   #setting
+  if ($value) {                                                       #setting
     $self->{data}{body} = $self->validate_field(body => $value);
     return $self;
   }
-  return $self->{data}{body};                     #getting
+  return $self->{data}{body};                                         #getting
 }
 
 sub invisible {
   my ($self, $value) = @_;
-  if ($value) {                                   #setting
+  if ($value) {                                                       #setting
     $self->{data}{invisible} = 1;
     return $self;
   }
-  return (
-    defined $self->{data}{invisible}
-    ? $self->{data}{invisible}
-    : $self->{data}{invisible} = 0
-  );                                              #getting
+  return $self->{data}{invisible}
+    if defined $self->{data}{invisible};                              #getting
+  return $self->{data}{invisible} = 0;                                #default
 }
 
 sub language {
   my ($self, $value) = @_;
-  if ($value) {                                   #setting
+  if ($value) {                                                       #setting
     $self->{data}{language} = $self->validate_field(language => $value);
     return $self;
   }
-  return $self->{data}{language};                 #getting
+  return $self->{data}{language};                                     #getting
 }
 
 sub protected {
   my ($self, $value) = @_;
-  if ($value) {                                   #setting
+  if ($value) {                                                       #setting
     $self->{data}{protected} = 1;
     return $self;
   }
-  return (
-    defined $self->{data}{protected}
-    ? $self->{data}{protected}
-    : $self->{data}{protected} = 0
-  );                                              #getting
+  return $self->{data}{protected}
+    if defined $self->{data}{protected};                              #getting
+  return $self->{data}{protected} = 0;                                #default
 }
 
 sub bad {
   my ($self, $value) = @_;
-  if ($value) {                                   #setting
-    $self->{data}{bad} = 1;
+  if ($value) {                                                       #setting
+    $self->{data}{bad}++;
     return $self;
   }
-  return (
-    defined $self->{data}{bad} ? $self->{data}{bad} : $self->{data}{bad} = 0)
-    ;                                             #getting
+  return $self->{data}{bad} if defined $self->{data}{bad};            #getting
+  return $self->{data}{bad} = 0;                                      #default
 }
 
 1;

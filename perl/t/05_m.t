@@ -18,7 +18,7 @@ BEGIN {
 
 use lib ("$ENV{MOJO_HOME}/perl/lib", "$ENV{MOJO_HOME}/perl/site/lib");
 
-use Test::More tests => 47;
+use Test::More tests => 57;
 use MYDLjE::Config;
 use MYDLjE::Plugin::DBIx;
 use MYDLjE::M::Content;
@@ -60,12 +60,25 @@ $data->{body}    = $content->body;
 $data->{user_id} = $content->user_id;
 is_deeply($content->data, $data, 'data is: ' . Dumper($content->data));
 ok(
-  $content->time_created("sdjsdh$time\sdjfhj") <= time,
+  $content->time_created("sdjsdh$time-sdjfhj") <= time,
   'time_created is ' . localtime($content->time_created)
 );
 ok($content->time_created <= time,
   'time_created is ' . localtime($content->time_created));
-
+is($content->featured,                     0, 'featured 0');
+is($content->featured('yes')->featured,    1, 'featured 1');
+is($content->invisible,                    0, 'invisible 0');
+is($content->invisible('!')->invisible,    1, 'invisible 1');
+is($content->protected,                    0, 'protected 0');
+is($content->protected('YEAH')->protected, 1, 'protected 1');
+is($content->bad,                          0, 'bad 0');
+is($content->bad('very')->bad,             1, 'bad 1');
+is($content->bad('very')->bad,             2, 'bad 2');
+is(
+  $content->keywords('YEAH,adsads,&sds*?another')->keywords,
+  'YEAH, adsads, sdsanother',
+  'keywords ok'
+);
 ok($content->save >= $content->id, '$content->save ok ' . $content->id);
 
 my $id = $content->dbix->last_insert_id(undef, undef, $content->TABLE, 'id');
@@ -81,12 +94,12 @@ require MYDLjE::M::Content::Question;
 my $question = MYDLjE::M::Content::Question->select(id => $id);
 is($question->id, undef, '$question->id undef ');
 is(
-  $question->title('What can I doooo?')->title,
-  'What can I doooo?',
+  $question->title('What <br>can I doooo?')->title,
+  'What brcan I doooo?',
   'seting title'
 );
 $question->body('A longer description of the question');
-is($question->alias, 'what-can-i-doooo', 'alias is "what-can-i-doooo"');
+is($question->alias, 'what-brcan-i-doooo', 'alias is "what-can-i-doooo"');
 is($question->data_type, 'question', '$question->data_type is "question"');
 is($question->user_id($note->user_id)->user_id,
   $note->user_id, 'question has owner');

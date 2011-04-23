@@ -113,11 +113,10 @@ sub _edit_post {
 
   #new content needs alias
   if ($form->{id} == 0) {
-    require MYDLjE::Unidecode;
-    $data_object->alias(MYDLjE::Unidecode::unidecode($form->{title}));
+    $data_object->alias();    #internally setting alias
   }
   my $user = $c->msession->user;
-  $data_object->user_id($user->id)->group_id($user->group_id );
+  $data_object->user_id($user->id)->group_id($user->group_id);
   $data_object->save();
   return;
 }

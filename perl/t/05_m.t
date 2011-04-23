@@ -18,7 +18,7 @@ BEGIN {
 
 use lib ("$ENV{MOJO_HOME}/perl/lib", "$ENV{MOJO_HOME}/perl/site/lib");
 
-use Test::More tests => 45;
+use Test::More tests => 47;
 use MYDLjE::Config;
 use MYDLjE::Plugin::DBIx;
 use MYDLjE::M::Content;
@@ -56,10 +56,16 @@ is($content->data_format, 'html', 'data_format is ' . $content->data_format);
 is($content->data_type,   'note', 'data_type is ' . $content->data_type);
 is($content->body,  '<p>Hello</p>', 'body is ' . $content->body);
 is($content->alias, $alias,         'alias is ' . $alias);
-
 $data->{body}    = $content->body;
 $data->{user_id} = $content->user_id;
 is_deeply($content->data, $data, 'data is: ' . Dumper($content->data));
+ok(
+  $content->time_created("sdjsdh$time\sdjfhj") <= time,
+  'time_created is ' . localtime($content->time_created)
+);
+ok($content->time_created <= time,
+  'time_created is ' . localtime($content->time_created));
+
 ok($content->save >= $content->id, '$content->save ok ' . $content->id);
 
 my $id = $content->dbix->last_insert_id(undef, undef, $content->TABLE, 'id');

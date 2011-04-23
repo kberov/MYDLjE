@@ -7,9 +7,9 @@ has TABLE => 'my_content';
 
 has COLUMNS => sub {
   [ qw(
-      id user_id pid alias title tags featured
+      id user_id group_id pid alias title tags featured
       sorting data_type data_format time_created tstamp
-      body invisible language group_id protected bad
+      body invisible language protected bad
       )
   ];
 };
@@ -36,34 +36,12 @@ sub FIELDS_VALIDATION {
   };
 }
 
-#Make some attributes which are appropriate to any data_type content
-sub id {
-  if ($_[1]) {
-    $_[0]->{data}{id} = $_[0]->validate_field(id => $_[1]);
-
-    #make it chainable
-    return $_[0];
-  }
-  return $_[0]->{data}{id};
-}
-
-sub user_id {
-  if ($_[1]) {
-    $_[0]->{data}{user_id} = $_[0]->validate_field(user_id => $_[1]);
-
-    #make it chainable
-    return $_[0];
-  }
-  return $_[0]->{data}{user_id};
-}
-
+#Make some attributes which are appropriate to any data_type of content
 
 sub alias {
   my ($self, $value) = @_;
   if ($value) {
     $self->{data}{alias} = $self->validate_field(alias => $value);
-
-    #make it chainable
     return $self;
   }
 
@@ -73,49 +51,10 @@ sub alias {
       ? MYDLjE::Unidecode::unidecode($self->title)
       : Mojo::Util::md5_sum(Time::HiRes::time())
     );
-    $self->{data}{alias} =~ s/\W$//x;
+    $self->{data}{alias} =~ s/\W+$//x;
+    $self->{data}{alias} =~ s/^\W+//x;
   }
   return $self->{data}{alias};
-}
-
-sub title {
-  if ($_[1]) {
-    $_[0]->{data}{title} = $_[0]->validate_field(title => $_[1]);
-
-    #make it chainable
-    return $_[0];
-  }
-  return $_[0]->{data}{title};
-}
-
-sub tags {
-  if ($_[1]) {
-    $_[0]->{data}{tags} = $_[0]->validate_field(tags => $_[1]);
-
-    #make it chainable
-    return $_[0];
-  }
-  return $_[0]->{data}{tags};
-}
-
-sub featured {
-  if ($_[1]) {
-    $_[0]->{data}{featured} = $_[0]->validate_field(featured => $_[1]);
-
-    #make it chainable
-    return $_[0];
-  }
-  return $_[0]->{data}{featured};
-}
-
-sub sorting {
-  if ($_[1]) {
-    $_[0]->{data}{sorting} = $_[0]->validate_field(sorting => $_[1]);
-
-    #make it chainable
-    return $_[0];
-  }
-  return $_[0]->{data}{sorting};
 }
 
 sub data_type {
@@ -123,7 +62,6 @@ sub data_type {
   if ($value) {
     $self->{data}{data_type} = $self->validate_field(data_type => $value);
 
-    #make it chainable
     return $self;
   }
   unless ($self->{data}{data_type}) {
@@ -133,100 +71,160 @@ sub data_type {
   return $self->{data}{data_type};
 }
 
-sub data_format {
-  if ($_[1]) {
-    $_[0]->{data}{data_format} = $_[0]->validate_field(data_format => $_[1]);
+sub tstamp {
+  my ($self) = @_;
+  return $self->{data}{tstamp} ||= time;    #setting getting
+}
 
-    #make it chainable
-    return $_[0];
+sub id {
+  my ($self, $value) = @_;
+  if ($value) {                             #setting
+    $self->{data}{id} = $self->validate_field(id => $value);
+    return $self;
   }
-  return $_[0]->{data}{data_format};
+  return $self->{data}{id};                 #getting
+}
+
+sub user_id {
+  my ($self, $value) = @_;
+  if ($value) {                             #setting
+    $self->{data}{user_id} = $self->validate_field(user_id => $value);
+    return $self;
+  }
+  return $self->{data}{user_id};            #getting
+}
+
+sub group_id {
+  my ($self, $value) = @_;
+  if ($value) {                             #setting
+    $self->{data}{group_id} = $self->validate_field(group_id => $value);
+    return $self;
+  }
+  return $self->{data}{group_id};           #getting
+}
+
+sub pid {
+  my ($self, $value) = @_;
+  if ($value) {                             #setting
+    $self->{data}{pid} = $self->validate_field(pid => $value);
+    return $self;
+  }
+  return $self->{data}{pid};                #getting
+}
+
+sub title {
+  my ($self, $value) = @_;
+  if ($value) {                             #setting
+    $self->{data}{title} = $self->validate_field(title => $value);
+    return $self;
+  }
+  return $self->{data}{title};              #getting
+}
+
+sub tags {
+  my ($self, $value) = @_;
+  if ($value) {                             #setting
+    $self->{data}{tags} = $self->validate_field(tags => $value);
+    return $self;
+  }
+  return $self->{data}{tags};               #getting
+}
+
+sub featured {
+  my ($self, $value) = @_;
+  if ($value) {                             #setting
+    $self->{data}{featured} = $self->validate_field(featured => $value);
+    return $self;
+  }
+  return $self->{data}{featured};           #getting
+}
+
+sub sorting {
+  my ($self, $value) = @_;
+  if ($value) {                             #setting
+    $self->{data}{sorting} = $self->validate_field(sorting => $value);
+    return $self;
+  }
+  return $self->{data}{sorting};            #getting
+}
+
+sub data_format {
+  my ($self, $value) = @_;
+  if ($value) {                             #setting
+    $self->{data}{data_format} = $self->validate_field(data_format => $value);
+    return $self;
+  }
+  return $self->{data}{data_format};        #getting
 }
 
 sub time_created {
-  if ($_[1]) {
-    $_[0]->{data}{time_created} =
-      $_[0]->validate_field(time_created => $_[1]);
-
-    #make it chainable
-    return $_[0];
+  my ($self, $value) = @_;
+  if ($value) {                             #setting
+    if ($value =~ /(\d{10,})/x) { $self->{data}{time_created} = $1 }
+    return $self;
   }
-  return $_[0]->{data}{time_created};
-}
-
-sub tstamp {
-  if ($_[1]) {
-    $_[0]->{data}{tstamp} = $_[0]->validate_field(tstamp => $_[1]);
-
-    #make it chainable
-    return $_[0];
-  }
-  return $_[0]->{data}{tstamp};
+  return $self->{data}{time_created} ||= time;    #getting
 }
 
 sub body {
-  if ($_[1]) {
-    $_[0]->{data}{body} = $_[0]->validate_field(body => $_[1]);
-
-    #make it chainable
-    return $_[0];
+  my ($self, $value) = @_;
+  if ($value) {                                   #setting
+    $self->{data}{body} = $self->validate_field(body => $value);
+    return $self;
   }
-  return $_[0]->{data}{body};
+  return $self->{data}{body};                     #getting
 }
 
 sub invisible {
-  if ($_[1]) {
-    $_[0]->{data}{invisible} = $_[0]->validate_field(invisible => $_[1]);
-
-    #make it chainable
-    return $_[0];
+  my ($self, $value) = @_;
+  if ($value) {                                   #setting
+    $self->{data}{invisible} = 1;
+    return $self;
   }
-  return $_[0]->{data}{invisible};
+  return (
+    defined $self->{data}{invisible}
+    ? $self->{data}{invisible}
+    : $self->{data}{invisible} = 0
+  );                                              #getting
 }
 
 sub language {
-  if ($_[1]) {
-    $_[0]->{data}{language} = $_[0]->validate_field(language => $_[1]);
-
-    #make it chainable
-    return $_[0];
+  my ($self, $value) = @_;
+  if ($value) {                                   #setting
+    $self->{data}{language} = $self->validate_field(language => $value);
+    return $self;
   }
-  return $_[0]->{data}{language};
-}
-
-sub groups {
-  if ($_[1]) {
-    $_[0]->{data}{groups} = $_[0]->validate_field(groups => $_[1]);
-
-    #make it chainable
-    return $_[0];
-  }
-  return $_[0]->{data}{groups};
+  return $self->{data}{language};                 #getting
 }
 
 sub protected {
-  if ($_[1]) {
-    $_[0]->{data}{protected} = $_[0]->validate_field(protected => $_[1]);
-
-    #make it chainable
-    return $_[0];
+  my ($self, $value) = @_;
+  if ($value) {                                   #setting
+    $self->{data}{protected} = 1;
+    return $self;
   }
-  return $_[0]->{data}{protected};
+  return (
+    defined $self->{data}{protected}
+    ? $self->{data}{protected}
+    : $self->{data}{protected} = 0
+  );                                              #getting
 }
 
 sub bad {
-  if ($_[1]) {
-    $_[0]->{data}{bad} = $_[0]->validate_field(bad => $_[1]);
-
-    #make it chainable
-    return $_[0];
+  my ($self, $value) = @_;
+  if ($value) {                                   #setting
+    $self->{data}{bad} = 1;
+    return $self;
   }
-  return $_[0]->{data}{bad};
+  return (
+    defined $self->{data}{bad} ? $self->{data}{bad} : $self->{data}{bad} = 0)
+    ;                                             #getting
 }
 
 1;
 
 __END__
+
 
 =head1 NAME
 
@@ -234,4 +232,4 @@ MYDLjE::M::Content - Base class for all semantic content data_types
 
 =head1 DESCRIPTION
 
-
+In MYDLjE all the content is stored in a database table - C<my_content>. There are several semantic types of content. This semantic type is determined by the column C<data_type>.

@@ -57,19 +57,20 @@ sub _validate_and_login {
   #5. Some of his groups namespaces allows this
   my $mojo_app = $c->app->env->{MOJO_APP};
   my $time     = time;
-  $c->dbix->{debug} = 1;
+  my $and      = <<"AND";
+    EXISTS (
+        SELECT g.id FROM my_groups g WHERE g.namespaces LIKE '%$mojo_app%' AND
+        g.id IN( SELECT ug.gid FROM my_users_groups ug WHERE ug.uid=id)
+        )
+AND
+
   my $user = MYDLjE::M::User->select(
     login_name => $params->{login_name},
     -and       => [
-      \qq|disabled=0|,
-      \qq|EXISTS (
-    SELECT g.id FROM my_groups g WHERE g.namespaces LIKE '%$mojo_app%' AND
-    g.id IN( SELECT ug.gid FROM my_users_groups ug WHERE ug.uid=id)
-    )|,
-      \qq|((start=0 OR start<$time) AND (stop=0 OR stop>$time))|,
+      \'disabled=0', \$and,
+      \"((start=0 OR start<$time) AND (stop=0 OR stop>$time))",
     ],
   );
-  $c->dbix->{debug} = 0;
 
   unless ($user->id) {
     $c->app->log->error('No such user:' . $params->{login_name});

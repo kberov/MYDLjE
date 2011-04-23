@@ -61,8 +61,8 @@ sub add {
     reg_tstamp     => $time,
   );
 
-  my $dbix = $user->dbix;
-  eval {
+  my $dbix    = $user->dbix;
+  my $eval_ok = eval {
     $dbix->begin_work;
     $dbix->insert(
       'my_groups',
@@ -80,7 +80,7 @@ sub add {
     }
     $dbix->commit;
   };
-  if ($@) {
+  unless ($eval_ok) {
     Carp::croak("ERROR adding user(rolling back):[$@]");
     $dbix->rollback or Carp::confess($dbix->error);
   }

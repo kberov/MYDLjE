@@ -109,26 +109,30 @@ sub make_field_attrs {
   my $class = shift;
   (!ref $class)
     || Carp::croak('Call this method as __PACKAGE__->make_field_attrs()');
-  my $code = '';
+  my $code;
   foreach my $column (@{$class->COLUMNS()}) {
     next if $class->can($column);    #careful: no redefine
+    $code = "use strict;$/use warnings;$/use utf8;$/" unless $code;
 
     #Carp::carp('Making sub ' . $column) if $DEBUG;
     $code .= <<"SUB";
-    sub $class\::$column {
-      if(\$_[1]){ #setting value
-        \$_[0]->{data}{$column} = \$_[0]->validate_field($column=>\$_[1]);
-        #make it chainable
-        return \$_[0];
-      }
-      return \$_[0]->{data}{$column};#getting value
-    }
+sub $class\::$column {
+  my (\$self,\$value) = \@_;
+  if(\$value){ #setting value
+    \$self->{data}{$column} = \$self->validate_field($column=>\$value);
+    #make it chainable
+    return \$self;
+  }
+  return \$self->{data}{$column}; #getting value
+}
+
 SUB
 
   }
+  $code .= "$/1;" if $code;
 
-  #I know what I am doing. I think so... warn $code;
-  if (!eval $code . '1;')
+  #I know what I am doing. I think so... warn $code if $code;
+  if ($code && !eval $code)
   {    ##no critic (BuiltinFunctions::ProhibitStringyEval)
     Carp::confess($class . " compiler error: $/$code$/$@$/");
   }
@@ -185,9 +189,9 @@ MYDLjE::M - an oversimplified database-based objects class.
 
 =head1 DESCRIPTION
 
-This is the base class for all classes that store they data in a L<MYDLjE> database table. It was written in order to not increase dependencies from CPAN modules and keep MYDLjE small and light.
+This is the base class for all classes that store they data in a L<MYDLjE> database table. It was written in order to decrease dependencies from CPAN modules and keep MYDLjE small and light.
 
-The class provides some useful methods which simplify representing rows from tables as Perl objects. It is not intended to be a full featured ORM at all. It simply saves you from writing SQl to construct well known MYDLjE objects stored in tables. If you have to do complicated  SQL queries use L<DBIx::Simple/query> method. Use this base class if you want to have perl objects which store their data in table rows. That's it.
+The class provides some useful methods which simplify representing rows from tables as Perl objects. It is not intended to be a full featured ORM at all. It simply saves you from writing the same SQl over and over again to construct well known MYDLjE objects stored in tables. If you have to do complicated  SQL queries use directly L<DBIx::Simple/query> method. A L<DBIx::Simple> singleton instance is available as attribute in every L<MYDLjE::M> derived object. Use this base class if you want to construct perl objects which store their data in table rows. That's it.
 
 This code is fresh and may change at any time but I will try to keep the API relatively stable if I like it.
 And of course you can always overwite all methods from the base class at will and embed complex SQL queries in your subclasses.

@@ -199,8 +199,6 @@ is(
   'user ok in database'
 );
 
-#$dbix->delete('my_users',  {login_name => $login_name});
-#$dbix->delete('my_groups', {name       => $login_name});
 $login_name .= $new_user->id;
 
 # more groups
@@ -213,9 +211,6 @@ $new_user = MYDLjE::M::User->add(
 push @added_users, $login_name;
 ok($new_user->id,
   'added user with id:' . $new_user->id . ' and with more group_ids.');
-
-#$dbix->delete('my_users',  {login_name => $login_name});
-#$dbix->delete('my_groups', {name       => $login_name});
 
 # more namespaces
 $login_name .= $new_user->id;

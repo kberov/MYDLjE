@@ -74,7 +74,7 @@ has FIELDS_VALIDATION => sub {
     },
     data_format => {
       required    => 1,
-      constraints => [{regexp => qr/(textile|text|html|markdown,template)/x},]
+      constraints => [{regexp => qr/(textile|text|html|markdown|template)/x},]
     },
     language => {
       required    => 1,

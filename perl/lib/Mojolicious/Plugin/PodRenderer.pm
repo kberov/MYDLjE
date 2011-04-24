@@ -54,12 +54,10 @@ sub register {
     '/perldoc' => sub {
       my $self = shift;
 
-      # Module
+      # Find module
       my $module = $self->req->url->query->params->[0]
         || 'Mojolicious::Guides';
       $module =~ s/\//\:\:/g;
-
-      # Path
       my $path = Pod::Simple::Search->new->find($module, @PATHS);
 
       # Redirect to CPAN
@@ -67,10 +65,12 @@ sub register {
       return $self->redirect_to("$cpan?$module")
         unless $path && -r $path;
 
-      # POD
+      # Turn POD into HTML
       my $file = IO::File->new;
       $file->open("< $path");
       my $html = _pod_to_html(join '', <$file>);
+
+      # Rewrite links
       my $dom = Mojo::DOM->new->parse("$html");
       $dom->find('a[href]')->each(
         sub {
@@ -81,6 +81,8 @@ sub register {
           }
         }
       );
+
+      # Rewrite code sections for syntax highlighting
       $dom->find('pre')->each(
         sub {
           my $attrs = shift->attrs;
@@ -89,6 +91,8 @@ sub register {
             defined $class ? "$class prettyprint" : 'prettyprint';
         }
       );
+
+      # Rewrite headers
       my $url = $self->req->url->clone;
       $url =~ s/%2F/\//gi;
       my $sections = [];
@@ -107,16 +111,16 @@ sub register {
               $text => "/$url#toc",
               class => 'mojoscroll',
               id    => $anchor
-              )->to_string
+            )
           );
         }
       );
 
-      # Title
+      # Try to find a title
       my $title = 'Perldoc';
       $dom->find('h1 + p')->until(sub { $title = shift->text });
 
-      # Render
+      # Combine everything to a proper response
       $self->content_for(mojobar => $self->include(inline => $MOJOBAR));
       $self->content_for(perldoc => "$dom");
       $self->render(
@@ -131,8 +135,6 @@ sub register {
 
 sub _pod_to_html {
   my $pod = shift;
-
-  # Shortcut
   return unless defined $pod;
 
   # Block

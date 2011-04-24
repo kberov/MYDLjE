@@ -18,8 +18,6 @@ has handle => sub {
   my $file = IO::File->new;
   my $path = $self->path;
   $file->open(">> $path") or croak qq/Can't open log file "$path": $!/;
-
-  # utf8
   binmode $file, ':utf8';
 
   return $file;
@@ -42,11 +40,7 @@ sub is_info  { shift->is_level('info') }
 
 sub is_level {
   my ($self, $level) = @_;
-
-  # Shortcut
   return unless $level;
-
-  # Check
   $level = lc $level;
   my $current = $ENV{MOJO_LOG_LEVEL} || $self->level;
   return $LEVEL->{$level} >= $LEVEL->{$current};

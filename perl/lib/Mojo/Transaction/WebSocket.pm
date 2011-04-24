@@ -11,15 +11,20 @@ use constant DEBUG => $ENV{MOJO_WEBSOCKET_DEBUG} || 0;
 # Unique value from the spec
 use constant GUID => '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
 
+# Opcodes
+use constant CONTINUATION => 0;
+use constant TEXT         => 1;
+use constant BINARY       => 2;
+use constant CLOSE        => 8;
+use constant PING         => 9;
+use constant PONG         => 10;
+
 # Core module since Perl 5.9.3
 use constant SHA1 => eval 'use Digest::SHA (); 1';
 
 has handshake => sub { Mojo::Transaction::HTTP->new };
-has 'masked';
+has [qw/masked on_message/];
 has max_websocket_size => sub { $ENV{MOJO_MAX_WEBSOCKET_SIZE} || 5242880 };
-has on_message => sub {
-  sub { }
-};
 
 sub client_challenge {
   my $self = shift;
@@ -35,13 +40,8 @@ sub client_close { shift->server_close(@_) }
 sub client_handshake {
   my $self = shift;
 
-  # Request
-  my $req = $self->req;
-
-  # Headers
-  my $headers = $req->headers;
-
   # Default headers
+  my $headers = $self->req->headers;
   $headers->upgrade('websocket')  unless $headers->upgrade;
   $headers->connection('Upgrade') unless $headers->connection;
   $headers->sec_websocket_protocol('mojo')
@@ -63,10 +63,12 @@ sub finish {
   my $self = shift;
 
   # Send closing handshake
-  $self->_send_frame(1, '');
+  $self->_send_frame(CLOSE, '');
 
   # Finish after writing
-  return $self->{_finished} = 1;
+  $self->{_finished} = 1;
+
+  return $self;
 }
 
 sub is_websocket {1}
@@ -80,10 +82,7 @@ sub res            { shift->handshake->res(@_) }
 
 sub resume {
   my $self = shift;
-
-  # Resume
   $self->handshake->resume;
-
   return $self;
 }
 
@@ -97,22 +96,15 @@ sub send_message {
   $message = '' unless defined $message;
   encode 'UTF-8', $message;
 
-  $self->_send_frame(4, $message);
+  $self->_send_frame(TEXT, $message);
 }
 
 sub server_handshake {
   my $self = shift;
 
-  # Request
-  my $req = $self->req;
-
-  # Response
-  my $res = $self->res;
-
-  # Request headers
+  my $req         = $self->req;
+  my $res         = $self->res;
   my $req_headers = $req->headers;
-
-  # Response headers
   my $res_headers = $res->headers;
 
   # Handshake
@@ -144,18 +136,18 @@ sub server_read {
   while (my $frame = $self->_parse_frame) {
 
     # Op
-    my $op = $frame->[1] || 0;
+    my $op = $frame->[1] || CONTINUATION;
 
     # Ping
-    if ($op == 2) {
+    if ($op == PING) {
 
       # Pong
-      $self->_send_frame(3, $frame->[2]);
+      $self->_send_frame(PONG, $frame->[2]);
       next;
     }
 
     # Close
-    elsif ($op == 1) {
+    elsif ($op == CLOSE) {
       $self->finish;
       next;
     }
@@ -170,7 +162,8 @@ sub server_read {
     my $message = $self->{_message};
     $self->{_message} = '';
     decode 'UTF-8', $message if $message;
-    $self->on_message->($self, $message);
+    return $self->finish unless my $cb = $self->on_message;
+    $self->$cb($message);
   }
 
   # Check message size
@@ -204,23 +197,17 @@ sub server_write {
 sub _build_frame {
   my ($self, $op, $payload) = @_;
 
-  # Debug
   warn "BUILDING FRAME\n" if DEBUG;
 
   # Head
   my $frame = 0;
   vec($frame, 0, 8) = $op | 0b10000000;
 
-  # Debug
-  warn "PAYLOAD: $payload\n" if DEBUG;
-
   # Mask payload
-  if ($self->masked) {
-
-    # Debug
+  warn "PAYLOAD: $payload\n" if DEBUG;
+  my $masked = $self->masked;
+  if ($masked) {
     warn "MASKING PAYLOAD\n" if DEBUG;
-
-    # Mask
     my $mask = pack 'N', int(rand 9999999);
     $payload = $mask . _xor_mask($payload, $mask);
   }
@@ -233,25 +220,24 @@ sub _build_frame {
 
   # Small payload
   if ($len < 126) {
-    vec($prefix, 0, 8) = $len;
+    vec($prefix, 0, 8) = $masked ? ($len | 0b10000000) : $len;
     $frame .= $prefix;
   }
 
   # Extended payload (16bit)
   elsif ($len < 65536) {
-    vec($prefix, 0, 8) = 126;
+    vec($prefix, 0, 8) = $masked ? (126 | 0b10000000) : 126;
     $frame .= $prefix;
     $frame .= pack 'n', $len;
   }
 
   # Extended payload (64bit)
   else {
-    vec($prefix, 0, 8) = 127;
+    vec($prefix, 0, 8) = $masked ? (127 | 0b10000000) : 127;
     $frame .= $prefix;
     $frame .= pack 'NN', $len >> 32, $len & 0xFFFFFFFF;
   }
 
-  # Debug
   if (DEBUG) {
     warn 'HEAD: ' . unpack('B*', $frame) . "\n";
     warn "OPCODE: $op\n";
@@ -281,35 +267,24 @@ sub _challenge {
 sub _parse_frame {
   my $self = shift;
 
-  # Buffer
-  my $buffer = $self->{_read};
-
-  # Debug
   warn "PARSING FRAME\n" if DEBUG;
 
   # Head
+  my $buffer = $self->{_read};
   return unless length $buffer > 2;
   my $head = substr $buffer, 0, 2, '';
-
-  # Debug
   warn 'HEAD: ' . unpack('B*', $head) . "\n" if DEBUG;
 
   # FIN
   my $fin = (vec($head, 0, 8) & 0b10000000) == 0b10000000 ? 1 : 0;
-
-  # Debug
   warn "FIN: $fin\n" if DEBUG;
 
   # Opcode
   my $op = vec($head, 0, 8) & 0b00001111;
-
-  # Debug
   warn "OPCODE: $op\n" if DEBUG;
 
   # Length
   my $len = vec($head, 1, 8) & 0b01111111;
-
-  # Debug
   warn "LENGTH: $len\n" if DEBUG;
 
   # No payload
@@ -321,20 +296,16 @@ sub _parse_frame {
   # Extended payload (16bit)
   elsif ($len == 126) {
     return unless length $buffer > 2;
-    $head = substr $buffer, 0, 2, '';
-    $len = unpack 'n', $head;
-
-    # Debug
+    my $ext = substr $buffer, 0, 2, '';
+    $len = unpack 'n', $ext;
     warn "EXTENDED (16bit): $len\n" if DEBUG;
   }
 
   # Extended payload (64bit)
   elsif ($len == 127) {
     return unless length $buffer > 8;
-    $head = substr $buffer, 0, 8, '';
-    $len = unpack 'N', substr($head, 4, 4);
-
-    # Debug
+    my $ext = substr $buffer, 0, 8, '';
+    $len = unpack 'N', substr($ext, 4, 4);
     warn "EXTENDED (64bit): $len\n" if DEBUG;
   }
 
@@ -343,17 +314,12 @@ sub _parse_frame {
   my $payload = $len ? substr($buffer, 0, $len, '') : '';
 
   # Unmask payload
-  unless ($self->masked) {
-    $payload = _xor_mask($payload, substr($payload, 0, 4, ''));
-
-    # Debug
+  if (vec($head, 1, 8) & 0b10000000) {
     warn "UNMASKING PAYLOAD\n" if DEBUG;
+    $payload = _xor_mask($payload, substr($payload, 0, 4, ''));
   }
 
-  # Debug
   warn "PAYLOAD: $payload\n" if DEBUG;
-
-  # Update buffer
   $self->{_read} = $buffer;
 
   return [$fin, $op, $payload];
@@ -484,7 +450,7 @@ The connection this websocket is using.
 
 =head2 C<finish>
 
-  $ws->finish;
+  $ws = $ws->finish;
 
 Finish the WebSocket connection gracefully.
 

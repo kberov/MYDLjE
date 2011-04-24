@@ -165,9 +165,18 @@ sub get_list {
 
 __END__
 
+=encoding utf8
+
 =head1 NAME
 
-MYDLjE::ControlPanel::C::Content - Handling content in cpanel
+MYDLjE::ControlPanel::C::Content - Controller for handling content in cpanel
 
 =head1 DESCRIPTION
+
+
+=head1 AUTHOR AND COPYRIGHT
+
+(c) 2011 Красимир Беров
+
+This code is licenced under LGPLv3.
 

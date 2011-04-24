@@ -39,11 +39,11 @@ has WHERE => sub { {} };
 
 #METHODS
 sub new {
-  my ($class, $fieds) = get_obj_args(@_);
+  my ($class, $fields) = get_obj_args(@_);
   my $self = {data => {}};
   bless $self, $class;
   $class->make_field_attrs();
-  $self->data($fieds);
+  $self->data($fields);
   return $self;
 }
 
@@ -183,6 +183,8 @@ sub sql {
 
 __END__
 
+=encoding utf8
+
 =head1 NAME
 
 MYDLjE::M - an oversimplified database-based objects class.
@@ -191,10 +193,10 @@ MYDLjE::M - an oversimplified database-based objects class.
 
 This is the base class for all classes that store they data in a L<MYDLjE> database table. It was written in order to decrease dependencies from CPAN modules and keep MYDLjE small and light.
 
-The class provides some useful methods which simplify representing rows from tables as Perl objects. It is not intended to be a full featured ORM at all. It simply saves you from writing the same SQl over and over again to construct well known MYDLjE objects stored in tables. If you have to do complicated  SQL queries use directly L<DBIx::Simple/query> method. A L<DBIx::Simple> singleton instance is available as attribute in every L<MYDLjE::M> derived object. Use this base class if you want to construct perl objects which store their data in table rows. That's it.
+The class provides some useful methods which simplify representing rows from tables as Perl objects. It is not intended to be a full featured ORM at all. It is rather a DBA (Database Abstraction Layer). It simply saves you from writing the same SQl over and over again to construct well known MYDLjE objects stored in tables' rows. If you have to do complicated  SQL queries use directly L<DBIx::Simple/query> method. A L<DBIx::Simple> singleton instance is available as attribute in every L<MYDLjE::M> derived object. Use this base class if you want to construct Perl objects which store their data in table rows. That's it.
 
 This code is fresh and may change at any time but I will try to keep the API relatively stable if I like it.
-And of course you can always overwite all methods from the base class at will and embed complex SQL queries in your subclasses.
+And of course you can always overwrite all methods from this base class at will and embed complex SQL queries in your subclasses.
 
 =head1 SYNOPSIS
 
@@ -309,7 +311,7 @@ Specific C<WHERE> clause for your class which will be appended to C<where> argum
 
 You can redefine the WHERE clause for the object data population just after instatntiating an empty object and before calling select to populate it with data.
 
-    my $user =MYDLjE::M::User->new();
+    my $user = MYDLjE::M::User->new();
     $user->WHERE({disabled =>0, });
     $user->select(id=>1);
 
@@ -326,7 +328,7 @@ The constructor. Instantiates a fresh MYDLjE::M based object. Generates getters 
 
 =head2 select
 
-Restores a saved in the database object by constructing an SQL query based on the parameters. The API is the same as for L<DBIx::Simple/select> or L<SQL::Abstract/select> which is used internally. Prepends the L</WHERE> clause defined by you to the parameters. If a row is found puts in L</data>. Returns C<$self>.
+Instantiates an object from a saved in the database row by constructing and executing an SQL query based on the parameters. These parameters are used to construct the C<WHERE> clause for the SQL C<SELECT> statement. The API is the same as for L<DBIx::Simple/select> or L<SQL::Abstract/select> which is used internally. Prepends the L</WHERE> clause defined by you to the parameters. If a row is found puts in L</data>. Returns C<$self>.
 
   my $user = MYDLjE::M::User->select(id => $user_id);
   
@@ -347,12 +349,12 @@ But also use the autogenereated or defined by you getters/setters.
 
 =head2 save
 
-DWIM saver. If the object is fresh inserts it in the L</TABLE>, otherwise updates it.
+DWIM saver. If the object is fresh ( C<if (!$self-E<gt>id)> ) prepares and executes an C<INSERT> statment, otherwise preforms an C<UPDATE>. L</TABLE> is used to construct the SQL.
 
 =head2 make_field_attrs
 
 Called by L</new>. Prepares class specific COLUMNS based getters/setters.
-You could overrride it in your specific class if you want to do something special.
+You I<could> overrride it in your specific class if you want to do something special.
 
 =head2 validate_field
 
@@ -363,3 +365,12 @@ Called each time a field is set either by the specific field setter or by L</dat
 =head1 SEE ALSO
 
 L<MYDLjE::M::User>, L<MYDLjE::M::Session>, L<MYDLjE::M::Content>
+
+
+=head1 AUTHOR AND COPYRIGHT
+
+(c) 2011 Красимир Беров
+
+This code is licenced under LGPLv3.
+
+

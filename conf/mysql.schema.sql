@@ -95,7 +95,7 @@ CREATE TABLE IF NOT EXISTS `my_content` (
   `tags` varchar(100) NOT NULL DEFAULT '',
   `body` text NOT NULL,
   `invisible` tinyint(1) NOT NULL,
-  `language` varchar(2) NOT NULL DEFAULT '',
+  `language` varchar(2) NOT NULL DEFAULT 'en',
   `group_id` int(11) NOT NULL DEFAULT '1' COMMENT 'The group of this content.',
   `protected` char(1) NOT NULL DEFAULT '',
   `featured` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Show on top independently of other sorting.',

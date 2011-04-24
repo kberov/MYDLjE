@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use Data::Dumper;
 use File::Basename 'dirname';
+use utf8;
 use Cwd;
 
 BEGIN {
@@ -18,7 +19,7 @@ BEGIN {
 
 use lib ("$ENV{MOJO_HOME}/perl/lib", "$ENV{MOJO_HOME}/perl/site/lib");
 
-use Test::More tests => 57;
+use Test::More tests => 73;
 use MYDLjE::Config;
 use MYDLjE::Plugin::DBIx;
 use MYDLjE::M::Content;
@@ -46,7 +47,8 @@ my $data  = {
 };
 my $content = MYDLjE::M::Content->new(%{$data});
 isa_ok($content->dbix, 'DBIx::Simple');
-
+is($content->{data}{data_type},
+  'note', 'content has correct data_type because it is explicitely defined');
 $content->body('<p>Hello</p>');
 is($content->user_id, 1, 'user_id is ' . $content->user_id);
 $content->user_id(2);
@@ -76,7 +78,7 @@ is($content->bad('very')->bad,             1, 'bad 1');
 is($content->bad('very')->bad,             2, 'bad 2');
 is(
   $content->keywords('YEAH,adsads,&sds*?another')->keywords,
-  'YEAH, adsads, sdsanother',
+  'yeah, adsads, sds, another',
   'keywords ok'
 );
 ok($content->save >= $content->id, '$content->save ok ' . $content->id);
@@ -106,6 +108,8 @@ is($question->user_id($note->user_id)->user_id,
 
 require MYDLjE::M::Content::Answer;
 my $answer = MYDLjE::M::Content::Answer->new(pid => $question->save);
+is($answer->{data}{data_type},
+  'answer', 'answer has correctly guessed data_type');
 is($answer->pid, $question->id, '$answer->pid is $question->id');
 $answer->body('You can not do anything');
 ok($answer->alias, $answer->alias);
@@ -115,10 +119,51 @@ is($answer->user_id($note->user_id)->user_id,
 
 $answer->save();
 
+require MYDLjE::M::Content::Page;
+my $page = MYDLjE::M::Content::Page->new();
+is($page->title('Христос възкръсна!')->alias,
+  'xristos-vazkrasna', 'alias is unidecoded ok');
+is($page->language('bg')->language, 'bg', 'language ok');
+
+#Use Custom data_type
+my $my_custom = MYDLjE::M::Content->new(alias => $alias, user_id => 2);
+delete $my_custom->FIELDS_VALIDATION->{data_type}{constraints};
+$my_custom->data_type('alabala');
+$my_custom->body('alabala body');
+is($my_custom->data_type,                'alabala', 'custom data_type');
+is($my_custom->language,                 'en',      'language ok');
+is($my_custom->language('bg')->language, 'bg',      'language ok');
+is(
+  $my_custom->tags('perl,| Content-Management,   javaScript||jAvA')->tags,
+  'perl, content-management, javascript, java',
+  'tags ok'
+);
+ok($my_custom->save, 'saving custom data_type is ok');
+
+#Retreive Custom data_type
+$my_custom = MYDLjE::M::Content->new;
+is($my_custom->data_type, 'content',
+  'default data_type is ' . $my_custom->data_type);
+delete $my_custom->FIELDS_VALIDATION->{data_type}{constraints};
+is($my_custom->data_type('alabala')->data_type, 'alabala',
+  'custom data_type');
+is($my_custom->select(alias => $alias)->data_type,
+  'alabala', 'custom data_type retrieved ok');
+is($my_custom->alias,    $alias, 'custom alias is unique for this data type');
+is($my_custom->language, 'bg',   'language ok');
+is($my_custom->language('bgsds')->language, 'en', 'language ok');
+
+is($my_custom->body, 'alabala body', 'custom retrieved ok');
+
+#=pod
+
 #cleanup
-$content->dbix->delete($content->TABLE, {alias => {-like => 'test-%-test'}});
+$content->dbix->delete($content->TABLE,
+  {alias => {-like => ['test%', 'what-brcan-i-doooo']}});
 $answer->dbix->delete($answer->TABLE, {id => $answer->id});
 $question->dbix->delete($question->TABLE, id => $question->id);
+
+#=cut
 
 # test MYDLjE::M::Session
 require MYDLjE::M::Session;

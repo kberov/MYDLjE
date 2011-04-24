@@ -1360,6 +1360,7 @@ my $UTF8_LOOKUP_TABLE = {
     8   => 8,
     9   => 9,
     '0' => '0',
+    '_' => '_',
     A   => q{A},
     B   => q{B},
     C   => q{C},
@@ -1678,12 +1679,12 @@ my $UTF8_LOOKUP_TABLE = {
     'Ш' => 'Sh',
     'щ' => 'sch',
     'Щ' => 'Sch',
-    'ъ' => '',
-    'Ъ' => '',
-    'ы' => 'y',
-    'Ы' => 'Y',
-    'ь' => '',
-    'Ь' => '',
+    'ъ' => 'a',
+    'Ъ' => 'a',
+    'ы' => 'ay',
+    'Ы' => 'AY',
+    'ь' => 'y',
+    'Ь' => 'y',
     'э' => 'eh',
     'Э' => 'Eh',
     'ю' => 'ju',
@@ -2508,6 +2509,8 @@ sub unidecode {
 
 __END__
 
+=encoding utf8
+
 =head1 NAME
 
 MYDLjE::Unidecode - Transliterate Unicode characters to plain ASCII equivalents
@@ -2535,7 +2538,9 @@ L<Text::Unidecode>
 
 =head1 AUTHOR AND COPYRIGHT
 
-(c) 2011 Krasimir Berov 
+(c) 2011 Красимир Беров 
 
-Ported from Leo Feyer's Contao: (c) Leo Feyer 2005-2010
+This code is licenced under LGPLv3.
+
+Ported and adapted from Leo Feyer's Contao C<$UTF8_LOOKUP_TABLE> array : (c) Leo Feyer 2005-2010
 

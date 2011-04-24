@@ -2,7 +2,8 @@ package MYDLjE;
 use MYDLjE::Base 'Mojolicious';
 use MYDLjE::Config;
 require Mojo::Util;
-our $VERSION = '0.2';
+
+our $VERSION = '0.3';
 
 has controller_class => 'MYDLjE::C';
 has env              => sub {
@@ -164,6 +165,8 @@ sub add_types {
 
 __END__
 
+=encoding utf8
+
 =head1 NAME
 
 MYDLjE - The Application class
@@ -267,5 +270,12 @@ Example plugins configuration:
 
 L<MYDLjE::Guides>, L<MYDLjE::ControlPanel>, 
 L<MYDLjE::Site>, L<MYDLjE::Config>,L<Hash::Merge::Simple>, L<YAML::Tiny>
+
+
+=head1 AUTHOR AND COPYRIGHT
+
+(c) 2011 Красимир Беров 
+
+This code is licenced under LGPLv3.
 
 

@@ -23,6 +23,13 @@ use Test::More tests => 73;
 use MYDLjE::Config;
 use MYDLjE::Plugin::DBIx;
 use MYDLjE::M::Content;
+
+my $config =
+  MYDLjE::Config->new(
+  files => ["$ENV{MOJO_HOME}/conf/mydlje.$ENV{MOJO_MODE}.yaml"]);
+if (not $config->stash('installed')) {
+  plan skip_all => 'System is not installed. Will not test MYDLjE::M.';
+}
 isa_ok('MYDLjE::M::Content', 'MYDLjE::M');
 
 can_ok(
@@ -30,9 +37,6 @@ can_ok(
   'COLUMNS',            'data',
   'sql',                'make_field_attrs'
 );
-my $config =
-  MYDLjE::Config->new(
-  files => ["$ENV{MOJO_HOME}/conf/mydlje.$ENV{MOJO_MODE}.yaml"]);
 
 #print Dumper();
 my $dbix = MYDLjE::Plugin::DBIx::dbix(
@@ -67,15 +71,15 @@ ok(
 );
 ok($content->time_created <= time,
   'time_created is ' . localtime($content->time_created));
-is($content->featured,                     0, 'featured 0');
-is($content->featured('yes')->featured,    1, 'featured 1');
-is($content->invisible,                    0, 'invisible 0');
-is($content->invisible('!')->invisible,    1, 'invisible 1');
-is($content->protected,                    0, 'protected 0');
-is($content->protected('YEAH')->protected, 1, 'protected 1');
-is($content->bad,                          0, 'bad 0');
-is($content->bad('very')->bad,             1, 'bad 1');
-is($content->bad('very')->bad,             2, 'bad 2');
+is($content->featured,                  0,     'featured 0');
+is($content->featured('yes')->featured, 1,     'featured 1');
+is($content->start,                     0,     'start 0');
+is($content->start($time)->start,       $time, 'start ' . $time);
+is($content->stop,                      0,     'stop 0');
+is($content->stop($time)->stop,         $time, 'stop ' . $time);
+is($content->bad,                       0,     'bad 0');
+is($content->bad('very')->bad,          1,     'bad 1');
+is($content->bad('very')->bad,          2,     'bad 2');
 is(
   $content->keywords('YEAH,adsads,&sds*?another')->keywords,
   'yeah, adsads, sds, another',
@@ -123,7 +127,7 @@ require MYDLjE::M::Content::Page;
 my $page = MYDLjE::M::Content::Page->new();
 is($page->title('Христос възкръсна!')->alias,
   'xristos-vazkrasna', 'alias is unidecoded ok');
-is($page->language('bg')->language, 'bg', 'language ok');
+is($page->language('bg')->language, 'bg', 'language bg ok');
 
 #Use Custom data_type
 my $my_custom = MYDLjE::M::Content->new(alias => $alias, user_id => 2);
@@ -131,7 +135,7 @@ delete $my_custom->FIELDS_VALIDATION->{data_type}{constraints};
 $my_custom->data_type('alabala');
 $my_custom->body('alabala body');
 is($my_custom->data_type,                'alabala', 'custom data_type');
-is($my_custom->language,                 'en',      'language ok');
+is($my_custom->language,                 '',        'language ok');
 is($my_custom->language('bg')->language, 'bg',      'language ok');
 is(
   $my_custom->tags('perl,| Content-Management,   javaScript||jAvA')->tags,
@@ -151,7 +155,7 @@ is($my_custom->select(alias => $alias)->data_type,
   'alabala', 'custom data_type retrieved ok');
 is($my_custom->alias,    $alias, 'custom alias is unique for this data type');
 is($my_custom->language, 'bg',   'language ok');
-is($my_custom->language('bgsds')->language, 'en', 'language ok');
+is($my_custom->language('bgsds')->language, '', 'language ok');
 
 is($my_custom->body, 'alabala body', 'custom retrieved ok');
 

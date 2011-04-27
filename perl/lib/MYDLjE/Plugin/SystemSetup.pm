@@ -160,7 +160,7 @@ sub _save_config {
 
 sub _init_database {
   my ($c) = @_;
-
+  my $log = $c->app->log;
   my $xml_sql =
     Mojo::Asset::File->new(path => $c->app->home . '/conf/mysql.schema.sql')
     ->slurp;
@@ -168,16 +168,21 @@ sub _init_database {
   $dom->parse($xml_sql);
   my ($disable_foreign_key_checks) = $dom->at('#disable_foreign_key_checks');
   my @start_init = split(/;/x, $disable_foreign_key_checks->text);
-  $c->dbix->dbh->do($_) for @start_init;
+  for (@start_init) {
+    $log->debug("do:$_");
+    $c->dbix->dbh->do($_);
+  }
 
   # Loop
   for my $e ($dom->find('table[name],view[name]')->each) {
     my ($drop, $create) = split(/;/x, $e->text);
+    $log->debug("do:table/view[name]" . $e->attrs->{name});
     $c->dbix->dbh->do($drop);
     $c->dbix->dbh->do($create);
   }
   my ($constraints) = $dom->at('#constraints');
   my @constraints = split(/;/x, $constraints->text);
+  $log->debug("do:#constraints");
   $c->dbix->dbh->do($_) for @constraints;
   my ($enable_foreign_key_checks) = $dom->at('#enable_foreign_key_checks');
   my @end_init = split(/;/x, $enable_foreign_key_checks->text);
@@ -192,8 +197,9 @@ sub _init_database {
 
 # Loop over named(!) queries only in the order they are defined in the document.
   for my $e ($dom->find('query[name]')->each) {
+    $log->debug("query[name]" . $e->attrs->{name});
     my $query = $e->text;
-    $query =~ s/--.*?$//xg;
+    $query =~ s/^\s*--.*?$//xg;
     $query =~ s/\)\s*?;\s*?$/)/xg;    #beware... VALUES may contain ';'
     $c->dbix->query($query);
   }

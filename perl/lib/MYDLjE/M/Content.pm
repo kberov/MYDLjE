@@ -10,13 +10,15 @@ has TABLE => 'my_content';
 
 has COLUMNS => sub {
   [ qw(
-      id alias pid user_id sorting data_type data_format
+      id alias pid page_id user_id sorting data_type data_format
       time_created tstamp title description keywords tags
-      body invisible language group_id protected
-      featured accepted bad
+      body language group_id permissions featured bad start stop
       )
   ];
 };
+
+has WHERE => sub { {deleted => 0} };
+
 my $id_constraints = {constraints => [{regexp => qr/^\d+$/x},]};
 
 sub _no_markup_inflate {
@@ -25,7 +27,10 @@ sub _no_markup_inflate {
 
   #remove everything strange
   $value =~ s/[^\p{IsAlnum}\,\s\-\!\.\?\(\);]//gx;
-  $value = substr($value, 0, 255) if length($value) > 255;
+
+  #normalize spaces
+  $value =~ s/\s+/ /gx;
+  $value = substr($value, 0, 254) if length($value) > 254;
   return $value;
 }
 
@@ -43,8 +48,8 @@ sub _tags_inflate {
 sub _language_inflate {
   my $filed = shift;
   my $value = $filed->value || '';
-  $value = 'en'
-    unless (length $value == 2 && I18N::LangTags::List::name($value));
+  return $value unless ($value);
+  $value = '' unless (I18N::LangTags::List::name($value));
 
   return $value;
 }
@@ -77,9 +82,10 @@ has FIELDS_VALIDATION => sub {
       constraints => [{regexp => qr/(textile|text|html|markdown|template)/x},]
     },
     language => {
-      required    => 1,
+
+      #required    => 1,
       inflate     => \&_language_inflate,
-      constraints => [{regexp => qr/^[a-z]{2}$/x},]
+      constraints => [{regexp => qr/^[a-z]{0,2}$/x},]
       }
 
   };
@@ -237,16 +243,6 @@ sub body {
   return $self->{data}{body};                                         #getting
 }
 
-sub invisible {
-  my ($self, $value) = @_;
-  if ($value) {                                                       #setting
-    $self->{data}{invisible} = 1;
-    return $self;
-  }
-  return $self->{data}{invisible}
-    if defined $self->{data}{invisible};                              #getting
-  return $self->{data}{invisible} = 0;                                #default
-}
 
 sub language {
   my ($self, $value) = @_;
@@ -254,19 +250,9 @@ sub language {
     $self->{data}{language} = $self->validate_field(language => $value);
     return $self;
   }
-  return $self->{data}{language} ||= 'en';                            #getting
+  return $self->{data}{language} ||= '';                              #getting
 }
 
-sub protected {
-  my ($self, $value) = @_;
-  if ($value) {                                                       #setting
-    $self->{data}{protected} = 1;
-    return $self;
-  }
-  return $self->{data}{protected}
-    if defined $self->{data}{protected};                              #getting
-  return $self->{data}{protected} = 0;                                #default
-}
 
 sub bad {
   my ($self, $value) = @_;
@@ -276,6 +262,26 @@ sub bad {
   }
   return $self->{data}{bad} if defined $self->{data}{bad};            #getting
   return $self->{data}{bad} = 0;                                      #default
+}
+
+sub start {
+  my ($self, $value) = @_;
+  if ($value) {                                                       #setting
+    if   ($value =~ /(\d{10,})/x) { $self->{data}{start} = $1 }
+    else                          { $self->{data}{start} = 0; }
+    return $self;
+  }
+  return $self->{data}{start} ||= 0;                                  #getting
+}
+
+sub stop {
+  my ($self, $value) = @_;
+  if ($value) {                                                       #setting
+    if   ($value =~ /(\d{10,})/x) { $self->{data}{stop} = $1 }
+    else                          { $self->{data}{stop} = 0; }
+    return $self;
+  }
+  return $self->{data}{stop} ||= 0;                                   #getting
 }
 
 1;

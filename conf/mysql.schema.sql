@@ -81,34 +81,35 @@ CREATE TABLE IF NOT EXISTS `my_sessions` (
 DROP TABLE IF EXISTS `my_pages`;
 CREATE TABLE IF NOT EXISTS `my_pages` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `pid` int(11) NOT NULL DEFAULT '0' COMMENT 'parent page id',
-  `alias` varchar(32) NOT NULL DEFAULT '' COMMENT 'alias for the page which may be used instead of the id ',
+  `pid` int(11) NOT NULL DEFAULT '0' COMMENT 'Parent page id',
+  `alias` varchar(32) NOT NULL DEFAULT '' COMMENT 'Alias for the page which may be used instead of the id ',
   `page_type` varchar(32) NOT NULL COMMENT 'Regular,Folder, Site Root etc',
   `sorting` int(11) NOT NULL DEFAULT '1',
   `template` text COMMENT 'TT2 code to display this page. Default template is used if not specified.',
   `cache` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1=yes 0=no',
-  `expiry` int(11) NOT NULL DEFAULT '300' COMMENT 'expiry tstamp if cache=1',
-  `permissions` varchar(10) NOT NULL DEFAULT '-rwxr--r--' COMMENT 'Page editing and viewing permissions',
-  `user_id` int(11) NOT NULL DEFAULT '1' COMMENT 'owner',
-  `group_id` int(11) NOT NULL DEFAULT '1' COMMENT 'owner group',
-  `tstamp` int(11) NOT NULL DEFAULT '1',
+  `expiry` int(11) NOT NULL DEFAULT '86400' COMMENT 'expiry tstamp if cache==1',
+  `permissions` varchar(10) NOT NULL DEFAULT '-rwxr--r--' COMMENT 'Page editing permissions',
+  `user_id` int(11) NOT NULL DEFAULT '0' COMMENT 'owner',
+  `group_id` int(11) NOT NULL DEFAULT '0' COMMENT 'owner group',
+  `tstamp` int(11) NOT NULL DEFAULT '0',
   `start` int(11) DEFAULT '0',
   `stop` int(11) DEFAULT '0',
   `published` int(11) NOT NULL DEFAULT '0' COMMENT '0=not published,1=waiting,2=published',
-  `deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Is this page deleted? 0=No, 1=Yes',
+  `hidden` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'Is this page hidden? 0=No, 1=Yes',
+  `deleted` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'Is this page deleted? 0=No, 1=Yes',
   `changed_by` int(11) NOT NULL COMMENT 'Who modified this page the last time?',
   PRIMARY KEY (`id`),
   UNIQUE KEY `alias` (`alias`),
   KEY `tstamp` (`tstamp`),
-  KEY `start` (`start`),
-  KEY `stop` (`stop`),
-  KEY `permissions` (`permissions`),
+  KEY `page_type` (`page_type`),
+  KEY `hidden` (`hidden`),
   KEY `pid` (`pid`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='Pages holding various content elements';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Pages holding various content elements';
 
 -- </table>
 
 -- <table name="my_content">
+
 
 DROP TABLE IF EXISTS `my_content`;
 CREATE TABLE IF NOT EXISTS `my_content` (
@@ -119,7 +120,7 @@ CREATE TABLE IF NOT EXISTS `my_content` (
   `user_id` int(11) NOT NULL COMMENT 'User that created it initially.',
   `sorting` int(10) NOT NULL DEFAULT '0' COMMENT 'For sorting chapters in a book, pages in a menu etc.',
   `data_type` varchar(32) NOT NULL DEFAULT 'note' COMMENT 'Semantic Content Types. See MYDLjE::M::Content::*.',
-  `data_format` varchar(32) NOT NULL DEFAULT 'text' COMMENT 'Corresponding engine will be used to process the content before output. ie Text::Textile for textile.',
+  `data_format` varchar(32) NOT NULL DEFAULT 'text' COMMENT 'Corresponding engine will be used to process the content before output. Ie Text::Textile for textile.',
   `time_created` int(11) NOT NULL DEFAULT '0' COMMENT 'When this content was inserted',
   `tstamp` int(11) NOT NULL DEFAULT '0' COMMENT 'Last time the record was touched',
   `title` varchar(255) NOT NULL DEFAULT '' COMMENT 'Used in title html tag for pages or or as h1 for other data types.',
@@ -127,13 +128,15 @@ CREATE TABLE IF NOT EXISTS `my_content` (
   `keywords` varchar(255) NOT NULL DEFAULT '' COMMENT 'Used in keywords meta tag.',
   `tags` varchar(100) NOT NULL DEFAULT '' COMMENT 'Used in tag cloud boxes. merged with keywords and added to keywords meta tag.',
   `body` text NOT NULL COMMENT 'Main content when applicable.',
-  `language` varchar(2) NOT NULL DEFAULT 'en' COMMENT 'Language of this content. all languages when epty string',
+  `language` varchar(2) NOT NULL DEFAULT 'en' COMMENT 'Language of this content. All languages when empty string',
   `group_id` int(11) NOT NULL DEFAULT '1' COMMENT 'Group ID of the owner of this content.',
-  `permissions` char(9) NOT NULL DEFAULT 'rwxr-x---' COMMENT 'uuugggooo -Experimental permissions for the content.',
+  `permissions` char(10) NOT NULL DEFAULT '-rwxr-x---' COMMENT 'duuugggooo - Experimental permissions for the content.',
   `featured` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Show on top independently of other sorting.',
   `accepted` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Answer accepted?',
-  `bad` tinyint(2) NOT NULL DEFAULT '0' COMMENT 'Reported as inapropriate offensive etc. Higher values - very bad.',
-  `deleted` tinyint(1) NOT NULL DEFAULT '0',
+  `bad` tinyint(2) NOT NULL DEFAULT '0' COMMENT 'Reported as inapropriate offensive etc. higher values -very bad.',
+  `deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'When set to 1 the record is not visible anywhere.',
+  `start` int(11) NOT NULL COMMENT 'Date/Time from which the record will be accessible in the site.',
+  `stop` int(11) NOT NULL COMMENT 'Date/Time till which the record will be accessible in the site.',
   PRIMARY KEY (`id`),
   UNIQUE KEY `alias` (`alias`,`data_type`),
   KEY `pid` (`pid`),
@@ -142,8 +145,9 @@ CREATE TABLE IF NOT EXISTS `my_content` (
   KEY `user_id` (`user_id`),
   KEY `data_type` (`data_type`),
   KEY `language` (`language`),
-  KEY `page_id` (`page_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='MYDLjE content elements. Various  data_typeS may be used.';
+  KEY `page_id` (`page_id`),
+  KEY `deleted` (`deleted`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='MYDLjE content elements. Different  data_typeS may be used.';
 
 -- </table>
 
@@ -190,11 +194,7 @@ CREATE TABLE IF NOT EXISTS `my_users_properties` (
 -- EXAMPLE EDITABLE VIEWS
 --<view name="my_varticle">
 DROP VIEW IF EXISTS  my_varticle;
-CREATE OR REPLACE VIEW my_varticle as select 
-    id,user_id,pid,sorting,data_type,
-    data_format,time_created,tstamp,title,body,invisible,
-    language,group_id,protected,bad
-from my_content where (data_type = 'article');
+
 --</view>
 
 -- </queries>

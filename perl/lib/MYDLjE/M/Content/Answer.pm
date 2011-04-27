@@ -3,13 +3,14 @@ use MYDLjE::Base 'MYDLjE::M::Content';
 
 has COLUMNS => sub {
   [ qw(
-      id user_id pid  alias title tags
-      sorting data_type data_format time_created tstamp
-      body invisible language group_id protected accepted bad
+      id alias pid page_id user_id sorting data_type data_format
+      time_created tstamp title description keywords tags
+      body language group_id permissions featured bad start stop accepted
       )
   ];
 };
-has WHERE => sub { {data_type => 'answer'} };
+
+has WHERE => sub { {data_type => 'answer', deleted => 0} };
 
 1;
 

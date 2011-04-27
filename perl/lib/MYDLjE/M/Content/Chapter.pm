@@ -1,15 +1,7 @@
 package MYDLjE::M::Content::Chapter;
 use MYDLjE::Base 'MYDLjE::M::Content';
 
-has COLUMNS => sub {
-  [ qw(
-      id user_id pid alias keywords description tags
-      data_type data_format time_created tstamp title
-      body invisible language group_id protected bad
-      )
-  ];
-};
-has WHERE => sub { {data_type => 'chapter'} };
+has WHERE => sub { {data_type => 'chapter', deleted => 0} };
 
 1;
 

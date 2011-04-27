@@ -23,13 +23,13 @@ INSERT INTO `my_users` (`id`, `group_id`, `login_name`, `login_password`, `first
 -- <query name="my_pages">
 
 INSERT INTO `my_pages` (`id`, `pid`, `alias`, `page_type`, `sorting`, `template`, `cache`, `expiry`, `permissions`, `user_id`, `group_id`, `tstamp`, `start`, `stop`, `published`, `deleted`, `changed_by`) VALUES
-    (0, 0, 'dummy_page-do_not_use_or_delete', '', 1, NULL, 0, 300, '-rwx------', 1, 1, 1, 1, 1, 1, 0, 1, 1);
+    (0, 0, 'dummy_page-do_not_use_or_delete', '', 1, NULL, 0, 300, 'drwx------', 1, 1, 1, 1, 1, 0, 1, 1);
 
 -- </quey>
 
 -- <query name="my_content">
 INSERT INTO `my_content` (`id`, `alias`, `pid`, `page_id`, `user_id`, `sorting`, `data_type`, `data_format`, `time_created`, `tstamp`, `title`, `description`, `keywords`, `tags`, `body`, `language`, `group_id`, `permissions`, `featured`, `accepted`, `bad`, `deleted`) VALUES
-(0, 'dummy_content-do_not_use_or_delete', 0, 0, 1, 0, 'note', 'text', 1, 1, 'Parent content of all contents', '', '', '', 'This content is used only to keep foreign key constraints happy.', 'en', 1, 'rwx------', 0, 0, 0, 0);
+(0, 'dummy_content-do_not_use_or_delete', 0, 0, 1, 0, 'note', 'text', 1, 1, 'Parent content of all contents', '', '', '', 'This content is used only to keep foreign key constraints happy.', 'en', 1, '-rwx------', 0, 0, 0, 0);
 
 -- </quey>
 

@@ -193,7 +193,7 @@ CREATE TABLE IF NOT EXISTS `my_users_properties` (
 -- TODO: make MYDLjE::M::Content work automatically with views
 -- when a database suports this.
 -- EXAMPLE EDITABLE VIEWS
---<view name="my_vsite_content">
+--<view name="my_vguest_content">
 CREATE OR REPLACE VIEW my_vguest_content AS SELECT 
 `id`, `alias`, `pid`, `page_id`, `user_id`, `sorting`, `data_type`, `data_format`, `time_created`, `tstamp`, `title`, `description`, `keywords`, `tags`, `body`, `language`, `group_id`, `permissions`, `featured`, `accepted`, `bad`
 FROM my_content WHERE(

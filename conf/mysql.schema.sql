@@ -77,30 +77,63 @@ CREATE TABLE IF NOT EXISTS `my_sessions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Users sessions storage table';
 -- </table>
 
+-- <table name="my_pages">
+DROP TABLE IF EXISTS `my_pages`;
+CREATE TABLE IF NOT EXISTS `my_pages` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `pid` int(11) NOT NULL DEFAULT '0' COMMENT 'parent page id',
+  `alias` varchar(32) NOT NULL DEFAULT '' COMMENT 'alias for the page which may be used instead of the id ',
+  `page_type` varchar(32) NOT NULL COMMENT 'Regular,Folder, Site Root etc',
+  `sorting` int(11) NOT NULL DEFAULT '1',
+  `template` text COMMENT 'TT2 code to display this page. Default template is used if not specified.',
+  `cache` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1=yes 0=no',
+  `expiry` int(11) NOT NULL DEFAULT '300' COMMENT 'expiry tstamp if cache=1',
+  `permissions` varchar(10) NOT NULL DEFAULT '-rwxr--r--' COMMENT 'Page editing and viewing permissions',
+  `user_id` int(11) NOT NULL DEFAULT '1' COMMENT 'owner',
+  `group_id` int(11) NOT NULL DEFAULT '1' COMMENT 'owner group',
+  `tstamp` int(11) NOT NULL DEFAULT '1',
+  `start` int(11) DEFAULT '0',
+  `stop` int(11) DEFAULT '0',
+  `published` int(11) NOT NULL DEFAULT '0' COMMENT '0=not published,1=waiting,2=published',
+  `deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Is this page deleted? 0=No, 1=Yes',
+  `changed_by` int(11) NOT NULL COMMENT 'Who modified this page the last time?',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `alias` (`alias`),
+  KEY `tstamp` (`tstamp`),
+  KEY `start` (`start`),
+  KEY `stop` (`stop`),
+  KEY `permissions` (`permissions`),
+  KEY `pid` (`pid`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='Pages holding various content elements';
+
+-- </table>
+
 -- <table name="my_content">
+
 DROP TABLE IF EXISTS `my_content`;
 CREATE TABLE IF NOT EXISTS `my_content` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Primary unique identyfier',
-  `alias` varchar(255) NOT NULL DEFAULT 'seo friendly id',
+  `alias` varchar(255) NOT NULL DEFAULT 'seo-friendly-id' COMMENT 'Unidecoded, lowercased and trimmed of \\W characters unique identifier for the row data_type',
   `pid` int(11) NOT NULL DEFAULT '0' COMMENT 'Parent Question, Article, Note, Book ID etc',
+  `page_id` int(11) NOT NULL DEFAULT '0' COMMENT 'page.id to which this content belongs. Default: 0 ',
   `user_id` int(11) NOT NULL COMMENT 'User that created it initially.',
-  `sorting` int(10) NOT NULL DEFAULT '0' COMMENT 'suitable for sorting articles in a book',
+  `sorting` int(10) NOT NULL DEFAULT '0' COMMENT 'For sorting chapters in a book, pages in a menu etc.',
   `data_type` varchar(32) NOT NULL DEFAULT 'note' COMMENT 'Semantic Content Types. See MYDLjE::M::Content::*.',
-  `data_format` set('text','textile','markdown','html','template') NOT NULL DEFAULT 'text',
+  `data_format` varchar(32) NOT NULL DEFAULT 'text' COMMENT 'Corresponding engine will be used to process the content before output. ie Text::Textile for textile.',
   `time_created` int(11) NOT NULL DEFAULT '0' COMMENT 'When this content was inserted',
   `tstamp` int(11) NOT NULL DEFAULT '0' COMMENT 'Last time the record was touched',
-  `title` varchar(255) NOT NULL DEFAULT '',
-  `description` varchar(255) NOT NULL DEFAULT '',
-  `keywords` varchar(255) NOT NULL DEFAULT '',
-  `tags` varchar(100) NOT NULL DEFAULT '',
-  `body` text NOT NULL,
-  `invisible` tinyint(1) NOT NULL,
-  `language` varchar(2) NOT NULL DEFAULT 'en',
-  `group_id` int(11) NOT NULL DEFAULT '1' COMMENT 'The group of this content.',
-  `protected` char(1) NOT NULL DEFAULT '',
+  `title` varchar(255) NOT NULL DEFAULT '' COMMENT 'Used in title html tag for pages or or as h1 for other data types.',
+  `description` varchar(255) NOT NULL DEFAULT '' COMMENT 'Used in description meta tag when appropriate.',
+  `keywords` varchar(255) NOT NULL DEFAULT '' COMMENT 'Used in keywords meta tag.',
+  `tags` varchar(100) NOT NULL DEFAULT '' COMMENT 'Used in tag cloud boxes. merged with keywords and added to keywords meta tag.',
+  `body` text NOT NULL COMMENT 'Main content when applicable.',
+  `language` varchar(2) NOT NULL DEFAULT 'en' COMMENT 'Language of this content. all languages when epty string',
+  `group_id` int(11) NOT NULL DEFAULT '1' COMMENT 'Group ID of the owner of this content.',
+  `permissions` char(9) NOT NULL DEFAULT 'rwxr-x---' COMMENT 'uuugggooo -Experimental permissions for the content.',
   `featured` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Show on top independently of other sorting.',
   `accepted` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Answer accepted?',
-  `bad` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Reported as inapropriate offensive etc.',
+  `bad` tinyint(2) NOT NULL DEFAULT '0' COMMENT 'Reported as inapropriate offensive etc. Higher values - very bad.',
+  `deleted` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `alias` (`alias`,`data_type`),
   KEY `pid` (`pid`),
@@ -108,8 +141,9 @@ CREATE TABLE IF NOT EXISTS `my_content` (
   KEY `tags` (`tags`),
   KEY `user_id` (`user_id`),
   KEY `data_type` (`data_type`),
-  KEY `language` (`language`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='MYDLjE content elements. Different  data_typeS may be used via views.';
+  KEY `language` (`language`),
+  KEY `page_id` (`page_id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='MYDLjE content elements. Various  data_typeS may be used.';
 
 -- </table>
 
@@ -165,8 +199,12 @@ from my_content where (data_type = 'article');
 
 -- </queries>
 --<do id="constraints">
+ALTER TABLE `my_pages`
+  ADD CONSTRAINT `my_pages_id_fk` FOREIGN KEY (`pid`) REFERENCES `my_pages` (`id`) ON UPDATE CASCADE;
 ALTER TABLE `my_content`
+  ADD CONSTRAINT `my_content_page_id_fk` FOREIGN KEY (`page_id`) REFERENCES `my_pages` (`id`) ON UPDATE CASCADE,
   ADD CONSTRAINT `my_content_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `my_users` (`id`);
+
 ALTER TABLE `my_sessions`
   ADD CONSTRAINT `my_sessions_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `my_users` (`id`) ON UPDATE CASCADE;
 ALTER TABLE `my_users`

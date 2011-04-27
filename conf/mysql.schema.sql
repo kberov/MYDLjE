@@ -142,6 +142,7 @@ CREATE TABLE IF NOT EXISTS `my_content` (
   KEY `pid` (`pid`),
   KEY `tstamp` (`tstamp`),
   KEY `tags` (`tags`),
+  KEY `permissions` (`permissions`),
   KEY `user_id` (`user_id`),
   KEY `data_type` (`data_type`),
   KEY `language` (`language`),
@@ -189,9 +190,20 @@ CREATE TABLE IF NOT EXISTS `my_users_properties` (
 --
 -- Note: from selects below are visible interdependencies
 -- 
--- TODO: make MYDLjE::M::Content wor automatically with views
+-- TODO: make MYDLjE::M::Content work automatically with views
 -- when a database suports this.
 -- EXAMPLE EDITABLE VIEWS
+--<view name="my_vsite_content">
+CREATE OR REPLACE VIEW my_vguest_content AS SELECT 
+`id`, `alias`, `pid`, `page_id`, `user_id`, `sorting`, `data_type`, `data_format`, `time_created`, `tstamp`, `title`, `description`, `keywords`, `tags`, `body`, `language`, `group_id`, `permissions`, `featured`, `accepted`, `bad`
+FROM my_content WHERE(
+  deleted = 0 AND (
+    (start = 0 OR start < UNIX_TIMESTAMP()) AND (STOP = 0 OR STOP > UNIX_TIMESTAMP())
+  )
+  AND `permissions` LIKE '%r__'
+);
+--</view>
+
 --<view name="my_varticle">
 DROP VIEW IF EXISTS  my_varticle;
 

@@ -42,7 +42,9 @@ function scripts_are_executable() {
         if (typeof(errorThrown) != 'object' && errorThrown.match('Internal')) {
           $('#system_check_div ul.wrench').append('<li>Change "' + i + '" permissions to 0755( rwxr-xr-x )' + ' and refresh this page to see the result.</li>');
         } else if (typeof(errorThrown) == 'object' && errorThrown.toString().match(/101/) && errors == 0) {
-          $('#system_check_div ul.wrench').append('<li>' + location + ' is accesed locally.<br/>' + 'You need first to move/upload the system in a directory served by an Apache server.</li>');
+          $('#system_check_div ul.wrench').append('<li>' + location + ' is accesed locally.<br/>' 
+            + 'You need first to move/upload the system in a directory served by an Apache server, '
+            + 'then access the MYDLjE root directory via HTTP protocol (WEB) - <code>http://example.com/where/is/mydlje/</code>. </li>');
         }
         errors++;
       }

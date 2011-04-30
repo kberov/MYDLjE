@@ -10,12 +10,12 @@ CREATE DATABASE IF NOT EXISTS  `mydlje` ;
 
 GRANT ALL PRIVILEGES ON  `mydlje` . * TO  'mydlje'@'localhost';
 ALTER DATABASE  `mydlje` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
--- </create_schema_and_user>
--- <do id="disable_foreign_key_checks">
+--]]></create_schema_and_user>
+-- <do id="disable_foreign_key_checks"><![CDATA[
 SET FOREIGN_KEY_CHECKS=0;
 SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
--- </do>
--- <table name="my_groups">
+--]]></do>
+-- <table name="my_groups"><![CDATA[
 DROP TABLE IF EXISTS `my_groups`;
 CREATE TABLE IF NOT EXISTS `my_groups` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -33,9 +33,9 @@ CREATE TABLE IF NOT EXISTS `my_groups` (
   KEY `created_by` (`created_by`),
   KEY `namespaces` (`namespaces`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
--- </table>
+--]]></table>
 
--- <table name="my_users">
+-- <table name="my_users"><![CDATA[
 DROP TABLE IF EXISTS `my_users`;
 CREATE TABLE IF NOT EXISTS `my_users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -60,10 +60,10 @@ CREATE TABLE IF NOT EXISTS `my_users` (
   KEY `group_id` (`group_id`),
   KEY `reg_tstamp` (`reg_tstamp`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='This table stores the users';
--- </table>
+--]]></table>
 
 
--- <table name="my_sessions">
+-- <table name="my_sessions"><![CDATA[
 DROP TABLE IF EXISTS `my_sessions`;
 CREATE TABLE IF NOT EXISTS `my_sessions` (
   `id` varchar(32) NOT NULL DEFAULT '' COMMENT 'md5_sum-med session id',
@@ -75,9 +75,9 @@ CREATE TABLE IF NOT EXISTS `my_sessions` (
   UNIQUE KEY `cid` (`cid`),
   KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Users sessions storage table';
--- </table>
+--]]></table>
 
--- <table name="my_pages">
+-- <table name="my_pages"><![CDATA[
 DROP TABLE IF EXISTS `my_pages`;
 CREATE TABLE IF NOT EXISTS `my_pages` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -106,9 +106,9 @@ CREATE TABLE IF NOT EXISTS `my_pages` (
   KEY `pid` (`pid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Pages holding various content elements';
 
--- </table>
+--]]></table>
 
--- <table name="my_content">
+-- <table name="my_content"><![CDATA[
 
 
 DROP TABLE IF EXISTS `my_content`;
@@ -150,9 +150,9 @@ CREATE TABLE IF NOT EXISTS `my_content` (
   KEY `deleted` (`deleted`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='MYDLjE content elements. Different  data_typeS may be used.';
 
--- </table>
+--]]></table>
 
--- <table name="my_users_groups">
+-- <table name="my_users_groups"><![CDATA[
 DROP TABLE IF EXISTS `my_users_groups`;
 CREATE TABLE IF NOT EXISTS `my_users_groups` (
   `uid` int(11) NOT NULL COMMENT 'User  ID',
@@ -160,9 +160,9 @@ CREATE TABLE IF NOT EXISTS `my_users_groups` (
   PRIMARY KEY (`uid`,`gid`),
   KEY `gid` (`gid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Which user to which group belongs';
--- </table>
+--]]></table>
 
--- <table name="my_properties">
+-- <table name="my_properties"><![CDATA[
 DROP TABLE IF EXISTS `my_properties`;
 CREATE TABLE IF NOT EXISTS `my_properties` (
   `property` varchar(30) NOT NULL COMMENT 'group or/and user property',
@@ -170,9 +170,9 @@ CREATE TABLE IF NOT EXISTS `my_properties` (
   `default_value` varchar(255) NOT NULL DEFAULT '' COMMENT 'Default value for this property?',
   PRIMARY KEY (`property`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Properties which can be used as permissions, capabilities or whatever business logic you put in.';
--- </table>
+--]]></table>
 
--- <table name="my_user_properties">
+-- <table name="my_user_properties"><![CDATA[
 
 DROP TABLE IF EXISTS `my_users_properties`;
 CREATE TABLE IF NOT EXISTS `my_users_properties` (
@@ -181,7 +181,7 @@ CREATE TABLE IF NOT EXISTS `my_users_properties` (
   `property_value` varchar(30) NOT NULL COMMENT 'Value interperted depending on business logic',
   PRIMARY KEY (`uid`,`property`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Users owning properties.';
--- </table>
+--]]></table>
 
 --
 -- Views which will be used instead of directly my_content
@@ -204,13 +204,13 @@ FROM my_content WHERE(
 );
 --]]></view>
 
---<view name="my_varticle">
+--<view name="my_varticle"><![CDATA[
 DROP VIEW IF EXISTS  my_varticle;
 
---</view>
+--]]></view>
 
--- </queries>
---<do id="constraints">
+--]]></queries>
+--<do id="constraints"><![CDATA[
 ALTER TABLE `my_pages`
   ADD CONSTRAINT `my_pages_id_fk` FOREIGN KEY (`pid`) REFERENCES `my_pages` (`id`) ON UPDATE CASCADE;
 ALTER TABLE `my_content`
@@ -226,7 +226,7 @@ ALTER TABLE `my_users_groups`
   ADD CONSTRAINT `my_users_groups_group_id_fk` FOREIGN KEY (`gid`) REFERENCES `my_groups` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `my_users_groups_user_id_fk` FOREIGN KEY (`uid`) REFERENCES `my_users` (`id`) ON DELETE CASCADE ;
 
---</do>
---<do id="enable_foreign_key_checks">
+--]]></do>
+--<do id="enable_foreign_key_checks"><![CDATA[
 SET FOREIGN_KEY_CHECKS=1;
---</do>
+--]]></do>

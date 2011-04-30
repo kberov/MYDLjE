@@ -158,19 +158,19 @@ main_left_navigation:
         title: Stores
         icon: cart_edit.png
         #list stores
-        route: /Ecommerce/stores
+        route: /ecommerce/stores
       -
         title: Merchants
         icon: user_suit.png
-        route: /Ecommerce/merchants
+        route: /ecommerce/merchants
       -
         title: Products
         icon: box.png
-        route: /Ecommerce/products
+        route: /ecommerce/products
       -
         title: Rules and Coupons
         icon: tag_blue_edit.png
-        route: /Ecommerce/rulescoupons
+        route: /ecommerce/rulescoupons
   -
     header: Another Plugin
     items:

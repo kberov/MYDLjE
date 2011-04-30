@@ -22,8 +22,7 @@ sub startup {
   $r->route('/hi')->to(action => 'hi', controller => 'home', id => 1);
   return unless $app->config('installed');
   my $routes_config = $app->config('routes');
-  $r->route('/loginscreen')
-  ->to($routes_config->{'/loginscreen'}{to});
+  $r->route('/loginscreen')->to($routes_config->{'/loginscreen'}{to});
   my $bridge_to = $routes_config->{'/isauthenticated'}{to};
   $r->route('/isauthenticated')->to($bridge_to);
   my $login_required_routes = $r->bridge('/')->to($bridge_to);

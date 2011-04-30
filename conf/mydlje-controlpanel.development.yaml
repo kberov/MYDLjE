@@ -35,14 +35,14 @@ plugins:
 
 test_utf8: 试验,δοκιμή,проба 
 
-#now these are hardcodded
-#routes:
-#  /loginscreen:
-#    order: 1
-#    to: 'auth#loginscreen'
-#  /isauthenticated:
-#    order: 2
-#    to: 'auth#isauthenticated'
+#now these are almost hardcodded
+routes:
+  /loginscreen:
+    order: 1
+    to: 'auth#loginscreen'
+  /isauthenticated:
+    order: 2
+    to: 'auth#isauthenticated'
       
 #almost all routes in the cpanel app require authentication
 login_required_routes:
@@ -52,9 +52,6 @@ login_required_routes:
     to:
       controller: auth
       action: logout
-  /:
-    order: 1
-    to: 'home#home'
   /:controller/:action:
     order: 11
     to: 'home#home'

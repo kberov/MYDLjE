@@ -1,0 +1,5 @@
+[%- WRAPPER ${TEMPLATE_WRAPPER} -%]
+
+test.html.tt
+
+[% END %]

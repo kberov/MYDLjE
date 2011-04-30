@@ -1,0 +1,5 @@
+[% WRAPPER ${TEMPLATE_WRAPPER} %]
+<!-- start [% action %] -->
+[% template.name %]
+<!-- end [%+ action +%] -->
+[% END %]

@@ -1058,6 +1058,8 @@ Randal Schwartz
 
 Robert Hicks
 
+Robin Lee
+
 Ryan Jendoubi
 
 Sascha Kiefer
@@ -1071,6 +1073,8 @@ Shu Cho
 Stanis Trendelenburg
 
 Tatsuhiko Miyagawa
+
+Terrence Brannon
 
 The Perl Foundation
 

@@ -116,8 +116,8 @@ There is also a helper command to generate a small example application.
 
 =head2 Commands
 
-All the normal L<Mojolicious> command options are available from the command
-line.
+All the normal L<Mojolicious command options|Mojolicious::Commands> are
+available from the command line.
 Note that CGI, FastCGI and PSGI environments can usually be auto detected and
 will just work without commands.
 
@@ -715,15 +715,12 @@ Static files will be automatically served from the C<DATA> section
 
 Testing your application is as easy as creating a C<t> directory and filling
 it with normal Perl unit tests.
-Some plugins depend on the actual script name, so a test file for the
-application C<myapp.pl> should be named C<t/myapp.t>.
 
   use Test::More tests => 3;
   use Test::Mojo;
 
   use FindBin;
-  $ENV{MOJO_HOME} = "$FindBin::Bin/../";
-  require "$ENV{MOJO_HOME}/myapp.pl";
+  require "$FindBin::Bin/../myapp.pl";
 
   my $t = Test::Mojo->new;
   $t->get_ok('/')->status_is(200)->content_like(qr/Funky!/);

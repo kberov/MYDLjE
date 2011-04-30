@@ -24,7 +24,7 @@ use constant SHA1 => eval 'use Digest::SHA (); 1';
 
 has handshake => sub { Mojo::Transaction::HTTP->new };
 has [qw/masked on_message/];
-has max_websocket_size => sub { $ENV{MOJO_MAX_WEBSOCKET_SIZE} || 5242880 };
+has max_websocket_size => sub { $ENV{MOJO_MAX_WEBSOCKET_SIZE} || 262144 };
 
 sub client_challenge {
   my $self = shift;
@@ -152,11 +152,13 @@ sub server_read {
       next;
     }
 
-    # Append
+    # Append chunk and check message size
     $self->{_message} .= $frame->[2];
+    $self->finish and last
+      if length $self->{_message} > $self->max_websocket_size;
 
-    # Continuation
-    next unless $op;
+    # No FIN bit (Continuation)
+    next unless $frame->[0];
 
     # Callback
     my $message = $self->{_message};
@@ -165,9 +167,6 @@ sub server_read {
     return $self->finish unless my $cb = $self->on_message;
     $self->$cb($message);
   }
-
-  # Check message size
-  $self->finish if length $self->{_message} > $self->max_websocket_size;
 
   # Resume
   $self->on_resume->($self);
@@ -214,6 +213,7 @@ sub _build_frame {
 
   # Length
   my $len = length $payload;
+  $len -= 4 if $masked;
 
   # Empty prefix
   my $prefix = 0;
@@ -310,11 +310,13 @@ sub _parse_frame {
   }
 
   # Payload
+  my $masked = vec($head, 1, 8) & 0b10000000;
+  $len += 4 if $masked;
   return unless length $buffer >= $len;
   my $payload = $len ? substr($buffer, 0, $len, '') : '';
 
   # Unmask payload
-  if (vec($head, 1, 8) & 0b10000000) {
+  if ($masked) {
     warn "UNMASKING PAYLOAD\n" if DEBUG;
     $payload = _xor_mask($payload, substr($payload, 0, 4, ''));
   }
@@ -394,7 +396,7 @@ Mask outgoing frames with XOR cipher and a random 32bit key.
   my $size = $ws->max_websocket_size;
   $ws      = $ws->max_websocket_size(1024);
 
-Maximum WebSocket message size in bytes, defaults to C<5242880>.
+Maximum WebSocket message size in bytes, defaults to C<262144>.
 
 =head2 C<on_message>
 

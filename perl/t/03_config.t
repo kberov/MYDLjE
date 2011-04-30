@@ -39,11 +39,8 @@ ok($config->stash('one') == 1, 'config stash is getting');
 
 #print Data::Dumper::Dumper($config->stash);
 #exit;
-ok(
-  $config->stash('login_required_routes')->{'/home'}{to}{controller} eq
-    'Home',
-  'stash is merged ok'
-);
+ok($config->stash('login_required_routes')->{'/'}{to} eq 'home#home',
+  'stash is merged ok');
 ok($config->stash('routes')->{'/:action'}{to}{controller} eq 'C',
   'stash is merged really ok');
 

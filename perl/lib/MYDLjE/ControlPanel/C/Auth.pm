@@ -15,10 +15,7 @@ sub logout {
 sub loginscreen {
   my $c = shift;
   if ($c->req->method eq 'GET') {
-    $c->render(
-
-      #template => 'Auth/loginscreen'
-    );
+    $c->render();
   }
   elsif ($c->req->method eq 'POST') {
     if ($c->_validate_and_login()) {
@@ -26,10 +23,7 @@ sub loginscreen {
       return 1;
     }
     else {
-      $c->render(
-
-        #template => 'loginscreen'
-      );
+      $c->render();
       return;
     }
   }

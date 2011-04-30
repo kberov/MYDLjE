@@ -35,16 +35,14 @@ plugins:
 
 test_utf8: 试验,δοκιμή,проба 
 
-routes:
-  /loginscreen:
-    to:
-      controller: Auth
-      action: loginscreen
-  /isauthenticated:
-    
-    to:
-      controller: Auth
-      action: isauthenticated
+#now these are hardcodded
+#routes:
+#  /loginscreen:
+#    order: 1
+#    to: 'auth#loginscreen'
+#  /isauthenticated:
+#    order: 2
+#    to: 'auth#isauthenticated'
       
 #almost all routes in the cpanel app require authentication
 login_required_routes:
@@ -52,29 +50,21 @@ login_required_routes:
     via:
       - get
     to:
-      controller: Auth
+      controller: auth
       action: logout
   /:
-    order: 100001
-    to:
-      controller: Home
-      action: home
-  /home:
-    order: 100001
-    to:
-      controller: Home
-      action: home
-  /content/:action:
-    order: 10
-    to:
-      controller: Content
+    order: 1
+    to: 'home#home'
+  /:controller/:action:
+    order: 11
+    to: 'home#home'
+  /:controller/:action/:id:
+    order: 111
+    to: 
+      controller: content
       action: pages
-  /:controller/:action: 
-    order: 1000
-    namespace: MYDLjE::ControlPanel::C
-  /:controller/:action/:id: 
-    order: 10000
-    namespace: MYDLjE::ControlPanel::C
+      id: '0'
+
 #We describe here the items in main_left_navigation.html.tt
 #All plugins must/should provide their items if they want to be present in this menu.
 #All menu items will be output as c.l('Item'). So menu items can be translated.
@@ -82,10 +72,25 @@ login_required_routes:
 #"routes" are routes and are expected to have controllers wich will handle them.
 main_left_navigation:
   -
+    header: Site
+    items:
+      -
+        title: Pages
+        icon: layout.png
+        route: /site/pages
+      -
+        title: Templates
+        icon: layout_code.png
+        route: /site/templates
+      -
+        title: I18N&L10N
+        icon: text_letter_omega.png
+        route: /site/i18nl10n
+  -
     header: Content
     items:
       -
-        title: Pages 
+        title: Pages' Properties 
         icon: page.png
         route: /content/pages
       -
@@ -104,12 +109,8 @@ main_left_navigation:
         title: Notes
         icon: note.png
         route: /content/notes
-      -
-        title: I18N&L10N
-        icon: text_letter_omega.png
-        route: /content/i18nl10n  
   -
-    header: Users
+    header: Accounts
     items:
       -
         title: Users
@@ -120,39 +121,37 @@ main_left_navigation:
         icon: group.png
         route: /accounts/groups
       -
-        title: Properties
-        icon: brick.png
-        route: /accounts/properties
+        title: Abilities
+        icon: group_gear.png
+        route: /accounts/abilities
   -
     header: System
     items:
       -
         title: Settings
         icon: wrench.png
-        route: /sytem/settings
+        route: /system/settings
       -
         title: Cache
         icon: database_refresh.png
-        route: /sytem/cache_management
+        route: /system/cache_management
       -
         title: Plugins
         icon: plugin.png
-        route: /sytem/plugins
+        route: /system/plugins
       -
         title: Log
         icon: page_error.png
-        route: /sytem/log
+        route: /system/log
       -
         title: File Management
         icon: folder_page.png
-        route: /sytem/file_management
-  -
-    header: Personal
-    items:
+        route: /system/file_management
       -
-        title: Preferences
+        title: Personal Preferences
         icon: wrench.png
-        route: /personal/preferences
+        route: /system/preferences
+
 
 #TODO: Implement eCommerce as a MYDLjE::Plugin::Ecommerce
   -
@@ -162,19 +161,19 @@ main_left_navigation:
         title: Stores
         icon: cart_edit.png
         #list stores
-        route: /ecommerce/stores
+        route: /Ecommerce/stores
       -
         title: Merchants
         icon: user_suit.png
-        route: /ecommerce/merchants
+        route: /Ecommerce/merchants
       -
         title: Products
         icon: box.png
-        route: /ecommerce/products
+        route: /Ecommerce/products
       -
         title: Rules and Coupons
         icon: tag_blue_edit.png
-        route: /ecommerce/rulescoupons
+        route: /Ecommerce/rulescoupons
   -
     header: Another Plugin
     items:

@@ -36,5 +36,13 @@ for my $app (@apps) {
   $i++;
   $t->get_ok('/hisession')->status_is(200)
     ->content_like(qr/\:$i/, 'msession is: ' . $i);
+
 }
+
+my $app = 'MYDLjE::ControlPanel';
+my $hi =
+  "Controller home from MYDLjE::ControlPanel::C::Home with action hi and id 1 says Hi";
+
+my $t = Test::Mojo->new(app => $app);
+$t->get_ok('/hi')->status_is(200)->content_like(qr/$hi!/, $hi . '!');
 

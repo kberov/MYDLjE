@@ -1,5 +1,6 @@
 ---
 #site_name: My site
+jq_ui_theme: ui-lightness
 
 routes: 
   /hi:

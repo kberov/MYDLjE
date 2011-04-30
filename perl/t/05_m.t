@@ -19,16 +19,22 @@ BEGIN {
 
 use lib ("$ENV{MOJO_HOME}/perl/lib", "$ENV{MOJO_HOME}/perl/site/lib");
 
-use Test::More tests => 73;
+use Test::More;
 use MYDLjE::Config;
 use MYDLjE::Plugin::DBIx;
 use MYDLjE::M::Content;
 
-my $config =
-  MYDLjE::Config->new(
-  files => ["$ENV{MOJO_HOME}/conf/mydlje.$ENV{MOJO_MODE}.yaml"]);
+my $config = MYDLjE::Config->new(
+  files => [
+    "$ENV{MOJO_HOME}/conf/mydlje.$ENV{MOJO_MODE}.yaml",
+    "$ENV{MOJO_HOME}/conf/local.mydlje.$ENV{MOJO_MODE}.yaml"
+  ]
+);
 if (not $config->stash('installed')) {
   plan skip_all => 'System is not installed. Will not test MYDLjE::M.';
+}
+else {
+  plan tests => 73;
 }
 isa_ok('MYDLjE::M::Content', 'MYDLjE::M');
 

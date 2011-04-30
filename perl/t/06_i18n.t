@@ -22,9 +22,12 @@ use MYDLjE::Config;
 my $config = MYDLjE::Config->new(
   files => [
     $ENV{MOJO_HOME} . '/conf/mydlje.development.yaml',
-    $ENV{MOJO_HOME} . '/conf/mydlje-controlpanel.development.yaml'
+    $ENV{MOJO_HOME} . '/conf/local.mydlje.development.yaml',
+    $ENV{MOJO_HOME} . '/conf/mydlje-controlpanel.development.yaml',
+    $ENV{MOJO_HOME} . '/conf/local.mydlje-controlpanel.development.yaml'
   ]
 );
+
 if (not $config->stash('installed')) {
   plan skip_all => 'System is not installed. Will not test i18n.';
 }

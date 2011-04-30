@@ -48,17 +48,14 @@ sub read_config_files {
     push @$args, $APP;
 
     #$self->log->debug('read_config @$args: ' . "@$args");
+    my $new_args = [];
     for my $i (0 .. @$args - 1) {
       my $filename = $args->[$i];
       $filename =~ s|::|-|gx;
-      $args->[$i] = "$HOME/conf/" . lc($filename) . ".$MODE.yaml";
+      push @$new_args, "$HOME/conf/" . lc($filename) . ".$MODE.yaml";
+      push @$new_args, "$HOME/conf/local." . lc($filename) . ".$MODE.yaml";
     }
-    if ($args->[-1] !~ /local\./x) {
-      my $filename = $APP;
-      $filename =~ s|::|-|gx;
-      push @$args, "$HOME/conf/local." . lc($filename) . ".$MODE.yaml";
-    }
-    $self->{files} = $args;
+    $self->{files} = $args = $new_args;
   }    # end if (!$self->{files})
 
   foreach my $filename (@$args) {

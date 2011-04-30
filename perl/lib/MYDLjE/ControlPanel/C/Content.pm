@@ -10,7 +10,7 @@ sub list_content {
   chop($class);
   $c->stash('data_type', $class);
   $c->get_list($params, 'MYDLjE::M::Content::' . ucfirst($class));
-  $c->render(template => 'Content/list');
+  $c->render(template => 'content/list');
   return;
 }
 sub pages     { goto &list_content }
@@ -52,7 +52,11 @@ sub edit {
   if ($c->req->method eq 'POST') {
     $c->_edit_post();
   }
-  $c->render(template => 'Content/edit');
+  else {
+    $c->stash(form => $data_object->data);
+
+  }
+  $c->render();
   return;
 }
 
@@ -60,7 +64,8 @@ sub edit {
 sub _edit_post {
   my ($c) = @_;
   my $app = $c->app;
-  $app->log->debug($c->dumper($c->req->body_params->to_hash));
+
+  #$app->log->debug($c->dumper($c->req->body_params->to_hash));
 
   #validate
   #TODO: Implement FIELDS_VALIDATION like in MYDLjE::M
@@ -68,32 +73,10 @@ sub _edit_post {
   my $v              = $c->create_validator;
   $v->field('title')->required(1)->inflate(
     sub {
-
-      #strip any ML
-      my $value = Mojo::DOM->new->parse(shift->value)->text;
-      return b($value)->html_escape;
+      Mojo::DOM->new->parse(shift->value)->text;
     }
   )->length(3, 255);
-  $v->field('keywords')->inflate(
-    sub {
-      my $filed = shift;
-      my $value = $filed->value;
-      $value =~ s/[^\p{IsAlnum}\,\s]//gxi;
-      my @words = split /[\,\s]/xi, $value;
-      $value = join ", ", @words;
-      return $value;
-    }
-  );
-  $v->field('description')->inflate(
-    sub {
-      my $filed = shift;
-      my $value = $filed->value;
-
-      #remove everything strange
-      $value =~ s/[^\p{IsAlnum}\,\s\-\!\.\?\(\);]//gxi;
-      return $value;
-    }
-  );
+  $v->field('description')->length(0, 255);
   $v->field('data_type')->in(@{$fields_ui_data->{data_type}});
   $v->field('data_format')->in(@{$fields_ui_data->{data_format}});
   $v->field('language')->in(@{$app->config('languages')});
@@ -114,10 +97,14 @@ sub _edit_post {
   #new content needs alias
   if ($form->{id} == 0) {
     $data_object->alias();    #internally setting alias
+    $data_object->time_created;
   }
+
   my $user = $c->msession->user;
-  $data_object->user_id($user->id)->group_id($user->group_id);
+  $data_object->user_id($user->id)->group_id($user->group_id)->tstamp;
   $data_object->save();
+  $form = {%$form, %{$data_object->data}};
+  $c->stash(id => $data_object->id);
   return;
 }
 
@@ -151,14 +138,16 @@ sub get_list {
 #TODO: implement "LIMIT" just for supported databases. See SQL::Abstract::Limit;
   my ($sql, @bind) =
     $c->dbix->abstract->select($class->TABLE, $class->COLUMNS, $where,
-    {-desc => 'id'});
+    [{-asc => 'sorting'}, {-desc => 'id'}]);
   $sql
     .= " LIMIT "
     . ($params->{offset} ? " $params->{offset}, " : '')
     . ($params->{rows} || 50);
 
-  #$c->app->log->debug("\n\$sql: $sql\n" . "@bind\n\n");
-  $c->stash('list_data', $c->dbix->query($sql, @bind)->hashes);
+  $c->app->log->debug("\n\$sql: $sql\n" . "@bind\n\n");
+  $c->stash('list_data' => [$c->dbix->query($sql, @bind)->hashes]);
+  $c->app->log->debug($c->dumper($c->stash('list_data')));
+
   return;
 }
 1;

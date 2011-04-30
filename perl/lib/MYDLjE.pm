@@ -145,7 +145,7 @@ sub load_routes {
     if ($config_routes->{$route}{via}) {
       $way->via(@{$config_routes->{$route}{via}});
     }
-    $way->to(%{$config_routes->{$route}{to}});
+    $way->to($config_routes->{$route}{to});
   }
   return;
 }

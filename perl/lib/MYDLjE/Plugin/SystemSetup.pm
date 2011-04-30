@@ -116,10 +116,11 @@ sub system_config {
     $c->render(json => $c->stash);
     return;
   }
-  _save_config($c, $validator);
   _init_database($c);
   _create_admin_user($c, $validator->values);
   _replace_index_xhtml($c);
+  _save_config($c, $validator);
+
   $c->render(json => $c->stash);
   return;
 }
@@ -134,7 +135,7 @@ sub _save_config {
     MYDLjE::Config->new(files =>
       [$c->app->home . '/conf/' . lc("$ENV{MOJO_APP}.$ENV{MOJO_MODE}.yaml")]);
   $new_config->stash('installed', 1);
-  delete $config->{plugins}{system_setup};
+  $config->{plugins}{system_setup} = 0;
   $new_config->stash('plugins', $config->{plugins});
 
   foreach my $field_name (keys %{$validator->values}) {
@@ -148,7 +149,7 @@ sub _save_config {
   $new_config->stash('routes',    $config->{routes});
   $new_config->stash('secret',    $validator->values->{secret});
 
-  $new_config->write_config_file(lc(ref($c->app)));
+  $new_config->write_config_file();
 
   #replace config
   $config = {};
@@ -177,6 +178,8 @@ sub _init_database {
   for my $e ($dom->find('table[name],view[name]')->each) {
     my ($drop, $create) = split(/;/x, $e->text);
     $log->debug("do:table/view[name]" . $e->attrs->{name});
+    $log->debug("do:table/view[name] text" . $e->text);
+
     $c->dbix->dbh->do($drop);
     $c->dbix->dbh->do($create);
   }

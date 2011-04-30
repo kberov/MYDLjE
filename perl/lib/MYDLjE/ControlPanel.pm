@@ -19,17 +19,19 @@ sub startup {
   # Routes
   my $r = $app->routes;
   $r->namespace($app->controller_class);
-  $r->route('/hi')->to(action => 'hi', controller => 'Home');
+  $r->route('/hi')->to(action => 'hi', controller => 'home', id => 1);
   return unless $app->config('installed');
+  $r->route('/loginscreen')
+    ->to(action => 'loginscreen', controller => 'auth');
   my $bridge_to = $app->config('routes')->{'/isauthenticated'}->{to};
-  my $login_required_routes = $r->bridge('/')->to(%$bridge_to);
-  $login_required_routes->namespace($app->controller_class);
+  $r->route('/isauthenticated')->to($bridge_to);
+  my $login_required_routes = $r->bridge('/')->to($bridge_to);
 
   #Login Required Routes (bridged trough login)
   $app->load_routes($login_required_routes,
     $app->config('login_required_routes'));
 
-  $app->load_routes();
+  #$app->load_routes();
 
   $app->renderer->root($app->home . '/' . $app->config('templates_root'))
     if $app->config('templates_root');

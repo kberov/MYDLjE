@@ -34,7 +34,7 @@ if (not $config->stash('installed')) {
   plan skip_all => 'System is not installed. Will not test MYDLjE::M.';
 }
 else {
-  plan tests => 73;
+  plan tests => 79;
 }
 isa_ok('MYDLjE::M::Content', 'MYDLjE::M');
 
@@ -130,10 +130,10 @@ is($answer->user_id($note->user_id)->user_id,
 $answer->save();
 
 require MYDLjE::M::Content::Page;
-my $page = MYDLjE::M::Content::Page->new();
-is($page->title('Христос възкръсна!')->alias,
+my $page_content = MYDLjE::M::Content::Page->new();
+is($page_content->title('Христос възкръсна!')->alias,
   'xristos-vazkrasna', 'alias is unidecoded ok');
-is($page->language('bg')->language, 'bg', 'language bg ok');
+is($page_content->language('bg')->language, 'bg', 'language bg ok');
 
 #Use Custom data_type
 my $my_custom = MYDLjE::M::Content->new(alias => $alias, user_id => 2);
@@ -335,4 +335,19 @@ foreach my $u (@added_users) {
 }
 
 #=cut
+
+# test MYDLjE::M::Page
+require MYDLjE::M::Page;
+
+my $page = MYDLjE::M::Page->new(
+  pid       => 0,
+  alias     => 'home' . $time,
+  page_type => 'root'
+);
+is($page->pid,                                    0);
+is($page->alias,                                  'home' . $time);
+is($page->page_type,                              'root');
+is($page->user_id(1)->user_id,                    1);
+is($page->group_id(1)->group_id,                  1);
+is($page->permissions('-rwxrw-r-x')->permissions, '-rwxrw-r-x');
 

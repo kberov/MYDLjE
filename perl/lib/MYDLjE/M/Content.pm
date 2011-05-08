@@ -19,8 +19,6 @@ has COLUMNS => sub {
 
 has WHERE => sub { {deleted => 0} };
 
-my $id_constraints = {constraints => [{regexp => qr/^\d+$/x},]};
-
 sub _no_markup_inflate {
   my $filed = shift;
   my $value = $filed->value || '';
@@ -55,15 +53,15 @@ sub _language_inflate {
 }
 
 has FIELDS_VALIDATION => sub {
+  my $self = shift;
   return {
-    id      => {required => 0, %$id_constraints},
-    pid     => {required => 0, %$id_constraints},
-    user_id => {required => 1, %$id_constraints},
-    sorting => {required => 0, %$id_constraints},
-    alias   => {
-      required    => 1,
-      constraints => [{regexp => qr/^[\-_a-zA-Z0-9]{3,255}$/x},]
-    },
+    $self->FIELD_DEF('id'),
+    $self->FIELD_DEF('pid'),
+    $self->FIELD_DEF('permissions'),
+    $self->FIELD_DEF('user_id'),
+    $self->FIELD_DEF('group_id'),
+    $self->FIELD_DEF('sorting'),
+    $self->FIELD_DEF('alias'),
     title       => {required => 0, inflate => \&_no_markup_inflate},
     tags        => {required => 0, inflate => \&_tags_inflate},
     keywords    => {required => 0, inflate => \&_tags_inflate},

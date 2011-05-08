@@ -1,38 +1,51 @@
 package MYDLjE::M::Page;
 use MYDLjE::Base 'MYDLjE::M';
 use Mojo::Util qw();
+use MYDLjE::M::Content;
 
 has TABLE => 'my_pages';
 
 has COLUMNS => sub {
   [ qw(
-      id
-      pid
-      alias
-      page_type
-      sorting
-      template
-      cache
-      expiry
-      permissions
-      user_id
-      group_id
-      tstamp
-      start
-      stop
-      published
-      hidden
-      deleted
-      changed_by
+      id pid alias page_type sorting template
+      cache expiry permissions user_id group_id
+      tstamp start stop published hidden deleted changed_by
       )
   ];
 };
+
+my $id_regexp = {regexp => qr/^\d+$/x};
+
 has FIELDS_VALIDATION => sub {
-  {
+  my $self  = shift;
+  my %alias = $self->FIELD_DEF('alias32');
+  $alias{alias} = $alias{alias32};
+  delete $alias{alias32};
+  return {
+    $self->FIELD_DEF('id'),
+    $self->FIELD_DEF('pid'),
+    %alias,
+    page_type => {
+      required    => 1,
+      constraints => [{in => ['regular', 'root', 'folder']},]
+    },
+    $self->FIELD_DEF('sorting'),
+    cache  => {regexp => qr/^[01]$/x,},
+    expiry => {regexp => qr/^\d{1,6}$/x,},
+    $self->FIELD_DEF('permissions'),
+    $self->FIELD_DEF('user_id'),
+    $self->FIELD_DEF('group_id'),
+    published => {regexp => qr/^[012]$/x},
+    $self->FIELD_DEF('cache'),
+    $self->FIELD_DEF('deleted'),
+    $self->FIELD_DEF('hidden'),
+    $self->FIELD_DEF('changed_by'),
   };
 };
 
-sub tstamp { return $_[0]->{data}{tstamp} = time; }
+*tstamp = \&MYDLjE::M::Content::tstamp;
+*start  = \&MYDLjE::M::Content::start;
+*stop   = \&MYDLjE::M::Content::stop;
 
 sub add {
   my ($class, $args) = MYDLjE::M::get_obj_args(@_);
@@ -107,6 +120,7 @@ In MYDLjE there are  several types of pages:
         a list of items possibly stored in other tables.
      "regular" - regular pages are used to construct menus in the site 
         and to display content or front-end modules/widgets implemented as TT/TA Plugins
+     "root" - a page representing the root of a site
 
 Other types of pages can be added easily and used depending on the business logic you define.
 
@@ -129,7 +143,7 @@ After how many seconds this page will expire when C<cache=1>? Default: 86400 = 2
 
 =head2 permissions
 
-This field represents permisiions for the curent page very much like permissions 
+This field represents permissions for the curent page very much like permissions 
 of a file. The format is "duuugggoo" where first "d" or "-" is for 
 "Is this page a container for other items?" it is set for the first time when a child record 
 from some table is attached to this page. "u" represents permissions for the owner of the page.

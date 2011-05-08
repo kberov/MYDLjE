@@ -13,7 +13,10 @@ has COLUMNS => sub {
   ];
 };
 has FIELDS_VALIDATION => sub {
-  { group_id => {required => 1, regexp => qr/^\d+$/x},
+  my $self = shift;
+  return {
+    $self->FIELD_DEF('id'),
+    $self->FIELD_DEF('group_id'),
     login_name =>
       {required => 1, constraints => [{regexp => qr/^\p{IsAlnum}{4,100}$/x}]},
     login_password =>
@@ -23,7 +26,7 @@ has FIELDS_VALIDATION => sub {
     last_name  => {constraints => [{length => [3, 100]}]},
     description => {required => 0, constraints => [{length => [0, 255]},]},
     created_by  => {required => 0, regexp      => qr/^\d+$/x},
-    changed_by  => {required => 0, regexp      => qr/^\d+$/x},
+    $self->FIELD_DEF('changed_by'),
     disabled => {required => 0, regexp => qr/^[01]$/x},
     start    => {required => 0, regexp => qr/^\d+$/x},
     stop     => {required => 0, regexp => qr/^\d+$/x},

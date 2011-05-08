@@ -118,7 +118,7 @@ sub make_field_attrs {
     $code .= <<"SUB";
 sub $class\::$column {
   my (\$self,\$value) = \@_;
-  if(\$value){ #setting value
+  if(defined \$value){ #setting value
     \$self->{data}{$column} = \$self->validate_field($column=>\$value);
     #make it chainable
     return \$self;
@@ -142,7 +142,7 @@ SUB
 #validates $value for $field against $self->FIELDS_VALIDATION->{$field} rules.
 sub validate_field {
   my ($self, $field, $value) = @_;
-  my $rules = $self->FIELDS_VALIDATION->{$field};
+  my $rules = \%{$self->FIELDS_VALIDATION->{$field}};    #copy?!
 
   return $value unless $rules;    #no validation rules defined
 
@@ -166,6 +166,45 @@ sub validate_field {
   }
   return $self->validator->values->{$field};
 
+}
+
+#Common field definitions to be used accross all subclasses
+my $id_regexp   = {regexp => qr/^\d+$/x};
+my $bool_regexp = {regexp => qr/^[01]$/x};
+my $FIELD_DEFS  = {
+  id      => {required => 0, %$id_regexp},
+  pid     => {required => 1, %$id_regexp},
+  alias32 => {required => 1, regexp => qr/^[\-_a-zA-Z0-9]{3,32}$/x,},
+  alias   => {required => 1, regexp => qr/^[\-_a-zA-Z0-9]{3,255}$/x,},
+  sorting => {
+    required => 1,
+    regexp   => qr/^\d+$/x,
+    inflate  => sub { return ($_[0]->value || time()) },
+  },
+  permissions => {
+    required => 0,
+    regexp   => qr/^
+      [d\-]           # is this a directory - does it actually contain any children ?
+      [r\-][w\-][x\-] # owner's permissions - (r)ead,(w)rite,e(x)ecute
+      [r\-][w\-][x\-] # group's permissions - (r)ead,(w)rite,e(x)ecute
+      [r\-][w\-][x\-] # other's permissions - (r)ead,(w)rite,e(x)ecute
+      $/x,
+  },
+  user_id    => {required => 1, %$id_regexp},
+  group_id   => {required => 1, %$id_regexp},
+  cache      => {required => 0, %$bool_regexp},
+  deleted    => {required => 0, %$bool_regexp},
+  hidden     => {required => 0, %$bool_regexp},
+  changed_by => {required => 1, %$id_regexp},
+};
+
+sub FIELD_DEF {
+  my ($self, $key) = @_;
+  if ($FIELD_DEFS->{$key}) {
+    return ($key => $FIELD_DEFS->{$key});
+  }
+  Carp::cluck("No field definition for: [$key].");
+  return ();
 }
 
 #TODO:Utility function used for passing custom SQL in Model Classes.
@@ -360,6 +399,46 @@ You I<could> overrride it in your specific class if you want to do something spe
 
 Validates C<$value> for $field against C<$self-E<gt>FIELDS_VALIDATION-E<gt>{$field}> rules.
 Called each time a field is set either by the specific field setter or by L</data>.
+
+=head2 FIELD_DEF 
+
+Returns a field definition of a commonly used field acrross many tables as 
+a hash with only one key.
+
+There are several fieldnames and types that are commonly used in database tables.
+This method returns the definition of just one field by given field name.
+This is particulary useful when you define a class to represent a row in a table and you 
+have to define in L</FIELDS_VALIDATION> a column which is identical to another column already defined in another class.
+
+Currently predefined fields are:
+
+  id      => {required => 0, %$id_regexp},
+  pid     => {required => 1, %$id_regexp},
+  alias32 => {required => 1, regexp => qr/^[\-_a-zA-Z0-9]{3,32}$/x,},
+  alias   => {required => 1, regexp => qr/^[\-_a-zA-Z0-9]{3,255}$/x,},
+  sorting => {
+    required => 1,
+    regexp   => qr/^\d+$/x,
+    inflate  => sub { return ($_[0]->value || time()) },
+  },
+  permissions => {
+    required => 0,
+    regexp   => qr/^
+      [d\-]           # is this a directory - does it actually contain any children ?
+      [r\-][w\-][x\-] # owner's permissions - (r)ead,(w)rite,e(x)ecute
+      [r\-][w\-][x\-] # group's permissions - (r)ead,(w)rite,e(x)ecute
+      [r\-][w\-][x\-] # other's permissions - (r)ead,(w)rite,e(x)ecute
+      $/x,
+  },
+  user_id    => {required => 1, %$id_regexp},
+  group_id   => {required => 1, %$id_regexp},
+  cache      => {required => 0, %$bool_regexp},
+  deleted    => {required => 0, %$bool_regexp},
+  hidden     => {required => 0, %$bool_regexp},
+  changed_by => {required => 1, %$id_regexp},
+
+
+See the source of MYDLjE::M::Content and MYDLjE::M::Page for examples.
 
 
 =head1 SEE ALSO

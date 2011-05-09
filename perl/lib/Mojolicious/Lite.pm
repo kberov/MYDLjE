@@ -1,6 +1,9 @@
 package Mojolicious::Lite;
 use Mojo::Base 'Mojolicious';
 
+# Lite apps are modern!
+require feature if $] >= 5.010;
+
 # "Since when is the Internet all about robbing people of their privacy?
 #  August 6, 1991."
 use File::Basename 'dirname';
@@ -14,6 +17,9 @@ sub import {
   # Lite apps are strict!
   strict->import;
   warnings->import;
+
+  # Lite apps are modern!
+  feature->import(':5.10') if $] >= 5.010;
 
   # Executable
   $ENV{MOJO_EXE} ||= (caller)[1];
@@ -44,9 +50,10 @@ sub import {
 
   # Export
   *{"${caller}::new"} = *{"${caller}::app"} = sub {$app};
-  *{"${caller}::any"} = sub { $routes->any(@_) };
-  *{"${caller}::del"} = sub { $routes->del(@_) };
-  *{"${caller}::get"} = sub { $routes->get(@_) };
+  *{"${caller}::any"}  = sub { $routes->any(@_) };
+  *{"${caller}::del"}  = sub { $routes->del(@_) };
+  *{"${caller}::get"}  = sub { $routes->get(@_) };
+  *{"${caller}::hook"} = sub { $app->hook(@_) };
   *{"${caller}::under"} = *{"${caller}::ladder"} =
     sub { $routes = $root->under(@_) };
   *{"${caller}::plugin"}    = sub { $app->plugin(@_) };
@@ -821,6 +828,14 @@ See also the tutorial above for more argument variations.
 Generate route matching only C<GET> requests.
 See also the tutorial above for more argument variations.
 
+=head2 C<hook>
+
+  hook after_dispatch => sub {...};
+
+Add hooks to named events, see L<Mojolicious> for a list of all available
+events.
+Note that this function is EXPERIMENTAL and might change without warning!
+
 =head2 C<plugin>
 
   plugin 'something';
@@ -830,7 +845,7 @@ See also the tutorial above for more argument variations.
   plugin 'Foo::Bar', foo => 23;
   plugin 'Foo::Bar', {foo => 23};
 
-Load a plugin.
+Load plugins, see L<Mojolicious> for a list of all included example plugins.
 
 =head2 C<post>
 

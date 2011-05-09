@@ -32,7 +32,7 @@ has handle => sub {
   my $fh;
   until (sysopen $fh, $name, O_CREAT | O_EXCL | O_RDWR) {
     croak qq/Can't open file "$name": $!/ if $file || $! != $!{EEXIST};
-    $name = $base . md5_sum(time . $$ . rand 999999999);
+    $name = "$base." . md5_sum(time . $$ . rand 999999999);
   }
   $file = $name;
   $self->path($file);
@@ -55,8 +55,11 @@ sub DESTROY {
   my $self = shift;
 
   # Cleanup
-  my $file = $self->path;
-  unlink $file if $self->cleanup && -f $file;
+  my $path = $self->path;
+  if ($self->cleanup && -f $path) {
+    close $self->handle;
+    unlink $path;
+  }
 }
 
 sub add_chunk {
@@ -65,7 +68,7 @@ sub add_chunk {
   # Seek to end
   $self->handle->sysseek(0, SEEK_END);
 
-  # Store
+  # Append to file
   $chunk = '' unless defined $chunk;
   utf8::encode $chunk if utf8::is_utf8 $chunk;
   $self->handle->syswrite($chunk, length $chunk);

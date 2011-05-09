@@ -115,7 +115,7 @@ sub _build_tx {
   my ($self, $id, $c) = @_;
 
   # Build transaction
-  my $tx = $self->on_build_tx->($self);
+  my $tx = $self->on_transaction->($self);
   $tx->connection($id);
 
   # Identify
@@ -135,12 +135,12 @@ sub _build_tx {
 
   # Handler callback
   weaken $self;
-  $tx->on_handler(
+  $tx->on_request(
     sub {
       my $tx = shift;
 
       # Handler
-      $self->on_handler->($self, $tx);
+      $self->on_request->($self, $tx);
 
       # Resume callback
       $tx->on_resume(sub { $self->_write($id) });
@@ -158,6 +158,11 @@ sub _build_tx {
   $tx->kept_alive(1) if $c->{requests} > 1;
 
   return $tx;
+}
+
+sub _close {
+  my ($self, $loop, $id) = @_;
+  $self->_drop($id);
 }
 
 sub _drop {
@@ -229,11 +234,6 @@ sub _finish {
   }
 }
 
-sub _hup {
-  my ($self, $loop, $id) = @_;
-  $self->_drop($id);
-}
-
 sub _listen {
   my ($self, $listen) = @_;
   return unless $listen;
@@ -272,8 +272,8 @@ sub _listen {
     # Keep alive timeout
     $loop->connection_timeout($id => $self->keep_alive_timeout);
   };
+  $options->{on_close} = sub { $self->_close(@_) };
   $options->{on_error} = sub { $self->_error(@_) };
-  $options->{on_hup}   = sub { $self->_hup(@_) };
   $options->{on_read}  = sub { $self->_read(@_) };
 
   # Listen
@@ -379,7 +379,7 @@ Mojo::Server::Daemon - Async IO HTTP 1.1 And WebSocket Server
   use Mojo::Server::Daemon;
 
   my $daemon = Mojo::Server::Daemon->new(listen => ['http://*:8080']);
-  $daemon->on_handler(sub {
+  $daemon->on_request(sub {
     my ($self, $tx) = @_;
 
     # Request
@@ -438,7 +438,8 @@ Event loop for server IO, defaults to the global L<Mojo::IOLoop> singleton.
   my $keep_alive_timeout = $daemon->keep_alive_timeout;
   $daemon                = $daemon->keep_alive_timeout(15);
 
-Timeout for keep alive connections in seconds, defaults to C<5>.
+Maximum amount of time in seconds a connection can be inactive before being
+dropped, defaults to C<5>.
 
 =head2 C<listen>
 
@@ -480,7 +481,8 @@ User for the server process.
   my $websocket_timeout = $server->websocket_timeout;
   $server               = $server->websocket_timeout(300);
 
-Timeout in seconds for WebSockets to be idle, defaults to C<300>.
+Maximum amount of time in seconds a WebSocket connection can be inactive
+before being dropped, defaults to C<300>.
 
 =head1 METHODS
 

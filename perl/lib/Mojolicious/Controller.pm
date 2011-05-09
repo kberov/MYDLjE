@@ -211,8 +211,14 @@ sub redirect_to {
 sub render {
   my $self = shift;
 
-  # Template as single argument
+  # Recursion
   my $stash = $self->stash;
+  if ($stash->{'mojo.rendering'}) {
+    $self->app->log->debug(qq/Can't render in "before_render" hook./);
+    return '';
+  }
+
+  # Template as single argument
   my $template;
   $template = shift if @_ % 2 && !ref $_[0];
 
@@ -238,7 +244,12 @@ sub render {
   }
 
   # Render
-  my ($output, $type) = $self->app->renderer->render($self, $args);
+  my $app = $self->app;
+  {
+    local $stash->{'mojo.rendering'} = 1;
+    $app->plugins->run_hook_reverse(before_render => $self, $args);
+  }
+  my ($output, $type) = $app->renderer->render($self, $args);
 
   # Failed
   return unless defined $output;
@@ -1164,7 +1175,10 @@ Access GET/POST parameters and route captures.
   $c = $c->redirect_to('/path');
   $c = $c->redirect_to('http://127.0.0.1/foo/bar');
 
-Prepare a C<302> redirect response.
+Prepare a C<302> redirect response, takes the exact same arguments as
+C<url_for>.
+
+  return $c->redirect_to('login') unless $c->session('user');
 
 =head2 C<render>
 
@@ -1185,6 +1199,7 @@ It will set a default template to use based on the controller and action name
 or fall back to the route name.
 You can call it with a hash of options which can be preceded by an optional
 template name.
+It will also run the C<before_render> plugin hook.
 
 =head2 C<render_data>
 

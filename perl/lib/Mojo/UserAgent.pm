@@ -411,6 +411,8 @@ sub _cleanup {
   }
 }
 
+sub _close { shift->_handle(pop, 1) }
+
 # "Where on my badge does it say anything about protecting people?
 #  Uh, second word, chief."
 sub _connect {
@@ -457,8 +459,8 @@ sub _connect {
   }
 
   # Callbacks
+  $loop->on_close($id => sub { $self->_close(@_) });
   $loop->on_error($id => sub { $self->_error(@_) });
-  $loop->on_hup($id => sub { $self->_hup(@_) });
   $loop->on_read($id => sub { $self->_read(@_) });
 
   return $id;
@@ -650,8 +652,6 @@ sub _handle {
   # Stop loop
   $self->{_loop}->stop if !$self->{_nb} && !$self->{_processing};
 }
-
-sub _hup { shift->_handle(pop, 1) }
 
 # "Have you ever seen that Blue Man Group? Total ripoff of the Smurfs.
 #  And the Smurfs, well, they SUCK."
@@ -1012,7 +1012,8 @@ object will be used.
   my $keep_alive_timeout = $ua->keep_alive_timeout;
   $ua                    = $ua->keep_alive_timeout(15);
 
-Timeout in seconds for keep alive between requests, defaults to C<15>.
+Maximum amount of time in seconds a connection can be inactive before being
+dropped, defaults to C<15>.
 
 =head2 C<key>
 
@@ -1079,7 +1080,8 @@ redirects.
   my $websocket_timeout = $ua->websocket_timeout;
   $ua                   = $ua->websocket_timeout(300);
 
-Timeout in seconds for WebSockets to be idle, defaults to C<300>.
+Maximum amount of time in seconds a WebSocket connection can be inactive
+before being dropped, defaults to C<300>.
 
 =head1 METHODS
 

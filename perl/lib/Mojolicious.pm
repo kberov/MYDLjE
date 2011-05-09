@@ -40,8 +40,8 @@ has sessions => sub { Mojolicious::Sessions->new };
 has static   => sub { Mojolicious::Static->new };
 has types    => sub { Mojolicious::Types->new };
 
-our $CODENAME = 'Smiling Cat Face With Heart-Shaped Eyes';
-our $VERSION  = '1.22';
+our $CODENAME = 'Tropical Drink';
+our $VERSION  = '1.32';
 
 # "These old doomsday devices are dangerously unstable.
 #  I'll rest easier not knowing where they are."
@@ -77,7 +77,7 @@ sub new {
   my $self = shift->SUPER::new(@_);
 
   # Transaction builder
-  $self->on_build_tx(
+  $self->on_transaction(
     sub {
       my $self = shift;
       my $tx   = Mojo::Transaction::HTTP->new;
@@ -237,15 +237,6 @@ sub plugin {
   $self->plugins->register_plugin(shift, $self, @_);
 }
 
-# DEPRECATED in Hot Beverage!
-sub session {
-  warn <<EOF;
-Mojolicious->session is DEPRECATED in favor of Mojolicious->sessions!!!
-But you most likely meant to use Mojolicious::Controller->session anyway.
-EOF
-  shift->sessions(@_);
-}
-
 # Start command system
 sub start {
   my $class = shift;
@@ -330,7 +321,7 @@ I18N, first class unicode support and much more for you to discover.
 =item *
 
 Very clean, portable and Object Oriented pure Perl API without any hidden
-magic and no requirements besides Perl 5.8.7.
+magic and no requirements besides Perl 5.8.7 (although 5.10+ is recommended).
 
 =item *
 
@@ -613,7 +604,7 @@ the log file reminding you to change your passphrase.
   my $sessions = $app->sessions;
   $app         = $app->sessions(Mojolicious::Sessions->new);
 
-Simple singed cookie based sessions, by default a L<Mojolicious::Sessions>
+Simple signed cookie based sessions, by default a L<Mojolicious::Sessions>
 object.
 
 =head2 C<static>
@@ -734,6 +725,18 @@ Mostly used for custom dispatchers and postprocessing static file responses.
   $app->hook(after_static_dispatch => sub {
     my $self = shift;
   });
+
+=item before_render
+
+Triggered right before the renderer turns the stash into a response.
+Very useful for making adjustments to the stash right before rendering.
+(Passed the current controller instance and argument hash)
+
+  $app->hook(before_render => sub {
+    my ($self, $args) = @_;
+  });
+
+Note that this hook is EXPERIMENTAL and might change without warning!
 
 =item after_dispatch
 
@@ -873,7 +876,7 @@ L<http://creativecommons.org/licenses/by-sa/3.0>.
 
 =head2 jQuery
 
-  Version 1.5.2
+  Version 1.6
 
 jQuery is a fast and concise JavaScript Library that simplifies HTML document
 traversing, event handling, animating, and Ajax interactions for rapid web
@@ -899,6 +902,8 @@ L<http://www.apache.org/licenses/LICENSE-2.0>.
 
 Every major release of L<Mojolicious> has a code name, these are the ones
 that have been used in the past.
+
+1.3, C<Tropical Drink> (u1F379)
 
 1.1, C<Smiling Cat Face With Heart-Shaped Eyes> (u1F63B)
 

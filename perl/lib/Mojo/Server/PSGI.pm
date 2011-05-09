@@ -10,7 +10,7 @@ use constant CHUNK_SIZE => $ENV{MOJO_CHUNK_SIZE} || 131072;
 sub run {
   my ($self, $env) = @_;
 
-  my $tx  = $self->on_build_tx->($self);
+  my $tx  = $self->on_transaction->($self);
   my $req = $tx->req;
 
   # Environment
@@ -21,14 +21,18 @@ sub run {
   $tx->local_port($env->{SERVER_PORT});
 
   # Request body
+  my $len = $env->{CONTENT_LENGTH};
   while (!$req->is_done) {
-    my $read = $env->{'psgi.input'}->read(my $buffer, CHUNK_SIZE, 0);
-    last if $read == 0;
+    my $chunk = ($len && $len < CHUNK_SIZE) ? $len : CHUNK_SIZE;
+    my $read = $env->{'psgi.input'}->read(my $buffer, $chunk, 0);
+    last unless $read;
     $req->parse($buffer);
+    $len -= $read;
+    last if $len <= 0;
   }
 
   # Handle
-  $self->on_handler->($self, $tx);
+  $self->on_request->($self, $tx);
 
   my $res    = $tx->res;
   my $status = $res->code;
@@ -98,7 +102,7 @@ Mojo::Server::PSGI - PSGI Server
   use Mojo::Server::PSGI;
 
   my $psgi = Mojo::Server::PSGI->new;
-  $psgi->on_handler(sub {
+  $psgi->on_request(sub {
     my ($self, $tx) = @_;
 
     # Request

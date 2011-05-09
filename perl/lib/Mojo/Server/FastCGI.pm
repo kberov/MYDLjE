@@ -1,7 +1,7 @@
 package Mojo::Server::FastCGI;
 use Mojo::Base 'Mojo::Server';
 
-use Errno qw/EAGAIN EWOULDBLOCK/;
+use Errno qw/EAGAIN EINTR EWOULDBLOCK/;
 use IO::Socket;
 
 use constant DEBUG => $ENV{MOJO_SERVER_DEBUG} || 0;
@@ -103,7 +103,7 @@ sub read_request {
   $self->app->log->debug('Reading FastCGI request.') if DEBUG;
 
   # Transaction
-  my $tx = $self->on_build_tx->($self);
+  my $tx = $self->on_transaction->($self);
   $tx->connection($c);
   my $req = $tx->req;
 
@@ -212,7 +212,7 @@ sub run {
 
     # Handle
     $self->app->log->debug('Handling FastCGI request.') if DEBUG;
-    $self->on_handler->($self, $tx);
+    $self->on_request->($self, $tx);
 
     # Response
     $self->write_response($tx);
@@ -275,7 +275,7 @@ sub write_records {
       unless (defined $written) {
 
         # Retry
-        next if $! == EAGAIN || $! == EWOULDBLOCK;
+        next if $! == EAGAIN || $! == EINTR || $! == EWOULDBLOCK;
 
         # Write error
         return;
@@ -380,7 +380,7 @@ sub _read_chunk {
   while (length $chunk < $len) {
     my $read = $c->sysread(my $buffer, $len - length $chunk, 0);
     unless (defined $read) {
-      next if $! == EAGAIN || $! == EWOULDBLOCK;
+      next if $! == EAGAIN || $! == EINTR || $! == EWOULDBLOCK;
       last;
     }
     last unless $read;
@@ -402,7 +402,7 @@ Mojo::Server::FastCGI - FastCGI Server
   use Mojo::Server::FastCGI;
 
   my $fcgi = Mojo::Server::FastCGI->new;
-  $fcgi->on_handler(sub {
+  $fcgi->on_request(sub {
     my ($self, $tx) = @_;
 
     # Request

@@ -130,10 +130,9 @@ sub add_before { shift->_add(0, @_) }
 sub all_text {
   my $self = shift;
 
-  my $text = '';
-  my $tree = $self->tree;
-
   # Walk tree
+  my $text  = '';
+  my $tree  = $self->tree;
   my $start = $tree->[0] eq 'root' ? 1 : 4;
   my @stack = @$tree[$start .. $#$tree];
   while (my $e = shift @stack) {
@@ -148,7 +147,7 @@ sub all_text {
     # CDATA or raw text
     elsif ($type eq 'cdata' || $type eq 'raw') { $content = $e->[1] }
 
-    # Append
+    # Ignore whitespace blocks
     $text .= $content if $content =~ /\S+/;
   }
 
@@ -160,14 +159,12 @@ sub at { shift->find(@_)->[0] }
 sub attrs {
   my $self = shift;
 
-  my $tree = $self->tree;
-
   # Not a tag
+  my $tree = $self->tree;
   return if $tree->[0] eq 'root';
 
-  my $attrs = $tree->[2];
-
   # Hash
+  my $attrs = $tree->[2];
   return $attrs unless @_;
 
   # Get
@@ -185,10 +182,9 @@ sub attrs {
 sub children {
   my $self = shift;
 
+  # Walk tree
   my @children;
   my $tree = $self->tree;
-
-  # Walk tree
   my $start = $tree->[0] eq 'root' ? 1 : 4;
   for my $e (@$tree[$start .. $#$tree]) {
 
@@ -196,7 +192,8 @@ sub children {
     next unless $e->[0] eq 'tag';
 
     # Add child
-    push @children, $self->new(charset => $self->charset, tree => $e);
+    push @children,
+      $self->new(charset => $self->charset, tree => $e, xml => $self->xml);
   }
 
   return \@children;
@@ -215,11 +212,10 @@ sub find {
 sub inner_xml {
   my $self = shift;
 
-  my $tree = $self->tree;
-
   # Walk tree
+  my $tree   = $self->tree;
   my $result = '';
-  my $start = $tree->[0] eq 'root' ? 1 : 4;
+  my $start  = $tree->[0] eq 'root' ? 1 : 4;
   for my $e (@$tree[$start .. $#$tree]) {
 
     # Render
@@ -267,13 +263,16 @@ sub namespace {
 sub parent {
   my $self = shift;
 
-  my $tree = $self->tree;
-
   # Not a tag
+  my $tree = $self->tree;
   return if $tree->[0] eq 'root';
 
   # Parent
-  return $self->new(charset => $self->charset, tree => $tree->[3]);
+  return $self->new(
+    charset => $self->charset,
+    tree    => $tree->[3],
+    xml     => $self->xml
+  );
 }
 
 sub parse {
@@ -290,14 +289,10 @@ sub replace {
   my ($self, $new) = @_;
 
   # Parse
-  $new = $self->_parse_xml("$new");
-
   my $tree = $self->tree;
-
-  # Root
-  return $self->replace_inner(
-    $self->new(charset => $self->charset, tree => $new))
-    if $tree->[0] eq 'root';
+  $self->xml(undef) if my $r = $tree->[0] eq 'root';
+  $new = $self->_parse_xml("$new");
+  return $self->tree($new) if $r;
 
   # Parent
   my $parent = $tree->[3];
@@ -328,9 +323,8 @@ sub replace_inner {
   # Parse
   $new = $self->_parse_xml("$new");
 
-  my $tree = $self->tree;
-
   # Replacements
+  my $tree = $self->tree;
   my @new;
   for my $e (@$new[1 .. $#$new]) {
     $e->[3] = $tree if $e->[0] eq 'tag';
@@ -354,7 +348,11 @@ sub root {
     $root = $parent;
   }
 
-  return $self->new(charset => $self->charset, tree => $root);
+  return $self->new(
+    charset => $self->charset,
+    tree    => $root,
+    xml     => $self->xml
+  );
 }
 
 sub text {
@@ -377,7 +375,7 @@ sub text {
     # CDATA or raw text
     elsif ($type eq 'cdata' || $type eq 'raw') { $content = $e->[1] }
 
-    # Append
+    # Ignore whitespace blocks
     $text .= $content if $content =~ /\S+/;
   }
 
@@ -400,9 +398,8 @@ sub to_xml {
 sub type {
   my ($self, $type) = @_;
 
-  my $tree = $self->tree;
-
   # Not a tag
+  my $tree = $self->tree;
   return if $tree->[0] eq 'root';
 
   # Get
@@ -420,9 +417,8 @@ sub _add {
   # Parse
   $new = $self->_parse_xml("$new");
 
-  my $tree = $self->tree;
-
   # Not a tag
+  my $tree = $self->tree;
   return $self if $tree->[0] eq 'root';
 
   # Parent
@@ -487,13 +483,13 @@ sub _css_equation {
   my $num = [1, 1];
 
   # "even"
-  if ($equation eq 'even') { $num = [2, 2] }
+  if ($equation =~ /^even$/i) { $num = [2, 2] }
 
   # "odd"
-  elsif ($equation eq 'odd') { $num = [2, 1] }
+  elsif ($equation =~ /^odd$/i) { $num = [2, 1] }
 
   # Equation
-  elsif ($equation =~ /(?:(\-?(?:\d+)?)?(n))?\s*\+?\s*(\-?\s*\d+)?\s*$/) {
+  elsif ($equation =~ /(?:(\-?(?:\d+)?)?(n))?\s*\+?\s*(\-?\s*\d+)?\s*$/i) {
     $num->[0] = $1;
     $num->[0] = $2 ? 1 : 0 unless defined($num->[0]) && length($num->[0]);
     $num->[0] = -1 if $num->[0] eq '-';
@@ -740,7 +736,7 @@ sub _match_selector {
 
     # Pseudo class
     elsif ($type eq 'pseudoclass') {
-      my $class = $c->[1];
+      my $class = lc $c->[1];
       my $args  = $c->[2];
 
       # "first-*"
@@ -877,8 +873,9 @@ sub _match_tree {
   }
 
   # Upgrade results
-  @results =
-    map { $self->new(charset => $self->charset, tree => $_) } @results;
+  @results = map {
+    $self->new(charset => $self->charset, tree => $_, xml => $self->xml)
+  } @results;
 
   # Collection
   return bless \@results, 'Mojo::DOM::_Collection';
@@ -1005,19 +1002,20 @@ sub _parse_xml {
     next unless $tag;
 
     # End
+    my $cs = $self->xml;
     if ($tag =~ /$XML_END_RE/) {
-      if (my $end = lc $1) { $self->_end($end, \$current) }
+      if (my $end = $cs ? $1 : lc($1)) { $self->_end($end, \$current) }
     }
 
     # Start
     elsif ($tag =~ /$XML_START_RE/) {
-      my $start = lc $1;
-      my $attr  = $2;
+      my $start = $cs ? $1 : lc($1);
+      my $attr = $2;
 
       # Attributes
       my $attrs = {};
       while ($attr =~ /$XML_ATTR_RE/g) {
-        my $key   = $1;
+        my $key = $cs ? $1 : lc($1);
         my $value = $2;
         $value = $3 unless defined $value;
         $value = $4 unless defined $value;
@@ -1209,8 +1207,6 @@ sub _start {
   # New
   my $new = ['tag', $start, $attrs, $$current];
   weaken $new->[3];
-
-  # Append
   push @$$current, $new;
   $$current = $new;
 }
@@ -1522,8 +1518,8 @@ Document Object Model.
   my $xml = $dom->xml;
   $dom    = $dom->xml(1);
 
-Disable HTML5 semantics in parser, defaults to auto detection based on
-processing instructions.
+Disable HTML5 semantics in parser and activate case sensitivity, defaults to
+auto detection based on processing instructions.
 Note that this attribute is EXPERIMENTAL and might change without warning!
 
 =head1 METHODS

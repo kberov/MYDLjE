@@ -34,7 +34,7 @@ if (not $config->stash('installed')) {
   plan skip_all => 'System is not installed. Will not test MYDLjE::M.';
 }
 else {
-  plan tests => 79;
+  plan tests => 81;
 }
 isa_ok('MYDLjE::M::Content', 'MYDLjE::M');
 
@@ -344,10 +344,21 @@ my $page = MYDLjE::M::Page->new(
   alias     => 'home' . $time,
   page_type => 'root'
 );
-is($page->pid,                                    0);
-is($page->alias,                                  'home' . $time);
-is($page->page_type,                              'root');
-is($page->user_id(1)->user_id,                    1);
-is($page->group_id(1)->group_id,                  1);
-is($page->permissions('-rwxrw-r-x')->permissions, '-rwxrw-r-x');
+is($page->pid, 0, '$page->pid is ' . $page->pid);
+is($page->alias, 'home' . $time, '$page->alias is ' . $page->alias);
+is($page->page_type, 'root', '$page->page_type is ' . $page->page_type);
+is($page->user_id(1)->user_id,   1, '$page->user_id is ' . $page->user_id);
+is($page->group_id(1)->group_id, 1, '$page->group_id is ' . $page->group_id);
+is($page->permissions('-rwxrw-r-x')->permissions,
+  '-rwxrw-r-x', '$page->permissions are ' . $page->permissions);
+
+#reuse some data
+$page_content->user_id($page->user_id);
+$page_content->group_id($page->group_id);
+$page = MYDLjE::M::Page->add(%{$page->data}, page_content => $page_content);
+is($page->id, $page_content->page_id, '$page->id is $page_content->page_id');
+is($page->permissions, 'drwxrw-r-x',
+  '$page->permissions are ' . $page->permissions);
+
+#clean up...
 

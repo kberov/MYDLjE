@@ -84,8 +84,8 @@ sub add {
     $dbix->commit;
   };
   unless ($eval_ok) {
-    Carp::croak("ERROR adding user(rolling back):[$@]");
     $dbix->rollback or Carp::confess($dbix->error);
+    Carp::croak("ERROR adding user(rolling back):[$@]");
   }
 
   return $user;

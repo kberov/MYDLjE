@@ -160,7 +160,7 @@ sub group_id {
 
 sub pid {
   my ($self, $value) = @_;
-  if ($value) {                             #setting
+  if (defined $value) {                     #setting
     $self->{data}{pid} = $self->validate_field(pid => $value);
     return $self;
   }

@@ -42,19 +42,42 @@ has FIELDS_VALIDATION => sub {
     $self->FIELD_DEF('changed_by'),
   };
 };
+*id       = \&MYDLjE::M::Content::id;
+*pid      = \&MYDLjE::M::Content::pid;
+*alias    = \&MYDLjE::M::Content::alias;
+*user_id  = \&MYDLjE::M::Content::user_id;
+*group_id = \&MYDLjE::M::Content::group_id;
+*sorting  = \&MYDLjE::M::Content::sorting;
+*tstamp   = \&MYDLjE::M::Content::tstamp;
+*start    = \&MYDLjE::M::Content::start;
+*stop     = \&MYDLjE::M::Content::stop;
 
-*tstamp = \&MYDLjE::M::Content::tstamp;
-*start  = \&MYDLjE::M::Content::start;
-*stop   = \&MYDLjE::M::Content::stop;
-
+#Create a page with dummy page content
 sub add {
   my ($class, $args) = MYDLjE::M::get_obj_args(@_);
   ($class eq __PACKAGE__)
     || Carp::croak(
     'Call this method only like: ' . __PACKAGE__ . '->add(%args);');
 
-#todo
-  my $page = __PACKAGE__->new;
+  #must be a MYDLjE::M::Content::Page instance but we will check later
+  my $page_content = delete $args->{page_content};
+  my $page         = $class->new($args);
+  my $dbix         = $page->dbix;
+
+  my $eval_ok = eval {
+    $dbix->begin_work;
+    my $permissions = $page->permissions();
+    $permissions =~ s/^-/d/x;    #we will have content just now
+    $page->permissions($permissions);
+    $page->save();
+    $page_content->page_id($page->id);
+    $page_content->save();
+    $dbix->commit;
+  };
+  unless ($eval_ok) {
+    $dbix->rollback or Carp::confess($dbix->error);
+    Carp::croak("ERROR adding page(rolling back):[$@]");
+  }
   return $page;
 }
 

@@ -72,6 +72,10 @@ main_left_navigation:
     header: Site
     items:
       -
+        title: Domains
+        icon: page_world.png
+        route: /site/domains
+      -
         title: Pages
         icon: layout.png
         route: /site/pages

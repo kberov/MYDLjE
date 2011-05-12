@@ -206,9 +206,9 @@ sub _init_database {
     $c->dbix->query($query);
   }
 
-  #update default site
+  #update default domain
   $c->dbix->update(
-    'my_sites',
+    'my_domains',
     { name   => $validator->{site_name},
       domain => $c->req->headers->host
     },

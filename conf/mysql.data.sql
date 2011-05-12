@@ -20,16 +20,16 @@ INSERT INTO `my_users` (`id`, `group_id`, `login_name`, `login_password`, `first
 
 -- ]]></query>
 
--- <query name="my_sites"><![CDATA[
+-- <query name="my_domains"><![CDATA[
 
-INSERT INTO `my_sites` (`id`, `domain`, `name`, `description`, `user_id`, `group_id`, `permissions`) VALUES
-(0, 'localhost', 'Local Host', 'Default site for all pages in the system.', 1, 1, 'drwxr--r--');
+INSERT INTO `my_domains` (`id`, `domain`, `name`, `description`, `user_id`, `group_id`, `permissions`) VALUES
+(0, 'localhost', 'Local Host', 'Default domain for all pages in the system.', 1, 1, 'drwxr--r--');
 
 -- ]]></quey>
 
 -- <query name="my_pages"><![CDATA[
 
-INSERT INTO `my_pages` (`id`, `pid`, `site_id`, `alias`, `page_type`, `sorting`, `template`, `cache`, `expiry`, `permissions`, `user_id`, `group_id`, `tstamp`, `start`, `stop`, `published`, `hidden`, `deleted`, `changed_by`) VALUES
+INSERT INTO `my_pages` (`id`, `pid`, `domain_id`, `alias`, `page_type`, `sorting`, `template`, `cache`, `expiry`, `permissions`, `user_id`, `group_id`, `tstamp`, `start`, `stop`, `published`, `hidden`, `deleted`, `changed_by`) VALUES
 (0, 0, 0, 'system_page-do_not_use_or_delete', '', 1, NULL, 0, 300, 'drwx------', 1, 1, 1, 1, 1, 0, 1, 1, 1);
 
 -- ]]></quey>

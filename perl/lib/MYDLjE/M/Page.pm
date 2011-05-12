@@ -151,11 +151,11 @@ Not displayed in the front-end/site neither in menus - used just as parent of a 
 
 =item I<regular>
 
-regular pages are used to construct menus in the site and to display content or front-end modules/widgets implemented as TT/TA Plugins
+Regular pages are used to construct menus in the site and to display content or front-end modules/widgets implemented as TT/TA Plugins
 
 =item I<root>
 
-A page representing the root of a site(there can be several sites manged by a MYDLjE system). It may or may not be displayed in the site depending on... not decided yet...
+A page representing the root of a domain(there can be several domains managed by a MYDLjE system). It may or may not be displayed in the domain depending on... not decided yet...
 
 Other types of pages can be added easily and used depending on the business logic you define.
 
@@ -193,9 +193,9 @@ Id of the owner of the page. Usually the user that creates the page.
 
 A user can belong to several groups. This field defines the group id for which the group part of the permissions will apply.
 
-=head2 site_id
+=head2 domain_id
 
-A MYDLjE system can manage multiple sites. This field references the id of the domain to which this page belongs. Default value is C<0>. 
+A MYDLjE system can manage multiple domains. This field references the id of the domain to which this page belongs. Default value is C<0>. 
 
 =head2 tstamp
 

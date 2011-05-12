@@ -116,7 +116,7 @@ sub system_config {
     $c->render(json => $c->stash);
     return;
   }
-  _init_database($c);
+  _init_database($c, $validator->values);
   _create_admin_user($c, $validator->values);
   _replace_index_xhtml($c);
   _save_config($c, $validator);
@@ -145,9 +145,8 @@ sub _save_config {
     }
   }
   $new_config->stash('plugins')->{'MYDLjE::Plugin::DBIx'}{db_dsn} = '';
-  $new_config->stash('site_name', $validator->values->{site_name});
-  $new_config->stash('routes',    $config->{routes});
-  $new_config->stash('secret',    $validator->values->{secret});
+  $new_config->stash('routes', $config->{routes});
+  $new_config->stash('secret', $validator->values->{secret});
 
   $new_config->write_config_file();
 
@@ -160,7 +159,7 @@ sub _save_config {
 }
 
 sub _init_database {
-  my ($c) = @_;
+  my ($c, $validator) = @_;
   my $log = $c->app->log;
   my $xml_sql =
     Mojo::Asset::File->new(path => $c->app->home . '/conf/mysql.schema.sql')
@@ -206,6 +205,15 @@ sub _init_database {
     $query =~ s/\)\s*?;\s*?$/)/xg;    #beware... VALUES may contain ';'
     $c->dbix->query($query);
   }
+
+  #update default site
+  $c->dbix->update(
+    'my_sites',
+    { name   => $validator->{site_name},
+      domain => $c->req->headers->host
+    },
+    {id => 0}
+  );
   return;
 }
 

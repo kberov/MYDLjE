@@ -361,4 +361,5 @@ is($page->permissions, 'drwxrw-r-x',
   '$page->permissions are ' . $page->permissions);
 
 #clean up...
+$dbix->delete('my_pages', {id => $page->id});
 

@@ -77,11 +77,28 @@ CREATE TABLE IF NOT EXISTS `my_sessions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Users sessions storage table';
 --]]></table>
 
+-- <table name="my_sites"><![CDATA[
+DROP TABLE IF EXISTS `my_sites`;
+CREATE TABLE IF NOT EXISTS `my_sites` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Id referenced by pages that belong to this site.',
+  `domain` varchar(63) NOT NULL COMMENT 'Domain name as in $ENV{HTTP_HOST}',
+  `name` varchar(63) NOT NULL COMMENT 'The name of this site.',
+  `description` varchar(255) NOT NULL DEFAULT '' COMMENT 'Site description',
+  `user_id` int(11) NOT NULL,
+  `group_id` int(11) NOT NULL,
+  `permissions` varchar(10) NOT NULL DEFAULT 'drwxr--r--' COMMENT 'All sites have child records(pages)',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `domain` (`domain`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='Sites managed by this system';
+--]]></table>
+
 -- <table name="my_pages"><![CDATA[
+
 DROP TABLE IF EXISTS `my_pages`;
 CREATE TABLE IF NOT EXISTS `my_pages` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `pid` int(11) NOT NULL DEFAULT '0' COMMENT 'Parent page id',
+  `site_id` int(11) NOT NULL DEFAULT '0' COMMENT 'Refrerence to site.id to which this page belongs.',
   `alias` varchar(32) NOT NULL DEFAULT '' COMMENT 'Alias for the page which may be used instead of the id ',
   `page_type` varchar(32) NOT NULL COMMENT 'Regular,Folder, Site Root etc',
   `sorting` int(11) NOT NULL DEFAULT '1',
@@ -99,17 +116,17 @@ CREATE TABLE IF NOT EXISTS `my_pages` (
   `deleted` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'Is this page deleted? 0=No, 1=Yes',
   `changed_by` int(11) NOT NULL COMMENT 'Who modified this page the last time?',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `alias` (`alias`),
+  UNIQUE KEY `alias_in_site_id` (`alias`,`site_id`),
   KEY `tstamp` (`tstamp`),
   KEY `page_type` (`page_type`),
   KEY `hidden` (`hidden`),
-  KEY `pid` (`pid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Pages holding various content elements';
+  KEY `pid` (`pid`),
+  KEY `site_id` (`site_id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='Pages holding various content elements';
 
 --]]></table>
 
 -- <table name="my_content"><![CDATA[
-
 
 DROP TABLE IF EXISTS `my_content`;
 CREATE TABLE IF NOT EXISTS `my_content` (
@@ -212,13 +229,15 @@ DROP VIEW IF EXISTS  my_varticle;
 --]]></queries>
 --<do id="constraints"><![CDATA[
 ALTER TABLE `my_pages`
-  ADD CONSTRAINT `my_pages_id_fk` FOREIGN KEY (`pid`) REFERENCES `my_pages` (`id`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `my_pages_id_fk` FOREIGN KEY (`pid`) REFERENCES `my_pages` (`id`) ,
+  ADD CONSTRAINT `my_pages_site_id_fk` FOREIGN KEY (`site_id`) REFERENCES `my_sites` (`id`) ON DELETE CASCADE;
+
 ALTER TABLE `my_content`
-  ADD CONSTRAINT `my_content_page_id_fk` FOREIGN KEY (`page_id`) REFERENCES `my_pages` (`id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `my_content_page_id_fk` FOREIGN KEY (`page_id`) REFERENCES `my_pages` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `my_content_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `my_users` (`id`);
 
 ALTER TABLE `my_sessions`
-  ADD CONSTRAINT `my_sessions_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `my_users` (`id`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `my_sessions_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `my_users` (`id`);
 ALTER TABLE `my_users`
   ADD CONSTRAINT `my_users_group_id_fk` FOREIGN KEY (`group_id`) REFERENCES `my_groups` (`id`);
 

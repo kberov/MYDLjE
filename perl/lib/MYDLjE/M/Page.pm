@@ -137,15 +137,28 @@ Unique seo-friendly alias used to construct the url pointing to this page
 
 =head2 page_type
 
+    $page->page_type('folder');
+    $page->save;
+    #...
+
+    $page->select(page_type =>'root')
+
 In MYDLjE there are  several types of pages:
 
-    "folder" - not displayed in the front-end/site - used just as parent of 
-        a list of items possibly stored in other tables.
-     "regular" - regular pages are used to construct menus in the site 
-        and to display content or front-end modules/widgets implemented as TT/TA Plugins
-     "root" - a page representing the root of a site
+=item I<folder> 
+
+Not displayed in the front-end/site neither in menus - used just as parent of a list of items possibly stored in other tables.
+
+=item I<regular>
+
+regular pages are used to construct menus in the site and to display content or front-end modules/widgets implemented as TT/TA Plugins
+
+=item I<root>
+
+A page representing the root of a site(there can be several sites manged by a MYDLjE system). It may or may not be displayed in the site depending on... not decided yet...
 
 Other types of pages can be added easily and used depending on the business logic you define.
+
 
 =head2 sorting
 
@@ -169,7 +182,7 @@ After how many seconds this page will expire when C<cache=1>? Default: 86400 = 2
 This field represents permissions for the curent page very much like permissions 
 of a file. The format is "duuugggoo" where first "d" or "-" is for 
 "Is this page a container for other items?" it is set for the first time when a child record 
-from some table is attached to this page. "u" represents permissions for the owner of the page.
+from some table is attached to this page. Usually all pages are containers. "u" represents permissions for the owner of the page.
 Valid values are "r", "w", "x" and "-".  The last triple is for the rest of the users.
 
 =head2 user_id
@@ -180,10 +193,13 @@ Id of the owner of the page. Usually the user that creates the page.
 
 A user can belong to several groups. This field defines the group id for which the group part of the permissions will apply.
 
+=head2 site_id
+
+A MYDLjE system can manage multiple sites. This field references the id of the domain to which this page belongs. Default value is C<0>. 
 
 =head2 tstamp
 
-Last time this pagr was touched.
+Last time this page was touched.
 
 =head2 start
 

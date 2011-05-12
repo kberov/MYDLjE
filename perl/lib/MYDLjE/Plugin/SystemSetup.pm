@@ -128,8 +128,8 @@ sub system_config {
 #write the new configuration to mydlje.yaml so it is shared by all applications
 sub _save_config {
   my ($c, $validator) = @_;
-  $c->app->log->debug('ref $c:' . ref $c);
-
+  
+  #$c->app->log->debug('ref $c:' . ref $c);
   my $config = $c->app->config;
   my $new_config =
     MYDLjE::Config->new(files =>
@@ -169,22 +169,23 @@ sub _init_database {
   my ($disable_foreign_key_checks) = $dom->at('#disable_foreign_key_checks');
   my @start_init = split(/;/x, $disable_foreign_key_checks->text);
   for (@start_init) {
-    $log->debug("do:$_");
+    
+    #$log->debug("do:$_");
     $c->dbix->dbh->do($_);
   }
 
   # Loop
   for my $e ($dom->find('table[name],view[name]')->each) {
     my ($drop, $create) = split(/;/x, $e->text);
-    $log->debug("do:table/view[name]" . $e->attrs->{name});
-    $log->debug("do:table/view[name] text" . $e->text);
+    #$log->debug("do:table/view[name]" . $e->attrs->{name});
+    #$log->debug("do:table/view[name] text" . $e->text);
 
     $c->dbix->dbh->do($drop);
     $c->dbix->dbh->do($create);
   }
   my ($constraints) = $dom->at('#constraints');
   my @constraints = split(/;/x, $constraints->text);
-  $log->debug("do:#constraints");
+  #$log->debug("do:#constraints");
   $c->dbix->dbh->do($_) for @constraints;
   my ($enable_foreign_key_checks) = $dom->at('#enable_foreign_key_checks');
   my @end_init = split(/;/x, $enable_foreign_key_checks->text);
@@ -197,9 +198,10 @@ sub _init_database {
   $dom = Mojo::DOM->new;
   $dom->parse($xml_sql);
 
-# Loop over named(!) queries only in the order they are defined in the document.
+  # Loop over named(!) queries only in the order they are defined in the document.
   for my $e ($dom->find('query[name]')->each) {
-    $log->debug("query[name]" . $e->attrs->{name});
+    
+    #$log->debug("query[name]" . $e->attrs->{name});
     my $query = $e->text;
     $query =~ s/^\s*--.*?$//xg;
     $query =~ s/\)\s*?;\s*?$/)/xg;    #beware... VALUES may contain ';'
@@ -219,7 +221,8 @@ sub _init_database {
 
 sub _create_admin_user {
   my ($c, $values) = @_;
-  $c->app->log->debug($c->dumper($c->stash));
+  
+  #$c->app->log->debug($c->dumper($c->stash));
   require MYDLjE::M::User;
   MYDLjE::M::User->add(
     login_name     => $values->{admin_user},

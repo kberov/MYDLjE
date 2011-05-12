@@ -91,10 +91,6 @@ main_left_navigation:
     header: Content
     items:
       -
-        title: Pages' Properties 
-        icon: page.png
-        route: /content/pages
-      -
         title: Books
         icon: book.png
         route: /content/books

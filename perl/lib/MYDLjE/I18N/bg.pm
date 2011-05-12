@@ -67,6 +67,21 @@ our %Lexicon = (
   bg => 'Български',
   en => 'Английски',
 
+  Site                   => 'Сайт',
+  Domains                => 'Домейни',
+  Domain                 => 'Домейн',
+  Templates              => 'Шаблони',
+  Accounts               => 'Сметки',
+  Users                  => 'Потребители',
+  Groups                 => 'Групи',
+  Abilities              => 'Умения',
+  System                 => 'Система',
+  Settings               => 'Настройки',
+  Cache                  => 'Кеш',
+  Plugins                => 'Добавки',
+  Log                    => 'Отчет',
+  'File Management'      => 'Файлове',
+  'Personal Preferences' => 'Лични предпочитания',
 
 );
 

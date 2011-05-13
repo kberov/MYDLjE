@@ -1,0 +1,9 @@
+[% WRAPPER ${TEMPLATE_WRAPPER} %]
+<!-- start [% action %] -->
+<ul>
+[% FOREACH d IN domains %]
+    <li>[% d.domain %]</li>
+[% END %]
+</ul>
+<!-- end [%+ action +%] -->
+[% END %]

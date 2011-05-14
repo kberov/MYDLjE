@@ -18,7 +18,7 @@ form ||= c.req.params.to_hash;
 %]
 [% MACRO text_field(arg,params) BLOCK %]
 [% name_and_id =  arg||params.name; 
-field_error =${ name_and_id _ '_error' };
+field_error = validator_errors.${name_and_id};
 params.value ||= form.${name_and_id};
 
 +%]
@@ -53,7 +53,7 @@ params.value ||= form.${name_and_id};
 %]
 [% MACRO password_field(arg, params) BLOCK %]
 [% name_and_id =  arg||params.name; 
-field_error =${ name_and_id _ '_error' };
+field_error = validator_errors.${name_and_id};
 +%]
     <div class="column span-2" style="[% field_error?'':'display:none;'%]" 
     id="[% name_and_id %]_error">
@@ -79,7 +79,7 @@ field_error =${ name_and_id _ '_error' };
 
 [% MACRO file_field(arg,params) BLOCK %]
 [% name_and_id =  arg||params.name; 
-field_error =${ name_and_id _ '_error' };
+field_error = validator_errors.${name_and_id};
 +%]
     <div class="column span-2" style="[% field_error?'':'display:none;'%]" 
     id="[% name_and_id %]_error">
@@ -104,7 +104,7 @@ field_error =${ name_and_id _ '_error' };
 
 [% MACRO select_field(arg,params) BLOCK %]
 [% name_and_id =  arg||params.name; 
-field_error =${ name_and_id _ '_error' };
+field_error = validator_errors.${name_and_id};
 params.selected ||= form.${name_and_id};
 +%]
     <div class="column span-2" style="[% field_error?'':'display:none;'%]" 
@@ -138,7 +138,7 @@ params.selected ||= form.${name_and_id};
 
 [%MACRO textarea(arg,params) BLOCK;
   name_and_id =  arg||params.name; 
-  field_error =${ name_and_id _ '_error' };
+  field_error = validator_errors.${name_and_id};
   params.value ||= form.${name_and_id};
 +%]
     <div class="column span-2" style="[% field_error?'':'display:none;'%]" 
@@ -159,7 +159,7 @@ params.selected ||= form.${name_and_id};
 [%+ END %]
 [%MACRO checkbox_field(arg,params) BLOCK;
   name_and_id =  arg||params.name; 
-  field_error =${ name_and_id _ '_error' };
+  field_error = validator_errors.${name_and_id};
   params.value ||= form.${name_and_id};
 +%]
     <div class="column" style="[% field_error?'':'display:none;'%]" 
@@ -178,3 +178,11 @@ params.selected ||= form.${name_and_id};
     </div>
     
 [%+ END %]
+
+[% MACRO hidden_field(arg,params) BLOCK;
+name_and_id =  arg||params.name;
+params.value ||= form.${name_and_id};
++%]
+<input type="hidden" id="[% params.id||name_and_id%]" 
+name="[% name_and_id %]" value="[% params.value %]" />
+[% END %]

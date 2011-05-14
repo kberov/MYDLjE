@@ -47,7 +47,16 @@ sub dbix {
     }
   );
   $DBIX->lc_columns = 1;
-  $DBIX->abstract   = SQL::Abstract->new();
+  if ($config->{debug}) {
+    $DBIX->dbh->{Callbacks} = {
+      prepare => sub {
+        my ($dbh, $query, $attrs) = @_;
+        Carp::cluck("Preparing query:\n$query\n");
+        return;
+      },
+    };
+  }
+  $DBIX->abstract = SQL::Abstract->new();
   return $DBIX;
 }
 

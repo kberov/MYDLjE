@@ -22,6 +22,7 @@ plugins:
     db_name: mydlje
     db_password: mydlje
     db_user: mydlje
+    debug: 0
   charset:
     charset: UTF-8
   i18n:

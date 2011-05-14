@@ -19,19 +19,6 @@ has COLUMNS => sub {
 
 has WHERE => sub { {deleted => 0} };
 
-sub _no_markup_inflate {
-  my $filed = shift;
-  my $value = $filed->value || '';
-
-  #remove everything strange
-  $value =~ s/[^\p{IsAlnum}\,\s\-\!\.\?\(\);]//gx;
-
-  #normalize spaces
-  $value =~ s/\s+/ /gx;
-  $value = substr($value, 0, 254) if length($value) > 254;
-  return $value;
-}
-
 sub _tags_inflate {
   my $filed = shift;
   my $value = $filed->value || '';
@@ -62,11 +49,10 @@ has FIELDS_VALIDATION => sub {
     $self->FIELD_DEF('group_id'),
     $self->FIELD_DEF('sorting'),
     $self->FIELD_DEF('alias'),
-    title       => {required => 0, inflate => \&_no_markup_inflate},
-    tags        => {required => 0, inflate => \&_tags_inflate},
-    keywords    => {required => 0, inflate => \&_tags_inflate},
-    description => {required => 0, inflate => \&_no_markup_inflate},
-
+    $self->FIELD_DEF('title'),
+    tags     => {required => 0, inflate => \&_tags_inflate},
+    keywords => {required => 0, inflate => \&_tags_inflate},
+    $self->FIELD_DEF('description'),
     data_type => {
       required    => 1,
       constraints => [
@@ -133,7 +119,7 @@ sub tstamp {
 
 sub id {
   my ($self, $value) = @_;
-  if ($value) {                             #setting
+  if (defined $value) {                     #setting
     $self->{data}{id} = $self->validate_field(id => $value);
     return $self;
   }

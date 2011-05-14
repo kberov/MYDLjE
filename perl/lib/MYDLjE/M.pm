@@ -92,8 +92,8 @@ sub save {
 
   #allow data to be passed directly and overwrite current data
   if (keys %$data) { $self->data($data); }
-
-  if (!$self->id) {
+  local $Carp::MaxArgLen = 0;
+  if (!defined $self->id) {
     delete $self->{data}{id} if exists $self->{data}{id};
     $self->dbix->insert($self->TABLE, $self->data);
     $self->id($self->dbix->last_insert_id(undef, undef, $self->TABLE, 'id'));
@@ -137,6 +137,38 @@ SUB
     Carp::confess($class . " compiler error: $/$code$/$@$/");
   }
   return;
+}
+
+sub no_markup_inflate {
+  my $filed = shift;
+  my $value = $filed->value || '';
+
+  #remove everything strange
+  $value =~ s/[^\p{IsAlnum}\,\s\-\!\.\?\(\);]//gx;
+
+  #normalize spaces
+  $value =~ s/\s+/ /gx;
+  $value = substr($value, 0, 254) if length($value) > 254;
+  return $value;
+}
+
+#TODO: Move ALL validation stuff to MYDLjE::Validator which will inherit MojoX::Validator.
+sub domain_regexp {
+
+#stollen from Regexp::Common::URI::RFC2396;
+  my $digit    = '[0-9]';
+  my $upalpha  = '[A-Z]';
+  my $lowalpha = '[a-z]';
+  my $alpha    = '[a-zA-Z]';       # lowalpha | upalpha
+  my $alphanum = '[a-zA-Z0-9]';    # alpha    | digit
+  my $port     = "(?:$digit*)";
+  my $IPv4address = "(?:$digit+[.]$digit+[.]$digit+[.]$digit+)";
+  my $toplabel    = "(?:$alpha" . "[-a-zA-Z0-9]*$alphanum|$alpha)";
+  my $domainlabel = "(?:(?:$alphanum" . "[-a-zA-Z0-9]*)?$alphanum)";
+  my $hostname    = "(?:(?:$domainlabel\[.])*$toplabel\[.]?)";
+  my $host        = "(?:$hostname|$IPv4address)";
+  my $hostport    = "(?:$host(?::$port)?)";
+  return qr/^$host$/x;
 }
 
 #validates $value for $field against $self->FIELDS_VALIDATION->{$field} rules.
@@ -190,13 +222,18 @@ my $FIELD_DEFS  = {
       [r\-][w\-][x\-] # other's permissions - (r)ead,(w)rite,e(x)ecute
       $/x,
   },
-  user_id    => {required => 1, %$id_regexp},
-  group_id   => {required => 1, %$id_regexp},
-  cache      => {required => 0, %$bool_regexp},
-  deleted    => {required => 0, %$bool_regexp},
-  hidden     => {required => 0, %$bool_regexp},
-  changed_by => {required => 1, %$id_regexp},
+  user_id     => {required => 1, %$id_regexp},
+  group_id    => {required => 1, %$id_regexp},
+  cache       => {required => 0, %$bool_regexp},
+  deleted     => {required => 0, %$bool_regexp},
+  hidden      => {required => 0, %$bool_regexp},
+  changed_by  => {required => 1, %$id_regexp},
+  title       => {required => 0, inflate => \&no_markup_inflate},
+  description => {required => 0, inflate => \&no_markup_inflate},
+  domain      => {required => 1, regexp => domain_regexp()},
+
 };
+$FIELD_DEFS->{name} = $FIELD_DEFS->{title};
 
 sub FIELD_DEF {
   my ($self, $key) = @_;
@@ -206,6 +243,7 @@ sub FIELD_DEF {
   Carp::cluck("No field definition for: [$key].");
   return ();
 }
+
 
 #TODO:Utility function used for passing custom SQL in Model Classes.
 #$SQL is loaded from file during initialization

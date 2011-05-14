@@ -24,12 +24,14 @@ sub register {
 
   # Config
   $config ||= {};
-  $app->helper('dbix', sub { dbix($config) });
+  $app->helper('dbix', sub { dbix($config,$self,$app) });
   return;
 }    #end register
 
 sub dbix {
   my $config = shift;
+  my $c = shift;
+  my $app = shift;
   if ($DBIX) { return $DBIX; }
   $config->{db_dsn}
     ||= $config->{db_driver}
@@ -51,7 +53,7 @@ sub dbix {
     $DBIX->dbh->{Callbacks} = {
       prepare => sub {
         my ($dbh, $query, $attrs) = @_;
-        Carp::cluck("Preparing query:\n$query\n");
+        $app->log->debug("Preparing query:\n$query\n");
         return;
       },
     };

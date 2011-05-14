@@ -1,20 +1,28 @@
 [%- WRAPPER ${TEMPLATE_WRAPPER} -%]
 [%# DUMP(c.stash) %]
-  <div class="container ui-widget-content ui-corner-all">
+  <div class="container ui-widget-content ui-corner-all" id="home">
 
 <div id="lipsum">
+<h1>Ползата от историята</h1>
 <p>
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin eu velit ipsum, vitae facilisis justo. Donec iaculis porta erat, nec lacinia mi iaculis vel. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Duis a mauris vitae metus vehicula condimentum. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Integer scelerisque cursus est, at interdum nisi interdum ut. Aliquam dapibus justo sem, eget iaculis massa. Phasellus et enim eget magna consectetur suscipit dapibus a libero. Fusce vitae mauris et odio euismod elementum. Quisque mi eros, rutrum eu gravida sit amet, rhoncus in dui. Vestibulum luctus orci sed eros condimentum dapibus. Pellentesque pellentesque est quis orci iaculis aliquam. Vivamus mollis consectetur tempus. Etiam elit lorem, semper dictum volutpat a, tincidunt vel sem. Phasellus consequat nisl ut dui fermentum vulputate. Nam facilisis pharetra dui, ac pretium nibh egestas ac. Phasellus dignissim dapibus ipsum, at ultrices lacus fringilla varius. Phasellus sit amet dolor et ipsum pretium semper sed ut orci.
+<img src="http://www.pravoslavieto.com/books/history_paisij/history_Paisij.jpg" alt="&quot;История славяноболгарская&quot; св. Паисий Хилендарски" align="right" width="300" height="483" hspace="6" />Да се познават случилите се по-рано в тоя свят неща и 
+делата на ония, които са живеели на земята, е не само полезно, но и твърде потребно, любомъдри читателю. Ако навикнеш да прочиташ често тия неща, ще се обогатиш с разум, не ще 
+бъдеш много неизкусен и ще отговаряш на малките деца и простите хора, когато при случай те запитат за станалите по-рано в света деяния от черковната и гражданска история. И не 
+по-малко ще се срамуваш, когато не можеш да отговориш за тях.
 </p>
-<p>
-Nullam mi dui, malesuada tincidunt imperdiet vitae, consequat id diam. Ut vitae auctor turpis. Quisque mollis turpis vitae diam malesuada mattis non facilisis purus. Mauris est augue, accumsan in pretium id, suscipit non est. Etiam nec magna ante, in sagittis nisl. Phasellus vel erat justo. In commodo tempor urna at fermentum. Pellentesque non urna tortor. Nullam ut sapien nibh, a semper elit. In hac habitasse platea dictumst. Nunc in metus neque, vitae fermentum quam. Fusce cursus libero vel sem imperdiet eget tincidunt massa ultricies. Maecenas accumsan, dui in rhoncus viverra, tellus metus imperdiet ante, at sodales risus dui id odio. Ut rutrum, odio vitae consequat bibendum, risus odio elementum quam, non vulputate nunc justo rutrum ipsum. Proin ut leo ipsum. Etiam posuere sapien eu mi porta placerat. Pellentesque ut tincidunt sem. Phasellus eu neque congue nibh aliquet dignissim sit amet eget nunc. Maecenas eu justo sem.
-</p>
-<p>
-Phasellus aliquam mi eleifend dolor tincidunt quis rutrum neque mollis. Mauris sapien mauris, mollis vel euismod ac, auctor vel arcu. Fusce nulla nulla, semper sed ultrices id, lacinia sed nulla. Proin volutpat odio quis tortor molestie pretium. Pellentesque porttitor aliquet tortor, nec gravida metus vestibulum iaculis. Suspendisse sed viverra dolor. Quisque hendrerit, augue a molestie pulvinar, tellus enim posuere tortor, a bibendum felis enim at turpis. Sed sit amet venenatis ligula. Morbi vestibulum vestibulum ultrices. Quisque volutpat turpis ac odio vehicula dictum. Mauris lacus enim, scelerisque nec pharetra sed, porttitor eu tortor.
-</p>
-<p>
-Nullam velit nibh, tristique vel bibendum eu, vehicula ut est. Proin iaculis pharetra augue et vulputate. Vivamus posuere euismod lectus quis sagittis. Proin interdum placerat nisi et porttitor. Vivamus elementum eros non augue sodales nec scelerisque ante auctor. Phasellus nunc neque, eleifend nec fringilla quis, hendrerit eu dui. Ut varius libero nec dolor ultricies vel faucibus erat tempor. Donec est quam, iaculis nec suscipit ut, vehicula quis neque. Nulla at laoreet tellus. Suspendisse vel neque quam, a fermentum ligula. Vestibulum urna velit, convallis sed fringilla ac, fringilla eget massa.
-</p>
+<p>Отгде ще можеш да добиеш тия знания, ако не от ония, които писаха историята на този свят и които при все че не са живели дълго време, защото никому не се дарява дълъг живот, за 
+дълго време оставиха писания за тия неща. Сами от себе си да се научим не можем, защото кратки са дните на нашия живот на земята. Затова с четене на старите летописи и с чуждото 
+умение трябва да попълним недостатъчността на нашите години за обогатяване на разума.</p>
+<p>Искаш ли да седиш у дома си и да узнаеш без много трудно и опасно пътуване миналото на всички царства на тоя свят и ставащите сега събития в тях и да употребиш тия знания за 
+умна наслада и плоза за себе си и за другите, чети историята! Искаш ли да видиш като на театър играта на тоя свят, промяната и гибелта на големи царства и царе и непостоянството на 
+тяхното блаополучие, как господстващите и гордеещите се между народите племена, силни и непобедими в битките, славни и почитани от всички, внезапно отслабваха, смиряваха се, 
+упадаха, загиваха, изчезваха - чети историята и като познаеш от нея суетата на този свят, научи са де то презираш. Историята дава разум не само на всеки човек, за да управлява себе 
+си или своя дом, на и на големите владетели за добро властуване: как могат да държат дадените им от бога поданици в страх божи, в послушание, тишина, правда и благочестие, как да 
+укротяват и изкореняват бунтовниците, как да се опълчват против външните врагове във войните, как да ги победят и сключат мир. Виж колко голяма е ползата от историята. Накратко 
+това е заявил Василий, источният кесар, на своя син Лъв Премъдри. Съветайки го, каза: "Не преставай - рече - да четеш историята на древните. Защото там без труд ще намериш онова, 
+за което други много са се трудили. От тях ще узнаеш добродетелите на добрите и законопрестъпленията на злите, ще познаеш превратностите на човешкия живот и обратите на 
+благополучието в него, и непостоянството в този свят, и как и велики държави клонят към падение. Ще размислииш и ще видиш наказанието на злите и наградата на добрите. От тях се 
+пази!"</p>
 </div>
 
 

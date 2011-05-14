@@ -49,7 +49,6 @@ function validate_and_post_form (){
   * Onload!
   */
 $(window).load(function() {
-  enhance_form();
   submit_buton = $('#login_form .buttons button[type="submit"]');
   submit_buton.click(validate_and_post_form);
 });

@@ -3,11 +3,14 @@
 [% 
 
 data_type_locale = c.l(data_type);
-edit_data_type = c.l('Edit [_1]', data_type_locale );
-new_data_type = c.l('New [_1]', data_type_locale );
-legend = id ? edit_data_type : new_data_type;
 fields_ui_data = app.config('MYDLjE::Content::Form::ui');
-
+#some default values
+UNLESS id;
+  legend = c.l('New [_1]', data_type_locale );
+  form.invisible = 1;
+ELSE;
+  legend = c.l('Edit [_1]', data_type_locale );
+END;
 language_options = [];
 FOR option IN app.config('languages');
   language_options.push({label => option, value => option }); 
@@ -28,7 +31,7 @@ FOR option IN fields_ui_data.data_format;
   data_format_options.push({label => option, value => option});
 END;
 %]
-    <form id="edit_content_form" action="[% c.url_for('/content/edit/' _ id) %]" 
+    <form id="[% action %]_content_form" action="[% c.url_for('/content/edit/' _ id) %]" 
         method="post" class="unit on-2 columns" >
       <div class="column span-2" style="display: [% validator_errors ? 'block;':'none;' %]">
         <div class="ui-state-error ui-corner-all"></div>
@@ -44,8 +47,10 @@ END;
           [% #TODO:Implement range field or use JQ UI range enhancement
           text_field('sorting');
           checkbox_field('featured') ;
-          checkbox_field('protected'); 
-          checkbox_field('bad'); %]
+          checkbox_field('protected');
+          checkbox_field('invisible'); 
+          checkbox_field('bad'); 
+          %]
         </div>
       </div>
         <div class="unit on-6 columns">

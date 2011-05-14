@@ -7,11 +7,42 @@
      title="[% c.l('New [_1]', data_type ) %]"
      style="float:right;"
      id="[%'new_' _ data_type %]"
-     class="new_content"
-     >
+     class="new_content">
      <span class="ui-icon" 
      style="background-image: url(pub/css/icons/add.png) "></span></a>
   </h3>
+  <ul id="list_data" class="items">
+  [%  FOREACH row IN list_data %]
+  <li class="[% data_type +%] ui-state-default ui-corner-all"><div class="columns">
+    <div class="fixed column">
+        <div class="container">[% row.title.substr(0,20)%]</div>
+    </div>
+    <div class="elastic column">
+        <div class="container buttons">
+        <a href="[% c.url_for('/content/edit/' _ row.id ).query('data_type' => data_type ) %]"
+         title="[% c.l('Edit [_1]', data_type ) %]"
+         id="[%'edit_' _ row.id _ data_type %]"
+         class="edit_content"><span class="ui-icon"></span></a>
+         <a href="[% c.url_for('/content/delete/' _ row.id ).query('data_type' => data_type ) %]"
+         title="[% c.l('Delete [_1]', data_type ) %]"
+         id="[%'delete_' _ row.id _ data_type %]"
+         class="delete_content"><span class="ui-icon"></span></a>
+        </div>
+    </div>
+  </div></li>
+  [% END %]
+  </ul>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   <div id="edit-form-dialog"
        title="[% c.l('New [_1]', c.l(data_type) ) %]"
        style="display:none">
@@ -53,6 +84,7 @@ $(window).load(function() {
             save_data();
           },
           "[% c.l('Save and close') %]": function() {
+            save_data();
             $( this ).dialog( "close" );
           },
           "[% c.l('Cancel') %]": function() {
@@ -64,7 +96,7 @@ $(window).load(function() {
 });
 //]]>
 </script>
-</div><!-- end div id="main-right-area" -->
+</div><!-- end div id="[% action %]-area" -->
 <!-- end [%+ action %] -->
 [% END %]
 

@@ -1,9 +1,38 @@
 [% WRAPPER ${TEMPLATE_WRAPPER} %]
 <!-- start [% action %] -->
-<ul>
+<div id="[% action %]-area" class="container ui-corner-all ui-widget-content">
+<form id="[% action %]_form">
+<fieldset class="ui-widget-content ui-corner-all">
+        <legend class="ui-widget-header ui-corner-all">[% c.l('Domains') %]
+            <span  class="legend_icon"><a href="[% c.url_for('/site/edit_domain')%]"
+           title="[% c.l('New [_1]', c.l('Domain') ) %]"
+           id="new_domain_button"
+           class="new domain">
+             <span class="ui-icon" 
+             style="background-image: url(pub/css/icons/world_add.png) "></span></a></span>
+        </legend>
+<ul class="items">
 [% FOREACH d IN domains %]
-    <li>[% d.domain %]</li>
+    <li class="domain ui-state-default ui-corner-all">
+        <div class="columns">
+            <div class="fixed column"><div class="container">[% d.domain %]</div></div>
+            <div class="elastic column">
+                <div class="container buttons">
+           <span  class="legend_icon"><a 
+           href="[% c.url_for('/site/edit_domain/' _ d.id )%]"
+           title="[% c.l('Edit [_1]', c.l('Domain') ) %]"
+           id="edit_domain_button"
+           class="edit_domain">
+             <span class="ui-icon" 
+             style="background-image: url(pub/css/icons/world_edit.png) "></span></a></span>
+             </div>
+            </div>
+        </div>
+    </li>
 [% END %]
 </ul>
+</fieldset>
+</form>
+</div><!-- end div id="[% action %]-area" -->
 <!-- end [%+ action +%] -->
 [% END %]

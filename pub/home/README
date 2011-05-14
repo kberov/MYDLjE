@@ -1,1 +1,4 @@
 Home dirs for users are here.
+These files are seen trough web.
+Every user when created gets a personal directory - how convenient.
+The users belonging to his group can read and may be write into his directory.

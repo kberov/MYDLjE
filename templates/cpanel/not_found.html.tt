@@ -1,7 +1,7 @@
 <!-- start not_found -->
 [%
 IF c.msession.guest;
-  PROCESS 'Auth/loginscreen.html.tt';
+  PROCESS 'auth/loginscreen.html.tt';
 
 ELSE;
   WRAPPER ${TEMPLATE_WRAPPER}; %]

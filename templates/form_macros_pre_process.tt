@@ -16,12 +16,12 @@ You may use simple widgets to build more complex widgets.
 #Allow custom "form" to be passed to the STASH
 form ||= c.req.params.to_hash;
 %]
-[% MACRO text_field(arg,params) BLOCK %]
-[% name_and_id =  arg||params.name; 
-field_error = validator_errors.${name_and_id};
-params.value ||= form.${name_and_id};
-name_and_id_help = params.help||name_and_id _ '_help';
-
+[% MACRO text_field(arg,params) BLOCK;
+  name_and_id =  arg||params.name; 
+  field_error = validator_errors.${name_and_id};
+  params.value ||= form.${name_and_id};
+  label = name_and_id.replace('[^\.]+\.','');
+  name_and_id_help = params.help|| label _ '_help';
 +%]
     <div class="column span-2" style="[% field_error?'':'display:none;'%]" 
     id="[% name_and_id %]_error">
@@ -29,7 +29,7 @@ name_and_id_help = params.help||name_and_id _ '_help';
     </div>
     <div class="fixed column label" id="[% name_and_id _ '_label_column' %]">
     <label for="[% params.id || name_and_id %]" id="[% name_and_id _ '_label' %]">
-      [% params.label|| c.l(name_and_id).ucfirst;
+      [% params.label|| c.l(label).ucfirst;
          params.required ? ':&#160;*' : ':';
       %]
     </label>
@@ -52,11 +52,11 @@ name_and_id_help = params.help||name_and_id _ '_help';
                 Your html here
           \[\% END \%\]
 %]
-[% MACRO password_field(arg, params) BLOCK %]
-[% name_and_id =  arg||params.name; 
-field_error = validator_errors.${name_and_id};
-name_and_id_help = params.help||name_and_id _ '_help';
-
+[% MACRO password_field(arg, params) BLOCK;
+  name_and_id =  arg||params.name; 
+  field_error = validator_errors.${name_and_id};
+  label = name_and_id.replace('[^\.]+\.','');
+  name_and_id_help = params.help|| label _ '_help';
 +%]
     <div class="column span-2" style="[% field_error?'':'display:none;'%]" 
     id="[% name_and_id %]_error">
@@ -64,7 +64,7 @@ name_and_id_help = params.help||name_and_id _ '_help';
     </div>
     <div class="fixed column label">
     <label for="[% params.id || name_and_id %]" id="[% name_and_id _ '_label' %]">
-      [% params.label|| c.l(name_and_id).ucfirst;
+      [% params.label|| c.l(label).ucfirst;
          params.required ? ':&#160;*' : ':';
       %]
     </label>
@@ -80,11 +80,11 @@ name_and_id_help = params.help||name_and_id _ '_help';
     </div>
 [%+ END %]
 
-[% MACRO file_field(arg,params) BLOCK %]
-[% name_and_id =  arg||params.name; 
-field_error = validator_errors.${name_and_id};
-name_and_id_help = params.help|| name_and_id _ '_help';
-
+[% MACRO file_field(arg,params) BLOCK;
+  name_and_id =  arg||params.name; 
+  field_error = validator_errors.${name_and_id};
+  label = name_and_id.replace('[^\.]+\.','');
+  name_and_id_help = params.help|| label _ '_help';
 +%]
     <div class="column span-2" style="[% field_error?'':'display:none;'%]" 
     id="[% name_and_id %]_error">
@@ -92,7 +92,7 @@ name_and_id_help = params.help|| name_and_id _ '_help';
     </div>
     <div class="fixed column label">
     <label for="[% params.id || name_and_id %]">
-            [% params.label || c.l(name_and_id).ucfirst%]
+            [% params.label || c.l(label).ucfirst %]
             [% params.required ? ':&#160;*' : ':' %]
         </label>
     </div>
@@ -107,11 +107,12 @@ name_and_id_help = params.help|| name_and_id _ '_help';
     </div>
 [% END %]
 
-[% MACRO select_field(arg,params) BLOCK %]
-[% name_and_id =  arg||params.name; 
-field_error = validator_errors.${name_and_id};
-params.selected ||= form.${name_and_id};
-name_and_id_help = params.help||name_and_id _ '_help';
+[% MACRO select_field(arg,params) BLOCK;
+  name_and_id =  arg||params.name; 
+  field_error = validator_errors.${name_and_id};
+  params.selected ||= form.${name_and_id};
+  label = name_and_id.replace('[^\.]+\.','');
+  name_and_id_help = params.help || label _ '_help';
 +%]
     <div class="column span-2" style="[% field_error?'':'display:none;'%]" 
         id="[% name_and_id %]_error">
@@ -119,7 +120,7 @@ name_and_id_help = params.help||name_and_id _ '_help';
     </div>
     <div class="fixed column label">
       <label for="[% params.id || name_and_id %]">
-              [% params.label|| c.l(name_and_id).ucfirst%]
+              [% params.label|| c.l(label).ucfirst%]
               [% params.required ? ':&#160;*' : ':' %]
       </label>
     </div>
@@ -142,8 +143,8 @@ name_and_id_help = params.help||name_and_id _ '_help';
   name_and_id =  arg||params.name; 
   field_error = validator_errors.${name_and_id};
   params.value ||= form.${name_and_id};
-  name_and_id_help = params.help||name_and_id _ '_help';
-
+  label = name_and_id.replace('[^\.]+\.','');
+  name_and_id_help = params.help|| label _ '_help';
 +%]
     <div class="column span-2" style="[% field_error?'':'display:none;'%]" 
     id="[% name_and_id %]_error">
@@ -151,9 +152,9 @@ name_and_id_help = params.help||name_and_id _ '_help';
     </div>
     <div class="fixed column label" id="[% name_and_id _ '_label_column' %]">
     <label for="[% params.id || name_and_id %]" id="[% name_and_id _ '_label' %]">
-            [% params.label|| c.l(name_and_id).ucfirst %]
-            [% params.required ? ':&#160;*' : ':' %]
-        </label>
+      [% params.label|| c.l(label).ucfirst %]
+      [% params.required ? ':&#160;*' : ':' %]
+    </label>
     </div>
     <div class="elastic column " id="[% name_and_id _ '_field_column' %]"><div class="container field">
       <textarea id="[% params.id || name_and_id %]" name="[% name_and_id %]" class="textarea" 
@@ -168,7 +169,8 @@ name_and_id_help = params.help||name_and_id _ '_help';
   name_and_id =  arg||params.name; 
   field_error = validator_errors.${name_and_id};
   params.value ||= form.${name_and_id};
-  name_and_id_help = params.help||name_and_id _ '_help';
+  label = name_and_id.replace('[^\.]+\.','');
+  name_and_id_help = params.help || label _ '_help';
 +%]
     <div class="column" style="[% field_error?'':'display:none;'%]" 
     id="[% name_and_id %]_error">
@@ -180,7 +182,7 @@ name_and_id_help = params.help||name_and_id _ '_help';
     id="[% name_and_id %]" name="[% name_and_id %]" value="1" />
     <label for="[% params.id || name_and_id %]" id="[% name_and_id _ '_label' %]" 
     style="display: inline-block;">                                                 
-      [% params.label|| c.l(name_and_id).ucfirst %]
+      [% params.label|| c.l(label).ucfirst %]
       [% params.required ? '&#160;*' : '' %]
     </label>
     </div>

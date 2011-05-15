@@ -43,53 +43,52 @@ END;
   [%+ 
   +%]
    <div class="column"><div class="unit on-2 columns">
-      [% text_field('content.title', {label =>c.l('title'), help => 'title_help'} ) %]
+      [% text_field('content.title') %]
     </div></div>
     <div class="column"><div class="unit on-2 columns">
-      [% select_field('content.language', {label => c.l('language'), 
-       options => language_options, help =>'language_help'} ); %]
+      [% select_field('content.language', {options => language_options} ); %]
     </div></div>
 
     <div class="column"><div class="unit on-2 columns">
-      [% text_field('content.alias',{label =>c.l('alias'), help =>'alias_help'}); %]
+      [% text_field('page.alias'); %]
     </div></div>
     <div class="column"><div class="unit on-2 columns">
-      [% select_field('domain_id', {label => c.l('Domain'), 
+      [% select_field('page.domain_id', {label => c.l('Domain'), 
        options => domains_options, help =>'domain_help'} ); %]
     </div></div>
     <div class="column"><div class="unit on-2 columns">
-      [% select_field('page_type', {options => page_type_options} ); %]
+      [% select_field('page.page_type', {options => page_type_options} ); %]
     </div></div>
     <div class="column"><div class="unit on-2 columns">
-      [% select_field('pid');%]
+      [% select_field('page.pid',{options =>page_pid_options});%]
     </div></div>
   
     <div class="column"><div class="unit on-2 columns">
-      [% text_field('description');%]
+      [% text_field('page.description');%]
     </div></div>
     <div class="column"><div class="unit on-2 columns">
-      [% text_field('permissions'); %]
+      [% text_field('page.permissions'); %]
     </div></div>
     <div class="column span-2">
       <div class="unit on-4 columns">
         <div class="column"><div class="unit on-2 columns">
-          [%  checkbox_field('published'); %]
+          [%  checkbox_field('page.published'); %]
         </div></div>
         <div class="column"><div class="unit on-2 columns">
-          [% checkbox_field('hidden'); %]
+          [% checkbox_field('page.hidden'); %]
         </div></div>
         <div class="column"><div class="unit on-2 columns">
-          [% checkbox_field('cache'); %]
+          [% checkbox_field('page.cache'); %]
         </div></div>
         <div class="column"><div class="unit on-2 columns">
-          [% text_field('expire'); %]
+          [% text_field('page.expire'); %]
         </div></div>
       </div>
     </div>
     
     [% 
-    textarea('template');
-    textarea('content.body',{label =>c.l('body')});
+    textarea('page.template');
+    textarea('content.body');
     button_set() %]
    </div>
 </fieldset>

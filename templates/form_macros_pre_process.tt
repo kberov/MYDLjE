@@ -20,6 +20,7 @@ form ||= c.req.params.to_hash;
 [% name_and_id =  arg||params.name; 
 field_error = validator_errors.${name_and_id};
 params.value ||= form.${name_and_id};
+name_and_id_help = params.help||name_and_id _ '_help';
 
 +%]
     <div class="column span-2" style="[% field_error?'':'display:none;'%]" 
@@ -41,7 +42,7 @@ params.value ||= form.${name_and_id};
       </div>
     </div>
     <div class="column span-2">
-      <div class="container help">[% c.l(name_and_id _ '_help') %]</div>
+      <div class="container help">[% c.l(name_and_id_help) %]</div>
     </div>
 [%+ END %]
 
@@ -54,6 +55,8 @@ params.value ||= form.${name_and_id};
 [% MACRO password_field(arg, params) BLOCK %]
 [% name_and_id =  arg||params.name; 
 field_error = validator_errors.${name_and_id};
+name_and_id_help = params.help||name_and_id _ '_help';
+
 +%]
     <div class="column span-2" style="[% field_error?'':'display:none;'%]" 
     id="[% name_and_id %]_error">
@@ -73,13 +76,15 @@ field_error = validator_errors.${name_and_id};
       </div>
     </div>
     <div class="column span-2">
-      <div class="container help">[% c.l(name_and_id _ '_help') %]</div>
+      <div class="container help">[% c.l(name_and_id_help) %]</div>
     </div>
 [%+ END %]
 
 [% MACRO file_field(arg,params) BLOCK %]
 [% name_and_id =  arg||params.name; 
 field_error = validator_errors.${name_and_id};
+name_and_id_help = params.help|| name_and_id _ '_help';
+
 +%]
     <div class="column span-2" style="[% field_error?'':'display:none;'%]" 
     id="[% name_and_id %]_error">
@@ -97,8 +102,8 @@ field_error = validator_errors.${name_and_id};
         name="[% name_and_id %]" />
       </div>
     </div>
-        <div class="column span-2">
-      <div class="container help">[% c.l(name_and_id _ '_help') %]</div>
+    <div class="column span-2">
+      <div class="container help">[% c.l(name_and_id_help) %]</div>
     </div>
 [% END %]
 
@@ -106,33 +111,30 @@ field_error = validator_errors.${name_and_id};
 [% name_and_id =  arg||params.name; 
 field_error = validator_errors.${name_and_id};
 params.selected ||= form.${name_and_id};
+name_and_id_help = params.help||name_and_id _ '_help';
 +%]
     <div class="column span-2" style="[% field_error?'':'display:none;'%]" 
-    id="[% name_and_id %]_error">
+        id="[% name_and_id %]_error">
       <div class="container ui-state-error ui-corner-all ">[% field_error %]</div>
     </div>
     <div class="fixed column label">
-    <label for="[% params.id || name_and_id %]">
-            [% params.label|| c.l(name_and_id).ucfirst%]
-            [% params.required ? ':&#160;*' : ':' %]
-        </label>
+      <label for="[% params.id || name_and_id %]">
+              [% params.label|| c.l(name_and_id).ucfirst%]
+              [% params.required ? ':&#160;*' : ':' %]
+      </label>
     </div>
-    <div class="elastic column ">
-        <select  for="[% params.id || name_and_id %]" name="[% name_and_id %]"
-        [% params.readonly? ' readonly="readonly"':'' %]
-        >
+    <div class="elastic column"><div class="container field">
+        <select  id="[% params.id || name_and_id %]" name="[% name_and_id %]"
+        [% params.readonly? ' readonly="readonly"':'' %]>
             [% FOR row IN params.options %]
-            <option [%+
-                params.selected eq row.value ? ' selected="selected"' : '' 
-                +%]
-                [%+
-                row.disabled ? '  disabled="disabled"' : '' 
-                +%]
-                value="[% row.value %]">[%
-                c.l(row.label || row.value).xml
-                %]</option>
+            <option [%+ params.selected eq row.value ? ' selected="selected"' : '' +%]
+                [%+ row.disabled ? '  disabled="disabled"' : '' +%]
+                value="[% row.value %]">[% c.l(row.label || row.value).xml %]</option>
             [% END %]
-        </select>
+        </select></div>
+    </div>
+    <div class="column span-2">
+      <div class="container help">[% c.l(name_and_id_help) %]</div>
     </div>
 [%+ END %]
 
@@ -140,6 +142,8 @@ params.selected ||= form.${name_and_id};
   name_and_id =  arg||params.name; 
   field_error = validator_errors.${name_and_id};
   params.value ||= form.${name_and_id};
+  name_and_id_help = params.help||name_and_id _ '_help';
+
 +%]
     <div class="column span-2" style="[% field_error?'':'display:none;'%]" 
     id="[% name_and_id %]_error">
@@ -156,11 +160,15 @@ params.selected ||= form.${name_and_id};
         style="height:[% params.height||'200px' %];width:100%;" >
         [% params.value %]</textarea>
     </div></div>
+    <div class="column span-2">
+      <div class="container help">[% c.l(name_and_id_help) %]</div>
+    </div>
 [%+ END %]
 [%MACRO checkbox_field(arg,params) BLOCK;
   name_and_id =  arg||params.name; 
   field_error = validator_errors.${name_and_id};
   params.value ||= form.${name_and_id};
+  name_and_id_help = params.help||name_and_id _ '_help';
 +%]
     <div class="column" style="[% field_error?'':'display:none;'%]" 
     id="[% name_and_id %]_error">
@@ -171,12 +179,14 @@ params.selected ||= form.${name_and_id};
     [% params.value ? ' checked="checked" ' : ' ' %]
     id="[% name_and_id %]" name="[% name_and_id %]" value="1" />
     <label for="[% params.id || name_and_id %]" id="[% name_and_id _ '_label' %]" 
-    style="display: inline-block;">
+    style="display: inline-block;">                                                 
       [% params.label|| c.l(name_and_id).ucfirst %]
       [% params.required ? '&#160;*' : '' %]
     </label>
     </div>
-    
+    <div class="column span-2">
+      <div class="container help">[% c.l(name_and_id_help) %]</div>
+    </div>    
 [%+ END %]
 
 [% MACRO hidden_field(arg,params) BLOCK;
@@ -186,3 +196,13 @@ params.value ||= form.${name_and_id};
 <input type="hidden" id="[% params.id||name_and_id%]" 
 name="[% name_and_id %]" value="[% params.value %]" />
 [% END %]
+[% MACRO button_set() BLOCK; +%]
+      <div class="column span-2">
+        <div class="container buttons">
+          <button type="submit" name="save">[% c.l('Save') %]</button>
+          <button type="submit" name="save_and_close">[% c.l('Save and close') %]</button>
+          <button type="reset">[% c.l('Reset') %]</button>
+        </div>
+      </div>
+[%+ END %]
+

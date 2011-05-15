@@ -1,7 +1,20 @@
 [% WRAPPER ${TEMPLATE_WRAPPER} %]
 <!-- start [% action %] -->
-[% template.name %]<br />
-When we edit a page we also edit it's properties like Title,keywords in one or more languages
-etc.
+<div id="[% action %]-area" class="container ui-corner-all ui-widget-content">
+<form id="[% action %]_form">
+<fieldset class="ui-widget-content ui-corner-all">
+        <legend class="ui-widget-header ui-corner-all">[% c.l('Pages') %]
+            <span  class="legend_icon"><a href="[% c.url_for('/site/edit_page')%]"
+           title="[% c.l('New [_1]', c.l('Page') ) %]"
+           id="new_domain_button"
+           class="new domain">
+             <span class="ui-icon" 
+             style="background-image: url(pub/css/icons/page_add.png) "></span></a></span>
+        </legend>
+<ul class="items">
+</ul>
+</fieldset>
+</form>
+</div><!-- end div id="[% action %]-area" -->
 <!-- end [%+ action +%] -->
 [% END %]

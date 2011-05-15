@@ -10,17 +10,13 @@ my $domain_sql_AND =
 
 #TODO: make this SQL common for ALL tables with the mentioned columns,
 #thus achieving commonly used permission rules everywhere.
+my $domains_SQL =
+  "SELECT * FROM my_domains WHERE $domain_sql_AND ORDER BY domain";
 
 sub domains {
   my $c   = shift;
   my $uid = $c->msession->user->id;
-  $c->stash(
-    domains => [
-      $c->dbix->query(
-        "SELECT * FROM my_domains WHERE $domain_sql_AND ORDER BY domain",
-        $uid, $uid)->hashes
-    ]
-  );
+  $c->stash(domains => [$c->dbix->query($domains_SQL, $uid, $uid)->hashes]);
 
   return;
 }
@@ -78,6 +74,28 @@ sub edit_domain {
 
   #$c->render();
   return;
+}
+
+sub pages {
+
+}
+
+sub edit_page {
+  my $c = shift;
+
+  require MYDLjE::M::Page;
+  my $id   = $c->stash('id');
+  my $page = MYDLjE::M::Page->new;
+  my $user = $c->msession->user;
+
+  $c->domains();
+  my $pt_constraints =
+    $page->FIELDS_VALIDATION->{page_type}{constraints}[0]{in};
+  $c->stash(page_types => $pt_constraints);
+
+#$c->render();
+  return;
+
 }
 
 sub settings {

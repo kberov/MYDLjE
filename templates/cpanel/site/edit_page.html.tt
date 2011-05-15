@@ -1,0 +1,105 @@
+[% 
+WRAPPER ${TEMPLATE_WRAPPER};
+#we do NOT have an editable value id='0'
+IF id;
+  legend = c.l('Edit [_1]', c.l('page') );
+  form_action = c.url_for('/site/edit_page/' _ id );
+ELSE;
+  legend = c.l('New [_1]', c.l('page') );
+  form_action = c.url_for('/site/edit_page');
+END;
+
+domains_options = [];
+FOREACH dd IN domains;
+  domains_options.push({label=>dd.domain, value =>dd.id});
+END;
+
+page_type_options = [];
+FOR pt IN page_types;
+  page_type_options.push({label=>pt, value =>pt});
+
+END;
+language_options = [];
+FOR option IN app.config('languages');
+  language_options.push({label => option, value => option }); 
+END;
+
+%]
+
+<!-- start [% action %] -->
+<div id="[% action %]-area" class="container ui-corner-all ui-widget-content">
+<form id="[% action %]_form" 
+    action="[% form_action %]"
+    method="POST">
+<fieldset class="ui-widget-content ui-corner-all">
+  <legend class="ui-widget-header ui-corner-all">
+  [% legend %]<span class="legend_icon"><span class="ui-icon" 
+        style="background-image: url(pub/css/icons/world_edit.png) "></span>
+  </span></legend>
+  <div class="unit on-2 columns">
+  [%#
+  pid sorting template cache expiry user_id group_id tstamp start stop published hidden deleted changed_by
+%]
+  [%+ 
+  +%]
+   <div class="column"><div class="unit on-2 columns">
+      [% text_field('content.title', {label =>c.l('title'), help => 'title_help'} ) %]
+    </div></div>
+    <div class="column"><div class="unit on-2 columns">
+      [% select_field('content.language', {label => c.l('language'), 
+       options => language_options, help =>'language_help'} ); %]
+    </div></div>
+
+    <div class="column"><div class="unit on-2 columns">
+      [% text_field('content.alias',{label =>c.l('alias'), help =>'alias_help'}); %]
+    </div></div>
+    <div class="column"><div class="unit on-2 columns">
+      [% select_field('domain_id', {label => c.l('Domain'), 
+       options => domains_options, help =>'domain_help'} ); %]
+    </div></div>
+    <div class="column"><div class="unit on-2 columns">
+      [% select_field('page_type', {options => page_type_options} ); %]
+    </div></div>
+    <div class="column"><div class="unit on-2 columns">
+      [% select_field('pid');%]
+    </div></div>
+  
+    <div class="column"><div class="unit on-2 columns">
+      [% text_field('description');%]
+    </div></div>
+    <div class="column"><div class="unit on-2 columns">
+      [% text_field('permissions'); %]
+    </div></div>
+    <div class="column span-2">
+      <div class="unit on-4 columns">
+        <div class="column"><div class="unit on-2 columns">
+          [%  checkbox_field('published'); %]
+        </div></div>
+        <div class="column"><div class="unit on-2 columns">
+          [% checkbox_field('hidden'); %]
+        </div></div>
+        <div class="column"><div class="unit on-2 columns">
+          [% checkbox_field('cache'); %]
+        </div></div>
+        <div class="column"><div class="unit on-2 columns">
+          [% text_field('expire'); %]
+        </div></div>
+      </div>
+    </div>
+    
+    [% 
+    textarea('template');
+    textarea('content.body',{label =>c.l('body')});
+    button_set() %]
+   </div>
+</fieldset>
+</form>
+[%# DUMP(domains) %]
+<script>
+$(window).load(function() {
+    $('a[href$="pages"]').addClass('ui-state-active');
+});
+</script>
+</div><!-- end div id="[% action %]-area" -->
+<!-- end [%+ action +%] -->
+[% END %]

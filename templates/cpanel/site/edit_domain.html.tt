@@ -22,17 +22,11 @@ END;
   <div class="unit on-2 columns">
   [%+ 
      text_field('domain', {label => c.l('Domain')}); 
-     text_field('name');
+     text_field('name',{label => c.l('title'),help=>'title_help'});
      text_field('description');
      text_field('permissions');
-   +%]   
-<div class="column span-2">
-  <div class="container buttons">
-    <button type="submit" name="save">[% c.l('Save') %]</button>
-    <button type="submit" name="save_and_close">[% c.l('Save and close') %]</button>
-    <button type="reset">[% c.l('Reset') %]</button>
-  </div>
-</div>
+     button_set();
+   +%]
    </div>
 </fieldset>
 </form>

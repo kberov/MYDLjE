@@ -3,15 +3,15 @@ use MYDLjE::Base 'MYDLjE::ControlPanel::C';
 
 #Raw SQL for getting domains that belong to the current user
 # OR the user belongs to a grup that has "read" and "write" permisttions
-my $domain_sql_AND =
-    "(user_id = ? AND permissions LIKE 'drw%')"
-  . " OR (group_id IN (SELECT gid FROM my_users_groups WHERE uid=?) "
+my $permissions_sql_AND =
+    "(user_id = ? AND permissions LIKE '_rw%')"
+  . " OR (group_id IN (SELECT gid FROM my_users_groups WHERE uid= ?) "
   . " AND permissions LIKE '____rw%')";
 
 #TODO: make this SQL common for ALL tables with the mentioned columns,
 #thus achieving commonly used permission rules everywhere.
 my $domains_SQL =
-  "SELECT * FROM my_domains WHERE $domain_sql_AND ORDER BY domain";
+  "SELECT * FROM my_domains WHERE $permissions_sql_AND ORDER BY domain";
 
 sub domains {
   my $c   = shift;
@@ -31,7 +31,7 @@ sub edit_domain {
   if (defined $id) {
     $domain->select(
       id   => $id,
-      -and => [\[$domain_sql_AND, $user->id, $user->id]]
+      -and => [\[$permissions_sql_AND, $user->id, $user->id]]
     );
   }
   if ($c->req->method eq 'GET') {
@@ -93,9 +93,49 @@ sub edit_page {
     $page->FIELDS_VALIDATION->{page_type}{constraints}[0]{in};
   $c->stash(page_types => $pt_constraints);
 
+  $c->stash(page_pid_options => $c->_set_page_pid_options($user));
+
 #$c->render();
   return;
 
+}
+
+#prepares an hierarshical looking list for page.pid select_field
+sub _set_page_pid_options {
+  my ($c, $user) = @_;
+  my $page_pid_options = [{label => '/', value => 0}];
+  $c->_traverse_children($user, 0, $page_pid_options, 0);
+  return $page_pid_options;
+
+}
+
+sub _traverse_children {
+  my ($c, $user, $pid, $page_pid_options, $depth) = @_;
+
+  #Be reasonable and prevent deadly recursion
+  $depth++;
+  return if $depth > 20;
+  my $domain_id = $c->req->param('page.domain_id') || 0;
+  my $pages = $c->dbix->query(
+    'SELECT id as value, alias as label, page_type FROM my_pages'
+      . ' WHERE pid=? AND domain_id=? AND id>0' . ' AND '
+      . $permissions_sql_AND,
+    $pid, $domain_id, $user->id, $user->id)->hashes;
+  if (@$pages) {
+    foreach my $page (@$pages) {
+      push @$page_pid_options, $page;
+      $page_pid_options->[-1]{label} =
+        '-' x $depth . $page_pid_options->[-1]{label};
+      if ($page->{page_type} eq 'root') {
+
+        #there can be only one root in a site
+        $page_pid_options->[0]{disabled} = 1;
+      }
+      $c->_traverse_children($user, $page->{value}, $page_pid_options,
+        $depth);
+    }
+  }
+  return;
 }
 
 sub settings {

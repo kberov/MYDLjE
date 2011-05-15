@@ -4,7 +4,6 @@ use MYDLjE::Base 'Mojolicious::Plugin';
 
 sub register {
   my ($self, $app, $config) = @_;
-  warn Data::Dumper::Dumper($config);
 
   # Config
   $config ||= {};
@@ -33,7 +32,6 @@ sub register {
       'textile',
       sub {
         my ($c, $text) = @_;
-        warn 'got here' . __LINE__;
         $textile->docroot($c->stash('base_path'));
         return $textile->process($text);
       }

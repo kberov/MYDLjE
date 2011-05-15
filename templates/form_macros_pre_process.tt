@@ -42,7 +42,7 @@ name_and_id_help = params.help||name_and_id _ '_help';
       </div>
     </div>
     <div class="column span-2">
-      <div class="container help">[% c.l(name_and_id_help) %]</div>
+      <div class="container help">[% c.textile(c.l(name_and_id_help)) %]</div>
     </div>
 [%+ END %]
 
@@ -76,7 +76,7 @@ name_and_id_help = params.help||name_and_id _ '_help';
       </div>
     </div>
     <div class="column span-2">
-      <div class="container help">[% c.l(name_and_id_help) %]</div>
+      <div class="container help">[% c.textile(c.l(name_and_id_help)) %]</div>
     </div>
 [%+ END %]
 
@@ -103,7 +103,7 @@ name_and_id_help = params.help|| name_and_id _ '_help';
       </div>
     </div>
     <div class="column span-2">
-      <div class="container help">[% c.l(name_and_id_help) %]</div>
+      <div class="container help">[% c.textile(c.l(name_and_id_help)) %]</div>
     </div>
 [% END %]
 
@@ -134,7 +134,7 @@ name_and_id_help = params.help||name_and_id _ '_help';
         </select></div>
     </div>
     <div class="column span-2">
-      <div class="container help">[% c.l(name_and_id_help) %]</div>
+      <div class="container help">[% c.textile(c.textile(c.l(name_and_id_help))) %]</div>
     </div>
 [%+ END %]
 
@@ -157,11 +157,11 @@ name_and_id_help = params.help||name_and_id _ '_help';
     </div>
     <div class="elastic column " id="[% name_and_id _ '_field_column' %]"><div class="container field">
       <textarea id="[% params.id || name_and_id %]" name="[% name_and_id %]" class="textarea" 
-        style="height:[% params.height||'200px' %];width:100%;" >
+        style="height:[% params.height||'100px' %];width:100%;" >
         [% params.value %]</textarea>
     </div></div>
     <div class="column span-2">
-      <div class="container help">[% c.l(name_and_id_help) %]</div>
+      <div class="container help">[% c.textile(c.l(name_and_id_help)) %]</div>
     </div>
 [%+ END %]
 [%MACRO checkbox_field(arg,params) BLOCK;
@@ -185,7 +185,7 @@ name_and_id_help = params.help||name_and_id _ '_help';
     </label>
     </div>
     <div class="column span-2">
-      <div class="container help">[% c.l(name_and_id_help) %]</div>
+      <div class="container help">[% c.textile(c.l(name_and_id_help)) %]</div>
     </div>    
 [%+ END %]
 

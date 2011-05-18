@@ -23,6 +23,8 @@ form ||= c.req.params.to_hash;
   label = name_and_id.replace('[^\.]+\.','');
   name_and_id_help = params.help|| label _ '_help';
 +%]
+<!-- start [% name_and_id %]_unit -->
+<div class="unit on-2 columns" id="[% name_and_id %]_unit">
     <div class="column span-2" style="[% field_error?'':'display:none;'%]" 
     id="[% name_and_id %]_error">
       <div class="container ui-state-error ui-corner-all ">[% field_error %]</div>
@@ -44,6 +46,7 @@ form ||= c.req.params.to_hash;
     <div class="column span-2">
       <div class="container help">[% c.textile(c.l(name_and_id_help)) %]</div>
     </div>
+</div><!-- end [% name_and_id %]_unit -->
 [%+ END %]
 
 [%# this must be called like this:
@@ -58,6 +61,8 @@ form ||= c.req.params.to_hash;
   label = name_and_id.replace('[^\.]+\.','');
   name_and_id_help = params.help|| label _ '_help';
 +%]
+<!-- start [%+ name_and_id %]_unit -->
+<div class="unit on-2 columns" id="[% name_and_id %]_unit">
     <div class="column span-2" style="[% field_error?'':'display:none;'%]" 
     id="[% name_and_id %]_error">
       <div class="container ui-state-error ui-corner-all">[% field_error %]</div>
@@ -78,6 +83,7 @@ form ||= c.req.params.to_hash;
     <div class="column span-2">
       <div class="container help">[% c.textile(c.l(name_and_id_help)) %]</div>
     </div>
+</div><!-- end [%+ name_and_id %]_unit -->
 [%+ END %]
 
 [% MACRO file_field(arg,params) BLOCK;
@@ -86,6 +92,8 @@ form ||= c.req.params.to_hash;
   label = name_and_id.replace('[^\.]+\.','');
   name_and_id_help = params.help|| label _ '_help';
 +%]
+<!-- start [%+ name_and_id %]_unit -->
+<div class="unit on-2 columns" id="[% name_and_id %]_unit">
     <div class="column span-2" style="[% field_error?'':'display:none;'%]" 
     id="[% name_and_id %]_error">
       <div class="container ui-state-error ui-corner-all ">[% field_error %]</div>
@@ -105,7 +113,8 @@ form ||= c.req.params.to_hash;
     <div class="column span-2">
       <div class="container help">[% c.textile(c.l(name_and_id_help)) %]</div>
     </div>
-[% END %]
+</div><!-- end [%+ name_and_id %]_unit -->
+[%+ END %]
 
 [% MACRO select_field(arg,params) BLOCK;
   name_and_id =  arg||params.name; 
@@ -114,6 +123,8 @@ form ||= c.req.params.to_hash;
   label = name_and_id.replace('[^\.]+\.','');
   name_and_id_help = params.help || label _ '_help';
 +%]
+<!-- start [%+ name_and_id %]_unit -->
+<div class="unit on-2 columns" id="[% name_and_id %]_unit">
     <div class="column span-2" style="[% field_error?'':'display:none;'%]" 
         id="[% name_and_id %]_error">
       <div class="container ui-state-error ui-corner-all ">[% field_error %]</div>
@@ -137,6 +148,7 @@ form ||= c.req.params.to_hash;
     <div class="column span-2">
       <div class="container help">[% c.textile(c.textile(c.l(name_and_id_help))) %]</div>
     </div>
+</div><!-- end [%+ name_and_id %]_unit -->
 [%+ END %]
 
 [%MACRO textarea(arg,params) BLOCK;
@@ -146,6 +158,8 @@ form ||= c.req.params.to_hash;
   label = name_and_id.replace('[^\.]+\.','');
   name_and_id_help = params.help|| label _ '_help';
 +%]
+<!-- start [%+ name_and_id %]_unit -->
+<div class="unit on-2 columns" id="[% name_and_id %]_unit">
     <div class="column span-2" style="[% field_error?'':'display:none;'%]" 
     id="[% name_and_id %]_error">
       <div class="container ui-state-error ui-corner-all ">[% field_error %]</div>
@@ -164,6 +178,7 @@ form ||= c.req.params.to_hash;
     <div class="column span-2">
       <div class="container help">[% c.textile(c.l(name_and_id_help)) %]</div>
     </div>
+</div><!-- end [%+ name_and_id %]_unit -->
 [%+ END %]
 [%MACRO checkbox_field(arg,params) BLOCK;
   name_and_id =  arg||params.name; 
@@ -172,6 +187,8 @@ form ||= c.req.params.to_hash;
   label = name_and_id.replace('[^\.]+\.','');
   name_and_id_help = params.help || label _ '_help';
 +%]
+<!-- start [%+ name_and_id %]_unit -->
+<div class="unit on-2 columns" id="[% name_and_id %]_unit">
     <div class="column" style="[% field_error?'':'display:none;'%]" 
     id="[% name_and_id %]_error">
       <div class="container ui-state-error ui-corner-all ">[% field_error %]</div>
@@ -189,6 +206,7 @@ form ||= c.req.params.to_hash;
     <div class="column span-2">
       <div class="container help">[% c.textile(c.l(name_and_id_help)) %]</div>
     </div>    
+</div><!-- end [%+ name_and_id %]_unit -->
 [%+ END %]
 
 [% MACRO hidden_field(arg,params) BLOCK;
@@ -199,12 +217,13 @@ params.value ||= form.${name_and_id};
 name="[% name_and_id %]" value="[% params.value %]" />
 [% END %]
 [% MACRO button_set() BLOCK; +%]
-      <div class="column span-2">
-        <div class="container buttons">
-          <button type="submit" name="save">[% c.l('Save') %]</button>
-          <button type="submit" name="save_and_close">[% c.l('Save and close') %]</button>
-          <button type="reset">[% c.l('Reset') %]</button>
-        </div>
-      </div>
+<!-- start [%+ name_and_id %]_unit -->
+<div class="unit" id="buttons_unit">
+  <div class="container buttons">
+    <button type="submit" name="save">[% c.l('Save') %]</button>
+    <button type="submit" name="save_and_close">[% c.l('Save and close') %]</button>
+    <button type="reset">[% c.l('Reset') %]</button>
+  </div>
+</div><!-- end [%+ name_and_id %]_unit -->
 [%+ END %]
 

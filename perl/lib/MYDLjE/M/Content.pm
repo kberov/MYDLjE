@@ -410,6 +410,20 @@ Works exactly the same way as L</tags>, but populates the keywords column.
 
 Getter/seter for the C<language> column. Accepts only two letter language abbreviations. Uses L<I18N::LangTags::List> to validate the argument if it is a valid language tag. Defaults to C<'en'>.
 
+=head2 permissions
+
+This field represents permissions for the current content-record  very much like permissions 
+of a file on a Unix. We use i<symbolic notation> to represent permissions. The format is "tuuugggoo" where "t" can be "d","l" or "-". 
+
+"d" is for "directory" - "I<Does this record contains other records?>" and is set for the first time when a child record is attached to this record. "l" means that the record is a link to another record. 
+"-" is for a regular record. 
+
+"u" represents permissions for the owner of the page.
+Valid values  for each place are "r" - read, "w" - write and "x" - execute. On eache place  instead of "r", "w" or "x" there can be "-" - none .  The last triple is for the rest of the users.
+
+We will try to follow closely the rules for "Traditional Unix permissions" as much as they are applicable here. We will not use octal notation.
+ See L<http://en.wikipedia.org/wiki/File_permissions#Traditional_Unix_permissions>.
+
 
 =head2 pid
 

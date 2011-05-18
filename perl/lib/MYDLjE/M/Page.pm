@@ -147,7 +147,7 @@ In MYDLjE there are  several types of pages:
 
 =item I<folder> 
 
-Not displayed in the front-end/site neither in menus - used just as parent of a list of items possibly stored in other tables.
+Not displayed in the front-end/site neither in menus - used just as container of a list of items possibly stored in other tables.
 
 =item I<regular>
 
@@ -179,11 +179,18 @@ After how many seconds this page will expire when C<cache=1>? Default: 86400 = 2
 
 =head2 permissions
 
-This field represents permissions for the curent page very much like permissions 
-of a file. The format is "duuugggoo" where first "d" or "-" is for 
-"Is this page a container for other items?" it is set for the first time when a child record 
-from some table is attached to this page. Usually all pages are containers. "u" represents permissions for the owner of the page.
-Valid values are "r", "w", "x" and "-".  The last triple is for the rest of the users.
+This field represents permissions for the current page very much like permissions 
+of a file on a Unix. We use i<symbolic notation> to represent permissions. The format is "tuuugggoo" where "t" can be "d","l" or "-". 
+
+"d" is for "directory" - "I<Does this page contains other pages?>" and is set for the first time when a child page is attached to this page. "l" means that the page is a link to another page. 
+"-" is for a regular record. 
+
+"u" represents permissions for the owner of the page.
+Valid values  for each place are "r" - read, "w" - write and "x" - execute. On eache place  instead of "r", "w" or "x" there can be "-" - none .  The last triple is for the rest of the users.
+
+We will try to follow closely the rules for "Traditional Unix permissions" as much as they are applicable here. We will not use octal notation.
+ See L<http://en.wikipedia.org/wiki/File_permissions#Traditional_Unix_permissions>.
+
 
 =head2 user_id
 

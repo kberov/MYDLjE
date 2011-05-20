@@ -45,8 +45,10 @@ our %Lexicon = (
   bad          => 'Bad Content',
 
   #TODO: use I18N::LangTags::List better
-  bg => I18N::LangTags::List::name('bg'),
-  en => I18N::LangTags::List::name('en'),
+  bg          => I18N::LangTags::List::name('bg'),
+  en          => I18N::LangTags::List::name('en'),
+  hidden_help => 'A Page can be hidden from menus',
+
 );
 
 1;

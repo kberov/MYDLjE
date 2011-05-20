@@ -56,7 +56,6 @@ padding:.5ex;
 form label {
 display:block;
 width:130px;
-cursor: help;
 }
 
 form label, form .field, form .buttons {
@@ -70,8 +69,13 @@ form .column .ui-state-error{
 .help {
 display:none;
 font-style:italic;
-font-weight:400;
+font-size:small;
 padding:0 1ex 1ex;
+font-weight: normal !important;Език:
+height:5em;
+overflow: auto;
+margin:1ex;
+margin-top: 0px;
 }
 
 #menu_languages .active {
@@ -187,3 +191,4 @@ ul.items li.page div.buttons a.edit_content span.ui-icon {
 ul.items li.page div.buttons a.delete_content span.ui-icon {
   background-image: url(icons/page_delete.png) ;
 }
+

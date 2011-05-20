@@ -98,7 +98,8 @@ END;
 [%# DUMP(domains) %]
 <script>
 $(window).load(function() {
-    $('a[href$="pages"]').addClass('ui-state-active');
+  $('a[href$="pages"]').addClass('ui-state-active');
+  
 });
 </script>
 </div><!-- end div id="[% action %]-area" -->

@@ -44,7 +44,7 @@ form ||= c.req.params.to_hash;
       </div>
     </div>
     <div class="column span-2">
-      <div class="container help">[% c.textile(c.l(name_and_id_help)) %]</div>
+      <div class="ui-state-default container help">[% c.textile(c.l(name_and_id_help)) %]</div>
     </div>
 </div><!-- end [% name_and_id %]_unit -->
 [%+ END %]
@@ -81,7 +81,7 @@ form ||= c.req.params.to_hash;
       </div>
     </div>
     <div class="column span-2">
-      <div class="container help">[% c.textile(c.l(name_and_id_help)) %]</div>
+      <div class="ui-state-default container help">[% c.textile(c.l(name_and_id_help)) %]</div>
     </div>
 </div><!-- end [%+ name_and_id %]_unit -->
 [%+ END %]
@@ -111,7 +111,7 @@ form ||= c.req.params.to_hash;
       </div>
     </div>
     <div class="column span-2">
-      <div class="container help">[% c.textile(c.l(name_and_id_help)) %]</div>
+      <div class="ui-state-default container help">[% c.textile(c.l(name_and_id_help)) %]</div>
     </div>
 </div><!-- end [%+ name_and_id %]_unit -->
 [%+ END %]
@@ -146,7 +146,7 @@ form ||= c.req.params.to_hash;
         </select></div>
     </div>
     <div class="column span-2">
-      <div class="container help">[% c.textile(c.textile(c.l(name_and_id_help))) %]</div>
+      <div class="ui-state-default container help">[% c.textile(c.textile(c.l(name_and_id_help))) %]</div>
     </div>
 </div><!-- end [%+ name_and_id %]_unit -->
 [%+ END %]
@@ -176,7 +176,7 @@ form ||= c.req.params.to_hash;
         [% params.value %]</textarea>
     </div></div>
     <div class="column span-2">
-      <div class="container help">[% c.textile(c.l(name_and_id_help)) %]</div>
+      <div class="ui-state-default container help">[% c.textile(c.l(name_and_id_help)) %]</div>
     </div>
 </div><!-- end [%+ name_and_id %]_unit -->
 [%+ END %]
@@ -204,7 +204,7 @@ form ||= c.req.params.to_hash;
     </label>
     </div>
     <div class="column span-2">
-      <div class="container help">[% c.textile(c.l(name_and_id_help)) %]</div>
+      <div class="ui-state-default container help">[% c.textile(c.l(name_and_id_help)) %]</div>
     </div>    
 </div><!-- end [%+ name_and_id %]_unit -->
 [%+ END %]

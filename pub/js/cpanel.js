@@ -20,7 +20,15 @@ function enhance_form() {
     });  
   });
   
-
+  $("label").each(function(){
+      $(this).css({cursor: 'help'});
+      $(this).click(function(){
+        var unit = $(this).parent().parent().parent();
+        $('.help', unit ).slideToggle();
+      return false;
+      });
+  });
+  $('.help').prepend('<span class="column ui-icon ui-icon-info"></span>');
   $('form input[type="text"]').addClass('ui-corner-all');
   $('form input[type="password"]').addClass('ui-corner-all');
 

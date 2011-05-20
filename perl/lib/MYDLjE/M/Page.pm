@@ -7,7 +7,7 @@ has TABLE => 'my_pages';
 
 has COLUMNS => sub {
   [ qw(
-      id pid alias page_type sorting template
+      id pid domain_id alias page_type sorting template
       cache expiry permissions user_id group_id
       tstamp start stop published hidden deleted changed_by
       )
@@ -24,6 +24,7 @@ has FIELDS_VALIDATION => sub {
   return {
     $self->FIELD_DEF('id'),
     $self->FIELD_DEF('pid'),
+    $self->FIELD_DEF('domain_id'),
     %alias,
     page_type => {
       required    => 1,

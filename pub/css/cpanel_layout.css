@@ -56,9 +56,10 @@ padding:.5ex;
 form label {
 display:block;
 width:130px;
+cursor: help;
 }
 
-form label,form .field, form .buttons {
+form label, form .field, form .buttons {
 padding:1ex;
 }
 

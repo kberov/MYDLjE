@@ -36,61 +36,63 @@ END;
   [% legend %]<span class="legend_icon"><span class="ui-icon" 
         style="background-image: url(pub/css/icons/world_edit.png) "></span>
   </span></legend>
-  <div class="unit on-2 columns">
   [%#
   pid sorting template cache expiry user_id group_id tstamp start stop published hidden deleted changed_by
 %]
   [%+ 
   +%]
-   <div class="column"><div class="unit on-2 columns">
+<div class="unit on-2 columns">
+  <div class="column">
       [% text_field('content.title') %]
-    </div></div>
-    <div class="column"><div class="unit on-2 columns">
+    </div>
+    <div class="column">
       [% select_field('content.language', {options => language_options} ); %]
-    </div></div>
-
-    <div class="column"><div class="unit on-2 columns">
+    </div>
+</div>
+<div class="unit on-2 columns">
+    <div class="column">
       [% text_field('page.alias'); %]
-    </div></div>
-    <div class="column"><div class="unit on-2 columns">
+    </div>
+    <div class="column">
       [% select_field('page.domain_id', {label => c.l('Domain'), 
        options => domains_options, help =>'domain_help'} ); %]
-    </div></div>
-    <div class="column"><div class="unit on-2 columns">
-      [% select_field('page.page_type', {options => page_type_options} ); %]
-    </div></div>
-    <div class="column"><div class="unit on-2 columns">
-      [% select_field('page.pid',{options =>page_pid_options});%]
-    </div></div>
-  
-    <div class="column"><div class="unit on-2 columns">
-      [% text_field('page.description');%]
-    </div></div>
-    <div class="column"><div class="unit on-2 columns">
-      [% text_field('page.permissions'); %]
-    </div></div>
-    <div class="column span-2">
-      <div class="unit on-4 columns">
-        <div class="column"><div class="unit on-2 columns">
-          [%  checkbox_field('page.published'); %]
-        </div></div>
-        <div class="column"><div class="unit on-2 columns">
-          [% checkbox_field('page.hidden'); %]
-        </div></div>
-        <div class="column"><div class="unit on-2 columns">
-          [% checkbox_field('page.cache'); %]
-        </div></div>
-        <div class="column"><div class="unit on-2 columns">
-          [% text_field('page.expire'); %]
-        </div></div>
-      </div>
     </div>
+</div>
+<div class="unit on-2 columns">
+    <div class="column">
+      [% select_field('page.page_type', {options => page_type_options} ); %]
+    </div>
+    <div class="column">
+      [% select_field('page.pid',{options =>page_pid_options});%]
+    </div>
+</div>
+<div class="unit on-2 columns">
+    <div class="column">
+      [% text_field('page.description');%]
+    </div>
+    <div class="column">
+      [% text_field('page.permissions'); %]
+    </div>
+</div>
+<div class="unit on-4 columns">
+  <div class="column">
+    [%  checkbox_field('page.published'); %]
+  </div>
+  <div class="column">
+    [% checkbox_field('page.hidden'); %]
+  </div>
+  <div class="column">
+    [% checkbox_field('page.cache'); %]
+  </div>
+  <div class="column">
+    [% text_field('page.expiry'); %]
+  </div>
+</div>
     
     [% 
     textarea('page.template');
-    textarea('content.body');
+    textarea('content.body', { help => c.l('body_help', c.l('data_format') ) } );
     button_set() %]
-   </div>
 </fieldset>
 </form>
 [%# DUMP(domains) %]

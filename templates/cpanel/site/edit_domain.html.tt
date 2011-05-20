@@ -19,7 +19,6 @@ END;
   [% legend %]<span class="legend_icon"><span class="ui-icon" 
         style="background-image: url(pub/css/icons/world_edit.png) "></span>
   </span></legend>
-  <div class="unit on-2 columns">
   [%+ 
      text_field('domain', {label => c.l('Domain')}); 
      text_field('name',{label => c.l('title'),help=>'title_help'});
@@ -27,7 +26,6 @@ END;
      text_field('permissions');
      button_set();
    +%]
-   </div>
 </fieldset>
 </form>
 [%# DUMP(validator_errors) %]

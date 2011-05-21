@@ -40,8 +40,7 @@ sub tstamp { return $_[0]->{data}{tstamp} = time; }
 sub add {
   my ($class, $args) = MYDLjE::M::get_obj_args(@_);
   ($class eq __PACKAGE__)
-    || Carp::croak(
-    'Call this method only like: ' . __PACKAGE__ . '->add(%args);');
+    || Carp::croak('Call this method only like: ' . __PACKAGE__ . '->add(%args);');
   $args->{namespaces} ||= $ENV{MOJO_APP};
 
   #groups to which this user will belong
@@ -54,10 +53,9 @@ sub add {
   }
   my $group_ids  = delete $args->{group_ids};
   my $namespaces = delete $args->{namespaces};
-  my $password =
-    Mojo::Util::md5_sum($args->{login_name} . $args->{login_password});
-  my $time = time();
-  my $user = $class->new(
+  my $password   = Mojo::Util::md5_sum($args->{login_name} . $args->{login_password});
+  my $time       = time();
+  my $user       = $class->new(
     %$args,
     login_password => $password,
     tstamp         => $time,
@@ -78,8 +76,7 @@ sub add {
     my $uid = $user->save();
     unshift @$group_ids, $user->group_id;
     foreach my $gid (@$group_ids) {
-      $dbix->query('INSERT INTO my_users_groups (uid,gid) VALUES(?,?)',
-        $uid, $gid);
+      $dbix->query('INSERT INTO my_users_groups (uid,gid) VALUES(?,?)', $uid, $gid);
     }
     $dbix->commit;
   };

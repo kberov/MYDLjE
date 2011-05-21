@@ -78,8 +78,7 @@ sub write_config_file {
   my ($self, $filename) = @_;
   $filename ||= 'local.' . lc($APP);
   $filename =~ s|::|-|gx;
-  YAML::Any::DumpFile("$HOME/conf/$filename" . ".$MODE.yaml",
-    $self->{config});
+  YAML::Any::DumpFile("$HOME/conf/$filename" . ".$MODE.yaml", $self->{config});
   return 1;
 }
 

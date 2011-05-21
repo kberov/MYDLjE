@@ -35,8 +35,7 @@ sub _validate_and_login {
   my $c      = shift;
   my $params = $c->req->params->to_hash;
   if (($params->{session_id} || '') ne $c->msession->id) {
-    $c->stash(
-      validator_errors => {session_id_error => $c->l('session_id_error')});
+    $c->stash(validator_errors => {session_id_error => $c->l('session_id_error')});
     return 0;
   }
   $params->{login_name} =~ s/[^\p{IsAlnum}]//gx;
@@ -60,29 +59,22 @@ AND
 
   my $user = MYDLjE::M::User->select(
     login_name => $params->{login_name},
-    -and       => [
-      \'disabled=0', \$and,
-      \"((start=0 OR start<$time) AND (stop=0 OR stop>$time))",
-    ],
+    -and =>
+      [\'disabled=0', \$and, \"((start=0 OR start<$time) AND (stop=0 OR stop>$time))",],
   );
 
   unless ($user->id) {
     $c->app->log->error('No such user:' . $params->{login_name});
     $c->stash(validator_errors =>
-        {login_name_error => $c->l('login_field_error', $c->l('login_name'))}
-    );
+        {login_name_error => $c->l('login_field_error', $c->l('login_name'))});
     return 0;
   }
 
-  my $login_password_md5 = Mojo::Util::md5_sum(
-    ($params->{session_id} || '') . $user->login_password);
+  my $login_password_md5 =
+    Mojo::Util::md5_sum(($params->{session_id} || '') . $user->login_password);
   if ($login_password_md5 ne $params->{login_password_md5}) {
-    $c->stash(
-      validator_errors => {
-        login_password_error =>
-          $c->l('login_field_error', $c->l('login_password'))
-      }
-    );
+    $c->stash(validator_errors =>
+        {login_password_error => $c->l('login_field_error', $c->l('login_password'))});
     return 0;
   }
   else {

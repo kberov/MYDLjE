@@ -41,12 +41,9 @@ sub dbix {
     . $config->{db_host};
 
   $DBIX = DBIx::Simple->connect(
-    $config->{db_dsn},
-    $config->{db_user},
+    $config->{db_dsn}, $config->{db_user},
     $config->{db_password},
-    { %COMMON_DBH_HANDLERS,
-      %{$DRIVER_DBH_HANDLERS->{$config->{db_driver}} || {}}
-    }
+    {%COMMON_DBH_HANDLERS, %{$DRIVER_DBH_HANDLERS->{$config->{db_driver}} || {}}}
   );
   $DBIX->lc_columns = 1;
   if ($config->{debug}) {

@@ -38,15 +38,11 @@ else {
 }
 isa_ok('MYDLjE::M::Content', 'MYDLjE::M');
 
-can_ok(
-  'MYDLjE::M::Content', 'TABLE',
-  'COLUMNS',            'data',
-  'sql',                'make_field_attrs'
-);
+can_ok('MYDLjE::M::Content', 'TABLE', 'COLUMNS', 'data', 'sql', 'make_field_attrs');
 
 #print Dumper();
-my $dbix = MYDLjE::Plugin::DBIx::dbix(
-  $config->stash('plugins')->{'MYDLjE::Plugin::DBIx'});
+my $dbix =
+  MYDLjE::Plugin::DBIx::dbix($config->stash('plugins')->{'MYDLjE::Plugin::DBIx'});
 my $time  = time;
 my $alias = 'test-' . $time . '-test';
 my $data  = {
@@ -64,10 +60,10 @@ is($content->user_id, 1, 'user_id is ' . $content->user_id);
 $content->user_id(2);
 is($content->user_id, 2, 'user_id is ' . $content->user_id);
 
-is($content->data_format, 'html', 'data_format is ' . $content->data_format);
-is($content->data_type,   'note', 'data_type is ' . $content->data_type);
-is($content->body,  '<p>Hello</p>', 'body is ' . $content->body);
-is($content->alias, $alias,         'alias is ' . $alias);
+is($content->data_format, 'html',         'data_format is ' . $content->data_format);
+is($content->data_type,   'note',         'data_type is ' . $content->data_type);
+is($content->body,        '<p>Hello</p>', 'body is ' . $content->body);
+is($content->alias,       $alias,         'alias is ' . $alias);
 $data->{body}    = $content->body;
 $data->{user_id} = $content->user_id;
 is_deeply($content->data, $data, 'data is: ' . Dumper($content->data));
@@ -111,21 +107,18 @@ is(
   'seting title'
 );
 $question->body('A longer description of the question');
-is($question->alias, 'what-brcan-i-doooo', 'alias is "what-can-i-doooo"');
-is($question->data_type, 'question', '$question->data_type is "question"');
-is($question->user_id($note->user_id)->user_id,
-  $note->user_id, 'question has owner');
+is($question->alias,     'what-brcan-i-doooo', 'alias is "what-can-i-doooo"');
+is($question->data_type, 'question',           '$question->data_type is "question"');
+is($question->user_id($note->user_id)->user_id, $note->user_id, 'question has owner');
 
 require MYDLjE::M::Content::Answer;
 my $answer = MYDLjE::M::Content::Answer->new(pid => $question->save);
-is($answer->{data}{data_type},
-  'answer', 'answer has correctly guessed data_type');
-is($answer->pid, $question->id, '$answer->pid is $question->id');
+is($answer->{data}{data_type}, 'answer',      'answer has correctly guessed data_type');
+is($answer->pid,               $question->id, '$answer->pid is $question->id');
 $answer->body('You can not do anything');
 ok($answer->alias, $answer->alias);
 is($answer->data_type, 'answer', '$answer->data_type is "answer"');
-is($answer->user_id($note->user_id)->user_id,
-  $note->user_id, 'answer has owner');
+is($answer->user_id($note->user_id)->user_id, $note->user_id, 'answer has owner');
 
 $answer->save();
 
@@ -152,11 +145,9 @@ ok($my_custom->save, 'saving custom data_type is ok');
 
 #Retreive Custom data_type
 $my_custom = MYDLjE::M::Content->new;
-is($my_custom->data_type, 'content',
-  'default data_type is ' . $my_custom->data_type);
+is($my_custom->data_type, 'content', 'default data_type is ' . $my_custom->data_type);
 delete $my_custom->FIELDS_VALIDATION->{data_type}{constraints};
-is($my_custom->data_type('alabala')->data_type, 'alabala',
-  'custom data_type');
+is($my_custom->data_type('alabala')->data_type, 'alabala', 'custom data_type');
 is($my_custom->select(alias => $alias)->data_type,
   'alabala', 'custom data_type retrieved ok');
 is($my_custom->alias,    $alias, 'custom alias is unique for this data type');
@@ -230,9 +221,8 @@ is($user->id, undef, "WHERE my_user.disabled=0 AND login_name='admin'");
 $user = MYDLjE::M::User->new();
 $user->WHERE({disabled => 0});
 $user->select(login_name => 'guest');
-is($user->id, 2, " id WHERE my_user.disabled=0 AND login_name='guest'");
-is($user->group_id, 2,
-  " group_id WHERE my_user.disabled=0 AND login_name='guest'");
+is($user->id,       2, " id WHERE my_user.disabled=0 AND login_name='guest'");
+is($user->group_id, 2, " group_id WHERE my_user.disabled=0 AND login_name='guest'");
 
 
 #try with foreign keys
@@ -265,8 +255,7 @@ my $new_user       = MYDLjE::M::User->add(
   email          => $login_name . '@localhost.com',
 );
 my @added_users = ($login_name);
-ok($new_user->id,
-  'addedd user with id:' . $new_user->id . ' and with minimal params.');
+ok($new_user->id, 'addedd user with id:' . $new_user->id . ' and with minimal params.');
 is(
   $new_user->email,
   $dbix->select('my_users', '*', {id => $new_user->id})->hash->{email},
@@ -283,8 +272,7 @@ $new_user = MYDLjE::M::User->add(
   email          => $login_name . '@localhost.com',
 );
 push @added_users, $login_name;
-ok($new_user->id,
-  'added user with id:' . $new_user->id . ' and with more group_ids.');
+ok($new_user->id, 'added user with id:' . $new_user->id . ' and with more group_ids.');
 
 # more namespaces
 $login_name .= $new_user->id;
@@ -296,8 +284,7 @@ $new_user = MYDLjE::M::User->add(
   namespaces     => $ENV{MOJO_APP} . ', MYDLjE::Site'
 );
 push @added_users, $login_name;
-ok($new_user->id,
-  'added user with id:' . $new_user->id . ' and with more namespaces.');
+ok($new_user->id, 'added user with id:' . $new_user->id . ' and with more namespaces.');
 
 
 #Log In strictly a newly created user
@@ -323,8 +310,7 @@ $sstorage->user(
 #3. Is not disabled
 #4. Is within allowed period of existence if there is such
 #5. Some of his groups namespaces allows this
-is($sstorage->user->login_name,
-  $login_name, "user $login_name logged in accordingly");
+is($sstorage->user->login_name, $login_name, "user $login_name logged in accordingly");
 
 #=pod
 
@@ -344,9 +330,9 @@ my $page = MYDLjE::M::Page->new(
   alias     => 'home' . $time,
   page_type => 'root'
 );
-is($page->pid, 0, '$page->pid is ' . $page->pid);
-is($page->alias, 'home' . $time, '$page->alias is ' . $page->alias);
-is($page->page_type, 'root', '$page->page_type is ' . $page->page_type);
+is($page->pid,       0,              '$page->pid is ' . $page->pid);
+is($page->alias,     'home' . $time, '$page->alias is ' . $page->alias);
+is($page->page_type, 'root',         '$page->page_type is ' . $page->page_type);
 is($page->user_id(1)->user_id,   1, '$page->user_id is ' . $page->user_id);
 is($page->group_id(1)->group_id, 1, '$page->group_id is ' . $page->group_id);
 is($page->permissions('-rwxrw-r-x')->permissions,

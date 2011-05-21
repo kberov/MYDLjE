@@ -46,8 +46,7 @@ sub msession {
       Carp::confess($error);
     }
   }
-  my $msession = $c->{msession}
-    ||= MYDLjE::M::Session->select(id => $c->session('id'));
+  my $msession = $c->{msession} ||= MYDLjE::M::Session->select(id => $c->session('id'));
   unless ($msession->id) { $msession->new_id($c->session('id')); }
   if (defined $value) {
     $msession->sessiondata->{$key} = $value;

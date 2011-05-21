@@ -60,8 +60,7 @@ has FIELDS_VALIDATION => sub {
 sub add {
   my ($class, $args) = MYDLjE::M::get_obj_args(@_);
   ($class eq __PACKAGE__)
-    || Carp::croak(
-    'Call this method only like: ' . __PACKAGE__ . '->add(%args);');
+    || Carp::croak('Call this method only like: ' . __PACKAGE__ . '->add(%args);');
 
   #must be a MYDLjE::M::Content::Page instance but we will check later
   my $page_content = delete $args->{page_content};

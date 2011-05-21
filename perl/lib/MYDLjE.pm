@@ -19,8 +19,7 @@ sub startup {
   $CONFIG = MYDLjE::Config->singleton(log => $app->log);
 
   #Fallback to some default secret for today
-  $app->secret($app->config('secret')
-      || $app->home . $app->mode . (localtime())[3]);
+  $app->secret($app->config('secret') || $app->home . $app->mode . (localtime())[3]);
   $app->sessions->cookie_name($app->config('session_cookie_name')
       || ref($app) . $app->mode);
 
@@ -63,20 +62,18 @@ sub _session_start {
   $base =~ s{[^/]+$}{}x;
   $c->stash('base_path', $base);
   $app->sessions->cookie_path($app->config('session_cookie_path') || $base);
-  $app->sessions->default_expiration(
-         $app->config('session_default_expiration')
+  $app->sessions->default_expiration($app->config('session_default_expiration')
       || $app->sessions->default_expiration);
 
 #NOTE: Storage in database is supported trough $c->msession. See MYDLjE::C::msession.
   my $time = Time::HiRes::time();
   if (not $c->session('start_time')) {
     $c->session('start_time', $time);
-    $c->session('id', Mojo::Util::md5_sum(rand($time) . rand($time) . $time));
+    $c->session('id',         Mojo::Util::md5_sum(rand($time) . rand($time) . $time));
   }
 
   #Switch ui_language if language is supported.
-  my ($ui_language) =
-    ($c->req->param('ui_language') || $c->session('ui_language'));
+  my ($ui_language) = ($c->req->param('ui_language') || $c->session('ui_language'));
   if ($ui_language) {
     for (@{$app->config('languages')}) {
       if ($ui_language eq $_) {
@@ -131,10 +128,7 @@ sub load_routes {
   $config_routes ||= $app->config('routes') || {};
 
   foreach my $route (
-    sort {
-      ($config_routes->{$a}{order} || 0)
-        <=> ($config_routes->{$b}{order} || 0)
-    }
+    sort { ($config_routes->{$a}{order} || 0) <=> ($config_routes->{$b}{order} || 0) }
     keys %$config_routes
     )
   {

@@ -54,12 +54,9 @@ has FIELDS_VALIDATION => sub {
     keywords => {required => 0, inflate => \&_tags_inflate},
     $self->FIELD_DEF('description'),
     data_type => {
-      required    => 1,
-      constraints => [
-        { regexp =>
-            qr/^(page|question|answer|book|note|article|chapter|content)$/x
-        },
-      ]
+      required => 1,
+      constraints =>
+        [{regexp => qr/^(page|question|answer|book|note|article|chapter|content)$/x},]
     },
     data_format => {
       required    => 1,
@@ -186,86 +183,86 @@ sub featured {
     $self->{data}{featured} = 1;
     return $self;
   }
-  return $self->{data}{featured} if defined $self->{data}{featured};  #getting
-  return $self->{data}{featured} = 0;                                 #default
+  return $self->{data}{featured} if defined $self->{data}{featured};    #getting
+  return $self->{data}{featured} = 0;                                   #default
 }
 
 sub sorting {
   my ($self, $value) = @_;
-  if ($value) {                                                       #setting
+  if ($value) {                                                         #setting
     $self->{data}{sorting} = $self->validate_field(sorting => $value);
     return $self;
   }
-  return $self->{data}{sorting};                                      #getting
+  return $self->{data}{sorting};                                        #getting
 }
 
 sub data_format {
   my ($self, $value) = @_;
-  if ($value) {                                                       #setting
+  if ($value) {                                                         #setting
     $self->{data}{data_format} = $self->validate_field(data_format => $value);
     return $self;
   }
-  return $self->{data}{data_format};                                  #getting
+  return $self->{data}{data_format};                                    #getting
 }
 
 sub time_created {
   my ($self, $value) = @_;
-  if ($value) {                                                       #setting
+  if ($value) {                                                         #setting
     if   ($value =~ /(\d{10,})/x) { $self->{data}{time_created} = $1 }
     else                          { $self->{data}{time_created} = time; }
     return $self;
   }
-  return $self->{data}{time_created} ||= time;                        #getting
+  return $self->{data}{time_created} ||= time;                          #getting
 }
 
 sub body {
   my ($self, $value) = @_;
-  if ($value) {                                                       #setting
+  if ($value) {                                                         #setting
     $self->{data}{body} = $self->validate_field(body => $value);
     return $self;
   }
-  return $self->{data}{body};                                         #getting
+  return $self->{data}{body};                                           #getting
 }
 
 
 sub language {
   my ($self, $value) = @_;
-  if ($value) {                                                       #setting
+  if ($value) {                                                         #setting
     $self->{data}{language} = $self->validate_field(language => $value);
     return $self;
   }
-  return $self->{data}{language} ||= '';                              #getting
+  return $self->{data}{language} ||= '';                                #getting
 }
 
 
 sub bad {
   my ($self, $value) = @_;
-  if ($value) {                                                       #setting
+  if ($value) {                                                         #setting
     $self->{data}{bad}++;
     return $self;
   }
-  return $self->{data}{bad} if defined $self->{data}{bad};            #getting
-  return $self->{data}{bad} = 0;                                      #default
+  return $self->{data}{bad} if defined $self->{data}{bad};              #getting
+  return $self->{data}{bad} = 0;                                        #default
 }
 
 sub start {
   my ($self, $value) = @_;
-  if ($value) {                                                       #setting
+  if ($value) {                                                         #setting
     if   ($value =~ /(\d{10,})/x) { $self->{data}{start} = $1 }
     else                          { $self->{data}{start} = 0; }
     return $self;
   }
-  return $self->{data}{start} ||= 0;                                  #getting
+  return $self->{data}{start} ||= 0;                                    #getting
 }
 
 sub stop {
   my ($self, $value) = @_;
-  if ($value) {                                                       #setting
+  if ($value) {                                                         #setting
     if   ($value =~ /(\d{10,})/x) { $self->{data}{stop} = $1 }
     else                          { $self->{data}{stop} = 0; }
     return $self;
   }
-  return $self->{data}{stop} ||= 0;                                   #getting
+  return $self->{data}{stop} ||= 0;                                     #getting
 }
 
 1;

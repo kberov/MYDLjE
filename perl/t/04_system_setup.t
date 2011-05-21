@@ -29,8 +29,7 @@ for (qw(/check_readables /check_writables /check_modules)) {
 }
 $t->get_ok('/system_config')->status_is(404)
   ->content_like(qr/(not found|has not been unboxed yet!)/);
-$t->post_ok('/system_config')->status_is(200)
-  ->content_like(qr|"validator_errors"\:\{|);
+$t->post_ok('/system_config')->status_is(200)->content_like(qr|"validator_errors"\:\{|);
 $t->post_form_ok(
   '/system_config',
   'UTF-8',
@@ -44,6 +43,6 @@ $t->post_form_ok(
     admin_password => 'simple',
   }
   )->status_is(200)->content_type_is('application/json')
-  ->content_like(qr|"validator_errors":\{|)
-  ->content_like(qr|"admin_password":|)->content_like(qr|"site_name":|)
+  ->content_like(qr|"validator_errors":\{|)->content_like(qr|"admin_password":|)
+  ->content_like(qr|"site_name":|)
   ->content_like(qr|"validator_has_unknown_params":null|);

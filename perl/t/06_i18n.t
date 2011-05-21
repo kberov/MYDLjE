@@ -32,8 +32,7 @@ if (not $config->stash('installed')) {
   plan skip_all => 'System is not installed. Will not test i18n.';
 }
 elsif (-d "$ENV{MOJO_HOME}/tmp/ctpl" and not -w "$ENV{MOJO_HOME}/tmp/ctpl") {
-  plan skip_all =>
-    "$ENV{MOJO_HOME}/tmp/ctpl is not writable. All tests will die.";
+  plan skip_all => "$ENV{MOJO_HOME}/tmp/ctpl is not writable. All tests will die.";
 }
 else {
   plan tests => 12;
@@ -42,8 +41,7 @@ my $t = Test::Mojo->new(app => $ENV{MOJO_APP});
 
 $t->get_ok('/loginscreen')->status_is(200)
   ->content_like(qr/MYDLjE\:\:ControlPanel\@MYDLjE/x)
-  ->text_like('#login_name_label', qr/^User/)
-  ->element_exists('#menu_languages');
+  ->text_like('#login_name_label', qr/^User/)->element_exists('#menu_languages');
 $t->get_ok('/loginscreen?ui_language=bg')->status_is(200)
   ->text_like('#login_name_label', qr/^Потребител\:\s\*$/);
 
@@ -53,6 +51,5 @@ $t->get_ok('/loginscreen')->status_is(200)
   ->text_like('#login_name_label', qr/^Потребител/);
 
 #active language is visible
-my $active_language =
-  $t->tx->res->dom->at('#menu_languages a img[class=active]');
+my $active_language = $t->tx->res->dom->at('#menu_languages a img[class=active]');
 is($active_language->attrs->{alt}, 'bg', 'active language is visible');

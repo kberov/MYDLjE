@@ -10,8 +10,7 @@ my $permissions_sql_AND =
 
 #TODO: make this SQL common for ALL tables with the mentioned columns,
 #thus achieving commonly used permission rules everywhere.
-my $domains_SQL =
-  "SELECT * FROM my_domains WHERE $permissions_sql_AND ORDER BY domain";
+my $domains_SQL = "SELECT * FROM my_domains WHERE $permissions_sql_AND ORDER BY domain";
 
 sub domains {
   my $c   = shift;
@@ -48,13 +47,11 @@ sub edit_domain {
 
   #handle POST
   my $v = $c->create_validator;
-  $v->field('domain')->required(1)
-    ->regexp($domain->FIELDS_VALIDATION->{domain}{regexp})
+  $v->field('domain')->required(1)->regexp($domain->FIELDS_VALIDATION->{domain}{regexp})
     ->message('Please enter valid domain name!');
   $v->field('name')->required(1)->inflate(\&MYDLjE::M::no_markup_inflate)
     ->message('Please enter valid value for human readable name!');
-  $v->field('description')->required(1)
-    ->inflate(\&MYDLjE::M::no_markup_inflate)
+  $v->field('description')->required(1)->inflate(\&MYDLjE::M::no_markup_inflate)
     ->message('Please enter valid value for description!');
   $v->field('permissions')->required(1)
     ->regexp($domain->FIELDS_VALIDATION->{permissions}{regexp})
@@ -98,8 +95,7 @@ sub edit_page {
   my $user    = $c->msession->user;
 
   $c->domains();    #fill in "domains" stash variable
-  $c->stash(
-    page_types => $page->FIELDS_VALIDATION->{page_type}{constraints}[0]{in});
+  $c->stash(page_types => $page->FIELDS_VALIDATION->{page_type}{constraints}[0]{in});
 
   $c->stash(page_pid_options => $c->_set_page_pid_options($user));
   if ($id) {
@@ -135,23 +131,19 @@ sub _save_page {
   my $v = $c->create_validator;
   $c->stash(form => $c->req->params->to_hash);
   my $form = $c->stash('form');
-  $v->field('content.title')->required(1)
-    ->inflate(\&MYDLjE::M::no_markup_inflate)
+  $v->field('content.title')->required(1)->inflate(\&MYDLjE::M::no_markup_inflate)
     ->message($c->l('The field [_1] is required!', $c->l('title')));
-  $v->field('content.language')->in($c->app->config('languages'))->message(
-    $c->l(
-      'Please use one of the availabe languages or first add a new language!')
-  );
+  $v->field('content.language')->in($c->app->config('languages'))
+    ->message(
+    $c->l('Please use one of the availabe languages or first add a new language!'));
 
   unless ($form->{'page.alias'}) {
-    $form->{'page.alias'} =
-      MYDLjE::Unidecode::unidecode($req->param('content.title'));
+    $form->{'page.alias'} = MYDLjE::Unidecode::unidecode($req->param('content.title'));
   }
   $v->field('page.alias')->regexp($page->FIELDS_VALIDATION->{alias}{regexp})
     ->message('Please enter valid page alias!');
   $v->field('page.domain_id')->in($c->stash('domains'))
-    ->message(
-    'Please use one of the availabe domains or first add a new domain!');
+    ->message('Please use one of the availabe domains or first add a new domain!');
 
   # if domain_id is switched remove current pid
   if ($form->{'page.domain_id'} ne $page->domain_id) {
@@ -194,8 +186,8 @@ sub _traverse_children {
   $depth++;
   return if $depth > 10;
   my $domain_id = $c->req->param('page.domain_id') || 0;
-  my $pages = $c->dbix->query(
-    'SELECT id as value, alias as label, page_type, pid FROM my_pages'
+  my $pages =
+    $c->dbix->query('SELECT id as value, alias as label, page_type, pid FROM my_pages'
       . ' WHERE pid=? AND domain_id=? AND pid !=? AND id>0' . ' AND '
       . $permissions_sql_AND,
     $pid, $domain_id, $id, $user->id, $user->id)->hashes;
@@ -211,8 +203,7 @@ sub _traverse_children {
         $page_pid_options->[0]{disabled} = 1;
       }
       push @$page_pid_options, $page;
-      $c->_traverse_children($user, $page->{value}, $page_pid_options, $depth,
-        $id);
+      $c->_traverse_children($user, $page->{value}, $page_pid_options, $depth, $id);
     }
   }
   return;

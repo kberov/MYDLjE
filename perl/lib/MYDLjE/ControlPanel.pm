@@ -28,8 +28,7 @@ sub startup {
   my $login_required_routes = $r->bridge('/')->to($bridge_to);
 
   #Login Required Routes (bridged trough login)
-  $app->load_routes($login_required_routes,
-    $app->config('login_required_routes'));
+  $app->load_routes($login_required_routes, $app->config('login_required_routes'));
 
   #$app->load_routes();
 

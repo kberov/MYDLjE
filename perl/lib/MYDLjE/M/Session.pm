@@ -10,8 +10,8 @@ has COLUMNS => sub { [qw(id cid user_id tstamp sessiondata)] };
 
 has FIELDS_VALIDATION => sub {
   return {
-    id  => {required => 1, constraints => [{regexp => qr/^[a-f0-9]{32}$/x},]},
-    cid => {required => 0, constraints => [{regexp => qr/^\d+$/x},]},
+    id          => {required => 1, constraints => [{regexp => qr/^[a-f0-9]{32}$/x},]},
+    cid         => {required => 0, constraints => [{regexp => qr/^\d+$/x},]},
     user_id     => {required => 1, constraints => [{regexp => qr/^\d+$/x},]},
     sessiondata => {
       required => 1,
@@ -64,8 +64,7 @@ sub user_id {
   }
 
   #user may be switched meanwhile
-  elsif (!$self->{data}{user_id} || $self->{data}{user_id} != $self->user->id)
-  {
+  elsif (!$self->{data}{user_id} || $self->{data}{user_id} != $self->user->id) {
     $self->{data}{user_id} = $self->user->id;
   }
 
@@ -78,8 +77,7 @@ sub sessiondata {
   if ($sessiondata) {
 
     #not chainable
-    $self->{data}{sessiondata} =
-      $self->validate_field(sessiondata => $sessiondata);
+    $self->{data}{sessiondata} = $self->validate_field(sessiondata => $sessiondata);
 
   }
   return $self->{data}{sessiondata} ||= {};
@@ -96,8 +94,7 @@ sub _freeze_sessiondata {
 sub _thaw_sessiondata {
   my $value = shift;
   ref($value)
-    && Carp::confess(
-    'Value for thawing sessiondata must not be a reference!');
+    && Carp::confess('Value for thawing sessiondata must not be a reference!');
   return Storable::thaw(MIME::Base64::decode_base64($value));
 }
 
@@ -145,8 +142,7 @@ sub select {    ##no critic (Subroutines::ProhibitBuiltinHomonyms)
   $where = {%{$self->WHERE}, %$where};
 
   #TODO: Implement restoring user object from session state
-  $self->data(
-    $self->dbix->select($self->TABLE, $self->COLUMNS, $where)->hash);
+  $self->data($self->dbix->select($self->TABLE, $self->COLUMNS, $where)->hash);
   if ($self->sessiondata && !ref($self->sessiondata)) {
     $self->data(sessiondata => _thaw_sessiondata($self->sessiondata));
   }

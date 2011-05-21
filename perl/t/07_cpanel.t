@@ -29,8 +29,7 @@ if (not $config->stash('installed')) {
   plan skip_all => 'System is not installed. Will not test cpanel.';
 }
 elsif (-d "$ENV{MOJO_HOME}/tmp/ctpl" and not -w "$ENV{MOJO_HOME}/tmp/ctpl") {
-  plan skip_all =>
-    "$ENV{MOJO_HOME}/tmp/ctpl is not writable. All tests will die.";
+  plan skip_all => "$ENV{MOJO_HOME}/tmp/ctpl is not writable. All tests will die.";
 }
 else {
   plan tests => 19;
@@ -41,8 +40,7 @@ my $t = Test::Mojo->new(app => $ENV{MOJO_APP});
 #How it looks?
 $t->get_ok('/loginscreen')->status_is(200)
   ->content_like(qr/guest\@MYDLjE\:\:ControlPanel\@MYDLjE/x)
-  ->element_exists('form#login_form')
-  ->element_exists('label#login_name_label')
+  ->element_exists('form#login_form')->element_exists('label#login_name_label')
   ->element_exists('input#login_name[type="text"]')
   ->element_exists('label#login_password_label')
   ->element_exists('input#login_password[type="password"]')
@@ -57,8 +55,7 @@ my $style = $dom->at('form#other_form')->attrs->{style};
 ok($style =~ m/display\:none;/x, 'form#other_form is hidden');
 
 #Does it seem usable?
-like($dom->at('label#login_name_label')->text,
-  qr/User/x, 'Label reads: "User:"');
+like($dom->at('label#login_name_label')->text, qr/User/x, 'Label reads: "User:"');
 like($dom->at('label#login_password_label')->text,
   qr/Password/x, 'Label reads: "Password:"');
 is($dom->at('button[type="submit"]')->text, 'Login', 'Button reads: "Login"');
@@ -72,10 +69,7 @@ $t->post_form_ok(
   },
 )->element_exists('div[class="ui-state-error ui-corner-all"]');
 $dom = $t->tx->res->dom;
-ok(
-  $dom->at('div[class="ui-state-error ui-corner-all"]')->text
-    =~ m/Invalid\ssession/x,
-  'Invalid session'
-);
+ok($dom->at('div[class="ui-state-error ui-corner-all"]')->text =~ m/Invalid\ssession/x,
+  'Invalid session');
 
 #TODO: Tests for all error messages and tests for the full login/logout flow.

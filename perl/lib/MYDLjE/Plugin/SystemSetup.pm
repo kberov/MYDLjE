@@ -132,8 +132,8 @@ sub _save_config {
   #$c->app->log->debug('ref $c:' . ref $c);
   my $config = $c->app->config;
   my $new_config =
-    MYDLjE::Config->new(files =>
-      [$c->app->home . '/conf/' . lc("$ENV{MOJO_APP}.$ENV{MOJO_MODE}.yaml")]);
+    MYDLjE::Config->new(
+    files => [$c->app->home . '/conf/' . lc("$ENV{MOJO_APP}.$ENV{MOJO_MODE}.yaml")]);
   $new_config->stash('installed', 1);
   $config->{plugins}{system_setup} = 0;
   $new_config->stash('plugins', $config->{plugins});
@@ -162,8 +162,7 @@ sub _init_database {
   my ($c, $validator) = @_;
   my $log = $c->app->log;
   my $xml_sql =
-    Mojo::Asset::File->new(path => $c->app->home . '/conf/mysql.schema.sql')
-    ->slurp;
+    Mojo::Asset::File->new(path => $c->app->home . '/conf/mysql.schema.sql')->slurp;
   my $dom = Mojo::DOM->new;
   $dom->parse($xml_sql);
   my ($disable_foreign_key_checks) = $dom->at('#disable_foreign_key_checks');
@@ -195,8 +194,7 @@ sub _init_database {
 
   #fill the tables with some initial data
   $xml_sql =
-    Mojo::Asset::File->new(path => $c->app->home . '/conf/mysql.data.sql')
-    ->slurp;
+    Mojo::Asset::File->new(path => $c->app->home . '/conf/mysql.data.sql')->slurp;
   $dom = Mojo::DOM->new;
   $dom->parse($xml_sql);
 
@@ -269,8 +267,8 @@ sub _validate_system_config {
     sub {
       my $field = shift;
       $field->required(1)->length(3, 30)
-        ->message($field->name
-          . " is required. Field length must be between 3 and 30 symbols");
+        ->message(
+        $field->name . " is required. Field length must be between 3 and 30 symbols");
       if ($field->name eq 'admin_password') {
         $field->regexp(qr/[\W]+/x)->length(6, 30)
           ->message($field->name
@@ -283,8 +281,7 @@ sub _validate_system_config {
           ->message('Please select a value for ' . $field->name . '.');
       }
       elsif ($field->name eq 'admin_email') {
-        $field->email->message(
-          'Please enter a valid email for ' . $field->name . '.');
+        $field->email->message('Please enter a valid email for ' . $field->name . '.');
       }
 
     }
@@ -328,8 +325,7 @@ sub _validate_system_config {
   my $all_ok = $c->validate($validator);
   if (  not $all_ok
     and $c->stash('validator_errors')->{db_connect}
-    and $c->stash('validator_errors')->{db_connect} eq
-    'CALLBACK_CONSTRAINT_FAILED')
+    and $c->stash('validator_errors')->{db_connect} eq 'CALLBACK_CONSTRAINT_FAILED')
   {
     $c->stash('validator_errors')->{db_connect} = $db_connect_error;
   }

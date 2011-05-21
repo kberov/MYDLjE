@@ -15,14 +15,12 @@ sub get_obj_args { return (shift, get_args(@_)); }
 
 #tablename
 sub TABLE {
-  Carp::confess(
-    "You must add a table in your class: sub TABLE {'my_tablename'}");
+  Carp::confess("You must add a table in your class: sub TABLE {'my_tablename'}");
 }
 
 #table columns
 sub COLUMNS {
-  Carp::confess(
-    "You must add fields in your class: sub COLUMNS {['id','name','etc']}");
+  Carp::confess("You must add fields in your class: sub COLUMNS {['id','name','etc']}");
 }
 
 has validator => sub { MojoX::Validator->new; };
@@ -57,8 +55,7 @@ sub select {    ##no critic (Subroutines::ProhibitBuiltinHomonyms)
   }
   $where = {%$where, %{$self->WHERE}};
 
-  $self->data(
-    $self->dbix->select($self->TABLE, $self->COLUMNS, $where)->hash);
+  $self->data($self->dbix->select($self->TABLE, $self->COLUMNS, $where)->hash);
   return $self;
 }
 
@@ -68,9 +65,8 @@ sub data {
   if (ref $args && keys %$args) {
     for my $field (keys %$args) {
       unless (grep { $field eq $_ } @{$self->COLUMNS()}) {
-        Carp::cluck("There is not such field $field in table "
-            . $self->TABLE
-            . '! Skipping...')
+        Carp::cluck(
+          "There is not such field $field in table " . $self->TABLE . '! Skipping...')
           if $DEBUG;
         next;
       }
@@ -132,8 +128,7 @@ SUB
   $code .= "$/1;" if $code;
 
   #I know what I am doing. I think so... warn $code if $code;
-  if ($code && !eval $code)
-  {    ##no critic (BuiltinFunctions::ProhibitStringyEval)
+  if ($code && !eval $code) {    ##no critic (BuiltinFunctions::ProhibitStringyEval)
     Carp::confess($class . " compiler error: $/$code$/$@$/");
   }
   return;
@@ -156,12 +151,12 @@ sub no_markup_inflate {
 sub domain_regexp {
 
 #stollen from Regexp::Common::URI::RFC2396;
-  my $digit    = '[0-9]';
-  my $upalpha  = '[A-Z]';
-  my $lowalpha = '[a-z]';
-  my $alpha    = '[a-zA-Z]';       # lowalpha | upalpha
-  my $alphanum = '[a-zA-Z0-9]';    # alpha    | digit
-  my $port     = "(?:$digit*)";
+  my $digit       = '[0-9]';
+  my $upalpha     = '[A-Z]';
+  my $lowalpha    = '[a-z]';
+  my $alpha       = '[a-zA-Z]';                                     # lowalpha | upalpha
+  my $alphanum    = '[a-zA-Z0-9]';                                  # alpha    | digit
+  my $port        = "(?:$digit*)";
   my $IPv4address = "(?:$digit+[.]$digit+[.]$digit+[.]$digit+)";
   my $toplabel    = "(?:$alpha" . "[-a-zA-Z0-9]*$alphanum|$alpha)";
   my $domainlabel = "(?:(?:$alphanum" . "[-a-zA-Z0-9]*)?$alphanum)";
@@ -176,7 +171,7 @@ sub validate_field {
   my ($self, $field, $value) = @_;
   my $rules = \%{$self->FIELDS_VALIDATION->{$field}};    #copy?!
 
-  return $value unless $rules;    #no validation rules defined
+  return $value unless $rules;                           #no validation rules defined
 
   my $field_obj   = $self->validator->field($field);
   my $constraints = delete $rules->{constraints};

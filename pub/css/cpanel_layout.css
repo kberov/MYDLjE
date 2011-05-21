@@ -67,15 +67,15 @@ form .column .ui-state-error{
 }
 
 .help {
-display:none;
-font-style:italic;
-font-size:small;
-padding:0 1ex 1ex;
-font-weight: normal !important;Език:
-height:5em;
-overflow: auto;
-margin:1ex;
-margin-top: 0px;
+  display: none;
+  margin: 1ex;
+  margin-top: 0px;
+}
+.help p {
+  margin:0.5ex;
+  font-style: italic;
+  font-size: small;
+  font-weight: normal !important;
 }
 
 #menu_languages .active {

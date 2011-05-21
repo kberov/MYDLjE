@@ -20,15 +20,16 @@ function enhance_form() {
     });  
   });
   
-  $("label").each(function(){
-      $(this).css({cursor: 'help'});
+  $('.label').each(function(){
+      
       $(this).click(function(){
-        var unit = $(this).parent().parent().parent();
+        var unit = $(this).parent();
         $('.help', unit ).slideToggle();
       return false;
       });
   });
-  $('.help').prepend('<span class="column ui-icon ui-icon-info"></span>');
+  $('.label label').css({cursor: 'help'});
+  $('.help').addClass('ui-corner-all').prepend('<span class="column ui-icon ui-icon-help"></span>');
   $('form input[type="text"]').addClass('ui-corner-all');
   $('form input[type="password"]').addClass('ui-corner-all');
 

@@ -180,8 +180,8 @@ sub _save_page {
 
 
   my $all_ok = $c->validate($v, $form);
-  $c->app->log->debug($c->dumper($form) . $page->permissions);
-
+  return unless $all_ok; 
+  
   #save
   my ($content_data, $page_data) = ({}, {});
   foreach my $field (keys %$form) {

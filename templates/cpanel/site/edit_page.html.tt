@@ -22,6 +22,11 @@ language_options = [];
 FOR option IN app.config('languages');
   language_options.push({label => option, value => option }); 
 END;
+published_options = [
+  {label => 'not pubbilshed', value => 0 },
+  {label => 'waiting review', value => 1 },
+  {label => 'published', value => 2 }
+];
 
 %]
 
@@ -79,7 +84,7 @@ END;
 </div>
 <div class="unit on-4 columns">
   <div class="column">
-    [%  checkbox_field('page.published'); %]
+    [%  select_field('page.published',{options => published_options}); %]
   </div>
   <div class="column">
     [% checkbox_field('page.hidden'); %]

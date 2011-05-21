@@ -45,15 +45,34 @@ has FIELDS_VALIDATION => sub {
 };
 {
   no warnings qw(once);
-  *id       = \&MYDLjE::M::Content::id;
-  *pid      = \&MYDLjE::M::Content::pid;
-  *alias    = \&MYDLjE::M::Content::alias;
-  *user_id  = \&MYDLjE::M::Content::user_id;
-  *group_id = \&MYDLjE::M::Content::group_id;
-  *sorting  = \&MYDLjE::M::Content::sorting;
-  *tstamp   = \&MYDLjE::M::Content::tstamp;
-  *start    = \&MYDLjE::M::Content::start;
-  *stop     = \&MYDLjE::M::Content::stop;
+  *id          = \&MYDLjE::M::Content::id;
+  *pid         = \&MYDLjE::M::Content::pid;
+  *user_id     = \&MYDLjE::M::Content::user_id;
+  *group_id    = \&MYDLjE::M::Content::group_id;
+  *permissions = \&MYDLjE::M::Content::permissions;
+  *sorting     = \&MYDLjE::M::Content::sorting;
+  *tstamp      = \&MYDLjE::M::Content::tstamp;
+  *start       = \&MYDLjE::M::Content::start;
+  *stop        = \&MYDLjE::M::Content::stop;
+}
+
+sub alias {
+  my ($self, $value) = @_;
+  if ($value) {
+    $self->{data}{alias} = $self->validate_field(alias => $value);
+    return $self;
+  }
+
+  unless ($self->{data}{alias}) {
+    $self->{data}{alias} = lc(
+      $self->id
+      ? MYDLjE::Unidecode::unidecode('page_' . $self->id)
+      : Mojo::Util::md5_sum(Time::HiRes::time())
+    );
+    $self->{data}{alias} =~ s/\W+$//x;
+    $self->{data}{alias} =~ s/^\W+//x;
+  }
+  return $self->{data}{alias};
 }
 
 #Create a page with dummy page content
@@ -71,6 +90,7 @@ sub add {
     $dbix->begin_work;
     $page->save();
     $page_content->page_id($page->id);
+    $page_content->alias('page_' . $page->alias . '_' . $page_content->language);
     $page_content->save();
     $dbix->commit;
   };

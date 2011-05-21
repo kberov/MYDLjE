@@ -150,36 +150,45 @@ sub pid {
   return $self->{data}{pid};                #getting
 }
 
+sub permissions {
+  my ($self, $value) = @_;
+  if (defined $value) {                     #setting
+    $self->{data}{permissions} = $self->validate_field(permissions => $value);
+    return $self;
+  }
+  return $self->{data}{permissions} ||= '-rwxr-xr-x';    #getting
+}
+
 sub title {
   my ($self, $value) = @_;
-  if ($value) {                             #setting
+  if ($value) {                                          #setting
     $self->{data}{title} = $self->validate_field(title => $value);
     return $self;
   }
-  return $self->{data}{title};              #getting
+  return $self->{data}{title};                           #getting
 }
 
 sub tags {
   my ($self, $value) = @_;
-  if ($value) {                             #setting
+  if ($value) {                                          #setting
     $self->{data}{tags} = $self->validate_field(tags => $value);
     return $self;
   }
-  return $self->{data}{tags};               #getting
+  return $self->{data}{tags};                            #getting
 }
 
 sub keywords {
   my ($self, $value) = @_;
-  if ($value) {                             #setting
+  if ($value) {                                          #setting
     $self->{data}{keywords} = $self->validate_field(keywords => $value);
     return $self;
   }
-  return $self->{data}{keywords};           #getting }
+  return $self->{data}{keywords};                        #getting }
 }
 
 sub featured {
   my ($self, $value) = @_;
-  if ($value) {                             #setting
+  if ($value) {                                          #setting
     $self->{data}{featured} = 1;
     return $self;
   }

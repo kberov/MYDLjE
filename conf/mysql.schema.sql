@@ -86,7 +86,7 @@ CREATE TABLE IF NOT EXISTS `my_domains` (
   `description` varchar(255) NOT NULL DEFAULT '' COMMENT 'Site description',
   `user_id` int(11) NOT NULL,
   `group_id` int(11) NOT NULL,
-  `permissions` varchar(10) NOT NULL DEFAULT 'drwxr--r--' COMMENT 'All domains have child records(pages)',
+  `permissions` varchar(10) NOT NULL DEFAULT '-rwxr-xr-x' COMMENT 'Domain permissions',
   PRIMARY KEY (`id`),
   UNIQUE KEY `domain` (`domain`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='Sites managed by this system';
@@ -105,7 +105,7 @@ CREATE TABLE IF NOT EXISTS `my_pages` (
   `template` text COMMENT 'TT2 code to display this page. Default template is used if not specified.',
   `cache` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1=yes 0=no',
   `expiry` int(11) NOT NULL DEFAULT '86400' COMMENT 'expiry tstamp if cache==1',
-  `permissions` varchar(10) NOT NULL DEFAULT '-rwxr--r--' COMMENT 'Page editing permissions',
+  `permissions` varchar(10) NOT NULL DEFAULT '-rwxr-xr-x' COMMENT 'Page editing permissions',
   `user_id` int(11) NOT NULL DEFAULT '0' COMMENT 'owner',
   `group_id` int(11) NOT NULL DEFAULT '0' COMMENT 'owner group',
   `tstamp` int(11) NOT NULL DEFAULT '0',
@@ -147,7 +147,7 @@ CREATE TABLE IF NOT EXISTS `my_content` (
   `body` text NOT NULL COMMENT 'Main content when applicable.',
   `language` varchar(2) NOT NULL DEFAULT 'en' COMMENT 'Language of this content. All languages when empty string',
   `group_id` int(11) NOT NULL DEFAULT '1' COMMENT 'Group ID of the owner of this content.',
-  `permissions` char(10) NOT NULL DEFAULT '-rwxr-x---' COMMENT 'duuugggooo - Experimental permissions for the content.',
+  `permissions` char(10) NOT NULL DEFAULT '-rwxr-xr-x' COMMENT 'tuuugggooo - Experimental permissions for the content.',
   `featured` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Show on top independently of other sorting.',
   `accepted` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Answer accepted?',
   `bad` tinyint(2) NOT NULL DEFAULT '0' COMMENT 'Reported as inapropriate offensive etc. higher values -very bad.',

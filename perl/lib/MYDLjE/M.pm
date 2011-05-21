@@ -210,9 +210,11 @@ my $FIELD_DEFS  = {
     inflate  => sub { return ($_[0]->value || time()) },
   },
   permissions => {
-    required => 0,
-    regexp   => qr/^
-      [d\-]           # is this a directory - does it actually contain any children ?
+
+    #required => 1,
+    inflate => sub { return $_[0]->value ? $_[0]->value : '-rwxr-xr-x'; },
+    regexp => qr/^
+      [ld\-]          # is this a directory, link or a regular record ?
       [r\-][w\-][x\-] # owner's permissions - (r)ead,(w)rite,e(x)ecute
       [r\-][w\-][x\-] # group's permissions - (r)ead,(w)rite,e(x)ecute
       [r\-][w\-][x\-] # other's permissions - (r)ead,(w)rite,e(x)ecute

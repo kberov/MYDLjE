@@ -17,7 +17,6 @@ END;
 page_type_options = [];
 FOR pt IN page_types;
   page_type_options.push({label=>pt, value =>pt});
-
 END;
 language_options = [];
 FOR option IN app.config('languages');
@@ -55,12 +54,16 @@ END;
     </div>
     <div class="column">
       [% select_field('page.domain_id', {label => c.l('Domain'), 
-       options => domains_options, help =>'domain_help'} ); %]
+       options => domains_options, help =>'domain_help',selected=>c.msession('domain_id')} ); %]
     </div>
 </div>
 <div class="unit on-2 columns">
     <div class="column">
-      [% select_field('page.page_type', {options => page_type_options} ); %]
+      [%
+      selected_page_type = (!id && page_pid_options.size() ==1) ? 'root' : form.${'page.page_type'}; 
+      select_field('page.page_type', {options => page_type_options
+      selected => selected_page_type
+      } ); %]
     </div>
     <div class="column">
       [% select_field('page.pid',{options =>page_pid_options});%]

@@ -3,10 +3,14 @@ use MYDLjE::Base 'MYDLjE::ControlPanel::C';
 
 #Raw SQL for getting domains that belong to the current user
 # OR the user belongs to a grup that has "read" and "write" permisttions
-my $permissions_sql_AND =
-    "( (user_id = ? AND permissions LIKE '_rw%')"
-  . " OR (group_id IN (SELECT gid FROM my_users_groups WHERE uid= ?) "
-  . " AND permissions LIKE '____rw%') )";
+my $permissions_sql_AND = <<"AND";
+  
+  (
+    (user_id = ? AND permissions LIKE '_rw%')
+    OR ( group_id IN (SELECT gid FROM my_users_groups WHERE uid= ?) 
+      AND permissions LIKE '____rw%')
+  )
+AND
 
 #TODO: make this SQL common for ALL tables with the mentioned columns,
 #thus achieving commonly used permission rules everywhere.
@@ -60,7 +64,6 @@ sub edit_domain {
   my $all_ok = $c->validate($v);
   $c->stash(form => {%{$c->req->body_params->to_hash}, %{$v->values}});
 
-  #$c->app->log->debug($c->dumper($c->stash));
   return unless $all_ok;
   $c->msession(domains => undef);
 
@@ -89,33 +92,44 @@ sub edit_page {
   my $c = shift;
 
   require MYDLjE::M::Page;
+  require MYDLjE::M::Content::Page;
   my $id      = $c->stash('id');
   my $page    = MYDLjE::M::Page->new;
-  my $content = MYDLjE::M::Content->new;
+  my $content = MYDLjE::M::Content::Page->new;
   my $user    = $c->msession->user;
 
   $c->domains();    #fill in "domains" stash variable
   $c->stash(page_types => $page->FIELDS_VALIDATION->{page_type}{constraints}[0]{in});
-
   $c->stash(page_pid_options => $c->_set_page_pid_options($user));
-  if ($id) {
+  $c->stash(form             => $c->req->params->to_hash);
+
+
+  if ($id) {        #edit
     $page->select(
-      id   => $id,
-      -and => [\[$permissions_sql_AND, $user->id, $user->id]]
+      id      => $id,
+      deleted => 0,
+      -and    => [\[$permissions_sql_AND, $user->id, $user->id]]
     );
-    $content->select(
+    $page->id && $content->select(
       page_id => $id,
+      deleted => 0,
       -and    => [\[$permissions_sql_AND, $user->id, $user->id]]
     );
     $c->stash(
       form => {
+        %{$c->stash('form')},
         (map { 'content.' . $_ => $content->$_() } @{$content->COLUMNS}),
-        (map { 'page.' . $_ => $page->$_() } @{$page->COLUMNS})
+        (map { 'page.' . $_    => $page->$_() } @{$page->COLUMNS}),
       }
     );
+    delete $c->stash->{id} unless $page->id;
   }
+  else {    #new
+
+  }
+
   if ($c->req->method eq 'POST') {
-    $c->_save_page($page, $content);
+    $c->_save_page($page, $content, $user);
   }
 
 #$c->render();
@@ -124,12 +138,11 @@ sub edit_page {
 }
 
 sub _save_page {
-  my ($c, $page, $content) = @_;
+  my ($c, $page, $content, $user) = @_;
   my $req = $c->req;
 
   #validate
-  my $v = $c->create_validator;
-  $c->stash(form => $c->req->params->to_hash);
+  my $v    = $c->create_validator;
   my $form = $c->stash('form');
   $v->field('content.title')->required(1)->inflate(\&MYDLjE::M::no_markup_inflate)
     ->message($c->l('The field [_1] is required!', $c->l('title')));
@@ -138,34 +151,82 @@ sub _save_page {
     $c->l('Please use one of the availabe languages or first add a new language!'));
 
   unless ($form->{'page.alias'}) {
-    $form->{'page.alias'} = MYDLjE::Unidecode::unidecode($req->param('content.title'));
+    $form->{'page.alias'} = MYDLjE::Unidecode::unidecode($form->{'content.title'});
   }
   $v->field('page.alias')->regexp($page->FIELDS_VALIDATION->{alias}{regexp})
     ->message('Please enter valid page alias!');
-  $v->field('page.domain_id')->in($c->stash('domains'))
+  my $domain_ids;
+  foreach my $domain (@{$c->stash('domains')}) {
+    push @$domain_ids, $domain->{id};
+  }
+
+  $v->field('page.domain_id')->in(@$domain_ids)
     ->message('Please use one of the availabe domains or first add a new domain!');
 
-  # if domain_id is switched remove current pid
+  # if domain_id is switched remove current pid and set the msession domain id
   if ($form->{'page.domain_id'} ne $page->domain_id) {
     $form->{'page.pid'} = 0;
+    $c->msession('domain_id', $form->{'page.domain_id'});
   }
   $v->field('page.page_type')->in($c->stash('page_types'));
   $v->field('page.pid')->regexp($page->FIELDS_VALIDATION->{pid}{regexp});
   $v->field('page.description')->inflate(\&MYDLjE::M::no_markup_inflate);
   $v->field([qw(page.published page.hidden page.cache)])
     ->each(sub { shift->regexp($page->FIELDS_VALIDATION->{cache}{regexp}) });
-  $v->field('page.expiry')->regexp();
-  $c->app->log->debug($c->dumper($form));
+  $v->field('page.expiry')->regexp($page->FIELDS_VALIDATION->{expiry}{regexp});
+  $form->{'page.permissions'} ||= $page->permissions;
+  $v->field('page.permissions')
+    ->regexp($page->FIELDS_VALIDATION->{permissions}{regexp});
 
 
   my $all_ok = $c->validate($v, $form);
-
-  #replace form entries
-  $c->stash(form => {%{$c->stash('form')}, %{$v->values}});
+  $c->app->log->debug($c->dumper($form) . $page->permissions);
 
   #save
-  #after save
+  my ($content_data, $page_data) = ({}, {});
+  foreach my $field (keys %$form) {
+    if ($field =~ /content\.(.+)$/x) {
+      $content_data->{$1} = $form->{$field};
+    }
+    elsif ($field =~ /page\.(.+)$/x) {
+      $page_data->{$1} = $form->{$field};
+    }
+  }
 
+  if ($c->stash('id')) {
+    $c->dbix->begin;
+    $content->save($content_data);
+    $page->save($page_data);
+    $c->dbix->commit;
+  }
+  else {
+    $content->user_id($user->id);
+    $content->group_id($user->group_id);
+    $content->data($content_data);
+    $page = MYDLjE::M::Page->add(
+      page_content => $content,
+      %$page_data,
+      user_id  => $user->id,
+      group_id => $user->group_id
+    );
+    $c->stash(id               => $page->id);
+    $c->stash(page_pid_options => $c->_set_page_pid_options($user));
+  }
+
+  #after save
+  #replace form entries
+  $c->stash(
+    form => {
+      %$form,
+      (map { 'content.' . $_ => $content->$_() } @{$content->COLUMNS}),
+      (map { 'page.' . $_    => $page->$_() } @{$page->COLUMNS}),
+    }
+  );
+  if (exists $form->{save_and_close}) {
+    $c->redirect_to('/site/pages');
+  }
+
+  #$c->app->log->debug($c->dumper($form));
   return;
 }
 

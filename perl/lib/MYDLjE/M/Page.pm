@@ -67,9 +67,6 @@ sub add {
 
   my $eval_ok = eval {
     $dbix->begin_work;
-    my $permissions = $page->permissions();
-    $permissions =~ s/^-/d/x;    #we will have content just now
-    $page->permissions($permissions);
     $page->save();
     $page_content->page_id($page->id);
     $page_content->save();

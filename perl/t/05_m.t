@@ -34,7 +34,7 @@ if (not $config->stash('installed')) {
   plan skip_all => 'System is not installed. Will not test MYDLjE::M.';
 }
 else {
-  plan tests => 81;
+  plan tests => 80;
 }
 isa_ok('MYDLjE::M::Content', 'MYDLjE::M');
 
@@ -357,8 +357,6 @@ $page_content->user_id($page->user_id);
 $page_content->group_id($page->group_id);
 $page = MYDLjE::M::Page->add(%{$page->data}, page_content => $page_content);
 is($page->id, $page_content->page_id, '$page->id is $page_content->page_id');
-is($page->permissions, 'drwxrw-r-x',
-  '$page->permissions are ' . $page->permissions);
 
 #clean up...
 $dbix->delete('my_pages', {id => $page->id});

@@ -20,13 +20,12 @@ function enhance_form() {
     });  
   });
   
-  $('.label').each(function(){
-      
-      $(this).click(function(){
-        var unit = $(this).parent();
-        $('.help', unit ).slideToggle();
+  $('.label').each(function() {
+    var unit = $(this).parent();
+    $('label', this).click(function() {
+      $('.help', unit ).slideToggle();
       return false;
-      });
+    });
   });
   $('.label label').css({cursor: 'help'});
   $('.help').addClass('ui-corner-all').prepend('<span class="column ui-icon ui-icon-help"></span>');

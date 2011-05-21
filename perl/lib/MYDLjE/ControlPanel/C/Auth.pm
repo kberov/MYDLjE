@@ -84,8 +84,6 @@ AND
       }
     );
     return 0;
-
-  #TODO:: add check for user namespace. Is he allowed to use this application?
   }
   else {
     $c->msession->sessiondata({});    #empty

@@ -18,7 +18,7 @@ perlcritic $MYDLjE_HOME/perl/lib/MYDLjE.pm $MYDLjE_HOME/perl/lib/MYDLjE
 echo
 echo "perlcritic done --------------------"
 
-exit
+
 prove -v $MYDLjE_HOME/perl/t
 
 #run this file before each commit as a hook maybe

@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use utf8;
 use I18N::LangTags::List;
-our %Lexicon = (
+our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   _AUTO          => 1,
   login_name     => 'User',
   login_password => 'Password',

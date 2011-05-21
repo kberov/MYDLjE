@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use utf8;
 
-our %Lexicon = (
+our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   _AUTO => 1,
 
   #cpanel/loginscreen.html.tt

@@ -26,6 +26,9 @@ allow = refs
 
 [TestingAndDebugging::ProhibitProlongedStrictureOverride]
 statements = 2
+[TestingAndDebugging::ProhibitNoWarnings]
+allow = once
+#allow_with_category_restriction = 1
 
 #Perl::Critic::Policy::Subroutines::RequireArgUnpacking - Always unpack @_ first.
 #todo
@@ -42,4 +45,4 @@ lib_sections    = NAME | SYNOPSIS | METHODS | CONFIG | BUGS AND LIMITATIONS | AU
 script_sections = NAME | USAGE | OPTIONS | AUTHOR
 
 [Variables::ProhibitPackageVars]
-add_packages = Carp MYDLjE::I18N::bg MYDLjE::I18N::en
+add_packages = Carp

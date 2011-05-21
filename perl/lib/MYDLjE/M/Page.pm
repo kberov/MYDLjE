@@ -43,15 +43,18 @@ has FIELDS_VALIDATION => sub {
     $self->FIELD_DEF('changed_by'),
   };
 };
-*id       = \&MYDLjE::M::Content::id;
-*pid      = \&MYDLjE::M::Content::pid;
-*alias    = \&MYDLjE::M::Content::alias;
-*user_id  = \&MYDLjE::M::Content::user_id;
-*group_id = \&MYDLjE::M::Content::group_id;
-*sorting  = \&MYDLjE::M::Content::sorting;
-*tstamp   = \&MYDLjE::M::Content::tstamp;
-*start    = \&MYDLjE::M::Content::start;
-*stop     = \&MYDLjE::M::Content::stop;
+{
+  no warnings qw(once);
+  *id       = \&MYDLjE::M::Content::id;
+  *pid      = \&MYDLjE::M::Content::pid;
+  *alias    = \&MYDLjE::M::Content::alias;
+  *user_id  = \&MYDLjE::M::Content::user_id;
+  *group_id = \&MYDLjE::M::Content::group_id;
+  *sorting  = \&MYDLjE::M::Content::sorting;
+  *tstamp   = \&MYDLjE::M::Content::tstamp;
+  *start    = \&MYDLjE::M::Content::start;
+  *stop     = \&MYDLjE::M::Content::stop;
+}
 
 #Create a page with dummy page content
 sub add {

@@ -29,6 +29,13 @@ END;
 </fieldset>
 </form>
 [%# DUMP(validator_errors) %]
+<script  type="text/javascript">//<![CDATA[
+$(window).load(function() {
+  $('a[href$="domains"]').addClass('ui-state-active');
+  
+});
+//]]>
+</script>
 </div><!-- end div id="[% action %]-area" -->
 <!-- end [%+ action +%] -->
 [% END %]

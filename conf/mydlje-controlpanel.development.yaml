@@ -25,7 +25,8 @@ plugins:
       DEFAULT: template_not_found.tt
       ENCODING: 'UTF-8'
       #EVAL_PERL: *true      #use perl in templates only as last resort - not recommended
-      #PLUGINS:
+      PLUGINS:
+        PageTree: MYDLjE::Template::PageTree
       #TODO if needed 
       #
       POST_CHOMP: '~'

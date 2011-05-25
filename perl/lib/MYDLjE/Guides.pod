@@ -3,27 +3,28 @@
 
 =head1 MYDLjE Guides
 
-Here is the place to start, no mater if you are a developer or end user.
+Here is the place to start, no mater if you are a developer, admin or editor.
 
 =head1 ADMINISTRATORS
 
-=head2 INSTALLATION
+The L<MYDLjE::Guides::Admins> guide is for those who manage one or several sites based on MYDLjE.
+It is expected that you have general knowledge on how the I<World Wide Web> works and are familiar with notions like Apache, HTTP, FTP, XML, XHTML. Some knowledge of Perl and JavaScript is useful but not mandatory.
 
-=head2 Content Management
-
-=head2 Users Management
-
+Thanks for using MYDLjE
 
 =head1 DEVELOPERS
+
+The L<MYDLjE::Guides::Devs> guide is for those who want to contribute to the project by 
+implementing features and fixing bugs. Please read it before you contribute.
+
+Thanks for joining.
 
 =head1 EDITORS
 
 
 =head1 SEE ALSO
 
-L<MYDLjE>, L<MYDLjE::ControlPanel>, 
-L<MYDLjE::Site>, L<MYDLjE::Config>,L<Hash::Merge::Simple>, L<YAML::Tiny>
-
+L<MYDLjE>
 
 =head1 AUTHOR AND COPYRIGHT
 

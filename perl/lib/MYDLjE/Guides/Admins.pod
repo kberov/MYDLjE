@@ -1,0 +1,31 @@
+=encoding utf8
+
+=head1 NAME
+
+MYDLjE::Guides::Admins - know how to manage a MYDLjE based site.
+
+
+=head2 INSTALLATION
+
+=head2 Domains Management
+
+=head2 Pages Management
+
+=head2 Content Management
+
+=head2 Users Management
+
+
+
+
+=head1 SEE ALSO
+
+L<MYDLjE::Guides>, L<MYDLjE::Guides::Devs>
+
+=head1 AUTHOR AND COPYRIGHT
+
+(c) 2011 Красимир Беров L<k.berov@gmail.com>
+
+MYDLjE::Guides by Красимир Беров is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+Based on a work at github.com.
+

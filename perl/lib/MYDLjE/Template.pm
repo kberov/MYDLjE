@@ -159,3 +159,15 @@ Implementation of the mandatory C<error> method.
 This module is practically the same as L<Template::Plugin> but uses
 MYDLjE::Base == Mojo::Base as base class.
 L<http://search.cpan.org/dist/Template-Toolkit/lib/Template/Plugin.pm>
+
+L<MYDLjE::Guides>, L<MYDLjE::ControlPanel>, 
+L<MYDLjE::Site>, L<MYDLjE::Config>,L<Hash::Merge::Simple>, L<YAML::Tiny>
+
+
+=head1 AUTHOR AND COPYRIGHT
+
+(c) 2011 Красимир Беров L<k.berov@gmail.com>
+
+This code is licensed under LGPLv3.
+
+

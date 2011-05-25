@@ -62,6 +62,8 @@ sub msession {
 
 __END__
 
+=encoding utf8
+
 =head1 NAME
 
 MYDLjE::C - Base class for our controllers
@@ -100,5 +102,12 @@ Using directly the underlying L<MYDLjE::M::Session>:
 =head1 SEE ALSO
 
 L<MYDLjE::Guides>, L<MYDLjE::ControlPanel::C>, L<MYDLjE::Site::C>
+
+=head1 AUTHOR AND COPYRIGHT
+
+(c) 2011 Красимир Беров L<k.berov@gmail.com>
+
+This code is licensed under LGPLv3.
+
 
 

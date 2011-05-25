@@ -2,7 +2,7 @@
 
 Here is the place to start, no mater if you are a developer or end user.
 
-=head1 USERS
+=head1 ADMINISTRATORS
 
 =head2 INSTALLATION
 
@@ -10,6 +10,24 @@ Here is the place to start, no mater if you are a developer or end user.
 
 =head2 Users Management
 
- 
 
 =head1 DEVELOPERS
+
+=head1 EDITORS
+
+
+=head1 SEE ALSO
+
+L<MYDLjE>, L<MYDLjE::ControlPanel>, 
+L<MYDLjE::Site>, L<MYDLjE::Config>,L<Hash::Merge::Simple>, L<YAML::Tiny>
+
+
+=head1 AUTHOR AND COPYRIGHT
+
+(c) 2011 Красимир Беров L<k.berov@gmail.com>
+
+MYDLjE code is licensed under LGPLv3.
+
+MYDLjE::Guides by Красимир Беров is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+Based on a work at github.com.
+

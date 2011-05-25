@@ -268,8 +268,10 @@ L<MYDLjE::Site>, L<MYDLjE::Config>,L<Hash::Merge::Simple>, L<YAML::Tiny>
 
 =head1 AUTHOR AND COPYRIGHT
 
-(c) 2011 Красимир Беров 
+(c) 2011 Красимир Беров L<k.berov@gmail.com>
 
-This code is licenced under LGPLv3.
+This code is licensed under LGPLv3.
 
+MYDLjE::Guides by Красимир Беров is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+Based on a work at github.com.
 

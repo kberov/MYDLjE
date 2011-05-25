@@ -167,5 +167,5 @@ MYDLjE::ControlPanel::C::Content - Controller for handling content in cpanel
 
 (c) 2011 Красимир Беров
 
-This code is licenced under LGPLv3.
+This code is licensed under LGPLv3.
 

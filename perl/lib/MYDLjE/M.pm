@@ -484,8 +484,8 @@ L<MYDLjE::M::User>, L<MYDLjE::M::Session>, L<MYDLjE::M::Content>
 
 =head1 AUTHOR AND COPYRIGHT
 
-(c) 2011 Красимир Беров
+(c) 2011 Красимир Беров L<k.berov@gmail.com>
 
-This code is licenced under LGPLv3.
+This code is licensed under LGPLv3.
 
 

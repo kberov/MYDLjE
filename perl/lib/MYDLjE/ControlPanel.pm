@@ -69,3 +69,11 @@ L<MYDLjE::ControlPanel> inherits most attributes from L<MYDLjE> and implements/o
 
 L<MYDLjE::ControlPanel::C>
 
+
+=head1 AUTHOR AND COPYRIGHT
+
+(c) 2011 Красимир Беров L<k.berov@gmail.com>
+
+This code is licensed under LGPLv3.
+
+

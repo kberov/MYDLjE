@@ -16,6 +16,8 @@ sub startup {
 
 __END__
 
+=encoding utf8
+
 =head1 NAME
 
 MYDLjE::Site - The L<site> Application class
@@ -36,4 +38,11 @@ L<MYDLjE::Site::C>
 
 L<MYDLjE::Guides>, L<MYDLjE::Site::C>, L<MYDLjE>
 
+
+
+=head1 AUTHOR AND COPYRIGHT
+
+(c) 2011 Красимир Беров L<k.berov@gmail.com>
+
+This code is licensed under LGPLv3.
 

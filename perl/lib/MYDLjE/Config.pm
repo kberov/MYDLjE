@@ -177,3 +177,11 @@ Writes a config file to the given filename.
 L<MYDLjE> L<Hash::Merge::Simple>, L<YAML::Any> L<YAML::Tiny>
 
 
+=head1 AUTHOR AND COPYRIGHT
+
+(c) 2011 Красимир Беров L<k.berov@gmail.com>
+
+This code is licensed under LGPLv3.
+
+
+

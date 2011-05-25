@@ -291,3 +291,57 @@ sub settings {
 
 1;
 
+__END__
+
+=encoding utf8
+
+=head1 NAME
+
+MYDLjE::ControlPanel::C::Site - Controller class for managing site related stuff
+
+=head1 DESCRIPTION
+
+This is the controller implementing actions to manage domains, pages, templates and translations.
+
+=head1 ACTIONS
+
+=head2 domains
+
+    URL: http://example.com/cpanel/site/domains
+
+Lists domains managed by this MYDLjE installation.
+
+=head2 edit_domain
+
+    ADD URL: http://example.com/cpanel/site/edit_domain
+    EDIT URL: http://example.com/cpanel/site/edit_domain/123456
+
+Displays and processes a form for adding and editing a domain.
+
+
+=head2 pages
+
+    URL: http://example.com/cpanel/site/pages
+
+Displays a tree of pages managed by this MYDLjE installation. 
+Pages can be filtered by domain and language.
+
+=head2 edit_page
+
+    ADD URL: http://example.com/cpanel/site/edit_page
+    EDIT URL: http://example.com/cpanel/site/edit_page/123456
+
+Displays and processes a form for adding and editing a page.
+
+=head2 templates
+
+    URL: example.com/cpanel/site/templates
+    TODO
+
+=head1 AUTHOR AND COPYRIGHT
+
+(c) 2011 Красимир Беров L<k.berov@gmail.com>
+
+This code is licensed under LGPLv3.
+
+

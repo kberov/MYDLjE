@@ -491,6 +491,6 @@ L<MYDLjE::M::Content::Answer>, L<MYDLjE::M::Content::Article>, L<MYDLjE::M::Cont
 
 (c) 2011 Красимир Беров 
 
-This code is licenced under LGPLv3.
+This code is licensed under LGPLv3.
 
 

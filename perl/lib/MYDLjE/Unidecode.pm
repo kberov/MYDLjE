@@ -2540,7 +2540,7 @@ L<Text::Unidecode>
 
 (c) 2011 Красимир Беров 
 
-This code is licenced under LGPLv3.
+This code is licensed under LGPLv3.
 
 Ported and adapted from Leo Feyer's Contao C<$UTF8_LOOKUP_TABLE> array : (c) Leo Feyer 2005-2010
 

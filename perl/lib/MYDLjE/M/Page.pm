@@ -279,6 +279,6 @@ L<MYDLjE::M::Content>, L<MYDLjE::M::User>, L<MYDLjE::M>
 
 (c) 2011 Красимир Беров 
 
-This code is licenced under LGPLv3.
+This code is licensed under LGPLv3.
 
 

@@ -9,11 +9,11 @@ has stash   => sub { shift->context->stash };
 sub get { return shift->stash->get(@_); }
 ## no critic qw(NamingConventions::ProhibitAmbiguousNames)
 sub set { return shift->stash->set(@_); }
-has c        => sub { shift->get('c'); };
-has app      => sub { shift->c->app; };
-has dbix     => sub { shift->c->dbix; };
-has msession => sub { shift->get('c')->msession; };
-has user     => sub { shift->msession->user; };
+has c    => sub { shift->get('c'); };
+has app  => sub { shift->c->app; };
+has dbix => sub { shift->c->dbix; };
+sub msession { shift->get('c')->msession(@_); }
+has user => sub { shift->msession->user; };
 sub process { return shift->{_CONTEXT}->process(@_); }
 sub include { return shift->{_CONTEXT}->include(@_); }
 sub insert  { return shift->{_CONTEXT}->insert(@_); }
@@ -72,7 +72,7 @@ MYDLjE::Template - Write TT/TA plugins for use in MYDLjE
   #2. Use it in your templates
   USE tree = PageTree(
     pid      => 0,
-    domain   => c.url_for.host,
+    domain   => c.req.url.host,
     language => LANGUAGE
   );
   tree.render();
@@ -82,7 +82,7 @@ MYDLjE::Template - Write TT/TA plugins for use in MYDLjE
 MYDLjE::Template is an implementation of L<Template::Plugin> with some
 framework specific atributes and methods added so you do not have to add them in your own  Template plugins. We follow the API and recomendations specified by Andy Wardley.
 The idea is to maintain compatibility with Template Toolkit so if someone decide  he can freely switch from Template::Alloy to Template Toolkit.
-Finally, sometimes writing MACROS seems too messy or your is more complicated and is best to write it in Perl.
+Finally, sometimes writing MACROS seems too messy or your idea is more complicated and it is best to write it in Perl.
 
 =head1 ATTRIBUTES
 
@@ -106,13 +106,13 @@ The application object - same as $self-E<gt>app in a controller.
 
 =head2 dbix
 
-The DBIx::Simple instance.
+The L<DBIx::Simple> instance.
 
  $self->dbix->select('my_pages', { alias=>{-like =>'news%'} } );
 
 =head2 msession
 
-The MYDLjE::M::Session instance.
+The L<MYDLjE::M::Session> instance.
 
 =head2 user
 

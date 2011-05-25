@@ -10,7 +10,7 @@
     LANGUAGE = c.languages();
     DEFAULT_WRAPPER = 'layouts/cpanel_layout.html.tt';
     UNLESS TEMPLATE_WRAPPER;
-      TEMPLATE_WRAPPER = 'layouts/cpanel_layout.html.tt'
+      TEMPLATE_WRAPPER = DEFAULT_WRAPPER
     END;
     TITLE = app.routes.namespace _'::' _ controller _ '/' _ action;
 ~%]

@@ -4,7 +4,7 @@ use MojoX::Validator;
 use Carp();
 
 sub dbix { return MYDLjE::Plugin::DBIx::instance() }
-my $SQL;
+my $SQL   = {};
 my $DEBUG = $MYDLjE::DEBUG;
 
 #conveninece for getting key/vaule arguments

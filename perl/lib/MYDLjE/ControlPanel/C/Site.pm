@@ -1,20 +1,6 @@
 package MYDLjE::ControlPanel::C::Site;
 use MYDLjE::Base 'MYDLjE::ControlPanel::C';
-
-#Raw SQL for getting domains that belong to the current user
-# OR the user belongs to a grup that has "read" and "write" permisttions
-my $permissions_sql_AND = <<"AND";
-  
-  (
-    (user_id = ? AND permissions LIKE '_rw%')
-    OR ( group_id IN (SELECT gid FROM my_users_groups WHERE uid= ?) 
-      AND permissions LIKE '____rw%')
-  )
-AND
-
-#TODO: make this SQL common for ALL tables with the mentioned columns,
-#thus achieving commonly used permission rules everywhere.
-my $domains_SQL = "SELECT * FROM my_domains WHERE $permissions_sql_AND ORDER BY domain";
+use List::Util;
 
 sub domains {
   my $c   = shift;
@@ -25,6 +11,10 @@ sub domains {
     $c->stash(domains => $c->msession('domains'));
   }
   else {
+    my $domains_SQL =
+        'SELECT * FROM my_domains WHERE '
+      . $c->sql('write_permissions_sql')
+      . ' ORDER BY domain';
     $c->stash(domains => [$c->dbix->query($domains_SQL, $uid, $uid)->hashes]);
     $c->msession(domains => $c->stash('domains'));
   }
@@ -41,7 +31,7 @@ sub edit_domain {
   if (defined $id) {
     $domain->select(
       id   => $id,
-      -and => [\[$permissions_sql_AND, $user->id, $user->id]]
+      -and => [\[$c->sql('write_permissions_sql'), $user->id, $user->id]]
     );
   }
   if ($c->req->method eq 'GET') {
@@ -85,7 +75,17 @@ sub edit_domain {
 }
 
 sub pages {
+  my $c = shift;
+  $c->stash(form => $c->req->params->to_hash);
+  my $form = $c->stash('form');
+  $c->domains();
+  if (exists $form->{'page.domain_id'}) {
+    $form->{'pid'} = 0;
+    $c->msession('domain_id', $form->{'page.domain_id'});
+    $c->msession('language',  $form->{'content.language'});
 
+  }
+  return;
 }
 
 sub edit_page {
@@ -97,36 +97,40 @@ sub edit_page {
   my $page    = MYDLjE::M::Page->new;
   my $content = MYDLjE::M::Content::Page->new;
   my $user    = $c->msession->user;
-
+  my $method  = $c->req->method;
   $c->domains();    #fill in "domains" stash variable
   $c->stash(page_types => $page->FIELDS_VALIDATION->{page_type}{constraints}[0]{in});
   $c->stash(page_pid_options => $c->_set_page_pid_options($user));
   $c->stash(form             => $c->req->params->to_hash);
-
+  my $form = $c->stash('form');
+  $form->{'content.language'} ||=  $c->app->config('plugins')->{i18n}{default};
+  my $language =
+    (List::Util::first { $form->{'content.language'} eq $_ }
+    @{$c->app->config('languages')});
 
   if ($id) {        #edit
     $page->select(
       id      => $id,
       deleted => 0,
-      -and    => [\[$permissions_sql_AND, $user->id, $user->id]]
+      -and    => [\[$c->sql('write_permissions_sql'), $user->id, $user->id]]
     );
     $page->id && $content->select(
-      page_id => $id,
-      deleted => 0,
-      -and    => [\[$permissions_sql_AND, $user->id, $user->id]]
+      page_id  => $page->id,
+      language => $language,
+      deleted  => 0,
+      -and     => [\[$c->sql('write_permissions_sql'), $user->id, $user->id]]
     );
-    $c->stash(
-      form => {
-        %{$c->stash('form')},
-        (map { 'content.' . $_ => $content->$_() } @{$content->COLUMNS}),
-        (map { 'page.' . $_    => $page->$_() } @{$page->COLUMNS}),
-      }
-    );
+    $form = {
+      (map { 'content.' . $_ => $content->$_() } @{$content->COLUMNS}),
+      (map { 'page.' . $_ => $page->$_() } @{$page->COLUMNS}),
+      %$form,
+    };
     delete $c->stash->{id} unless $page->id;
   }
   else {    #new
 
   }
+  $c->app->log->debug($c->dumper($c->stash('form')));
 
   if ($c->req->method eq 'POST') {
     $c->_save_page($page, $content, $user);
@@ -178,10 +182,8 @@ sub _save_page {
   $v->field('page.permissions')
     ->regexp($page->FIELDS_VALIDATION->{permissions}{regexp});
 
+  return unless $c->validate($v, $form);
 
-  my $all_ok = $c->validate($v, $form);
-  return unless $all_ok; 
-  
   #save
   my ($content_data, $page_data) = ({}, {});
   foreach my $field (keys %$form) {
@@ -193,15 +195,24 @@ sub _save_page {
     }
   }
 
+  #we may not have page content yet.
+  $content->user_id  || $content->user_id($user->id);
+  $content->group_id || $content->group_id($user->group_id);
+  $content->alias(MYDLjE::Unidecode::unidecode($content_data->{title}));
+
+#TODO: check for duplicate aliases!!!!
+#if( $c->dbix->select('my_pages','alias',{alias=>$page->alias})->fetch
+#|| $c->dbix->select('my_content','alias',{alias=>$content->alias,data_type=>'page'})->fetch)
+
+  #save
   if ($c->stash('id')) {
+    $content->page_id||$content->page_id($page->id);
     $c->dbix->begin;
     $content->save($content_data);
     $page->save($page_data);
     $c->dbix->commit;
   }
   else {
-    $content->user_id($user->id);
-    $content->group_id($user->group_id);
     $content->data($content_data);
     $page = MYDLjE::M::Page->add(
       page_content => $content,
@@ -243,14 +254,14 @@ sub _traverse_children {
   my ($c, $user, $pid, $page_pid_options, $depth) = @_;
   my $id = $c->stash('id') || 0;
 
+  #hack to make the SQL work the first time this method is called
+  $id = time if ($depth == 0);
+
   #Be reasonable and prevent deadly recursion
   $depth++;
   return if $depth > 10;
   my $domain_id = $c->req->param('page.domain_id') || 0;
-  my $pages =
-    $c->dbix->query('SELECT id as value, alias as label, page_type, pid FROM my_pages'
-      . ' WHERE pid=? AND domain_id=? AND pid !=? AND id>0' . ' AND '
-      . $permissions_sql_AND,
+  my $pages = $c->dbix->query($c->sql('writable_pages'),
     $pid, $domain_id, $id, $user->id, $user->id)->hashes;
   if (@$pages) {
     foreach my $page (@$pages) {

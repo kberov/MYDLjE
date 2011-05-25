@@ -16,7 +16,7 @@ IndexOptions -FancyIndexing
 # Make sure that directory listings are disabled (Apache 1)
 Options -Indexes +ExecCGI
 
-#We prefer fastcgi
+#Uncomment "IfModule !mod_fastcgi.c/IfModule" to prefer fastcgi 
 #<IfModule !mod_fastcgi.c>
 #set explicitly filenames as cgi scripts
   <Files ~ "(mydlje|cpanel|site)$">
@@ -24,6 +24,8 @@ Options -Indexes +ExecCGI
   </Files>
 #</IfModule>
 
+#Uncomment "IfModule mod_fastcgi.c/IfModule" 
+#and lines in between to prefer fastcgi 
 #<IfModule mod_fastcgi.c>
 #  <Files ~ "(mydlje|cpanel|site)$">
 #    SetHandler  fastcgi-script

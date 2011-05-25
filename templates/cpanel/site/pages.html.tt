@@ -1,7 +1,10 @@
-[% WRAPPER ${TEMPLATE_WRAPPER} %]
+[% WRAPPER ${TEMPLATE_WRAPPER};
+PROCESS 'site/page_options.tt';
+
+%]
 <!-- start [% action %] -->
 <div id="[% action %]-area" class="container ui-corner-all ui-widget-content">
-<form id="[% action %]_form">
+<form id="[% action %]_form" method="POST">
 <fieldset class="ui-widget-content ui-corner-all">
         <legend class="ui-widget-header ui-corner-all">[% c.l('Pages') %]
             <span  class="legend_icon"><a href="[% c.url_for('/site/edit_page')%]"
@@ -11,10 +14,47 @@
              <span class="ui-icon" 
              style="background-image: url(pub/css/icons/page_add.png) "></span></a></span>
         </legend>
+        
+<div class="ui-widget-header ui-corner-all">
+  <div class="columns">
+    <div class="elastic column">
+      [% select_field('page.domain_id', {label => c.l('Domains'), 
+       options => domains_options, help =>'domain_help',selected=>c.msession('domain_id')} ); %]
+    </div>
+    <div class="elastic column">
+      [% select_field('content.language', {options => language_options} ); %]
+    </div>
+    <div class="fixed column" style="">
+        <button id="set_domain_env" type="submit" name="set_domain_env" value="set">set</button>
+    </div>
+  </div>
+</div>
 <ul class="items">
 </ul>
+[%
+USE tree = PageTree(
+    pid      => 0,
+    domain   => c.url_for.host,
+    language => LANGUAGE
+  );
+  tree.render();
+%]
 </fieldset>
 </form>
+<script  type="text/javascript">//<![CDATA[
+$(window).load(function() {
+$('#[% action %]_form button[type="submit"]').button({
+    icons: {
+      primary: 'ui-icon-check'
+    },
+    text:false
+  });
+  
+});
+//]]>
+</script>
+[% DUMP(c.msession.sessiondata); %]
+
 </div><!-- end div id="[% action %]-area" -->
 <!-- end [%+ action +%] -->
 [% END %]

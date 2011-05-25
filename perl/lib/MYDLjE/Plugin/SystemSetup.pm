@@ -203,7 +203,10 @@ sub _init_database {
 
     #$log->debug("query[name]" . $e->attrs->{name});
     my $query = $e->text;
-    $query =~ s/^\s*--.*?$//xg;
+
+    #Treat string as multiple lines.
+    $query =~ s/^\s*--.*?$//xmg;
+
     $query =~ s/\)\s*?;\s*?$/)/xg;    #beware... VALUES may contain ';'
     $c->dbix->query($query);
   }

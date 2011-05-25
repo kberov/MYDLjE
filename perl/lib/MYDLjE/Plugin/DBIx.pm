@@ -3,8 +3,9 @@ use MYDLjE::Base 'Mojolicious::Plugin';
 use DBI qw(:utils);
 use DBIx::Simple;
 use SQL::Abstract;
+use Mojo::DOM;
 use Carp;
-our $VERSION = '0.01';
+our $VERSION = '0.1';
 
 #Singletons
 my $DBIX;    #DBIx::Simple instance
@@ -25,6 +26,31 @@ sub register {
   # Config
   $config ||= {};
   $app->helper('dbix', sub { dbix($config, $self, $app) });
+
+  my $xml_sql =
+    Mojo::Asset::File->new(path => $app->home . '/conf/mysql.queries.sql')->slurp;
+  my $dom = Mojo::DOM->new(charset => $app->config('plugins')->{charset}{charset});
+  $dom->parse($xml_sql);
+  my $queries = {};
+  for my $q ($dom->find('query[name]')->each) {
+
+    $app->log->debug("query[name]: " . $q->attrs->{name});
+    my $query = $q->text;
+
+    #Treat string as multiple lines.
+    $query =~ s/--.*?$//xmg;
+    $queries->{$q->attrs->{name}} = $query;
+  }
+
+  $app->helper(
+    sql => sub {
+      my ($c, $name) = @_;
+      if (exists $queries->{$name}) {
+        return $queries->{$name};
+      }
+      return $queries;
+    }
+  );
   return;
 }    #end register
 
@@ -76,5 +102,7 @@ __END__
 MYDLjE::Plugin::DBIx - DBIx::Simple + SQL::Abstract for MYDLjE
 
 =head1 DESCRIPTION
+
+This is a standart Plugin for MYDLjE. It provides two helpers - L<dbix> and L<sql>.
 
 

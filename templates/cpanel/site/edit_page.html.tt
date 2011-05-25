@@ -9,24 +9,7 @@ ELSE;
   form_action = c.url_for('/site/edit_page');
 END;
 
-domains_options = [];
-FOREACH dd IN domains;
-  domains_options.push({label=>dd.domain, value =>dd.id});
-END;
-
-page_type_options = [];
-FOR pt IN page_types;
-  page_type_options.push({label=>pt, value =>pt});
-END;
-language_options = [];
-FOR option IN app.config('languages');
-  language_options.push({label => option, value => option }); 
-END;
-published_options = [
-  {label => 'not pubbilshed', value => 0 },
-  {label => 'waiting review', value => 1 },
-  {label => 'published', value => 2 }
-];
+PROCESS 'site/page_options.tt';
 
 %]
 

@@ -36,5 +36,5 @@ MYDLjE code is licensed under LGPLv3.
 
 <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-nc-sa/3.0/80x15.png" /></a><br /><span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">MYDLjE::Guides</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="https://github.com/kberov/MYDLjE" property="cc:attributionName" rel="cc:attributionURL">Красимир Беров</a> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License</a>.<br />Based on a work at <a xmlns:dct="http://purl.org/dc/terms/" href="https://github.com/kberov/MYDLjE/blob/master/perl/lib/MYDLjE/Guides.pod" rel="dct:source">github.com</a>.
 
-=end
+=end html
 

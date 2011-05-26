@@ -3,7 +3,7 @@
 
 =head1 MYDLjE Guides
 
-Here is the place to start, no mater if you are a developer, admin or editor.
+Here is the place to start, no matter if you are a developer, admin or editor.
 
 =head1 ADMINISTRATORS
 
@@ -18,6 +18,16 @@ The L<MYDLjE::Guides::Devs> guide is for those who want to contribute to the pro
 implementing features and fixing bugs. Please read it before you contribute.
 
 Thanks for joining.
+
+=head1 DESIGNERS
+
+The L<MYDLjE::Guides::Design> guide is intended for XHTML/CSS savvy people who want to use
+the bundled Elastic CSS framework and jQUery UI(L<http://jqueryui.com/>).
+Well, for now it is enough to look at the templates files and read the docs on 
+L<http://elasticss.com/documentation/>. There are also very good screencasts.
+
+
+
 
 =head1 EDITORS
 

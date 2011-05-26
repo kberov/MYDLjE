@@ -1,0 +1,20 @@
+
+=head1 SEE ALSO
+=encoding utf8
+
+=head1 NAME
+
+MYDLjE::Guides::Design - make beautiful layouts and templates
+
+L<MYDLjE::Guides>, L<MYDLjE::Guides::Devs>, L<MYDLjE::Guides::Admins>
+
+
+=head1 SEE ALSO
+
+=head1 AUTHOR AND COPYRIGHT
+
+(c) 2011 Красимир Беров L<k.berov@gmail.com>
+
+MYDLjE::Guides by Красимир Беров is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+Based on a work at github.com.
+

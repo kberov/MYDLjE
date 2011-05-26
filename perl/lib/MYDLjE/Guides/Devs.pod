@@ -2,6 +2,74 @@
 
 =head1 NAME
 
+MYDLjE::Guides::Devs - know how to contribute code to MYDLjE
+
+=head1 INTRO
+
+MYDLjE is simply a bundle of three Mojolicious applications.
+
+
+=head1 FILES STRUCTURE
+
+
+  $MOJO_ROOT
+      |-- conf
+      |-- log
+      |-- perl
+      |   |-- bin
+      |   |-- lib
+      |   |-- site
+      |   `-- t
+      |-- pub
+      |   |-- css
+      |   |-- dtd
+      |   |-- home
+      |   `-- js
+      |-- templates
+      |   |-- cpanel
+      |   `-- layouts
+      `-- tmp
+
+=head1 PERL MODULES
+
+=head1 XHTML
+
+MYDLjE sends to the browser 100% well formed XML output.
+
+=head1 JavaScript
+
+
+
+
+=head1 SCALABILITY
+
+
+=head2 Tests
+
+Tests, Perltidy and PerlCritc are run by 
+$MOJO_ROOT/bin/diagnostics.
+
+=head2 Perl Best Practices
+
+To enforce a common perl style we use L<perlcritic>.
+The configuration file is $MOJO_ROOT/.perlcriticrc
+
+=head2 Qunit
+
+TODO: add Qunit
+L<http://docs.jquery.com/Qunit>
+
+=head1 PLUGINS
+
+=head2 MYDLjE/Mojolicious Plugins
+
+=head2 Template Plugins
+
+=head2 MYDLjE/Mojolicious Applications
+
+
+
+
 
 
 =head1 SEE ALSO

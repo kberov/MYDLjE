@@ -5,7 +5,12 @@
 MYDLjE::Guides::Admins - know how to manage a MYDLjE based site.
 
 
-=head2 INSTALLATION
+=head1 INSTALLATION
+
+There are two ways to install MYDLjE: manually and by using your web-browser. 
+
+
+=head1 ADMINISTRATION
 
 =head2 Domains Management
 

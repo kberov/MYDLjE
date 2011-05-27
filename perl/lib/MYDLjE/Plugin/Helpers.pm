@@ -36,6 +36,7 @@ sub register {
         return $textile->process($text);
       }
     );
+    $app->helper(debug => sub{shift->app->log->debug(@_)});
   }
 
   return;

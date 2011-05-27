@@ -7,18 +7,18 @@
   
   (
     (user_id = ? AND permissions LIKE '_rw%')
-    OR ( group_id IN (SELECT gid FROM my_users_groups WHERE uid= ?) 
+    OR ( group_id IN (SELECT gid FROM users_groups WHERE uid= ?) 
       AND permissions LIKE '____rw%')
   )
 
 -- ]]></query>
 
 -- <query name="writable_pages" params="pid,domain_id,id,user_id,user_id"><![CDATA[
-  SELECT id as value, alias as label, page_type, pid, permissions FROM my_pages
+  SELECT id as value, alias as label, page_type, pid, permissions FROM pages
      WHERE pid=? AND domain_id=? AND pid !=? AND id>0  AND 
   (
     (user_id = ? AND permissions LIKE '_rw%')
-    OR ( group_id IN (SELECT gid FROM my_users_groups WHERE uid= ?) 
+    OR ( group_id IN (SELECT gid FROM users_groups WHERE uid= ?) 
       AND permissions LIKE '____rw%')
   )
 -- ]]></query>

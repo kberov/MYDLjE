@@ -11,7 +11,7 @@ __END__
 
 =head1 NAME
 
-MYDLjE::M::Content::Page -  basic content properties for my_pages objects
+MYDLjE::M::Content::Page -  basic content properties for pages objects
 
 =head1 DESCRIPTION
 

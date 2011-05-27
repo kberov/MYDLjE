@@ -2,7 +2,7 @@ package MYDLjE::M::User;
 use MYDLjE::Base 'MYDLjE::M';
 use Mojo::Util qw();
 
-has TABLE => 'my_users';
+has TABLE => 'users';
 
 has COLUMNS => sub {
   [ qw(
@@ -66,17 +66,17 @@ sub add {
   my $eval_ok = eval {
     $dbix->begin_work;
     $dbix->insert(
-      'my_groups',
+      'groups',
       { name        => $args->{login_name},
         description => 'Primary group for ' . $args->{login_name},
         namespaces  => $namespaces,
       }
     );
-    $user->group_id($dbix->last_insert_id(undef, undef, 'my_groups', 'id'));
+    $user->group_id($dbix->last_insert_id(undef, undef, 'groups', 'id'));
     my $uid = $user->save();
     unshift @$group_ids, $user->group_id;
     foreach my $gid (@$group_ids) {
-      $dbix->query('INSERT INTO my_users_groups (uid,gid) VALUES(?,?)', $uid, $gid);
+      $dbix->query('INSERT INTO users_groups (uid,gid) VALUES(?,?)', $uid, $gid);
     }
     $dbix->commit;
   };
@@ -117,11 +117,11 @@ Note also that all columns are available as setters and getters for the instanti
 
 =head2 COLUMNS
 
-Retursns an ARRAYREF with all columns from table C<my_users>. 
+Retursns an ARRAYREF with all columns from table C<users>. 
 
 =head2 TABLE
 
-Returns the table name from which rows L<MYDLjE::M::User> instances are constructed: C<my_users>.
+Returns the table name from which rows L<MYDLjE::M::User> instances are constructed: C<users>.
 
 
 =head2 FIELDS_VALIDATION
@@ -133,7 +133,7 @@ Returns a HASHREF with column-names as keys and L<MojoX::Validator> constraints 
 
 =head2 add
 
-Inserts a new user row in C<my_users> and adds a new primary group for the new user.
+Inserts a new user row in C<users> and adds a new primary group for the new user.
 
 Returns an instance of L<MYDLjE::M::User> - the newly created user.
 

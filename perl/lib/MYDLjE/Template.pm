@@ -108,7 +108,7 @@ The application object - same as $self-E<gt>app in a controller.
 
 The L<DBIx::Simple> instance.
 
- $self->dbix->select('my_pages', { alias=>{-like =>'news%'} } );
+ $self->dbix->select('pages', { alias=>{-like =>'news%'} } );
 
 =head2 msession
 

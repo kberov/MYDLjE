@@ -15,9 +15,9 @@ ALTER DATABASE  `mydlje` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
 SET FOREIGN_KEY_CHECKS=0;
 SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 --]]></do>
--- <table name="my_groups"><![CDATA[
-DROP TABLE IF EXISTS `my_groups`;
-CREATE TABLE IF NOT EXISTS `my_groups` (
+-- <table name="groups"><![CDATA[
+DROP TABLE IF EXISTS `groups`;
+CREATE TABLE IF NOT EXISTS `groups` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL DEFAULT '',
   `description` varchar(255) NOT NULL DEFAULT '',
@@ -35,9 +35,9 @@ CREATE TABLE IF NOT EXISTS `my_groups` (
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 --]]></table>
 
--- <table name="my_users"><![CDATA[
-DROP TABLE IF EXISTS `my_users`;
-CREATE TABLE IF NOT EXISTS `my_users` (
+-- <table name="users"><![CDATA[
+DROP TABLE IF EXISTS `users`;
+CREATE TABLE IF NOT EXISTS `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `group_id` int(11) NOT NULL COMMENT 'Primary group for this user',
   `login_name` varchar(100) NOT NULL,
@@ -63,9 +63,9 @@ CREATE TABLE IF NOT EXISTS `my_users` (
 --]]></table>
 
 
--- <table name="my_sessions"><![CDATA[
-DROP TABLE IF EXISTS `my_sessions`;
-CREATE TABLE IF NOT EXISTS `my_sessions` (
+-- <table name="sessions"><![CDATA[
+DROP TABLE IF EXISTS `sessions`;
+CREATE TABLE IF NOT EXISTS `sessions` (
   `id` varchar(32) NOT NULL DEFAULT '' COMMENT 'md5_sum-med session id',
   `cid` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Count ID - number of unique visitors so far.',
   `user_id` int(11) NOT NULL COMMENT 'Which user is this session for?',
@@ -77,9 +77,9 @@ CREATE TABLE IF NOT EXISTS `my_sessions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Users sessions storage table';
 --]]></table>
 
--- <table name="my_domains"><![CDATA[
-DROP TABLE IF EXISTS `my_domains`;
-CREATE TABLE IF NOT EXISTS `my_domains` (
+-- <table name="domains"><![CDATA[
+DROP TABLE IF EXISTS `domains`;
+CREATE TABLE IF NOT EXISTS `domains` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Id referenced by pages that belong to this domain.',
   `domain` varchar(63) NOT NULL COMMENT 'Domain name as in $ENV{HTTP_HOST}',
   `name` varchar(63) NOT NULL COMMENT 'The name of this site.',
@@ -92,10 +92,10 @@ CREATE TABLE IF NOT EXISTS `my_domains` (
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='Sites managed by this system';
 --]]></table>
 
--- <table name="my_pages"><![CDATA[
+-- <table name="pages"><![CDATA[
 
-DROP TABLE IF EXISTS `my_pages`;
-CREATE TABLE IF NOT EXISTS `my_pages` (
+DROP TABLE IF EXISTS `pages`;
+CREATE TABLE IF NOT EXISTS `pages` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `pid` int(11) NOT NULL DEFAULT '0' COMMENT 'Parent page id',
   `domain_id` int(11) NOT NULL DEFAULT '0' COMMENT 'Refrerence to domain.id to which this page belongs.',
@@ -126,10 +126,10 @@ CREATE TABLE IF NOT EXISTS `my_pages` (
 
 --]]></table>
 
--- <table name="my_content"><![CDATA[
+-- <table name="content"><![CDATA[
 
-DROP TABLE IF EXISTS `my_content`;
-CREATE TABLE IF NOT EXISTS `my_content` (
+DROP TABLE IF EXISTS `content`;
+CREATE TABLE IF NOT EXISTS `content` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Primary unique identyfier',
   `alias` varchar(255) NOT NULL DEFAULT 'seo-friendly-id' COMMENT 'Unidecoded, lowercased and trimmed of \\W characters unique identifier for the row data_type',
   `pid` int(11) NOT NULL DEFAULT '0' COMMENT 'Parent Question, Article, Note, Book ID etc',
@@ -169,9 +169,9 @@ CREATE TABLE IF NOT EXISTS `my_content` (
 
 --]]></table>
 
--- <table name="my_users_groups"><![CDATA[
-DROP TABLE IF EXISTS `my_users_groups`;
-CREATE TABLE IF NOT EXISTS `my_users_groups` (
+-- <table name="users_groups"><![CDATA[
+DROP TABLE IF EXISTS `users_groups`;
+CREATE TABLE IF NOT EXISTS `users_groups` (
   `uid` int(11) NOT NULL COMMENT 'User  ID',
   `gid` int(11) NOT NULL COMMENT 'Group ID',
   PRIMARY KEY (`uid`,`gid`),
@@ -179,9 +179,9 @@ CREATE TABLE IF NOT EXISTS `my_users_groups` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Which user to which group belongs';
 --]]></table>
 
--- <table name="my_properties"><![CDATA[
-DROP TABLE IF EXISTS `my_properties`;
-CREATE TABLE IF NOT EXISTS `my_properties` (
+-- <table name="properties"><![CDATA[
+DROP TABLE IF EXISTS `properties`;
+CREATE TABLE IF NOT EXISTS `properties` (
   `property` varchar(30) NOT NULL COMMENT 'group or/and user property',
   `description` varchar(255) NOT NULL COMMENT 'What this property means?',
   `default_value` varchar(255) NOT NULL DEFAULT '' COMMENT 'Default value for this property?',
@@ -189,10 +189,10 @@ CREATE TABLE IF NOT EXISTS `my_properties` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Properties which can be used as permissions, capabilities or whatever business logic you put in.';
 --]]></table>
 
--- <table name="my_user_properties"><![CDATA[
+-- <table name="user_properties"><![CDATA[
 
-DROP TABLE IF EXISTS `my_users_properties`;
-CREATE TABLE IF NOT EXISTS `my_users_properties` (
+DROP TABLE IF EXISTS `users_properties`;
+CREATE TABLE IF NOT EXISTS `users_properties` (
   `uid` int(11) NOT NULL COMMENT 'User  ID',
   `property` varchar(30) NOT NULL COMMENT 'user property',
   `property_value` varchar(30) NOT NULL COMMENT 'Value interperted depending on business logic',
@@ -201,7 +201,7 @@ CREATE TABLE IF NOT EXISTS `my_users_properties` (
 --]]></table>
 
 --
--- Views which will be used instead of directly my_content
+-- Views which will be used instead of directly content
 -- Note: MySQL 5 required
 -- 03.04.11 20:00
 --
@@ -210,10 +210,10 @@ CREATE TABLE IF NOT EXISTS `my_users_properties` (
 -- TODO: make MYDLjE::M::Content work automatically with views
 -- when a database suports this.
 -- EXAMPLE EDITABLE VIEWS
---<view name="my_vguest_content"><![CDATA[
-CREATE OR REPLACE VIEW my_vguest_content AS SELECT 
+--<view name="vguest_content"><![CDATA[
+CREATE OR REPLACE VIEW vguest_content AS SELECT 
 `id`, `alias`, `pid`, `page_id`, `user_id`, `sorting`, `data_type`, `data_format`, `time_created`, `tstamp`, `title`, `description`, `keywords`, `tags`, `body`, `language`, `group_id`, `permissions`, `featured`, `accepted`, `bad`
-FROM my_content WHERE(
+FROM content WHERE(
   deleted = 0 AND (
     (start = 0 OR start < UNIX_TIMESTAMP()) AND (STOP = 0 OR STOP > UNIX_TIMESTAMP())
   )
@@ -221,29 +221,29 @@ FROM my_content WHERE(
 );
 --]]></view>
 
---<view name="my_varticle"><![CDATA[
-DROP VIEW IF EXISTS  my_varticle;
+--<view name="varticle"><![CDATA[
+DROP VIEW IF EXISTS  varticle;
 
 --]]></view>
 
 --]]></queries>
 --<do id="constraints"><![CDATA[
-ALTER TABLE `my_pages`
-  ADD CONSTRAINT `my_pages_id_fk` FOREIGN KEY (`pid`) REFERENCES `my_pages` (`id`) ,
-  ADD CONSTRAINT `my_pages_domain_id_fk` FOREIGN KEY (`domain_id`) REFERENCES `my_domains` (`id`) ON DELETE CASCADE;
+ALTER TABLE `pages`
+  ADD CONSTRAINT `pages_id_fk` FOREIGN KEY (`pid`) REFERENCES `pages` (`id`) ,
+  ADD CONSTRAINT `pages_domain_id_fk` FOREIGN KEY (`domain_id`) REFERENCES `domains` (`id`) ON DELETE CASCADE;
 
-ALTER TABLE `my_content`
-  ADD CONSTRAINT `my_content_page_id_fk` FOREIGN KEY (`page_id`) REFERENCES `my_pages` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `my_content_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `my_users` (`id`);
+ALTER TABLE `content`
+  ADD CONSTRAINT `content_page_id_fk` FOREIGN KEY (`page_id`) REFERENCES `pages` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `content_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
-ALTER TABLE `my_sessions`
-  ADD CONSTRAINT `my_sessions_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `my_users` (`id`);
-ALTER TABLE `my_users`
-  ADD CONSTRAINT `my_users_group_id_fk` FOREIGN KEY (`group_id`) REFERENCES `my_groups` (`id`);
+ALTER TABLE `sessions`
+  ADD CONSTRAINT `sessions_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+ALTER TABLE `users`
+  ADD CONSTRAINT `users_group_id_fk` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`);
 
-ALTER TABLE `my_users_groups`
-  ADD CONSTRAINT `my_users_groups_group_id_fk` FOREIGN KEY (`gid`) REFERENCES `my_groups` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `my_users_groups_user_id_fk` FOREIGN KEY (`uid`) REFERENCES `my_users` (`id`) ON DELETE CASCADE ;
+ALTER TABLE `users_groups`
+  ADD CONSTRAINT `users_groups_group_id_fk` FOREIGN KEY (`gid`) REFERENCES `groups` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `users_groups_user_id_fk` FOREIGN KEY (`uid`) REFERENCES `users` (`id`) ON DELETE CASCADE ;
 
 --]]></do>
 --<do id="enable_foreign_key_checks"><![CDATA[

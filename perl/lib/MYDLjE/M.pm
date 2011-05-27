@@ -15,7 +15,7 @@ sub get_obj_args { return (shift, get_args(@_)); }
 
 #tablename
 sub TABLE {
-  Carp::confess("You must add a table in your class: sub TABLE {'my_tablename'}");
+  Carp::confess("You must add a table in your class: sub TABLE {'tablename'}");
 }
 
 #table columns
@@ -281,7 +281,7 @@ And of course you can always overwrite all methods from this base class at will 
   package MYDLjE::M::Content::Note;
   use MYDLjE::Base 'MYDLjE::M::Content';
 
-  has TABLE => 'my_content';
+  has TABLE => 'content';
   has COLUMNS => sub {
     [ qw(
         id user_id pid
@@ -336,7 +336,7 @@ You must define this attribute in your subclass. This is the table where your ob
 will store its data. Must return a string - the table name. It is used  internally in L<select>
 when retreiving a row from the database and when saving object data.
 
-  has TABLE => 'my_users';
+  has TABLE => 'users';
   # in select()
   $self->data(
     $self->dbix->select($self->TABLE, $self->COLUMNS, $where)->hash);

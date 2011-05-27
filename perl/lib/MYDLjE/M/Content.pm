@@ -6,7 +6,7 @@ require I18N::LangTags::List;
 
 our $VERSION = '0.5';
 
-has TABLE => 'my_content';
+has TABLE => 'content';
 
 has COLUMNS => sub {
   [ qw(
@@ -286,7 +286,7 @@ MYDLjE::M::Content - Base class for all semantic content data_types
 
 =head1 DESCRIPTION
 
-This is the MYDLjE Perl API to the database table C<my_content>. In MYDLjE all the content is stored in a database table - C<my_content>. There are several semantic types of content. This semantic type is determined by the value stored in column L<data_type>.
+This is the MYDLjE Perl API to the database table C<content>. In MYDLjE all the content is stored in a database table - C<content>. There are several semantic types of content. This semantic type is determined by the value stored in column L<data_type>.
 
 This is the base class which all content related classes should inherit. Basically all they need to do is to define their own  C<WHERE> method. See L<MYDLjE::M/WHERE>.
 
@@ -301,7 +301,7 @@ Constraints for validating data fields when populating them. See L<MYDLjE::M/FIE
 =head1 DATA ATTRIBUTES
 
 The uniqueness of a L<MYDLjE::M::Content> instance is defined by its L</id> data attribute. 
-A data attribute represents the value stored in a column of a row in C<my_content> table. 
+A data attribute represents the value stored in a column of a row in C<content> table. 
 In Perl sense these are small methods (getters and setters). 
 When you instantiate an object either using the inherited L<MYDLjE::M/select> method or via C<new()> some of these attributes are populated. 
 Note that when you instantiate via C<new()> not all the attributes are populated (but see the specific attributes for details). 
@@ -384,11 +384,11 @@ Auto-generated based on the reference of the current object. Auto-populated duri
     
     #time passes...    
     #Retrieve it
-    my $my_custom = MYDLjE::M::Content->new;
-    delete $my_custom->FIELDS_VALIDATION->{data_type}{constraints};
-    $my_custom->data_type('foo_bar');
-    $my_custom->alias('my-note');
-    $my_custom->select()->body;# 'body of My note'
+    my $custom = MYDLjE::M::Content->new;
+    delete $custom->FIELDS_VALIDATION->{data_type}{constraints};
+    $custom->data_type('foo_bar');
+    $custom->alias('my-note');
+    $custom->select()->body;# 'body of My note'
     
  
 =head2 featured
@@ -468,7 +468,7 @@ Getter/setter for the tstamp column. Accepts seconds since the Unix epoch. Defau
 
 =head2 user_id
 
-Getter/setter for the user id. Usually the id of the user that created the content. In the table this field has a foreign key constraint an references C<my_users.id>.
+Getter/setter for the user id. Usually the id of the user that created the content. In the table this field has a foreign key constraint an references C<users.id>.
 
 =head1 METHODS
 

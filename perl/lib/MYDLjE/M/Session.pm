@@ -4,7 +4,7 @@ use Mojo::Util qw();
 use MYDLjE::M::User;
 require Time::HiRes;
 has user => sub { MYDLjE::M::User->select(login_name => 'guest') };
-has TABLE => 'my_sessions';
+has TABLE => 'sessions';
 
 has COLUMNS => sub { [qw(id cid user_id tstamp sessiondata)] };
 
@@ -202,7 +202,7 @@ Use this attribute to check if we have a logged in user or  the current user is 
 
 =head2 tstamp
 
-Always returns current second since the epoch. This is stored in C<my_sessions.tstamp> field. 
+Always returns current second since the epoch. This is stored in C<sessions.tstamp> field. 
 
 ...
 

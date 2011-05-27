@@ -12,7 +12,7 @@ sub domains {
   }
   else {
     my $domains_SQL =
-        'SELECT * FROM my_domains WHERE '
+        'SELECT * FROM domains WHERE '
       . $c->sql('write_permissions_sql')
       . ' ORDER BY domain';
     $c->stash(domains => [$c->dbix->query($domains_SQL, $uid, $uid)->hashes]);
@@ -201,8 +201,8 @@ sub _save_page {
   $content->alias(MYDLjE::Unidecode::unidecode($content_data->{title}));
 
 #TODO: check for duplicate aliases!!!!
-#if( $c->dbix->select('my_pages','alias',{alias=>$page->alias})->fetch
-#|| $c->dbix->select('my_content','alias',{alias=>$content->alias,data_type=>'page'})->fetch)
+#if( $c->dbix->select('pages','alias',{alias=>$page->alias})->fetch
+#|| $c->dbix->select('content','alias',{alias=>$content->alias,data_type=>'page'})->fetch)
 
   #save
   if ($c->stash('id')) {

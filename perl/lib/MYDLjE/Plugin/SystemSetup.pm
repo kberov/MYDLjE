@@ -213,7 +213,7 @@ sub _init_database {
 
   #update default domain
   $c->dbix->update(
-    'my_domains',
+    'domains',
     { name   => $validator->{site_name},
       domain => $c->req->headers->host
     },
@@ -236,14 +236,14 @@ sub _create_admin_user {
 
   #change existing "admin" password
   $c->dbix->update(
-    'my_users',
+    'users',
     {login_password => Mojo::Util::md5_sum(rand(Time::HiRes::time()))},
     {login_name     => 'admin'}
   );
 
   #change existing "guest" password
   $c->dbix->update(
-    'my_users',
+    'users',
     {login_password => Mojo::Util::md5_sum(rand(0.1 + Time::HiRes::time()))},
     {login_name     => 'guest'}
   );

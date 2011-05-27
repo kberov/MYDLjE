@@ -4,7 +4,7 @@ use MYDLjE::M::Content;
 
 
 has WHERE => sub { {} };
-has TABLE => sub {'my_domains'};
+has TABLE => sub {'domains'};
 has COLUMNS => sub {
   [qw(id domain name description user_id group_id permissions)];
 };
@@ -28,4 +28,4 @@ __END__
 
 =head1 NAME
 
-MYDLjE::M::Domain -  record in my_domains
+MYDLjE::M::Domain -  record in domains

@@ -18,7 +18,7 @@ sub render_pages {
   my $uid = $self->user->id;
   $self->dbix->query(
     'SELECT id, pid, alias, page_type, permissions'
-      . ' FROM my_pages WHERE pid=? AND domain_id AND '
+      . ' FROM pages WHERE pid=? AND domain_id AND '
       . $self->c->sql('write_permissions_sql'),
     $self->pid, $self->msession('domain_id'), $uid, $uid
   )->hashes;

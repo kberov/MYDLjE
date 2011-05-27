@@ -3,7 +3,7 @@ use MYDLjE::Base 'MYDLjE::M';
 use Mojo::Util qw();
 use MYDLjE::M::Content;
 
-has TABLE => 'my_pages';
+has TABLE => 'pages';
 
 has COLUMNS => sub {
   [ qw(
@@ -130,11 +130,11 @@ Note also that all table-columns are available as setters and getters for the in
 
 =head2 COLUMNS
 
-Retursns an ARRAYREF with all columns from table C<my_pages>.  These are used to automatically generate getters/setters.
+Retursns an ARRAYREF with all columns from table C<pages>.  These are used to automatically generate getters/setters.
 
 =head2 TABLE
 
-Returns the table name from which rows L<MYDLjE::M::Page> instances are constructed: C<my_pages>.
+Returns the table name from which rows L<MYDLjE::M::Page> instances are constructed: C<pages>.
 
 
 =head2 FIELDS_VALIDATION
@@ -253,8 +253,8 @@ User id of the user that touched this page for the last time.
 
 =head2 add
 
-Inserts a new page row in C<my_pages> and adds basic properties 
-(row in my_content with L<MYDLjE::M::Content/data_type> page)for the new page.
+Inserts a new page row in C<pages> and adds basic properties 
+(row in content with L<MYDLjE::M::Content/data_type> page)for the new page.
 
 Returns an instance of L<MYDLjE::M::Page> - the newly created page.
 

@@ -129,32 +129,32 @@ is($page_content->title('Христос възкръсна!')->alias,
 is($page_content->language('bg')->language, 'bg', 'language bg ok');
 
 #Use Custom data_type
-my $my_custom = MYDLjE::M::Content->new(alias => $alias, user_id => 2);
-delete $my_custom->FIELDS_VALIDATION->{data_type}{constraints};
-$my_custom->data_type('alabala');
-$my_custom->body('alabala body');
-is($my_custom->data_type,                'alabala', 'custom data_type');
-is($my_custom->language,                 '',        'language ok');
-is($my_custom->language('bg')->language, 'bg',      'language ok');
+my $custom = MYDLjE::M::Content->new(alias => $alias, user_id => 2);
+delete $custom->FIELDS_VALIDATION->{data_type}{constraints};
+$custom->data_type('alabala');
+$custom->body('alabala body');
+is($custom->data_type,                'alabala', 'custom data_type');
+is($custom->language,                 '',        'language ok');
+is($custom->language('bg')->language, 'bg',      'language ok');
 is(
-  $my_custom->tags('perl,| Content-Management,   javaScript||jAvA')->tags,
+  $custom->tags('perl,| Content-Management,   javaScript||jAvA')->tags,
   'perl, content-management, javascript, java',
   'tags ok'
 );
-ok($my_custom->save, 'saving custom data_type is ok');
+ok($custom->save, 'saving custom data_type is ok');
 
 #Retreive Custom data_type
-$my_custom = MYDLjE::M::Content->new;
-is($my_custom->data_type, 'content', 'default data_type is ' . $my_custom->data_type);
-delete $my_custom->FIELDS_VALIDATION->{data_type}{constraints};
-is($my_custom->data_type('alabala')->data_type, 'alabala', 'custom data_type');
-is($my_custom->select(alias => $alias)->data_type,
+$custom = MYDLjE::M::Content->new;
+is($custom->data_type, 'content', 'default data_type is ' . $custom->data_type);
+delete $custom->FIELDS_VALIDATION->{data_type}{constraints};
+is($custom->data_type('alabala')->data_type, 'alabala', 'custom data_type');
+is($custom->select(alias => $alias)->data_type,
   'alabala', 'custom data_type retrieved ok');
-is($my_custom->alias,    $alias, 'custom alias is unique for this data type');
-is($my_custom->language, 'bg',   'language ok');
-is($my_custom->language('bgsds')->language, '', 'language ok');
+is($custom->alias,    $alias, 'custom alias is unique for this data type');
+is($custom->language, 'bg',   'language ok');
+is($custom->language('bgsds')->language, '', 'language ok');
 
-is($my_custom->body, 'alabala body', 'custom retrieved ok');
+is($custom->body, 'alabala body', 'custom retrieved ok');
 
 #=pod
 
@@ -217,12 +217,12 @@ $user->WHERE({disabled => 0});
 
 #$user->dbix->{debug}=1;
 $user->select(login_name => 'admin');
-is($user->id, undef, "WHERE my_user.disabled=0 AND login_name='admin'");
+is($user->id, undef, "WHERE user.disabled=0 AND login_name='admin'");
 $user = MYDLjE::M::User->new();
 $user->WHERE({disabled => 0});
 $user->select(login_name => 'guest');
-is($user->id,       2, " id WHERE my_user.disabled=0 AND login_name='guest'");
-is($user->group_id, 2, " group_id WHERE my_user.disabled=0 AND login_name='guest'");
+is($user->id,       2, " id WHERE user.disabled=0 AND login_name='guest'");
+is($user->group_id, 2, " group_id WHERE user.disabled=0 AND login_name='guest'");
 
 
 #try with foreign keys
@@ -233,7 +233,7 @@ $user->TABLE($user->TABLE . ' AS u');
 $user->WHERE(
   { disabled => 0,
     -and     => [
-      \"EXISTS (SELECT g.gid FROM my_users_groups g WHERE g.uid=u.id and g.gid=u.group_id)"
+      \"EXISTS (SELECT g.gid FROM users_groups g WHERE g.uid=u.id and g.gid=u.group_id)"
     ],
   }
 );
@@ -258,7 +258,7 @@ my @added_users = ($login_name);
 ok($new_user->id, 'addedd user with id:' . $new_user->id . ' and with minimal params.');
 is(
   $new_user->email,
-  $dbix->select('my_users', '*', {id => $new_user->id})->hash->{email},
+  $dbix->select('users', '*', {id => $new_user->id})->hash->{email},
   'user ok in database'
 );
 
@@ -296,8 +296,8 @@ $sstorage->user(
     -and           => [
       \qq|disabled=0|,
       \qq|EXISTS (
-    SELECT g.id FROM my_groups g WHERE g.namespaces LIKE '%$ENV{MOJO_APP}%' AND
-    g.id IN( SELECT ug.gid FROM my_users_groups ug WHERE ug.uid=id)
+    SELECT g.id FROM groups g WHERE g.namespaces LIKE '%$ENV{MOJO_APP}%' AND
+    g.id IN( SELECT ug.gid FROM users_groups ug WHERE ug.uid=id)
     )|,
       \qq|((start=0 OR start<$time) AND (stop=0 OR stop>$time))|,
     ],
@@ -314,10 +314,10 @@ is($sstorage->user->login_name, $login_name, "user $login_name logged in accordi
 
 #=pod
 
-$dbix->delete('my_sessions', {id => $sstorage->id});
+$dbix->delete('sessions', {id => $sstorage->id});
 foreach my $u (@added_users) {
-  $dbix->delete('my_users',  {login_name => $u});
-  $dbix->delete('my_groups', {name       => $u});
+  $dbix->delete('users',  {login_name => $u});
+  $dbix->delete('groups', {name       => $u});
 }
 
 #=cut
@@ -345,5 +345,5 @@ $page = MYDLjE::M::Page->add(%{$page->data}, page_content => $page_content);
 is($page->id, $page_content->page_id, '$page->id is $page_content->page_id');
 
 #clean up...
-$dbix->delete('my_pages', {id => $page->id});
+$dbix->delete('pages', {id => $page->id});
 

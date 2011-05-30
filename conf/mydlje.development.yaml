@@ -15,7 +15,6 @@ languages:
 plugins:
   #plugin      Enabled: 1 / Disabled: 0 /Config:
   system_setup: 1
-  grouped_params: 1
   helpers:
     textile: 1
   MYDLjE::Plugin::DBIx:

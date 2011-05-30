@@ -3,6 +3,7 @@ use Mojo::Base -base;
 
 use Carp 'croak';
 use Mojo::Loader;
+use Scalar::Util 'blessed';
 
 has app => sub {
   my $self = shift;
@@ -23,14 +24,7 @@ has on_request => sub {
   sub {
     my $app = shift->app;
     my $tx  = shift;
-
-    # Handle transaction
     $app->handler($tx);
-
-    # Delayed
-    $app->log->debug(
-      'Waiting for delayed response, forgot to render or resume?')
-      unless $tx->is_writing;
   };
 };
 has on_transaction => sub {
@@ -54,22 +48,18 @@ has on_websocket => sub {
 };
 has reload => sub { $ENV{MOJO_RELOAD} || 0 };
 
-# DEPRECATED in Smiling Cat Face With Heart-Shaped Eyes!
-sub on_build_tx {
-  warn <<EOF;
-Mojo::Server->on_build_tx is DEPRECATED in favor of
-Mojo::Server->on_transaction!!!
-EOF
-  shift->on_transaction(@_);
-}
-
-# DEPRECATED in Smiling Cat Face With Heart-Shaped Eyes!
-sub on_handler {
-  warn <<EOF;
-Mojo::Server->on_handler is DEPRECATED in favor of
-Mojo::Server->on_request!!!
-EOF
-  shift->on_request(@_);
+sub load_app {
+  my ($self, $file) = @_;
+  my $app;
+  local $ENV{MOJO_APP_LOADER} = 1;
+  unless ($app = do $file) {
+    die qq/Can't load application "$file": $@/ if $@;
+    die qq/Can't load application "$file": $!/ unless defined $app;
+    die qq/Can't load application' "$file".\n/ unless $app;
+  }
+  die qq/"$file" is not a valid application.\n/
+    unless blessed $app && $app->isa('Mojo');
+  $self->app($app);
 }
 
 # "Are you saying you're never going to eat any animal again? What about
@@ -165,6 +155,15 @@ Activate automatic reloading.
 
 L<Mojo::Server> inherits all methods from L<Mojo::Base> and implements the
 following new ones.
+
+=head2 C<load_app>
+
+  $server->load_app('./myapp.pl');
+
+Load application from script.
+Note that this method is EXPERIMENTAL and might change without warning!
+
+  print Mojo::Server->new->load_app('./myapp.pl')->app->home;
 
 =head2 C<run>
 

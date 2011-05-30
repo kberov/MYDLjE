@@ -13,16 +13,7 @@ use Mojolicious::Types;
 has controller_class => 'Mojolicious::Controller';
 has mode             => sub { ($ENV{MOJO_MODE} || 'development') };
 has on_process       => sub {
-  sub {
-    my ($self, $c) = @_;
-
-    # DEPRECATED in Smiling Cat Face With Heart-Shaped Eyes!
-    warn <<EOF and return $self->process($c) if $self->can('process');
-Mojolicious->process is DEPRECATED in favor of Mojolicious->on_process!!!
-EOF
-
-    $self->dispatch($c);
-  };
+  sub { shift->dispatch(@_) }
 };
 has plugins  => sub { Mojolicious::Plugins->new };
 has renderer => sub { Mojolicious::Renderer->new };
@@ -40,8 +31,8 @@ has sessions => sub { Mojolicious::Sessions->new };
 has static   => sub { Mojolicious::Static->new };
 has types    => sub { Mojolicious::Types->new };
 
-our $CODENAME = 'Tropical Drink';
-our $VERSION  = '1.32';
+our $CODENAME = 'Smiling Face With Sunglasses';
+our $VERSION  = '1.4';
 
 # "These old doomsday devices are dangerously unstable.
 #  I'll rest easier not knowing where they are."
@@ -52,7 +43,7 @@ sub AUTOLOAD {
   my ($package, $method) = our $AUTOLOAD =~ /^([\w\:]+)\:\:(\w+)$/;
 
   # Check for helper
-  croak qq/Can't locate object method "$method" via "$package"/
+  croak qq/Can't locate object method "$method" via package "$package"/
     unless my $helper = $self->renderer->helpers->{$method};
 
   # Load controller class
@@ -205,6 +196,11 @@ sub handler {
     $tx->res->code(500);
     $tx->resume;
   }
+
+  # Delayed
+  $self->log->debug(
+    'Waiting for delayed response, forgot to render or resume?')
+    unless $stash->{'mojo.rendered'} || $tx->is_writing;
 }
 
 # "This snow is beautiful. I'm glad global warming never happened.
@@ -225,12 +221,7 @@ sub helper {
 #  You better not breathe, you better not move.
 #  You're better off dead, I'm tellin' you, dude.
 #  Santa Claus is gunning you down!"
-sub hook {
-  my ($self, $name, $cb) = @_;
-
-  # DEPRECATED in Hot Beverage! (callback wrapper)
-  $self->plugins->add_hook($name, sub { shift; $cb->(@_) });
-}
+sub hook { shift->plugins->add_hook(@_) }
 
 sub plugin {
   my $self = shift;
@@ -371,7 +362,7 @@ Web development for humans, making hard things possible and everything fun.
     my $self = shift;
     my $url  = $self->param('url') || 'http://mojolicio.us';
     $self->render_text(
-      $self->ua->get($url)->res->dom->at('head > title')->text);
+      $self->ua->get($url)->res->dom->html->head->title->text);
   };
 
   # WebSocket echo service
@@ -452,7 +443,7 @@ been separated from action code, especially when working in teams.
     my $self = shift;
     my $url  = $self->param('url') || 'http://mojolicio.us';
     $self->render_text(
-      $self->ua->get($url)->res->dom->at('head > title')->text);
+      $self->ua->get($url)->res->dom->html->head->title->text);
   }
 
   1;
@@ -876,7 +867,7 @@ L<http://creativecommons.org/licenses/by-sa/3.0>.
 
 =head2 jQuery
 
-  Version 1.6
+  Version 1.6.1
 
 jQuery is a fast and concise JavaScript Library that simplifies HTML document
 traversing, event handling, animating, and Ajax interactions for rapid web
@@ -902,6 +893,8 @@ L<http://www.apache.org/licenses/LICENSE-2.0>.
 
 Every major release of L<Mojolicious> has a code name, these are the ones
 that have been used in the past.
+
+1.4, C<Smiling Face With Sunglasses> (u1F60E)
 
 1.3, C<Tropical Drink> (u1F379)
 
@@ -1043,6 +1036,8 @@ Mons Anderson
 
 Moritz Lenz
 
+Nils Diewald
+
 Oleg Zhelo
 
 Pascal Gaudette
@@ -1072,6 +1067,8 @@ Sascha Kiefer
 Sergey Zasenko
 
 Simon Bertrang
+
+Simone Tampieri
 
 Shu Cho
 

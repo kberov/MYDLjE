@@ -251,11 +251,13 @@ sub _parse_env {
   my $url     = $self->url;
   my $base    = $url->base;
 
-  # Headers
-  while (my ($name, $value) = each %$env) {
+  # Extract headers from environment
+  for my $name (keys %$env) {
 
     # Header
-    if ($name =~ s/^HTTP_//i) {
+    if ($name =~ /^HTTP_/i) {
+      my $value = $env->{$name};
+      $name =~ s/^HTTP_//i;
       $name =~ s/_/-/g;
       $headers->header($name, $value);
 

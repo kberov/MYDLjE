@@ -50,11 +50,12 @@ sub import {
 
   # Export
   *{"${caller}::new"} = *{"${caller}::app"} = sub {$app};
-  *{"${caller}::any"}  = sub { $routes->any(@_) };
-  *{"${caller}::del"}  = sub { $routes->del(@_) };
-  *{"${caller}::get"}  = sub { $routes->get(@_) };
-  *{"${caller}::hook"} = sub { $app->hook(@_) };
-  *{"${caller}::under"} = *{"${caller}::ladder"} =
+  *{"${caller}::any"}    = sub { $routes->any(@_) };
+  *{"${caller}::del"}    = sub { $routes->del(@_) };
+  *{"${caller}::get"}    = sub { $routes->get(@_) };
+  *{"${caller}::helper"} = sub { $app->helper(@_) };
+  *{"${caller}::hook"}   = sub { $app->hook(@_) };
+  *{"${caller}::under"}  = *{"${caller}::ladder"} =
     sub { $routes = $root->under(@_) };
   *{"${caller}::plugin"}    = sub { $app->plugin(@_) };
   *{"${caller}::post"}      = sub { $routes->post(@_) };
@@ -169,6 +170,17 @@ HTTP request and response.
   get '/foo' => sub {
     my $self = shift;
     $self->render(text => 'Hello World!');
+  };
+
+=head2 GET/POST Parameters
+
+All C<GET> and C<POST> parameters are accessible via C<param>.
+
+  # /foo?user=sri
+  get '/foo' => sub {
+    my $self = shift;
+    my $user = $self->param('user');
+    $self->render(text => "Hello $user!");
   };
 
 =head2 Stash
@@ -308,12 +320,12 @@ in ones can be found in L<Mojolicious::Plugin::DefaultHelpers> and
 L<Mojolicious::Plugin::TagHelpers>.
 
   # "whois" helper
-  app->helper(whois => sub {
+  helper whois => sub {
     my $self  = shift;
     my $agent = $self->req->headers->user_agent || 'Anonymous';
     my $ip    = $self->tx->remote_address;
     return "$agent ($ip)";
-  });
+  };
 
   # GET /secret
   get '/secret' => sub {
@@ -664,13 +676,55 @@ request), this is very useful in combination with C<redirect_to>.
 
 =head2 Secret
 
-Note that you should use a custom C<secret> to make signed cookies really secure.
+Note that you should use a custom C<secret> to make signed cookies really
+secure.
 
   app->secret('My secret passphrase here!');
 
+=head2 File Uploads
+
+All files uploaded via C<multipart/form-data> request are automatically
+available as L<Mojo::Upload> instances.
+And you don't have to worry about memory usage, because all files above
+C<250KB> will be automatically streamed into a temporary file.
+
+  use Mojolicious::Lite;
+
+  any '/upload' => sub {
+    my $self = shift;
+    if (my $example = $self->req->upload('example')) {
+      my $size = $example->size;
+      my $name = $example->filename;
+      $self->render(text => "Thanks for uploading $size byte file $name.");
+    }
+  };
+
+  app->start;
+  __DATA__
+
+  @@ upload.html.ep
+  <!doctype html><html>
+    <head><title>Upload</title></head>
+    <body>
+      <%= form_for upload =>
+            (method => 'post', enctype => 'multipart/form-data') => begin %>
+        <%= file_field 'example' %>
+        <%= submit_button 'Upload' %>
+      <% end %>
+    </body>
+  </html>
+
+To protect you from excessively large files there is also a global limit of
+C<5MB> by default, which you can tweak with the C<MOJO_MAX_MESSAGE_SIZE>
+environment variable.
+
+  # Increase limit to 1GB
+  $ENV{MOJO_MAX_MESSAGE_SIZE} = 1073741824;
+
 =head2 User Agent
 
-A full featured HTTP 1.1 and WebSocket user agent is built right in.
+With L<Mojo::UserAgent> there's a full featured HTTP 1.1 and WebSocket user
+agent built right in.
 Especially in combination with L<Mojo::JSON> and L<Mojo::DOM> this can be a
 very powerful tool.
 
@@ -750,8 +804,8 @@ L<Mojolicious> mode, default will be C<development>.
 
 =head2 Logging
 
-Log messages will be automatically written to a C<log/$mode.log> file if a
-C<log> directory exists.
+L<Mojo::Log> messages will be automatically written to a C<log/$mode.log>
+file if a C<log> directory exists.
 
   % mkdir log
 
@@ -760,6 +814,7 @@ For more control the L<Mojolicious> instance can be accessed directly.
   app->log->level('error');
   app->routes->route('/foo/:bar')->via('get')->to(cb => sub {
     my $self = shift;
+    $self->app->log->debug('Got a request for "Hello Mojo!".');
     $self->render(text => 'Hello Mojo!');
   });
 
@@ -827,6 +882,24 @@ See also the tutorial above for more argument variations.
 
 Generate route matching only C<GET> requests.
 See also the tutorial above for more argument variations.
+
+=head2 C<helper>
+
+  helper foo => sub {...};
+
+Add a new helper that will be available as a method of the controller object
+and the application object, as well as a function in C<ep> templates.
+
+  # Helper
+  helper add => sub { $_[1] + $_[2] };
+
+  # Controller/Application
+  my $result = $self->add(2, 3);
+
+  # Template
+  <%= add 2, 3 %>
+
+Note that this function is EXPERIMENTAL and might change without warning!
 
 =head2 C<hook>
 

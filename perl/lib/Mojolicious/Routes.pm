@@ -26,7 +26,7 @@ sub AUTOLOAD {
   my ($package, $method) = our $AUTOLOAD =~ /^([\w\:]+)\:\:(\w+)$/;
 
   # Call shortcut
-  Carp::croak(qq/Can't locate object method "$method" via "$package"/)
+  Carp::croak(qq/Can't locate object method "$method" via package "$package"/)
     unless my $shortcut = $self->shortcuts->{$method};
   return $self->$shortcut(@_);
 }
@@ -195,18 +195,8 @@ sub name {
 
   # New name
   if (defined $_[0]) {
-
-    # DEPRECATED in Snowflake!
-    if ($_[0] eq '*') {
-      warn <<EOF;
-Wildcard names are DEPRECATED, all routes have an automatically generated name now.
-EOF
-    }
-    else {
-      $self->{_name}   = $_[0];
-      $self->{_custom} = 1;
-    }
-
+    $self->{_name}   = $_[0];
+    $self->{_custom} = 1;
     return $self;
   }
 
@@ -982,7 +972,8 @@ See also the L<Mojolicious::Lite> tutorial for more argument variations.
   $r          = $r->via(qw/get post/);
   $r          = $r->via([qw/get post/]);
 
-Apply C<method> constraint to this route.
+Restrict HTTP methods this route is allowed to handle, defaults to no
+restrictions.
 
 =head2 C<waypoint>
 

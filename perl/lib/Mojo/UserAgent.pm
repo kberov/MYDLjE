@@ -915,13 +915,15 @@ Mojo::UserAgent - Async IO HTTP 1.1 And WebSocket User Agent
   print $ua->get($trends)->res->json->{trends}->[0]->{name};
 
   # Extract data from HTML and XML resources
-  print $ua->get('mojolicio.us')->res->dom->at('title')->text;
+  print $ua->get('mojolicio.us')->res->dom->html->head->title->text;
 
   # Scrape the latest headlines from a news site
   my $news = 'http://digg.com';
   $ua->max_redirects(3);
-  $ua->get($news)->res->dom('h3 > a.story-title')->each(sub {
-    print shift->text . "\n";
+  $ua->get($news)->res->dom('h3.story-item-title > a[href]')->each(
+    my $e = shift;
+    print "$e->{href}:\n";
+    print $e->text, "\n";
   });
 
   # Form post with exception handling
@@ -1161,7 +1163,8 @@ a successful handshake is performed.
   my $tx = $ua->delete('http://kraih.com' => {Accept => '*/*'};
   my $tx = $ua->delete('http://kraih.com' => {Accept => '*/*'} => 'Hi!');
 
-Perform blocking HTTP C<DELETE> request.
+Perform blocking HTTP C<DELETE> request and return resulting
+L<Mojo::Transaction::HTTP> object.
 You can also append a callback to perform requests non-blocking.
 
   $ua->delete('http://kraih.com' => sub {
@@ -1183,7 +1186,8 @@ C<https_proxy>, C<NO_PROXY> and C<no_proxy> for proxy information.
   my $tx = $ua->get('http://kraih.com' => {Accept => '*/*'});
   my $tx = $ua->get('http://kraih.com' => {Accept => '*/*'} => 'Hi!');
 
-Perform blocking HTTP C<GET> request.
+Perform blocking HTTP C<GET> request and return resulting
+L<Mojo::Transaction::HTTP> object.
 You can also append a callback to perform requests non-blocking.
 
   $ua->get('http://kraih.com' => sub {
@@ -1198,7 +1202,8 @@ You can also append a callback to perform requests non-blocking.
   my $tx = $ua->head('http://kraih.com' => {Accept => '*/*'});
   my $tx = $ua->head('http://kraih.com' => {Accept => '*/*'} => 'Hi!');
 
-Perform blocking HTTP C<HEAD> request.
+Perform blocking HTTP C<HEAD> request and return resulting
+L<Mojo::Transaction::HTTP> object.
 You can also append a callback to perform requests non-blocking.
 
   $ua->head('http://kraih.com' => sub {
@@ -1220,7 +1225,8 @@ Note that this method is EXPERIMENTAL and might change without warning!
   my $tx = $ua->post('http://kraih.com' => {Accept => '*/*'});
   my $tx = $ua->post('http://kraih.com' => {Accept => '*/*'} => 'Hi!');
 
-Perform blocking HTTP C<POST> request.
+Perform blocking HTTP C<POST> request and return resulting
+L<Mojo::Transaction::HTTP> object.
 You can also append a callback to perform requests non-blocking.
 
   $ua->post('http://kraih.com' => sub {
@@ -1261,7 +1267,8 @@ You can also append a callback to perform requests non-blocking.
     {myzip => {file => $asset, filename => 'foo.zip'}}
   );
 
-Perform blocking HTTP C<POST> request with form data.
+Perform blocking HTTP C<POST> request with form data and return resulting
+L<Mojo::Transaction::HTTP> object.
 You can also append a callback to perform requests non-blocking.
 
   $ua->post_form('http://kraih.com' => {q => 'test'} => sub {
@@ -1276,7 +1283,8 @@ You can also append a callback to perform requests non-blocking.
   my $tx = $ua->put('http://kraih.com' => {Accept => '*/*'});
   my $tx = $ua->put('http://kraih.com' => {Accept => '*/*'} => 'Hi!');
 
-Perform blocking HTTP C<PUT> request.
+Perform blocking HTTP C<PUT> request and return resulting
+L<Mojo::Transaction::HTTP> object.
 You can also append a callback to perform requests non-blocking.
 
   $ua->put('http://kraih.com' => sub {
@@ -1322,6 +1330,13 @@ Open a non-blocking WebSocket connection with transparent handshake.
     $tx->send_message('Hi!');
   });
   Mojo::IOLoop->start;
+
+=head1 DEBUGGING
+
+You can set the C<MOJO_USERAGENT_DEBUG> environment variable to get some
+advanced diagnostics information printed to C<STDERR>.
+
+  MOJO_USERAGENT_DEBUG=1
 
 =head1 SEE ALSO
 

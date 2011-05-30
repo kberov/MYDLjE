@@ -61,7 +61,7 @@ use constant KQUEUE_WRITE  => KQUEUE ? IO::KQueue::EVFILT_WRITE() : 0;
 # TLS support requires IO::Socket::SSL
 use constant TLS => $ENV{MOJO_NO_TLS}
   ? 0
-  : eval 'use IO::Socket::SSL 1.37 "inet4"; 1';
+  : eval 'use IO::Socket::SSL 1.43 "inet4"; 1';
 use constant TLS_READ  => TLS ? IO::Socket::SSL::SSL_WANT_READ()  : 0;
 use constant TLS_WRITE => TLS ? IO::Socket::SSL::SSL_WANT_WRITE() : 0;
 
@@ -220,9 +220,6 @@ sub connect {
     $self->$event($id => $cb) if $cb;
   }
 
-  # DEPRECATED in Smiling Cat Face With Heart-Shaped Eyes!
-  $self->on_close($id => $args->{on_hup}) if $args->{on_hup};
-
   # Lookup
   if (!$args->{handle} && (my $address = $args->{address})) {
     $self->lookup(
@@ -315,7 +312,7 @@ sub listen {
   $self = $self->singleton unless ref $self;
   my $args = ref $_[0] ? $_[0] : {@_};
 
-  croak "IO::Socket::SSL 1.37 required for TLS support"
+  croak "IO::Socket::SSL 1.43 required for TLS support"
     if $args->{tls} && !TLS;
 
   my %options = (
@@ -389,9 +386,6 @@ sub listen {
   $self->{_fds}->{$fd}         = $id;
   $c->{handle}                 = $socket;
   $self->{_reverse}->{$socket} = $id;
-
-  # DEPRECATED in Smiling Cat Face With Heart-Shaped Eyes!
-  $c->{on_close} = $args->{on_hup} if $args->{on_hup};
 
   # TLS
   if ($args->{tls}) {
@@ -470,24 +464,7 @@ sub lookup {
 
 sub on_close { shift->_add_event(close => @_) }
 sub on_error { shift->_add_event(error => @_) }
-
-# DEPRECATED in Smiling Cat Face With Heart-Shaped Eyes!
-sub on_hup {
-  warn <<EOF;
-Mojo::IOLoop->on_hup is DEPRECATED in favor of Mojo::IOLoop->on_close!!!
-EOF
-  shift->on_close(@_);
-}
-
-sub on_read { shift->_add_event(read => @_) }
-
-# DEPRECATED in Smiling Cat Face With Heart-Shaped Eyes!
-sub on_tick {
-  warn <<EOF;
-Mojo::IOLoop->on_tick is DEPRECATED in favor of Mojo::IOLoop->recurring!!!
-EOF
-  shift->recurring(0 => @_);
-}
+sub on_read  { shift->_add_event(read  => @_) }
 
 sub recurring {
   my $self = shift;
@@ -727,7 +704,7 @@ sub start_tls {
 
   # No TLS support
   unless (TLS) {
-    $self->_error($id, 'IO::Socket::SSL 1.37 required for TLS support.');
+    $self->_error($id, 'IO::Socket::SSL 1.43 required for TLS support.');
     return;
   }
 
@@ -739,7 +716,9 @@ sub start_tls {
     SSL_cert_file      => $args->{tls_cert},
     SSL_key_file       => $args->{tls_key},
     SSL_verify_mode    => 0x00,
-    Timeout            => $self->connect_timeout,
+    SSL_create_ctx_callback =>
+      sub { Net::SSLeay::CTX_sess_set_cache_size(shift, 128) },
+    Timeout => $self->connect_timeout,
     %{$args->{tls_args} || {}}
   );
 
@@ -2026,6 +2005,13 @@ Create a new timer, invoking the callback after a given amount of seconds.
 
 Write data to connection, the optional drain callback will be invoked once
 all data has been written.
+
+=head1 DEBUGGING
+
+You can set the C<MOJO_IOLOOP_DEBUG> environment variable to get some
+advanced diagnostics information printed to C<STDERR>.
+
+  MOJO_IOLOOP_DEBUG=1
 
 =head1 SEE ALSO
 

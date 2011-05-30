@@ -4,8 +4,6 @@ use Mojo::Base 'Mojolicious::Plugin::Config';
 use Mojo::JSON;
 use Mojo::Template;
 
-use constant DEBUG => $ENV{MOJO_CONFIG_DEBUG} || 0;
-
 # "And so we say goodbye to our beloved pet, Nibbler, who's gone to a place
 #  where I, too, hope one day to go. The toilet."
 sub parse {
@@ -26,18 +24,7 @@ sub parse {
 
 sub register {
   my ($self, $app, $conf) = @_;
-
-  # "json" extension
   $conf->{ext} = 'json' unless exists $conf->{ext};
-
-  # DEPRECATED in Smiling Cat Face With Heart-Shaped Eyes!
-  warn <<EOF if $ENV{MOJO_JSON_CONFIG};
-The MOJO_JSON_CONFIG environment variable is DEPRECATED in favor of
-MOJO_CONFIG!!!
-EOF
-  $conf->{file} = $ENV{MOJO_JSON_CONFIG}
-    if !exists $conf->{file} && exists $ENV{MOJO_JSON_CONFIG};
-
   $self->SUPER::register($app, $conf);
 }
 

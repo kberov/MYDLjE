@@ -111,16 +111,19 @@ sub search {
 
 sub _purge {
   for my $sub (@_) {
-    eval { undef &$sub };
-    carp "Can't unload sub '$sub': $@" if $@;
+    warn "PURGE $sub\n" if DEBUG;
+    carp "Can't unload sub '$sub': $@" unless eval { undef &$sub; 1 };
     delete $DB::sub{$sub};
+    no strict 'refs';
+    $sub =~ /^(.*::)(.*?)$/ and delete *{$1}->{$2};
   }
 }
 
 sub _reload {
   my $key = shift;
-  warn "$key modified, reloading!\n" if DEBUG;
+  warn "CLEANING $key\n" if DEBUG;
   _unload($key);
+  warn "RELOADING $key\n" if DEBUG;
   return Mojo::Exception->new($@)
     unless eval { package main; require $key; 1 };
   return;
@@ -177,6 +180,13 @@ Reload all Perl files with changes.
   my $modules = $loader->search('MyApp::Namespace');
 
 Search modules in a namespace.
+
+=head1 DEBUGGING
+
+You can set the C<MOJO_LOADER_DEBUG> environment variable to get some
+advanced diagnostics information printed to C<STDERR>.
+
+  MOJO_LOADER_DEBUG=1
 
 =head1 SEE ALSO
 

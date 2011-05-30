@@ -200,7 +200,7 @@ After how many seconds this page will expire when C<cache=1>? Default: 86400 = 2
 =head2 permissions
 
 This field represents permissions for the current page very much like permissions 
-of a file on a Unix. We use i<symbolic notation> to represent permissions. The format is "tuuugggoo" where "t" can be "d","l" or "-". 
+of a file on a Unix system. We use i<symbolic notation> to represent permissions. The format is "tuuugggoo" where "t" can be "d","l" or "-". 
 
 "d" is for "directory" - "I<Does this page contains other pages?>" and is set for the first time when a child page is attached to this page. "l" means that the page is a link to another page. 
 "-" is for a regular record. 

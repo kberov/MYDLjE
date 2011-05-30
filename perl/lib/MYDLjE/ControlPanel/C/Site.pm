@@ -27,7 +27,6 @@ sub edit_domain {
   my $id     = $c->stash('id');
   my $domain = MYDLjE::M::Domain->new;
   my $user   = $c->msession->user;
-
   if (defined $id) {
     $domain->select(
       id   => $id,
@@ -68,7 +67,8 @@ sub edit_domain {
   }
 
   #now we are ready to save
-  $c->stash(id => $domain->save(%{$v->values}, %ugids));
+  $domain->save(%{$v->values}, %ugids);
+  $c->stash(id => $domain->id);
   if (defined $c->stash('form')->{save_and_close}) {
     $c->redirect_to('/site/domains');
   }

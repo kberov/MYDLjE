@@ -33,8 +33,8 @@ sub edit_domain {
       -and => [\[$c->sql('write_permissions_sql'), $user->id, $user->id]]
     );
   }
-  else{
-    $domain->permissions;# default permissions
+  else {
+    $domain->permissions;    # default permissions
   }
 
   if ($c->req->method eq 'GET') {
@@ -42,6 +42,7 @@ sub edit_domain {
     return;
   }
   delete $c->msession->sessiondata->{domains};
+
   #handle POST
   my $v = $c->create_validator;
   $v->field('domain')->required(1)->regexp($domain->FIELDS_VALIDATION->{domain}{regexp})
@@ -58,7 +59,7 @@ sub edit_domain {
   $c->stash(form => {%{$c->req->body_params->to_hash}, %{$v->values}});
 
   return unless $all_ok;
-  
+
   my %ugids = ();
 
   #add user_id and group_id only if the domain is not the default or is new
@@ -106,7 +107,7 @@ sub edit_page {
   $c->stash(page_pid_options => $c->_set_page_pid_options($user));
   $c->stash(form             => $c->req->params->to_hash);
   my $form = $c->stash('form');
-  $form->{'content.language'} ||=  $c->app->config('plugins')->{i18n}{default};
+  $form->{'content.language'} ||= $c->app->config('plugins')->{i18n}{default};
   my $language =
     (List::Util::first { $form->{'content.language'} eq $_ }
     @{$c->app->config('languages')});
@@ -209,7 +210,7 @@ sub _save_page {
 
   #save
   if ($c->stash('id')) {
-    $content->page_id||$content->page_id($page->id);
+    $content->page_id || $content->page_id($page->id);
     $c->dbix->begin;
     $content->save($content_data);
     $page->save($page_data);

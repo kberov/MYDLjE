@@ -13,8 +13,9 @@ has COLUMNS => sub {
   ];
 };
 has FIELDS_VALIDATION => sub {
-  my $self = shift;
-  return {
+  my $self   = shift;
+  my $fields = {
+    ##no critic qw(ValuesAndExpressions::ProhibitCommaSeparatedStatements)
     $self->FIELD_DEF('id'),
     $self->FIELD_DEF('group_id'),
     login_name =>
@@ -33,6 +34,7 @@ has FIELDS_VALIDATION => sub {
 
     #TODO: properties
   };
+  return $fields;
 };
 
 sub tstamp { return $_[0]->{data}{tstamp} = time; }

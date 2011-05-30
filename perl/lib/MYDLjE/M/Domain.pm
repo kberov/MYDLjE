@@ -12,6 +12,7 @@ has COLUMNS => sub {
 has FIELDS_VALIDATION => sub {
   my $self = shift;
   return {
+    ##no critic qw(ValuesAndExpressions::ProhibitCommaSeparatedStatements)
     $self->FIELD_DEF('id'),          $self->FIELD_DEF('name'),
     $self->FIELD_DEF('permissions'), $self->FIELD_DEF('user_id'),
     $self->FIELD_DEF('group_id'),    $self->FIELD_DEF('description'),
@@ -24,7 +25,7 @@ has FIELDS_VALIDATION => sub {
 
 sub permissions {
   my ($self, $value) = @_;
-  if (defined $value) {                     #setting
+  if (defined $value) {    #setting
     $self->{data}{permissions} = $self->validate_field(permissions => $value);
     return $self;
   }

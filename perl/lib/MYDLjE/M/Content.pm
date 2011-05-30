@@ -42,6 +42,7 @@ sub _language_inflate {
 has FIELDS_VALIDATION => sub {
   my $self = shift;
   return {
+    ##no critic qw(ValuesAndExpressions::ProhibitCommaSeparatedStatements)
     $self->FIELD_DEF('id'),
     $self->FIELD_DEF('pid'),
     $self->FIELD_DEF('permissions'),

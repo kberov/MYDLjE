@@ -22,6 +22,7 @@ has FIELDS_VALIDATION => sub {
   $alias{alias} = $alias{alias32};
   delete $alias{alias32};
   return {
+    ##no critic qw(ValuesAndExpressions::ProhibitCommaSeparatedStatements)
     $self->FIELD_DEF('id'),
     $self->FIELD_DEF('pid'),
     $self->FIELD_DEF('domain_id'),

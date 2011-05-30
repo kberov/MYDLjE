@@ -34,11 +34,15 @@ sub edit_domain {
       -and => [\[$c->sql('write_permissions_sql'), $user->id, $user->id]]
     );
   }
+  else{
+    $domain->permissions;# default permissions
+  }
+
   if ($c->req->method eq 'GET') {
     $c->stash(form => $domain->data);
     return;
   }
-
+  delete $c->msession->sessiondata->{domains};
   #handle POST
   my $v = $c->create_validator;
   $v->field('domain')->required(1)->regexp($domain->FIELDS_VALIDATION->{domain}{regexp})
@@ -55,8 +59,7 @@ sub edit_domain {
   $c->stash(form => {%{$c->req->body_params->to_hash}, %{$v->values}});
 
   return unless $all_ok;
-  $c->msession(domains => undef);
-
+  
   my %ugids = ();
 
   #add user_id and group_id only if the domain is not the default or is new

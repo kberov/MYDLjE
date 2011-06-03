@@ -15,8 +15,8 @@ Elastic CSS is used for the layout and jQuery UI is used for beauty and form enh
 =head1 jQuery UI Themes
 
 You can easily switch themes by just changing the configuration value in 
-C<$MOJO_ROOT/conf/local.mydlje.development.yaml>. On production site modify 
-C<$MOJO_ROOT/conf/local.mydlje.production.yaml> respectively.
+C<$ENV{MOJO_HOME}/conf/local.mydlje.development.yaml>. On production site modify 
+C<$ENV{MOJO_HOME}/conf/local.mydlje.production.yaml> respectively.
 
 The default is:
 
@@ -24,7 +24,7 @@ The default is:
 
 Change "humanity" to one of the themes which comes with the distribution: I<redmond, smoothness or ui-lightness>. You can add a new theme too by downloading or rolling your own from I<jqueryui.com>. To switch the theme only in the front-end (site) application, change the value in 
 
-C<$MOJO_ROOT/conf/local.mydlje-site.development.yaml>. If the file does not exists, create it.
+C<$ENV{MOJO_HOME}/conf/local.mydlje-site.development.yaml>. If the file does not exists, create it.
 
 
 =head1 SEE ALSO

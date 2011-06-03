@@ -14,7 +14,7 @@ You are back? Great! Now we can get to the point.
 =head1 FILES STRUCTURE
 
 
-  $MOJO_ROOT
+  $ENV{MOJO_HOME}
       |-- conf
       |-- log
       |-- perl
@@ -31,6 +31,33 @@ You are back? Great! Now we can get to the point.
       |   |-- cpanel
       |   `-- layouts
       `-- tmp
+
+L<MOJO_HOME|Mojolicious::Guides::Cheatsheet/MOJO_HOME> is the root directory for your L<MYDLjE>-based system. It is auto-discovered when an application starts. 
+
+In the C<conf> directory are the configuration files. They are in YAML format. By default L<YAML::Tiny> is used for parsing, but if you have L<YAML> installed it will be used instead.
+See L<YAML::Any> for details.  See L<MYDLjE::Config> for details on how it works. 
+
+In C<conf> you will also find C<mysql.schema.sql>, C<mysql.data.sql> and C<mysql.queries.sql>.
+The first is used to initialize the database(create tables add constraints) during L<MYDLjE> installation. The second is parsed and statements in it are executed just after the first. The last file contains commonly used queries and part of queries (C<WHERE> clauses). 
+You can add your own queries there.
+
+Note that these C<*.sql> files are well-formed and valid xml files. It turned out to be very convenient to use L<Mojo::DOM> to parse them and in the same time keep most text editors syntax highliting happy.
+
+  -- <query name="write_permissions_sql" params="user_id,user_id"><![CDATA[
+    
+    (
+      (user_id = ? AND permissions LIKE '_rw%')
+      OR ( group_id IN (SELECT gid FROM users_groups WHERE uid= ?) 
+        AND permissions LIKE '____rw%')
+    )
+  
+  -- ]]></query>
+
+The C<log> folder is for the log files. Note that some early warnings or errors may be logged to the Apache log. 
+    #Example:
+    cd ~/opt/public_dev/MYDLjE/; tail -n200 -f log/development.log
+
+In C<perl/bin> we keep utility commandline scripts. Everything from Mojo scripts folder is also there. In L<perl/lib> are all the Perl Modules that come bundled with L<MYDLjE>. C<perl/site/bin> and C<perl/site/lib> are intended for your custom, aplication specific code. These folders will not be ever touched if you upgrade MYDLjE.
 
 =head1 PERL MODULES
 
@@ -49,12 +76,12 @@ MYDLjE sends to the browser 100% well formed XML output.
 =head2 Tests
 
 Tests, Perltidy and PerlCritc are run by 
-$MOJO_ROOT/perl/bin/diagnostics.
+$ENV{MOJO_HOME}/perl/bin/diagnostics.
 
 =head2 Perl Best Practices
 
 To enforce a common perl style we use L<perlcritic>.
-The configuration file is $MOJO_ROOT/.perlcriticrc
+The configuration file is $ENV{MOJO_HOME}/.perlcriticrc
 
 =head2 Qunit
 

@@ -4,6 +4,8 @@ require MYDLjE::Unidecode;
 require Time::HiRes;
 require I18N::LangTags::List;
 
+local $Carp::CarpLevel = 1;
+
 our $VERSION = '0.5';
 
 has TABLE => 'content';
@@ -146,6 +148,10 @@ sub pid {
   my ($self, $value) = @_;
   if (defined $value) {                     #setting
     $self->{data}{pid} = $self->validate_field(pid => $value);
+    if (defined $self->{data}{id} && $self->{data}{pid} == $self->{data}{id}) {
+      Carp::confess(
+        $self->TABLE . '.pid field can not be the same as ' . $self->TABLE . '.id!');
+    }
     return $self;
   }
   return $self->{data}{pid};                #getting

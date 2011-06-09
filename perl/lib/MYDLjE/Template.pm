@@ -12,7 +12,7 @@ sub set { return shift->stash->set(@_); }
 has c    => sub { shift->get('c'); };
 has app  => sub { shift->c->app; };
 has dbix => sub { shift->c->dbix; };
-sub msession { shift->get('c')->msession(@_); }
+sub msession { shift->get('c')->msession(@_); return; }
 has user => sub { shift->msession->user; };
 sub process { return shift->{_CONTEXT}->process(@_); }
 sub include { return shift->{_CONTEXT}->include(@_); }

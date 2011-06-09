@@ -11,10 +11,7 @@ sub domains {
     $c->stash(domains => $c->msession('domains'));
   }
   else {
-    my $domains_SQL =
-        'SELECT * FROM domains WHERE '
-      . $c->sql('write_permissions_sql')
-      . ' ORDER BY domain';
+    my $domains_SQL = 'SELECT * FROM domains WHERE ' . $c->sql('write_permissions_sql');
     $c->stash(domains => [$c->dbix->query($domains_SQL, $uid, $uid)->hashes]);
     $c->msession(domains => $c->stash('domains'));
   }
@@ -87,7 +84,10 @@ sub pages {
     $form->{'pid'} = 0;
     $c->msession('domain_id', $form->{'page.domain_id'});
     $c->msession('language',  $form->{'content.language'});
-
+  }
+  else {
+    $c->msession('domain_id', 0);
+    $c->msession('language',  $c->app->config('plugins')->{i18n}{default});
   }
   return;
 }
@@ -105,8 +105,8 @@ sub edit_page {
   $c->domains();    #fill in "domains" stash variable
   $c->stash(page_types => $page->FIELDS_VALIDATION->{page_type}{constraints}[0]{in});
   $c->stash(page_pid_options => $c->_set_page_pid_options($user));
-  $c->stash(form             => $c->req->params->to_hash);
-  my $form = $c->stash('form');
+
+  my $form = $c->req->params->to_hash;
   $form->{'content.language'} ||= $c->app->config('plugins')->{i18n}{default};
   my $language =
     (List::Util::first { $form->{'content.language'} eq $_ }
@@ -124,17 +124,20 @@ sub edit_page {
       deleted  => 0,
       -and     => [\[$c->sql('write_permissions_sql'), $user->id, $user->id]]
     );
+
+    #prefill form but keep existing params
     $form = {
       (map { 'content.' . $_ => $content->$_() } @{$content->COLUMNS}),
       (map { 'page.' . $_ => $page->$_() } @{$page->COLUMNS}),
       %$form,
     };
+    $c->stash(form => $form);
     delete $c->stash->{id} unless $page->id;
   }
   else {    #new
-
+    $c->stash(form => $form);
   }
-  $c->app->log->debug($c->dumper($c->stash('form')));
+  #$c->debug($c->dumper($c->stash('form')));
 
   if ($c->req->method eq 'POST') {
     $c->_save_page($page, $content, $user);
@@ -150,43 +153,8 @@ sub _save_page {
   my $req = $c->req;
 
   #validate
-  my $v    = $c->create_validator;
   my $form = $c->stash('form');
-  $v->field('content.title')->required(1)->inflate(\&MYDLjE::M::no_markup_inflate)
-    ->message($c->l('The field [_1] is required!', $c->l('title')));
-  $v->field('content.language')->in($c->app->config('languages'))
-    ->message(
-    $c->l('Please use one of the availabe languages or first add a new language!'));
-
-  unless ($form->{'page.alias'}) {
-    $form->{'page.alias'} = MYDLjE::Unidecode::unidecode($form->{'content.title'});
-  }
-  $v->field('page.alias')->regexp($page->FIELDS_VALIDATION->{alias}{regexp})
-    ->message('Please enter valid page alias!');
-  my $domain_ids;
-  foreach my $domain (@{$c->stash('domains')}) {
-    push @$domain_ids, $domain->{id};
-  }
-
-  $v->field('page.domain_id')->in(@$domain_ids)
-    ->message('Please use one of the availabe domains or first add a new domain!');
-
-  # if domain_id is switched remove current pid and set the msession domain id
-  if ($form->{'page.domain_id'} ne $page->domain_id) {
-    $form->{'page.pid'} = 0;
-    $c->msession('domain_id', $form->{'page.domain_id'});
-  }
-  $v->field('page.page_type')->in($c->stash('page_types'));
-  $v->field('page.pid')->regexp($page->FIELDS_VALIDATION->{pid}{regexp});
-  $v->field('page.description')->inflate(\&MYDLjE::M::no_markup_inflate);
-  $v->field([qw(page.published page.hidden page.cache)])
-    ->each(sub { shift->regexp($page->FIELDS_VALIDATION->{cache}{regexp}) });
-  $v->field('page.expiry')->regexp($page->FIELDS_VALIDATION->{expiry}{regexp});
-  $form->{'page.permissions'} ||= $page->permissions;
-  $v->field('page.permissions')
-    ->regexp($page->FIELDS_VALIDATION->{permissions}{regexp});
-
-  return unless $c->validate($v, $form);
+  return unless $c->_validate_page($page, $form);
 
   #save
   my ($content_data, $page_data) = ({}, {});
@@ -240,9 +208,48 @@ sub _save_page {
   if (exists $form->{save_and_close}) {
     $c->redirect_to('/site/pages');
   }
-
-  #$c->app->log->debug($c->dumper($form));
   return;
+}
+
+sub _validate_page {
+  my ($c, $page, $form) = @_;
+  my $v = $c->create_validator;
+  $v->field('content.title')->required(1)->inflate(\&MYDLjE::M::no_markup_inflate)
+    ->message($c->l('The field [_1] is required!', $c->l('title')));
+  $v->field('content.language')->in($c->app->config('languages'))
+    ->message(
+    $c->l('Please use one of the availabe languages or first add a new language!'));
+
+  unless ($form->{'page.alias'}) {
+    $form->{'page.alias'} = MYDLjE::Unidecode::unidecode($form->{'content.title'});
+  }
+  $v->field('page.alias')->regexp($page->FIELDS_VALIDATION->{alias}{regexp})
+    ->message('Please enter valid page alias!');
+  my $domain_ids;
+  foreach my $domain (@{$c->stash('domains')}) {
+    push @$domain_ids, $domain->{id};
+  }
+
+  $v->field('page.domain_id')->in(@$domain_ids)
+    ->message('Please use one of the availabe domains or first add a new domain!');
+
+  # if domain_id is switched remove current pid and set the msession domain id
+  if ($form->{'page.domain_id'} ne $page->domain_id) {
+    $form->{'page.pid'} = 0;
+    $c->msession('domain_id', $form->{'page.domain_id'});
+  }
+  $v->field('page.page_type')->in($c->stash('page_types'));
+  $v->field('page.pid')->regexp($page->FIELDS_VALIDATION->{pid}{regexp});
+  $v->field('page.description')->inflate(\&MYDLjE::M::no_markup_inflate);
+  $v->field([qw(page.published page.hidden page.cache)])
+    ->each(sub { shift->regexp($page->FIELDS_VALIDATION->{cache}{regexp}) });
+  $v->field('page.expiry')->regexp($page->FIELDS_VALIDATION->{expiry}{regexp});
+  $form->{'page.permissions'} ||= $page->permissions;
+  $v->field('page.permissions')
+    ->regexp($page->FIELDS_VALIDATION->{permissions}{regexp});
+  my $ok = $c->validate($v, $form);
+  $form = {%$form, %{$v->values}};
+  return $ok;
 }
 
 #prepares an hierarshical looking list for page.pid select_field
@@ -251,22 +258,21 @@ sub _set_page_pid_options {
   my $page_pid_options = [{label => '/', value => 0}];
   $c->_traverse_children($user, 0, $page_pid_options, 0);
   return $page_pid_options;
-
 }
 
 sub _traverse_children {
   my ($c, $user, $pid, $page_pid_options, $depth) = @_;
-  my $id = $c->stash('id') || 0;
 
   #hack to make the SQL work the first time this method is called
-  $id = time if ($depth == 0);
+  my $id = ($depth == 0) ? time : 0;
 
   #Be reasonable and prevent deadly recursion
   $depth++;
   return if $depth > 10;
-  my $domain_id = $c->req->param('page.domain_id') || 0;
+  my $domain_id = $c->req->param('page.domain_id') || $c->msession('domain_id') || 0;
   my $pages = $c->dbix->query($c->sql('writable_pages'),
     $pid, $domain_id, $id, $user->id, $user->id)->hashes;
+  $id = ($c->stash('id') || 0);
   if (@$pages) {
     foreach my $page (@$pages) {
       if ($page->{value} == $id) {
@@ -279,7 +285,7 @@ sub _traverse_children {
         $page_pid_options->[0]{disabled} = 1;
       }
       push @$page_pid_options, $page;
-      $c->_traverse_children($user, $page->{value}, $page_pid_options, $depth, $id);
+      $c->_traverse_children($user, $page->{value}, $page_pid_options, $depth);
     }
   }
   return;

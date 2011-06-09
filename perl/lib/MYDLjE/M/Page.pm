@@ -32,7 +32,6 @@ has FIELDS_VALIDATION => sub {
       constraints => [{in => ['regular', 'root', 'folder']},]
     },
     $self->FIELD_DEF('sorting'),
-    cache  => {regexp => qr/^[01]$/x,},
     expiry => {regexp => qr/^\d{1,6}$/x,},
     $self->FIELD_DEF('permissions'),
     $self->FIELD_DEF('user_id'),

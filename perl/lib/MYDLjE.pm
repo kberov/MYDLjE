@@ -51,6 +51,11 @@ sub before_dispatch {
   _session_start($c, $app);
   $c->stash('base_url', $c->req->url->base);
   $c->stash->{base_url} =~ s{[^/]+/$}{}x;
+
+  #standalone
+  $c->stash->{base_url} =~ m|/$|x
+    || do { $c->stash->{base_url} = $c->stash->{base_url} . '/'; };
+
   return;
 }
 

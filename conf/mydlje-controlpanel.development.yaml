@@ -68,6 +68,7 @@ login_required_routes:
 #All menu items will be output as c.l('Item'). So menu items can be translated.
 #"icons" are in $MOJO_HOME/pub/css/icons/
 #"routes" are routes and are expected to have controllers wich will handle them.
+# TODO: implement main_left_navigation as a table in the database so we can use the permission system.
 main_left_navigation:
   -
     header: Site
@@ -92,9 +93,9 @@ main_left_navigation:
     header: Content
     items:
       -
-        title: Books
-        icon: book.png
-        route: /content/books
+        title: Notes
+        icon: note.png
+        route: /content/notes
       -
         title: Articles
         icon: article.png
@@ -104,9 +105,9 @@ main_left_navigation:
         icon: question.png
         route: /content/questions
       -
-        title: Notes
-        icon: note.png
-        route: /content/notes
+        title: Books
+        icon: book.png
+        route: /content/books
   -
     header: Accounts
     items:
@@ -142,12 +143,12 @@ main_left_navigation:
         icon: page_error.png
         route: /system/log
       -
-        title: File Management
+        title: Files
         icon: folder_page.png
-        route: /system/file_management
+        route: /system/files
       -
-        title: Personal Preferences
-        icon: wrench.png
+        title: Preferences
+        icon: user_edit.png
         route: /system/preferences
 
 

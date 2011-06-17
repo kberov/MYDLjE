@@ -91,8 +91,8 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   Cache                  => 'Кеш',
   Plugins                => 'Добавки',
   Log                    => 'Отчет',
-  'File Management'      => 'Файлове',
-  'Personal Preferences' => 'Лични предпочитания',
+  'Files'      => 'Файлове',
+  'Preferences' => 'Предпочитания',
 
   #page_types
   page_type => 'Тип Страница',

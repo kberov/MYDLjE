@@ -110,11 +110,86 @@ $t->post_form_ok(
 
 $t->get_ok($ENV{MYDLjE_ROOT_URL} . 'cpanel/home')->status_is(200)
   ->text_like('#title-main-header', qr/$login_name/x, 'admin user logged in')
-  ->text_is('#main-left-navigation #site li:nth-of-type(1) a', 'Domains')
-  ->text_is('#main-left-navigation #site li:nth-of-type(2) a', 'Pages')
-  ->text_is('#main-left-navigation #site li:nth-of-type(3) a', 'Templates')
-  ->text_is('#main-left-navigation #site li:nth-of-type(4) a', 'I18N&L10N');
+  ->element_exists('#main-left-navigation', 'Main left navigation is present')->text_is(
+  '#main-left-navigation #site li:nth-of-type(1) a',
+  'Domains',
+  'Domains menu item text ok'
+  )->text_is(
+  '#main-left-navigation #site li:nth-of-type(2) a',
+  'Pages',
+  'Pages menu item text ok'
+  )->text_is(
+  '#main-left-navigation #site li:nth-of-type(3) a',
+  'Templates',
+  'Templates menu item text ok'
+  )->text_is(
+  '#main-left-navigation #site li:nth-of-type(4) a',
+  'I18N&L10N',
+  'I18N&L10N menu item text ok'
+  )->text_is(
+  '#main-left-navigation #content li:nth-of-type(1) a',
+  'Notes',
+  'Notes menu item text ok'
+  )->text_is(
+  '#main-left-navigation #content li:nth-of-type(2) a',
+  'Articles',
+  'Articles menu item text ok'
+  )->text_is(
+  '#main-left-navigation #content li:nth-of-type(3) a',
+  'Questions',
+  'Articles menu item text ok'
+  )->text_is(
+  '#main-left-navigation #content li:nth-of-type(4) a',
+  'Books',
+  'Books menu item text ok'
+  )->text_is(
+  '#main-left-navigation #accounts li:nth-of-type(1) a',
+  'Users',
+  'Users menu item text ok'
+  )->text_is(
+  '#main-left-navigation #accounts li:nth-of-type(2) a',
+  'Groups',
+  'Groups menu item text ok'
+  )->text_is(
+  '#main-left-navigation #accounts li:nth-of-type(3) a',
+  'Abilities',
+  'Abilities menu item text ok'
+  )->text_is(
+  '#main-left-navigation #system li:nth-of-type(1) a',
+  'Settings',
+  'Settings menu item text ok'
+  )->text_is(
+  '#main-left-navigation #system li:nth-of-type(2) a',
+  'Cache',
+  'Cache menu item text ok'
+  )->text_is(
+  '#main-left-navigation #system li:nth-of-type(3) a',
+  'Plugins',
+  'Plugins menu item text ok'
+  )->text_is('#main-left-navigation #system li:nth-of-type(4) a',
+  'Log', 'Log menu item text ok')->text_is(
+  '#main-left-navigation #system li:nth-of-type(5) a',
+  'Files',
+  'Files menu item text ok'
+  )->text_is(
+  '#main-left-navigation #system li:nth-of-type(6) a',
+  'Preferences',
+  'Preferences menu item text ok'
+  );
 
+#Test Domains
+$t->get_ok($ENV{MYDLjE_ROOT_URL} . 'cpanel/site/domains')->status_is(200)
+  ->element_exists('#domains_form', 'Domains list is present')
+  ->element_exists('#domains_form legend .legend_icon a#new_domain_button',
+  '"New Domain" button is present')
+
+  #->element_exists('#domains_form_help', '"Domains Help" button is present')
+  ->element_exists('#domains_form ul.items', 'Domains list is present')
+  ->text_is('#domains_form ul.items li:nth-of-type(1) .columns .column .container',
+  'localhost', 'localhost is present');
+
+#$dom = $t->tx->res->dom;
+#warn $dom->to_xml;
 #TODO: continue with post and get for each route
 
 done_testing();

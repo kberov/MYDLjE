@@ -191,4 +191,10 @@ ul.items li.page div.buttons a.edit_content span.ui-icon {
 ul.items li.page div.buttons a.delete_content span.ui-icon {
   background-image: url(icons/page_delete.png) ;
 }
-
+table.permissions {
+  border-collapse:inherit;
+}
+table.permissions th,table.permissions td {
+  text-align: left;
+  padding:3px;
+}

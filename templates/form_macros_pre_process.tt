@@ -220,6 +220,108 @@ params.value ||= form.${name_and_id};
 <input type="hidden" id="[% params.id||name_and_id%]" 
 name="[% name_and_id %]" value="[% params.value %]" />
 [% END %]
+
+[% MACRO permissions_field(arg,params) BLOCK;
+  name_and_id =  arg||params.name; 
+  field_error = validator_errors.${name_and_id};
+  params.value ||= form.${name_and_id};
+  label = name_and_id.replace('[^\.]+\.','');
+  name_and_id_help = params.help|| label _ '_help';
++%]
+<!-- start [% name_and_id %]_unit -->
+<div class="unit on-2 columns" id="[% name_and_id %]_unit">
+    <div class="column span-2" style="[% field_error?'':'display:none;'%]" 
+    id="[% name_and_id %]_error">
+      <div class="container ui-state-error ui-corner-all ">[% field_error %]</div>
+    </div>
+    <div class="fixed column label" id="[% name_and_id _ '_label_column' %]">
+      <label for="[% params.id || name_and_id %]" id="[% name_and_id _ '_label' %]">
+        [% params.label|| c.l(label).ucfirst;
+           params.required ? ':&#160;*' : ':';
+        %]
+      </label>
+    </div>
+    <div class="elastic column"  id="[% name_and_id _ '_field_column' %]">
+      <div class="container field">
+      <table id="[% name_and_id _ '_ptable' %]" class="ui-widget-content ui-corner-all permissions">
+        <tbody >
+            <tr>
+                <th>Type</th>
+                <td colspan="3">
+                    <select name="[% name_and_id %]_type">
+                       <option value="-">Regular</option>    
+                       <option value="l">Link</option>
+                       <option value="d">Container</option>
+                    </select>
+                </td>
+            </tr>
+            <tr><th> </th><th>Read</th><th>Write</th><th>Execute</th></tr>
+            <tr>
+                <th>Owner</th>
+                <td><input name="[% name_and_id %]_owner_read" type="checkbox" value="r"/></td>
+                <td><input name="[% name_and_id %]_owner_write" type="checkbox" value="w"/></td>
+                <td><input name="[% name_and_id %]_owner_execute" type="checkbox" value="x"/></td>
+            </tr>
+            <tr>
+                <th>Group</th>
+                <td><input name="[% name_and_id %]_group_read" type="checkbox" value="r"/></td>
+                <td><input name="[% name_and_id %]_group_write" type="checkbox" value="w"/></td>
+                <td><input name="[% name_and_id %]_group_execute" type="checkbox" value="x"/></td>
+            </tr>
+            <tr>
+                <th>Others</th>
+                <td><input name="[% name_and_id %]_others_read" type="checkbox" value="r"/></td>
+                <td><input name="[% name_and_id %]_others_write" type="checkbox" value="w"/></td>
+                <td><input name="[% name_and_id %]_others_execute" type="checkbox" value="x"/></td>
+            </tr>
+            <tr>
+              <td colspan="4">
+              <input type="text" class="textbox" id="[% params.id||name_and_id%]" 
+              name="[% name_and_id %]" value="[% params.value %]" />
+              </td>
+            </tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+    <div class="column span-2">
+      <div class="ui-state-default container help">
+        [% c.textile(c.l(name_and_id_help)) %]
+      </div>
+    </div>
+<script  type="text/javascript">//<![CDATA[
+$(window).load(function() {
+    var scope = 'table[id$="permissions_ptable"]';
+    var checkboxes = scope + ' input[type="checkbox"]';
+    var pselect = scope + ' [name$="permissions_type"]';
+    var permissions ='[name$="ermissions"]';
+    var cvalues = $(permissions).val()
+    .match(/^([ld\-])([r\-])([w\-])([x\-])([r\-])([w\-])([x\-])([r\-])([w\-])([x\-])$/);
+    
+    $(pselect).val(cvalues[1]);
+    i = 2;
+    $(checkboxes).each(function() {
+        if(cvalues[i]!='-')
+          $(this).prop("checked","checked");
+        i++;
+    });
+    $(checkboxes +', ' + pselect).change(function() {
+        var pvalue = '';
+        $(checkboxes).each(function() {
+            if($(this).prop("checked"))
+              pvalue = pvalue + this.value;
+            else
+              pvalue = pvalue + '-';
+        });
+        pvalue = $(pselect).val() + pvalue;
+        $(scope + ' ' + permissions).val(pvalue);
+    });
+});
+//]]>
+</script>
+</div><!-- end [% name_and_id %]_unit -->
+[%+ END %]
+
 [% MACRO button_set() BLOCK; +%]
 <!-- start [%+ name_and_id %]_unit -->
 <div class="unit" id="buttons_unit">

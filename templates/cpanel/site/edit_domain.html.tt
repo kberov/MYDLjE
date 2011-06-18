@@ -23,7 +23,7 @@ END;
      text_field('domain', {label => c.l('Domain')}); 
      text_field('name',{label => c.l('title'),help=>'title_help'});
      text_field('description');
-     text_field('permissions');
+     permissions_field('permissions');
      button_set();
    +%]
 </fieldset>

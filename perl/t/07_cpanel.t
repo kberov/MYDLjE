@@ -188,7 +188,55 @@ $t->get_ok($ENV{MYDLjE_ROOT_URL} . 'cpanel/site/domains')->status_is(200)
   ->text_is('#domains_form ul.items li:nth-of-type(1) .columns .column .container',
   'localhost', 'localhost is present');
 
+#Add Domain
+$t->get_ok($ENV{MYDLjE_ROOT_URL} . 'cpanel/site/edit_domain')->status_is(200)
+  ->element_exists('#edit_domain_form', '"New Domain form" is present')
+  ->element_exists('#edit_domain_form legend:nth-of-type(1)', 'legend is present')
+  ->text_is(
+  '#edit_domain_form legend:nth-of-type(1)',
+  'New Domain',
+  'legend text is "New Domain"'
+  )->text_is('#domain_label', 'Domain:', '"Domain:" label is ok')
+  ->element_exists('input[type="text"][name="domain"]',
+  '"domain" input type text is present')
+  ->text_is('#name_label', 'Title/Name:', '"Title/Name:" label is ok')
+  ->element_exists('input[type="text"][name="name"]',
+  '"name" input type text is present')
+  ->text_is('#description_label', 'Description:', '"Description:" label is ok')
+  ->element_exists(
+  'input[type="text"][name="description"]',
+  '"description" input type text is present'
+  )->text_is('#permissions_label', 'Permissions:', '"Permissions:" label is ok')
+  ->element_exists(
+  'input[type="text"][name="permissions"]',
+  '"permissions" input type text is present'
+  )->element_exists('#buttons_unit', 'Form buttons should be present')->element_exists(
+  '#buttons_unit button[type="submit"][name="save"]',
+  '"Save" button is present'
+  )->element_exists(
+  '#buttons_unit button[type="submit"][name="save_and_close"]',
+  '"Save and close" button is present'
+  )->element_exists('#buttons_unit button[type="reset"]', '"Reset" button is present');
+
 #$dom = $t->tx->res->dom;
+
+$t->post_form_ok($ENV{MYDLjE_ROOT_URL} . 'cpanel/site/edit_domain')
+
+#there should be errors
+  ->text_is(
+  '#domain_error .container',
+  'Please enter valid domain name!',
+  '"Please enter valid domain name!" error is ok'
+  )->text_is(
+  '#name_error .container',
+  'Please enter valid value for human readable name!',
+  '"Please enter valid value for human readable name!" error is ok'
+  )->text_is(
+  '#description_error .container',
+  'Please enter valid value for description!',
+  '"Please enter valid value for description!" error is ok'
+  );
+
 #warn $dom->to_xml;
 #TODO: continue with post and get for each route
 

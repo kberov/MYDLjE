@@ -12,8 +12,8 @@ has TABLE => 'content';
 
 has COLUMNS => sub {
   [ qw(
-      id alias pid page_id user_id sorting data_type data_format
-      time_created tstamp title description keywords tags
+      id title alias pid page_id user_id sorting data_type data_format
+      time_created tstamp description keywords tags
       body language group_id permissions featured bad start stop
       )
   ];

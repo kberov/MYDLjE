@@ -111,33 +111,36 @@ sub edit_page {
   my $language =
     (List::Util::first { $form->{'content.language'} eq $_ }
     @{$c->app->config('languages')});
-
   if ($id) {        #edit
     $page->select(
       id      => $id,
       deleted => 0,
       -and    => [\[$c->sql('write_permissions_sql'), $user->id, $user->id]]
     );
-    $page->id && $content->select(
-      page_id  => $page->id,
-      language => $language,
-      deleted  => 0,
-      -and     => [\[$c->sql('write_permissions_sql'), $user->id, $user->id]]
-    );
+    if ($page->id) {
 
-    #prefill form but keep existing params
-    $form = {
-      (map { 'content.' . $_ => $content->$_() } @{$content->COLUMNS}),
-      (map { 'page.' . $_ => $page->$_() } @{$page->COLUMNS}),
-      %$form,
-    };
-    $c->stash(form => $form);
+      $content->select(
+        page_id  => $page->id,
+        language => $language,
+        deleted  => 0,
+        -and     => [\[$c->sql('write_permissions_sql'), $user->id, $user->id]]
+      );
+    }
+
     delete $c->stash->{id} unless $page->id;
   }
   else {    #new
-    $c->stash(form => $form);
+
   }
-  #$c->debug($c->dumper($c->stash('form')));
+
+  #prefill form but keep existing params
+  $form = {
+    (map { 'content.' . $_ => $content->$_() } @{$content->COLUMNS}),
+    (map { 'page.' . $_ => $page->$_() } @{$page->COLUMNS}),
+    %$form,
+  };
+
+  $c->stash(form => $form);
 
   if ($c->req->method eq 'POST') {
     $c->_save_page($page, $content, $user);
@@ -154,6 +157,7 @@ sub _save_page {
 
   #validate
   my $form = $c->stash('form');
+
   return unless $c->_validate_page($page, $form);
 
   #save
@@ -213,6 +217,7 @@ sub _save_page {
 
 sub _validate_page {
   my ($c, $page, $form) = @_;
+
   my $v = $c->create_validator;
   $v->field('content.title')->required(1)->inflate(\&MYDLjE::M::no_markup_inflate)
     ->message($c->l('The field [_1] is required!', $c->l('title')));

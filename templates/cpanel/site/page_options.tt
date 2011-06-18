@@ -13,7 +13,7 @@ FOR option IN app.config('languages');
   language_options.push({label => option, value => option }); 
 END;
 published_options = [
-  {label => 'not pubbilshed', value => 0 },
+  {label => 'not published', value => 0 },
   {label => 'waiting review', value => 1 },
   {label => 'published', value => 2 }
 ];

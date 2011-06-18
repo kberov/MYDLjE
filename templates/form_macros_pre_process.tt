@@ -246,12 +246,12 @@ name="[% name_and_id %]" value="[% params.value %]" />
       <table id="[% name_and_id _ '_ptable' %]" class="ui-widget-content ui-corner-all permissions">
         <tbody >
             <tr>
-                <th>Type</th>
+            <th>[% c.l('Record Type') %]</th>
                 <td colspan="3">
                     <select name="[% name_and_id %]_type">
-                       <option value="-">Regular</option>    
-                       <option value="l">Link</option>
-                       <option value="d">Container</option>
+                    <option value="-">[% c.l('Regular Record') %]</option>    
+                       <option value="l">[% c.l('Link') %]</option>
+                       <option value="d">[% c.l('Container') %]</option>
                     </select>
                 </td>
             </tr>
@@ -295,6 +295,11 @@ $(window).load(function() {
     var checkboxes = scope + ' input[type="checkbox"]';
     var pselect = scope + ' [name$="permissions_type"]';
     var permissions ='[name$="ermissions"]';
+    $(permissions).attr({readonly: 'readonly'});
+    $(permissions).removeClass('ui-state-default');
+    $(permissions).addClass('ui-state-disabled');
+    $(permissions).css({border:'none','font-family':'monospace'});
+    
     var cvalues = $(permissions).val()
     .match(/^([ld\-])([r\-])([w\-])([x\-])([r\-])([w\-])([x\-])([r\-])([w\-])([x\-])$/);
     

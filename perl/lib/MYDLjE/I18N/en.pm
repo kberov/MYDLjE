@@ -45,10 +45,13 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   bad          => 'Bad Content',
 
   #TODO: use I18N::LangTags::List better
-  bg          => I18N::LangTags::List::name('bg'),
-  en          => I18N::LangTags::List::name('en'),
-  hidden_help => 'A Page can be hidden from menus',
-
+  bg               => I18N::LangTags::List::name('bg'),
+  en               => I18N::LangTags::List::name('en'),
+  hidden_help      => 'A Page can be hidden from menus',
+  permissions_help => 'Defines who has the right to edit this record. ' . "\n\n"
+    . 'The first symbol defines if the record is parent(pid) for other records in the same table, or is a link to other records in the same table, or is just a regular record. When the record is a link to other record in the site will be shown/executed the body of the record to which this record links using the other record identifier(id).'
+    . "\n\n"
+    . 'The next three symbols define the permissions for the owner of the record. The second triple defines the group permissions. The third triple defines the permisions for the rest of the users.',
 );
 
 1;

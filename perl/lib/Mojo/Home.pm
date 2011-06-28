@@ -1,7 +1,9 @@
 package Mojo::Home;
 use Mojo::Base -base;
-use overload 'bool' => sub {1}, fallback => 1;
-use overload '""' => sub { shift->to_string }, fallback => 1;
+use overload
+  'bool'   => sub {1},
+  '""'     => sub { shift->to_string },
+  fallback => 1;
 
 use Cwd 'abs_path';
 use File::Spec;
@@ -58,7 +60,7 @@ sub detect {
   # FindBin fallback
   $self->{_parts} = [split /\//, $FindBin::Bin] unless $self->{_parts};
 
-  return $self;
+  $self;
 }
 
 sub lib_dir {
@@ -70,12 +72,13 @@ sub lib_dir {
   return $path if -d $path;
 
   # No lib directory
-  return;
+  undef;
 }
 
 sub list_files {
   my ($self, $dir) = @_;
 
+  # Build portable directory
   my $parts = $self->{_parts} || [];
   my $root = File::Spec->catdir(@$parts);
   $dir = File::Spec->catdir($root, split '/', ($dir || ''));
@@ -106,7 +109,7 @@ sub list_files {
     push @files, @$new;
   }
 
-  return [sort @files];
+  [sort @files];
 }
 
 # "And now to create an unstoppable army of between one million and two
@@ -115,25 +118,25 @@ sub parse {
   my ($self, $path) = @_;
   my @parts = File::Spec->splitdir($path);
   $self->{_parts} = \@parts;
-  return $self;
+  $self;
 }
 
 sub rel_dir {
   my $self = shift;
   my $parts = $self->{_parts} || [];
-  return File::Spec->catdir(@$parts, split '/', shift);
+  File::Spec->catdir(@$parts, split '/', shift);
 }
 
 sub rel_file {
   my $self = shift;
   my $parts = $self->{_parts} || [];
-  return File::Spec->catfile(@$parts, split '/', shift);
+  File::Spec->catfile(@$parts, split '/', shift);
 }
 
 sub to_string {
   my $self = shift;
   my $parts = $self->{_parts} || [];
-  return File::Spec->catdir(@$parts);
+  File::Spec->catdir(@$parts);
 }
 
 1;

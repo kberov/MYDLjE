@@ -13,7 +13,10 @@ updates.
 =head1 TUTORIAL
 
 A really fast and fun way to get started developing web applications with
-Mojolicious is the tutorial in L<Mojolicious::Lite>, you should take a look.
+Mojolicious is the tutorial in L<Mojolicious::Lite>.
+Almost everything you learn there can also be applied to normal
+L<Mojolicious> applications and is considered a prerequisite for the guides.
+You should definitely take a look!
 
 =head1 GUIDES
 
@@ -73,8 +76,8 @@ Minimalistic JSON implementation that just works.
 
 =item L<Mojo::Server::Daemon>
 
-Highly portable async io HTTP 1.1 and WebSocket server, perfect for
-development and testing.
+Highly portable async io HTTP 1.1 and WebSocket server with self-restart
+support through L<Mojo::Server::Morbo>, perfect for development and testing.
 
 =item L<Mojo::Server::Hypnotoad>
 
@@ -95,7 +98,7 @@ Countless portable and very convenient bytestream manipulation methods.
 
 =item L<Mojolicious::Commands>
 
-Pluggable command line system and the backbone of the C<mojo> script.
+Pluggable command line system and the backbone of the L<mojo> script.
 
 =item L<Test::Mojo>
 

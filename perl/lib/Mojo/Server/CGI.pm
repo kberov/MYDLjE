@@ -11,10 +11,9 @@ has nph => 0;
 sub run {
   my $self = shift;
 
+  # Environment
   my $tx  = $self->on_transaction->($self);
   my $req = $tx->req;
-
-  # Environment
   $req->parse(\%ENV);
 
   # Store connection information
@@ -108,7 +107,7 @@ sub run {
   # Finish transaction
   $tx->on_finish->($tx);
 
-  return $res->code;
+  $res->code;
 }
 
 1;

@@ -14,17 +14,16 @@ EOF
 sub run {
   my $self = shift;
 
+  # Check if application has routes
   my $app = Mojo::Server->new->app;
   die "Application has no routes.\n" unless $app->can('routes');
 
-  # Walk
+  # Walk and draw
   my $routes = [];
   $self->_walk($_, 0, $routes) for @{$app->routes->children};
-
-  # Draw
   $self->_draw($routes);
 
-  return $self;
+  $self;
 }
 
 sub _draw {

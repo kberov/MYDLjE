@@ -1,6 +1,7 @@
 package Mojolicious::Plugin::EpRenderer;
 use Mojo::Base 'Mojolicious::Plugin';
 
+use Mojo::Loader;
 use Mojo::Template;
 use Mojo::Util 'md5_sum';
 
@@ -15,6 +16,11 @@ sub register {
   my $name     = $conf->{name}     || 'ep';
   my $template = $conf->{template} || {};
 
+  # Custom sandbox
+  $template->{namespace} =
+    'Mojo::Template::SandBox::' . md5_sum(($ENV{MOJO_EXE} || ref $app) . $$)
+    unless defined $template->{namespace};
+
   # Auto escape by default to prevent XSS attacks
   $template->{auto_escape} = 1 unless defined $template->{auto_escape};
 
@@ -28,8 +34,6 @@ sub register {
       return unless defined $path;
       my $list = join ', ', sort keys %{$c->stash};
       my $key = $options->{cache} = md5_sum "$path($list)";
-
-      $c->stash->{layout} ||= undef;
 
       # Cache
       my $cache = $r->cache;
@@ -50,7 +54,7 @@ sub register {
         for my $name (sort keys %{$r->helpers}) {
           next unless $name =~ /^\w+$/;
           $prepend .= "sub $name; *$name = sub { ";
-          $prepend .= "return \$_H->{'$name'}->(\$self, \@_) };";
+          $prepend .= "\$_H->{'$name'}->(\$self, \@_) };";
         }
 
         # Be less relaxed for everything else
@@ -71,7 +75,7 @@ sub register {
       }
 
       # Render with epl
-      return $r->handlers->{epl}->($r, $c, $output, $options);
+      $r->handlers->{epl}->($r, $c, $output, $options);
     }
   );
 

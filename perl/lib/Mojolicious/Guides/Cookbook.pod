@@ -12,7 +12,7 @@ Cooking with L<Mojolicious>, recipes for every taste.
 Getting L<Mojolicious> and L<Mojolicious::Lite> applications running on
 different platforms.
 
-=head2 Builtin Server
+=head2 Built-in Server
 
 L<Mojolicious> contains a very portable HTTP 1.1 compliant web server.
 It is usually used during development but is solid and fast enough for small
@@ -47,7 +47,7 @@ of multiple cpu cores and copy-on-write.
   |- Mojo::Server::Daemon [3]
   `- Mojo::Server::Daemon [4]
 
-It is based on the normal builtin web server but optimized specifically for
+It is based on the normal built-in web server but optimized specifically for
 production environments out of the box.
 
   % hypnotoad script/myapp
@@ -68,7 +68,7 @@ connection, just by sending it a C<USR2> signal.
 
 =head2 Nginx
 
-One of the most popular setups these days is the builtin web server behind a
+One of the most popular setups these days is the built-in web server behind a
 Nginx reverse proxy.
 
   upstream myapp {
@@ -128,7 +128,7 @@ libraries might not be found.
   % plackup ./script/myapp -s FCGI -l /tmp/myapp.sock
 
 Because C<plackup> uses a weird trick to load your script, L<Mojolicious> is
-not always able to detect the applications home directory, if thats the case
+not always able to detect the applications home directory, if that's the case
 you can simply use the C<MOJO_HOME> environment variable.
 Also note that C<app-E<gt>start> needs to be the last Perl statement in the
 application script for the same reason.
@@ -136,8 +136,8 @@ application script for the same reason.
   % MOJO_HOME=/home/sri/myapp plackup ./script/myapp
   HTTP::Server::PSGI: Accepting connections at http://0:5000/
 
-Some server adapters might ask for a C<.psgi> file, if thats the case you can
-just point them at your application script because it will automatically
+Some server adapters might ask for a C<.psgi> file, if that's the case you
+can just point them at your application script because it will automatically
 act like one if it detects the presence of a C<PLACK_ENV> environment
 variable.
 
@@ -179,7 +179,20 @@ requests.
 
 =head2 Embedding
 
-You can also use the builtin web server to embed L<Mojolicious> applications
+From time to time you might want to reuse parts of L<Mojolicious>
+applications like configuration files, database connection or helpers for
+other scripts, with this little mock server you can just embed them.
+
+  use Mojo::Server;
+
+  # Load application with mock server
+  my $server = Mojo::Server->new;
+  my $app = $server->load_app('./myapp.pl');
+
+  # Access fully initialized application
+  print $app->static->root;
+
+You can also use the built-in web server to embed L<Mojolicious> applications
 into alien environments like foreign event loops.
 
   use Mojolicious::Lite;
@@ -206,7 +219,7 @@ When we say L<Mojolicious> is a web framework we actually mean it.
 =head2 Web Scraping
 
 Scraping information from web sites has never been this much fun before.
-The built in XML/HTML5 parser L<Mojo::DOM> supports all CSS3 selectors that
+The built-in XML/HTML5 parser L<Mojo::DOM> supports all CSS3 selectors that
 make sense for a standalone parser.
 
   # Fetch web site
@@ -337,14 +350,14 @@ Uploading a large file is even easier.
   # Upload file via POST and "multipart/form-data"
   my $ua = Mojo::UserAgent->new;
   $ua->post_form('mojolicio.us/upload',
-    {image => {file => '/Users/sri/hello.png'}});
+    {image => {file => '/home/sri/hello.png'}});
 
 And once again you don't have to worry about memory usage, all data will be
 streamed directly from the file.
 
   # Upload file via PUT
   my $ua     = Mojo::UserAgent->new;
-  my $asset  = Mojo::Asset::File->new(path => '/Users/sri/hello.png');
+  my $asset  = Mojo::Asset::File->new(path => '/home/sri/hello.png');
   my $tx     = $ua->build_tx(PUT => 'mojolicio.us/upload');
   $tx->req->content->asset($asset);
   $ua->start($tx);
@@ -410,48 +423,53 @@ You can just pick the parts that actually matter with the CSS3 selectors from
 L<Mojo::DOM>.
 
   % mojo get http://mojolicio.us 'head > title'
-  ...
 
 How about a list of all id attributes?
 
   % mojo get http://mojolicio.us '*' attr id
-  ...
 
 Or the text content of all header tags?
 
   % mojo get http://mojolicio.us 'h1, h2, h3' text
-  ...
 
 Maybe just the text of the third header?
 
   % mojo get http://mojolicio.us 'h1, h2, h3' 3 text
-  ...
 
 You can also extract all text from nested child elements.
 
   % mojo get http://mojolicio.us '#mojobar' all
-  ...
 
 The request can be customized as well.
 
   % mojo get --method post --content 'Hello!' http://mojolicio.us
-  ...
   % mojo get --header 'X-Bender: Bite my shiny metal ass!' http://google.com
-  ...
 
 You can follow redirects and view the headers for all messages.
 
   % mojo get --redirect --verbose http://reddit.com 'head > title'
-  ...
 
 This can be an invaluable tool for testing your applications.
 
   % ./myapp.pl get /welcome 'head > title'
-  ...
 
 =head1 HACKS
 
 Fun hacks you might not use very often but that might come in handy some day.
+
+=head2 Running Code Against Your Application
+
+Ever thought about running a quick oneliner against your L<Mojolicious>
+application to test something?
+Thanks to the C<eval> command you can do just that, the application instance
+itself can be accessed via C<app>.
+
+  % mojo generate lite_app
+  % ./myapp.pl eval 'print app->static->root, "\n"'
+
+The C<verbose> option will automatically print the return value to C<STDOUT>.
+
+  % ./myapp.pl eval -v 'app->static->root'
 
 =head2 Making Your Application Installable
 
@@ -459,7 +477,6 @@ Ever thought about releasing your L<Mojolicious> application to CPAN?
 It's actually much easier than you might think.
 
   % mojo generate app
-  ...
   % cd my_mojolicious_app
   % mv public lib/MyMojoliciousApp/
   % mv templates lib/MyMojoliciousApp/
@@ -497,19 +514,14 @@ get automatically installed with the modules.
 
   1;
 
-Thats really everything, now you can package your application like any other
+That's really everything, now you can package your application like any other
 CPAN module.
 
   % ./script/my_mojolicious_app generate makefile
-  ...
   % perl Makefile.PL
-  ...
   % make test
-  ...
   % make manifest
-  ...
   % make dist
-  ...
 
 =head2 Hello World
 

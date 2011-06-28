@@ -25,7 +25,7 @@ sub new {
   # WebSocket
   $self->{_websocket} = shift;
 
-  return $self;
+  $self;
 }
 
 # "Life can be hilariously cruel."
@@ -33,16 +33,12 @@ sub match {
   my ($self, $r, $c) = @_;
   return unless $r;
 
-  my $dictionary = $self->{_dictionary} ||= $r->dictionary;
-
-  # Root
-  $self->root($r) unless $self->root;
-
-  my $path    = $self->{_path};
-  my $pattern = $r->pattern;
-
   # Match
-  my $captures = $pattern->shape_match(\$path);
+  $self->root($r) unless $self->root;
+  my $dictionary = $self->{_dictionary} ||= $r->dictionary;
+  my $path       = $self->{_path};
+  my $pattern    = $r->pattern;
+  my $captures   = $pattern->shape_match(\$path);
   return unless $captures;
   $self->{_path} = $path;
 
@@ -80,8 +76,8 @@ sub match {
   my $empty = !length $path || $path eq '/' ? 1 : 0;
 
   # Partial
-  if (my $partial = $r->partial) {
-    $captures->{$partial} = $path;
+  if ($r->partial) {
+    $captures->{path} = $path;
     $self->endpoint($r);
     $empty = 1;
   }
@@ -113,8 +109,6 @@ sub match {
   # Match children
   my $snapshot = [@{$self->stack}];
   for my $child (@{$r->children}) {
-
-    # Match
     $self->match($child, $c);
 
     # Endpoint found
@@ -131,7 +125,7 @@ sub match {
     }
   }
 
-  return $self;
+  $self;
 }
 
 sub path_for {
@@ -210,7 +204,7 @@ sub path_for {
   # Render
   my $path = $endpoint->render('', $values);
   utf8::downgrade $path, 1;
-  return wantarray ? ($path, $endpoint->has_websocket) : $path;
+  wantarray ? ($path, $endpoint->has_websocket) : $path;
 }
 
 1;

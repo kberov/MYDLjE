@@ -12,14 +12,14 @@ has url => sub { Mojo::URL->new };
 
 # Start line regex
 my $START_LINE_RE = qr/
-  ^\s*                                                         # Start
+  ^\s*
   ([a-zA-Z]+)                                                  # Method
-  \s+                                                          # Whitespace
+  \s+
   (
   [0-9a-zA-Z\-\.\_\~\:\/\?\#\[\]\@\!\$\&\'\(\)\*\+\,\;\=\%]+   # Path
   )
   (?:\s+HTTP\/(\d+\.\d+))?                                     # Version
-  $                                                            # End
+  $
 /x;
 
 # Host regex
@@ -49,7 +49,7 @@ sub cookies {
   }
 
   # No cookies
-  return [];
+  [];
 }
 
 sub fix_headers {
@@ -80,39 +80,35 @@ sub fix_headers {
     }
   }
 
-  return $self;
+  $self;
 }
 
 sub is_secure {
-  my $self = shift;
-
-  # Secure
-  my $url = $self->url;
+  my $self   = shift;
+  my $url    = $self->url;
   my $scheme = $url->scheme || $url->base->scheme || '';
   return 1 if $scheme eq 'https';
-
-  # Not secure
-  return;
+  undef;
 }
 
 sub is_xhr {
   my $self = shift;
   return unless my $with = $self->headers->header('X-Requested-With');
   return 1 if $with =~ /XMLHttpRequest/i;
-  return;
+  undef;
 }
 
 sub param {
   my $self = shift;
   $self->{_params} = $self->params unless $self->{_params};
-  return $self->{_params}->param(@_);
+  $self->{_params}->param(@_);
 }
 
 sub params {
   my $self   = shift;
   my $params = Mojo::Parameters->new;
   $params->merge($self->body_params, $self->query_params);
-  return $params;
+  $params;
 }
 
 sub parse {
@@ -174,7 +170,7 @@ sub parse {
     }
   }
 
-  return $self;
+  $self;
 }
 
 sub proxy {
@@ -192,7 +188,7 @@ sub proxy {
     return $self;
   }
 
-  return $self->{proxy};
+  $self->{proxy};
 }
 
 sub query_params { shift->url->query }
@@ -229,7 +225,7 @@ sub _build_start_line {
   return "$method $path\x0d\x0a" if $version eq '0.9';
 
   # HTTP 1.0 and above
-  return "$method $path HTTP/$version\x0d\x0a";
+  "$method $path HTTP/$version\x0d\x0a";
 }
 
 sub _parse_basic_auth {
@@ -237,7 +233,7 @@ sub _parse_basic_auth {
   return unless $header =~ /Basic (.+)$/;
   my $auth = $1;
   b64_decode $auth;
-  return $auth;
+  $auth;
 }
 
 sub _parse_env {
@@ -247,11 +243,10 @@ sub _parse_env {
   # Make environment accessible
   $self->env($env);
 
+  # Extract headers from environment
   my $headers = $self->headers;
   my $url     = $self->url;
   my $base    = $url->base;
-
-  # Extract headers from environment
   for my $name (keys %$env) {
 
     # Header
@@ -389,13 +384,19 @@ Mojo::Message::Request - HTTP 1.1 Request Container
 
   use Mojo::Message::Request;
 
+  # Parse
+  my $req = Mojo::Message::Request->new;
+  $req->parse("GET /foo HTTP/1.0\x0a\x0d");
+  $req->parse("Content-Length: 12\x0a\x0d\x0a\x0d");
+  $req->parse("Content-Type: text/plain\x0a\x0d\x0a\x0d");
+  $req->parse('Hello World!');
+  print $req->body;
+
+  # Build
   my $req = Mojo::Message::Request->new;
   $req->url->parse('http://127.0.0.1/foo/bar');
   $req->method('GET');
-
-  print "$req";
-
-  $req->parse('GET /foo/bar HTTP/1.1');
+  print $req->to_string;
 
 =head1 DESCRIPTION
 
@@ -421,18 +422,6 @@ Direct access to the environment hash if available.
 
 HTTP request method.
 
-=head2 C<params>
-
-  my $params = $req->params;
-
-All C<GET> and C<POST> parameters, defaults to a L<Mojo::Parameters> object.
-
-=head2 C<query_params>
-
-  my $params = $req->query_params;
-
-All C<GET> parameters, defaults to a L<Mojo::Parameters> object.
-
 =head2 C<url>
 
   my $url = $req->url;
@@ -451,7 +440,7 @@ implements the following new ones.
   $req        = $req->cookies(Mojo::Cookie::Request->new);
   $req        = $req->cookies({name => 'foo', value => 'bar'});
 
-Access request cookies.
+Access request cookies, usually L<Mojo::Cookie::Request> objects.
 
 =head2 C<fix_headers>
 
@@ -475,8 +464,13 @@ Check C<X-Requested-With> header for C<XMLHttpRequest> value.
 
   my $param = $req->param('foo');
 
-Access C<GET> and C<POST> parameters, defaults to a L<Mojo::Parameters>
-object.
+Access C<GET> and C<POST> parameters.
+
+=head2 C<params>
+
+  my $params = $req->params;
+
+All C<GET> and C<POST> parameters, usually a L<Mojo::Parameters> object.
 
 =head2 C<parse>
 
@@ -493,6 +487,12 @@ Parse HTTP request chunks or environment hash.
   $req      = $req->proxy(Mojo::URL->new('http://127.0.0.1:3000'));
 
 Proxy URL for message.
+
+=head2 C<query_params>
+
+  my $params = $req->query_params;
+
+All C<GET> parameters, usually a L<Mojo::Parameters> object.
 
 =head1 SEE ALSO
 

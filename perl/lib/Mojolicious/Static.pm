@@ -17,26 +17,29 @@ sub dispatch {
   my ($self, $c) = @_;
 
   # Already rendered
-  return if $c->res->code;
+  return 1 if $c->res->code;
 
   # Canonical path
-  my $path = $c->req->url->path->clone->canonicalize->to_string;
+  my $stash = $c->stash;
+  my $path  = $stash->{path};
+  $path = $c->req->url->path->clone->canonicalize->to_string
+    unless defined $path;
 
   # Split parts
   my @parts = @{Mojo::Path->new->parse($path)->parts};
-  return 1 unless @parts;
+  return unless @parts;
 
   # Prevent directory traversal
-  return 1 if $parts[0] eq '..';
+  return if $parts[0] eq '..';
 
   # Serve static file
-  unless ($self->serve($c, join('/', @parts))) {
-    $c->stash->{'mojo.static'} = 1;
+  if ($self->serve($c, join('/', @parts))) {
+    $stash->{'mojo.static'} = 1;
     $c->rendered;
-    return;
+    return 1;
   }
 
-  return 1;
+  1;
 }
 
 sub serve {
@@ -76,7 +79,7 @@ sub serve {
       # Exists, but is forbidden
       else {
         $c->app->log->debug(qq/File "$rel" forbidden./);
-        $res->code(403) and return;
+        $res->code(403) and return 1;
       }
 
       # Done
@@ -84,8 +87,8 @@ sub serve {
     }
   }
 
-  # Inline file
-  if (!$asset && defined(my $file = $self->_get_inline_file($c, $rel))) {
+  # DATA file
+  if (!$asset && defined(my $file = $self->_get_data_file($c, $rel))) {
     $size  = length $file;
     $asset = Mojo::Asset::Memory->new->add_chunk($file);
   }
@@ -105,7 +108,7 @@ sub serve {
         $rsh->remove('Content-Type');
         $rsh->remove('Content-Length');
         $rsh->remove('Content-Disposition');
-        return;
+        return 1;
       }
     }
 
@@ -126,7 +129,7 @@ sub serve {
 
         # Not satisfiable
         $res->code(416);
-        return;
+        return 1;
       }
     }
     $asset->start_range($start);
@@ -138,35 +141,33 @@ sub serve {
     $rsh->content_type($c->app->types->type($ext) || 'text/plain');
     $rsh->accept_ranges('bytes');
     $rsh->last_modified(Mojo::Date->new($modified));
-    return;
+    return 1;
   }
 
-  return 1;
+  undef;
 }
 
-sub _get_inline_file {
+sub _get_data_file {
   my ($self, $c, $rel) = @_;
 
   # Protect templates
   return if $rel =~ /\.\w+\.\w+$/;
 
-  # Class
+  # Detect DATA class
   my $class =
        $c->stash->{static_class}
     || $ENV{MOJO_STATIC_CLASS}
     || $self->default_static_class
     || 'main';
 
-  # Inline files
-  my $inline = $self->{_inline_files}->{$class}
+  # Find DATA file
+  my $data = $self->{_data_files}->{$class}
     ||= [keys %{Mojo::Command->new->get_all_data($class) || {}}];
-
-  # Find inline file
-  for my $path (@$inline) {
+  for my $path (@$data) {
     return Mojo::Command->new->get_data($path, $class) if $path eq $rel;
   }
 
-  return;
+  undef;
 }
 
 1;

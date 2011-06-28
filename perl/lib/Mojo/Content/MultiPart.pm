@@ -16,8 +16,7 @@ sub body_contains {
     $found += $part->body_contains($chunk);
   }
 
-  # Found
-  return $found ? 1 : 0;
+  $found ? 1 : 0;
 }
 
 sub body_size {
@@ -27,11 +26,8 @@ sub body_size {
   my $content_length = $self->headers->content_length;
   return $content_length if $content_length;
 
-  # Boundary
-  my $boundary = $self->build_boundary;
-
   # Calculate length of whole body
-  my $boundary_length = length($boundary) + 6;
+  my $boundary_length = length($self->build_boundary) + 6;
   my $len             = 0;
   $len += $boundary_length - 2;
   for my $part (@{$self->parts}) {
@@ -46,7 +42,7 @@ sub body_size {
     $len += $boundary_length;
   }
 
-  return $len;
+  $len;
 }
 
 sub build_boundary {
@@ -79,7 +75,7 @@ sub build_boundary {
   my $after  = $2 || '';
   $headers->content_type("$before; boundary=$boundary$after");
 
-  return $boundary;
+  $boundary;
 }
 
 sub get_body_chunk {
@@ -88,12 +84,10 @@ sub get_body_chunk {
   # Body generator
   return $self->generate_body_chunk($offset) if $self->on_read;
 
-  # Multipart
+  # First boundary
   my $boundary        = $self->build_boundary;
   my $boundary_length = length($boundary) + 6;
   my $len             = $boundary_length - 2;
-
-  # First boundary
   return substr "--$boundary\x0d\x0a", $offset if $len > $offset;
 
   # Parts
@@ -142,16 +136,14 @@ sub parse {
   # Parse multipart content
   $self->_parse_multipart;
 
-  return $self;
+  $self;
 }
 
 sub _parse_multipart {
   my $self = shift;
 
-  # Need a boundary
-  my $boundary = $self->is_multipart;
-
   # Parse
+  my $boundary = $self->is_multipart;
   while (1) {
 
     # Done
@@ -193,7 +185,7 @@ sub _parse_multipart_body {
   my $chunk = substr $self->{_b2}, 0, $pos, '';
   $self->parts->[-1] = $self->parts->[-1]->parse($chunk);
   $self->{_multi_state} = 'multipart_boundary';
-  return 1;
+  1;
 }
 
 sub _parse_multipart_boundary {
@@ -218,7 +210,7 @@ sub _parse_multipart_boundary {
     $self->{_state} = $self->{_multi_state} = 'done';
   }
 
-  return;
+  undef;
 }
 
 sub _parse_multipart_preamble {
@@ -235,7 +227,7 @@ sub _parse_multipart_preamble {
   }
 
   # No boundary yet
-  return;
+  undef;
 }
 
 1;
@@ -267,7 +259,8 @@ and implements the following new ones.
 
   my $parts = $content->parts;
 
-Content parts embedded in this multipart content.
+Content parts embedded in this multipart content, usually
+L<Mojo::Content::Single> objects.
 
 =head1 METHODS
 
@@ -302,7 +295,7 @@ Get a chunk of content starting from a specfic position.
 
   $content = $content->parse('Content-Type: multipart/mixed');
 
-Parse content.
+Parse content chunk.
 
 =head1 SEE ALSO
 

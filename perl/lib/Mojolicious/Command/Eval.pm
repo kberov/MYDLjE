@@ -17,9 +17,10 @@ These options are available:
   --verbose   Print return value to STDOUT.
 EOF
 
-# "Don't let Krusty's death get you down, boy.
-#  People die all the time, just like that.
-#  Why, you could wake up dead tomorrow! Well, good night."
+# "It worked!
+#  Gravity normal.
+#  Air pressure returning.
+#  Terror replaced by cautious optimism."
 sub run {
   my $self = shift;
 
@@ -37,7 +38,7 @@ sub run {
   my $result = eval "package main; sub app { \$app }; $code";
   print "$result\n" if $verbose && defined $result;
   die $@ if $@;
-  return $result;
+  $result;
 }
 
 1;

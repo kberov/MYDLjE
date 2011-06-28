@@ -24,23 +24,24 @@ has ua => sub {
   my $ua = Mojo::UserAgent->new(app => $self, log => $self->log);
   weaken $ua->{app};
 
-  return $ua;
+  $ua;
 };
 
 # "Oh, so they have internet on computers now!"
 sub new {
   my $self = shift->SUPER::new(@_);
 
-  # Home
+  # Detect home directory
   $self->home->detect(ref $self);
 
   # Log directory
   $self->log->path($self->home->rel_file('log/mojo.log'))
     if -w $self->home->rel_file('log');
 
-  return $self;
+  $self;
 }
 
+# "D’oh."
 sub handler { croak 'Method "handler" not implemented in subclass' }
 
 1;
@@ -104,15 +105,15 @@ The logging layer of your application, by default a L<Mojo::Log> object.
   my $cb = $app->on_transaction;
   $app   = $app->on_transaction(sub {...});
 
-The transaction builder callback, by default it builds a
-L<Mojo::Transaction::HTTP> object.
+Callback to be invoked when a new transaction is needed, by default it builds
+a L<Mojo::Transaction::HTTP> object.
 
 =head2 C<on_websocket>
 
   my $cb = $app->on_websocket;
   $app   = $app->on_websocket(sub {...});
 
-The websocket handshake callback, by default it builds a
+Callback to be invoked for WebSocket handshakes, by default it builds a
 L<Mojo::Transaction::WebSocket> object and handles the response for the
 handshake request.
 

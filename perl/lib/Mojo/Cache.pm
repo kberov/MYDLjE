@@ -3,26 +3,26 @@ use Mojo::Base -base;
 
 has 'max_keys' => 100;
 
+# "If at first you don't succeed, give up."
+sub get { (shift->{_cache} || {})->{shift()} }
+
 # "Maybe I should hook up with you guys.
 #  After all, how long do any of us have to live?
 #  Well, if you like the ribwich, not very.
 #  *holds up ribwich box with Krusty saying 'WILL CAUSE EARLY DEATH'*
 #  D'oh!"
-sub get { (shift->{_cache} || {})->{shift()} }
-
 sub set {
   my ($self, $key, $value) = @_;
 
+  # Cache with size limit
   my $keys  = $self->max_keys;
   my $cache = $self->{_cache} ||= {};
   my $stack = $self->{_stack} ||= [];
-
-  # Cache with size limit
   delete $cache->{shift @$stack} while @$stack >= $keys;
   push @$stack, $key;
   $cache->{$key} = $value;
 
-  return $self;
+  $self;
 }
 
 1;

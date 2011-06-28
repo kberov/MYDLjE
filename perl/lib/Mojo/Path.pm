@@ -1,7 +1,9 @@
 package Mojo::Path;
 use Mojo::Base -base;
-use overload 'bool' => sub {1}, fallback => 1;
-use overload '""' => sub { shift->to_string }, fallback => 1;
+use overload
+  'bool'   => sub {1},
+  '""'     => sub { shift->to_string },
+  fallback => 1;
 
 use Mojo::Util qw/url_escape url_unescape/;
 use Mojo::URL;
@@ -12,7 +14,7 @@ has parts => sub { [] };
 sub new {
   my $self = shift->SUPER::new();
   $self->parse(@_);
-  return $self;
+  $self;
 }
 
 sub append {
@@ -26,7 +28,8 @@ sub append {
 
     push @{$self->parts}, $value;
   }
-  return $self;
+
+  $self;
 }
 
 sub canonicalize {
@@ -54,7 +57,7 @@ sub canonicalize {
   }
   $self->parts(\@path);
 
-  return $self;
+  $self;
 }
 
 # "Homer, the plant called.
@@ -68,13 +71,13 @@ sub clone {
   $clone->leading_slash($self->leading_slash);
   $clone->trailing_slash($self->trailing_slash);
 
-  return $clone;
+  $clone;
 }
 
 sub parse {
   my ($self, $path) = @_;
 
-  # Meta
+  # Leading and trailing slash
   $path = '' unless defined $path;
   $path =~ /^\// ? $self->leading_slash(1)  : $self->leading_slash(0);
   $path =~ /\/$/ ? $self->trailing_slash(1) : $self->trailing_slash(0);
@@ -94,13 +97,13 @@ sub parse {
   }
   $self->parts(\@parts);
 
-  return $self;
+  $self;
 }
 
 sub to_abs_string {
   my $self = shift;
   return $self->to_string if $self->leading_slash;
-  return '/' . $self->to_string;
+  '/' . $self->to_string;
 }
 
 sub to_string {
@@ -121,7 +124,7 @@ sub to_string {
   $path = "/$path" if $self->leading_slash;
   $path = "$path/" if @path && $self->trailing_slash;
 
-  return $path;
+  $path;
 }
 
 1;
@@ -136,6 +139,8 @@ Mojo::Path - Path
   use Mojo::Path;
 
   my $path = Mojo::Path->new('/foo/bar%3B/baz.html');
+  shift @{$path->parts};
+  print "$path";
 
 =head1 DESCRIPTION
 

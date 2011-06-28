@@ -9,13 +9,13 @@ has [qw/code message/];
 
 # Start line regex
 my $START_LINE_RE = qr/
-  ^\s*             # Start
+  ^\s*
   HTTP\/(\d\.\d)   # Version
-  \s+              # Whitespace
+  \s+
   (\d\d\d)         # Code
-  \s*              # Whitespace
+  \s*
   ([\w\'\s]+)?     # Message (with "I'm a teapot" support)
-  $                # End
+  $
 /x;
 
 # Umarked codes are from RFC 2616 (mostly taken from LWP)
@@ -101,10 +101,10 @@ sub cookies {
   }
 
   # No cookies
-  return $cookies;
+  $cookies;
 }
 
-sub default_message { $MESSAGES{$_[1] || $_[0]->code || 200} || '' }
+sub default_message { $MESSAGES{$_[1] || $_[0]->code || 404} || '' }
 
 sub fix_headers {
   my $self = shift;
@@ -114,29 +114,27 @@ sub fix_headers {
   my $headers = $self->headers;
   $headers->date(Mojo::Date->new->to_string) unless $headers->date;
 
-  return $self;
+  $self;
 }
 
 sub is_status_class {
   my ($self, $class) = @_;
   return unless my $code = $self->code;
   return 1 if $code >= $class && $code < ($class + 100);
-  return;
+  undef;
 }
 
 sub _build_start_line {
   my $self = shift;
 
-  # Version
-  my $version = $self->version;
-
   # HTTP 0.9 has no start line
+  my $version = $self->version;
   return '' if $version eq '0.9';
 
   # HTTP 1.0 and above
-  my $code    = $self->code    || 200;
+  my $code    = $self->code    || 404;
   my $message = $self->message || $self->default_message;
-  return "HTTP/$version $code $message\x0d\x0a";
+  "HTTP/$version $code $message\x0d\x0a";
 }
 
 # "Weaseling out of things is important to learn.
@@ -190,14 +188,20 @@ Mojo::Message::Response - HTTP 1.1 Response Container
 
   use Mojo::Message::Response;
 
+  # Parse
+  my $res = Mojo::Message::Reponse->new;
+  $res->parse("HTTP/1.0 200 OK\x0a\x0d");
+  $res->parse("Content-Length: 12\x0a\x0d\x0a\x0d");
+  $res->parse("Content-Type: text/plain\x0a\x0d\x0a\x0d");
+  $res->parse('Hello World!');
+  print $res->body;
+
+  # Build
   my $res = Mojo::Message::Response->new;
   $res->code(200);
   $res->headers->content_type('text/plain');
   $res->body('Hello World!');
-
-  print "$res";
-
-  $res->parse('HTTP/1.1 200 OK');
+  print $res->to_string;
 
 =head1 DESCRIPTION
 
@@ -234,7 +238,7 @@ implements the following new ones.
   $res        = $res->cookies(Mojo::Cookie::Response->new);
   $req        = $req->cookies({name => 'foo', value => 'bar'});
 
-Access response cookies.
+Access response cookies, usually L<Mojo::Cookie::Response> objects.
 
 =head2 C<default_message>
 

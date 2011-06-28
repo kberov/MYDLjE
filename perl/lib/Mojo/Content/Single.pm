@@ -9,18 +9,14 @@ has asset => sub { Mojo::Asset::Memory->new };
 
 sub body_contains {
   my ($self, $chunk) = @_;
-
-  # Found
   return 1 if $self->asset->contains($chunk) >= 0;
-
-  # Not found
-  return 0;
+  0;
 }
 
 sub body_size {
   my $self = shift;
   return ($self->headers->content_length || 0) if $self->on_read;
-  return $self->asset->size;
+  $self->asset->size;
 }
 
 sub get_body_chunk {
@@ -30,7 +26,7 @@ sub get_body_chunk {
   return $self->generate_body_chunk($offset) if $self->on_read;
 
   # Normal content
-  return $self->asset->get_chunk($offset);
+  $self->asset->get_chunk($offset);
 }
 
 sub parse {
@@ -41,9 +37,6 @@ sub parse {
 
   # Still parsing headers or using a custom body parser
   return $self if ($self->{_state} || '') eq 'headers' || $self->on_read;
-
-  # Headers
-  my $headers = $self->headers;
 
   # Content needs to be upgraded to multipart
   if ($self->is_multipart) {
@@ -82,7 +75,7 @@ sub parse {
     $self->{_state} = 'done' if $len <= $self->progress;
   }
 
-  return $self;
+  $self;
 }
 
 1;
@@ -114,7 +107,7 @@ implements the following new ones.
   my $asset = $content->asset;
   $content  = $content->asset(Mojo::Asset::Memory->new);
 
-The actual content.
+The actual content, defaults to a L<Mojo::Asset::Memory> object.
 
 =head1 METHODS
 
@@ -143,7 +136,7 @@ Get a chunk of content starting from a specfic position.
 
   $content = $content->parse("Content-Length: 12\r\n\r\nHello World!");
 
-Parse content.
+Parse content chunk.
 
 =head1 SEE ALSO
 

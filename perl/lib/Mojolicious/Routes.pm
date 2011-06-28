@@ -28,7 +28,7 @@ sub AUTOLOAD {
   # Call shortcut
   Carp::croak(qq/Can't locate object method "$method" via package "$package"/)
     unless my $shortcut = $self->shortcuts->{$method};
-  return $self->$shortcut(@_);
+  $self->$shortcut(@_);
 }
 
 sub DESTROY { }
@@ -36,7 +36,7 @@ sub DESTROY { }
 sub new {
   my $self = shift->SUPER::new();
   $self->parse(@_);
-  return $self;
+  $self;
 }
 
 sub add_child {
@@ -46,25 +46,25 @@ sub add_child {
   $route->parent($self);
   weaken $route->{parent};
 
-  # Shortcuts
+  # Inherit shortcuts
   $route->shortcuts($self->shortcuts);
 
   # Add to tree
   push @{$self->children}, $route;
 
-  return $self;
+  $self;
 }
 
 sub add_condition {
   my ($self, $name, $cb) = @_;
   $self->dictionary->{$name} = $cb;
-  return $self;
+  $self;
 }
 
 sub add_shortcut {
   my ($self, $name, $cb) = @_;
   $self->shortcuts->{$name} = $cb;
-  return $self;
+  $self;
 }
 
 sub any {
@@ -88,7 +88,7 @@ sub auto_render {
     1;
   } or $c->render_exception($@);
 
-  return;
+  1;
 }
 
 sub bridge { shift->route(@_)->inline(1) }
@@ -97,9 +97,9 @@ sub del { shift->_generate_route('delete', @_) }
 
 sub detour {
   my $self = shift;
-  $self->partial('path');
+  $self->partial(1);
   $self->to(@_);
-  return $self;
+  $self;
 }
 
 sub dispatch {
@@ -119,7 +119,7 @@ sub dispatch {
 
   # Cached
   my $cache = $self->cache;
-  if (my $cached = $cache->get("$method:$path:$websocket")) {
+  if ($cache && (my $cached = $cache->get("$method:$path:$websocket"))) {
     $m->root($self);
     $m->stack($cached->{stack});
     $m->captures($cached->{captures});
@@ -131,7 +131,7 @@ sub dispatch {
     $m->match($self, $c);
 
     # Endpoint found
-    if (my $endpoint = $m->endpoint) {
+    if ($cache && (my $endpoint = $m->endpoint)) {
 
       # Cache routes without conditions
       $cache->set(
@@ -145,13 +145,13 @@ sub dispatch {
   }
 
   # No match
-  return 1 unless $m && @{$m->stack};
+  return unless $m && @{$m->stack};
 
   # Walk the stack
-  return 1 if $self->_walk_stack($c);
+  return if $self->_walk_stack($c);
 
   # Render
-  return $self->auto_render($c);
+  $self->auto_render($c);
 }
 
 sub get { shift->_generate_route('get', @_) }
@@ -160,19 +160,19 @@ sub has_conditions {
   my $self = shift;
   return 1 if @{$self->conditions};
   if (my $parent = $self->parent) { return $parent->has_conditions }
-  return;
+  undef;
 }
 
 sub has_custom_name {
   return 1 if shift->{_custom};
-  return;
+  undef;
 }
 
 sub has_websocket {
   my $self = shift;
   return 1 if $self->is_websocket;
   if (my $parent = $self->parent) { return $parent->is_websocket }
-  return;
+  undef;
 }
 
 sub hide { push @{shift->hidden}, @_ }
@@ -182,12 +182,12 @@ sub is_endpoint {
   return   if $self->inline;
   return 1 if $self->block;
   return   if @{$self->children};
-  return 1;
+  1;
 }
 
 sub is_websocket {
   return 1 if shift->{_websocket};
-  return;
+  undef;
 }
 
 sub name {
@@ -204,7 +204,7 @@ sub name {
   elsif (@_) { return $self }
 
   # Name
-  return $self->{_name};
+  $self->{_name};
 }
 
 sub over {
@@ -212,7 +212,7 @@ sub over {
   return $self unless @_;
   my $conditions = ref $_[0] eq 'ARRAY' ? $_[0] : [@_];
   push @{$self->conditions}, @$conditions;
-  return $self;
+  $self;
 }
 
 sub parse {
@@ -228,7 +228,7 @@ sub parse {
   $self->{_name}   = $name;
   $self->{_custom} = 0;
 
-  return $self;
+  $self;
 }
 
 sub post { shift->_generate_route('post', @_) }
@@ -253,16 +253,14 @@ sub render {
   # Parent
   $path = $self->parent->render($path, $values) if $self->parent;
 
-  return $path;
+  $path;
 }
 
-# "Morbo forget how you spell that letter that looks like a man wearing a hat.
-#  Hello, tiny man. I will destroy you!"
 sub route {
   my $self  = shift;
   my $route = $self->new(@_);
   $self->add_child($route);
-  return $route;
+  $route;
 }
 
 sub to {
@@ -316,21 +314,19 @@ sub to {
     }
   }
 
-  # Pattern
-  my $pattern = $self->pattern;
-
   # Defaults
-  my $old = $pattern->defaults;
+  my $pattern = $self->pattern;
+  my $old     = $pattern->defaults;
   $pattern->defaults({%$old, %$defaults}) if $defaults;
 
-  return $self;
+  $self;
 }
 
 sub to_string {
   my $self = shift;
   my $pattern = $self->parent ? $self->parent->to_string : '';
   $pattern .= $self->pattern->pattern if $self->pattern->pattern;
-  return $pattern;
+  $pattern;
 }
 
 sub under { shift->_generate_route('under', @_) }
@@ -346,7 +342,7 @@ sub via {
   }
 
   # Get
-  return $self->{_via};
+  $self->{_via};
 }
 
 sub waypoint { shift->route(@_)->block(1) }
@@ -355,7 +351,7 @@ sub websocket {
   my $self  = shift;
   my $route = $self->any(@_);
   $route->{_websocket} = 1;
-  return $route;
+  $route;
 }
 
 sub _dispatch_callback {
@@ -374,7 +370,7 @@ sub _dispatch_callback {
   }
 
   return 1 if !$staging || $continue;
-  return;
+  undef;
 }
 
 sub _dispatch_controller {
@@ -384,10 +380,9 @@ sub _dispatch_controller {
   return 1
     unless my $app = $field->{app} || $self->_generate_class($field, $c);
   my $method = $self->_generate_method($field, $c);
-
   my $dispatch = ref $app || $app;
   $dispatch .= "->$method" if $method;
-  $c->app->log->debug("Dispatching $dispatch.");
+  $c->app->log->debug(qq/Dispatching "$dispatch"./);
 
   # Load class
   if (!ref $app && !$self->{_loaded}->{$app}) {
@@ -424,7 +419,12 @@ sub _dispatch_controller {
       }
 
       # Render
-      elsif (!$staging) { $self->auto_render($app) }
+      else {
+        $c->app->log->debug(
+          qq/Action "$dispatch" not found, assuming template without action./
+        );
+        $self->auto_render($app) unless $staging;
+      }
 
       # Merge stash
       my $new = $app->stash;
@@ -458,7 +458,7 @@ sub _dispatch_controller {
   }
 
   return 1 if !$staging || $continue;
-  return;
+  undef;
 }
 
 sub _generate_class {
@@ -482,7 +482,7 @@ sub _generate_class {
   # Invalid
   return unless $class =~ /^[a-zA-Z0-9_:]+$/;
 
-  return $class;
+  $class;
 }
 
 sub _generate_method {
@@ -494,9 +494,8 @@ sub _generate_method {
     $self->{_hidden}->{$_}++ for @{$self->hidden};
   }
 
-  return unless my $method = $field->{method} || $field->{action};
-
   # Hidden
+  return unless my $method = $field->{method} || $field->{action};
   if ($self->{_hidden}->{$method} || index($method, '_') == 0) {
     $c->app->log->debug(qq/Action "$method" is not allowed./);
     return;
@@ -508,16 +507,15 @@ sub _generate_method {
     return;
   }
 
-  return $method;
+  $method;
 }
 
 sub _generate_route {
   my ($self, $methods, @args) = @_;
 
+  # Route information
   my ($cb, $constraints, $defaults, $name, $pattern);
   my $conditions = [];
-
-  # Route information
   while (defined(my $arg = shift @args)) {
 
     # First scalar is the pattern
@@ -543,9 +541,7 @@ sub _generate_route {
 
   # Defaults
   $constraints ||= [];
-
-  # Defaults
-  $defaults ||= {};
+  $defaults    ||= {};
   $defaults->{cb} = $cb if $cb;
 
   # Create bridge
@@ -558,7 +554,7 @@ sub _generate_route {
     $self->route($pattern, {@$constraints})->over($conditions)->via($methods)
     ->to($defaults)->name($name);
 
-  return $route;
+  $route;
 }
 
 sub _walk_stack {
@@ -568,12 +564,11 @@ sub _walk_stack {
   local $SIG{__DIE__} =
     sub { ref $_[0] ? CORE::die($_[0]) : Mojo::Exception->throw(@_) };
 
-  my $stack = $c->match->stack;
-  my $stash = $c->stash;
-  $stash->{'mojo.captures'} ||= {};
-
   # Walk the stack
+  my $stack   = $c->match->stack;
+  my $stash   = $c->stash;
   my $staging = @$stack;
+  $stash->{'mojo.captures'} ||= {};
   for my $field (@$stack) {
     $staging--;
 
@@ -601,7 +596,7 @@ sub _walk_stack {
   }
 
   # Done
-  return;
+  undef;
 }
 
 1;
@@ -685,6 +680,10 @@ The children of this routes object, used for nesting routes.
 Routing cache, by default a L<Mojo::Cache> object.
 Note that this attribute is EXPERIMENTAL and might change without warning!
 
+  $r->cache(0);
+
+Route caching can also be disabled with a false value.
+
 =head2 C<conditions>
 
   my $conditions  = $r->conditions;
@@ -738,10 +737,9 @@ The parent of this route, used for nesting routes.
 =head2 C<partial>
 
   my $partial = $r->partial;
-  $r          = $r->partial('path');
+  $r          = $r->partial(1);
 
-Route has no specific end, remaining characters will be captured with the
-partial name.
+Route has no specific end, remaining characters will be captured in C<path>.
 
 =head2 C<pattern>
 
@@ -835,7 +833,7 @@ application embedding.
 
 =head2 C<dispatch>
 
-  my $e = $r->dispatch(Mojolicious::Controller->new);
+  my $success = $r->dispatch(Mojolicious::Controller->new);
 
 Match routes and dispatch.
 

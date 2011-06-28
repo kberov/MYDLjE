@@ -3,6 +3,7 @@ use Mojo::Base -base;
 
 use Carp 'croak';
 use Mojo::Loader;
+use Mojo::Util 'md5_sum';
 use Scalar::Util 'blessed';
 
 has app => sub {
@@ -30,13 +31,6 @@ has on_request => sub {
 has on_transaction => sub {
   sub {
     my $self = shift;
-
-    # Reload
-    if ($self->reload) {
-      if (my $e = Mojo::Loader->reload) { warn $e }
-      delete $self->{app};
-    }
-
     $self->app->on_transaction->($self->app);
   };
 };
@@ -46,20 +40,33 @@ has on_websocket => sub {
     $self->app->on_websocket->($self->app, @_)->server_handshake;
   };
 };
-has reload => sub { $ENV{MOJO_RELOAD} || 0 };
 
 sub load_app {
   my ($self, $file) = @_;
-  my $app;
+
+  # Cleanup environment
   local $ENV{MOJO_APP_LOADER} = 1;
-  unless ($app = do $file) {
-    die qq/Can't load application "$file": $@/ if $@;
-    die qq/Can't load application "$file": $!/ unless defined $app;
-    die qq/Can't load application' "$file".\n/ unless $app;
+  local $ENV{MOJO_APP};
+  local $ENV{MOJO_EXE};
+
+  # Try to load application from script into sandbox
+  my $class = 'Mojo::Server::SandBox::' . md5_sum($file . $$);
+  my $app;
+  die $@ unless eval <<EOF;
+package $class;
+{
+  unless (\$app = do \$file) {
+    die qq/Can't load application "\$file": \$@/ if \$@;
+    die qq/Can't load application "\$file": \$!/ unless defined \$app;
+    die qq/Can't load application' "\$file".\n/ unless \$app;
   }
+}
+1;
+EOF
   die qq/"$file" is not a valid application.\n/
     unless blessed $app && $app->isa('Mojo');
   $self->app($app);
+  $app;
 }
 
 # "Are you saying you're never going to eat any animal again? What about
@@ -123,7 +130,7 @@ L<Mojo::HelloWorld>.
     my ($self, $tx) = @_;
   });
 
-Request callback.
+Callback to be invoked for requests that need a response.
 
 =head2 C<on_transaction>
 
@@ -133,7 +140,7 @@ Request callback.
     return Mojo::Transaction::HTTP->new;
   });
 
-Transaction builder callback.
+Callback to be invoked when a new transaction is needed.
 
 =head2 C<on_websocket>
 
@@ -142,14 +149,7 @@ Transaction builder callback.
     my ($self, $tx) = @_;
   });
 
-WebSocket handshake callback.
-
-=head2 C<reload>
-
-  my $reload = $server->reload;
-  $server    = $server->reload(1);
-
-Activate automatic reloading.
+Callback to be invoked for WebSocket handshakes.
 
 =head1 METHODS
 
@@ -158,12 +158,12 @@ following new ones.
 
 =head2 C<load_app>
 
-  $server->load_app('./myapp.pl');
+  my $app = $server->load_app('./myapp.pl');
 
 Load application from script.
 Note that this method is EXPERIMENTAL and might change without warning!
 
-  print Mojo::Server->new->load_app('./myapp.pl')->app->home;
+  print Mojo::Server->new->load_app('./myapp.pl')->home;
 
 =head2 C<run>
 

@@ -66,6 +66,7 @@ my @WEBSOCKET_HEADERS = qw/
   Sec-WebSocket-Key
   Sec-WebSocket-Origin
   Sec-WebSocket-Protocol
+  Sec-WebSocket-Version
   /;
 my @MISC_HEADERS = qw/DNT/;
 my @HEADERS      = (
@@ -98,7 +99,7 @@ sub add {
   push @{$self->{_headers}->{$name}}, (ref $_ || '') eq 'ARRAY' ? $_ : [$_]
     for @_;
 
-  return $self;
+  $self;
 }
 
 sub connection          { scalar shift->header(Connection            => @_) }
@@ -131,7 +132,7 @@ sub from_hash {
     $self->add($header => ref $value eq 'ARRAY' ? @$value : $value);
   }
 
-  return $self;
+  $self;
 }
 
 # "Will you be my mommy? You smell like dead bunnies..."
@@ -151,7 +152,7 @@ sub header {
   return join ', ', map { join ', ', @$_ } @$headers unless wantarray;
 
   # Array
-  return @$headers;
+  @$headers;
 }
 
 sub host { scalar shift->header(Host => @_) }
@@ -176,21 +177,18 @@ sub names {
     push @headers, $NORMALCASE_HEADERS{$name} || $name;
   }
 
-  return \@headers;
+  \@headers;
 }
 
 sub parse {
   my ($self, $chunk) = @_;
 
+  # Parse headers with size limit
+  $self->{_state} = 'headers';
   $self->{_buffer} = '' unless defined $self->{_buffer};
   $self->{_buffer} .= $chunk if defined $chunk;
-
-  # Maximum line size
-  my $max = $self->max_line_size;
-
-  # Parse headers
   my $headers = $self->{_cache} || [];
-  $self->{_state} = 'headers';
+  my $max = $self->max_line_size;
   while (defined(my $line = get_line $self->{_buffer})) {
 
     # Check line size
@@ -232,7 +230,7 @@ sub parse {
     $self->{_limit} = 1;
   }
 
-  return $self;
+  $self;
 }
 
 sub proxy_authenticate  { scalar shift->header('Proxy-Authenticate'  => @_) }
@@ -243,7 +241,25 @@ sub referrer            { scalar shift->header(Referer               => @_) }
 sub remove {
   my ($self, $name) = @_;
   delete $self->{_headers}->{lc $name};
-  return $self;
+  $self;
+}
+
+sub sec_websocket_accept {
+  scalar shift->header('Sec-WebSocket-Accept' => @_);
+}
+
+sub sec_websocket_key { scalar shift->header('Sec-WebSocket-Key' => @_) }
+
+sub sec_websocket_origin {
+  scalar shift->header('Sec-WebSocket-Origin' => @_);
+}
+
+sub sec_websocket_protocol {
+  scalar shift->header('Sec-WebSocket-Protocol' => @_);
+}
+
+sub sec_websocket_version {
+  scalar shift->header('Sec-WebSocket-Version' => @_);
 }
 
 sub server      { scalar shift->header(Server        => @_) }
@@ -272,7 +288,7 @@ sub to_hash {
     }
   }
 
-  return $hash;
+  $hash;
 }
 
 sub to_string {
@@ -291,28 +307,14 @@ sub to_string {
 
   # Format headers
   my $headers = join "\x0d\x0a", @headers;
-  return length $headers ? $headers : undef;
+  length $headers ? $headers : undef;
 }
 
 sub trailer           { scalar shift->header(Trailer             => @_) }
 sub transfer_encoding { scalar shift->header('Transfer-Encoding' => @_) }
 sub upgrade           { scalar shift->header(Upgrade             => @_) }
 sub user_agent        { scalar shift->header('User-Agent'        => @_) }
-
-sub sec_websocket_accept {
-  scalar shift->header('Sec-WebSocket-Accept' => @_);
-}
-
-sub sec_websocket_key { scalar shift->header('Sec-WebSocket-Key' => @_) }
-
-sub sec_websocket_origin {
-  scalar shift->header('Sec-WebSocket-Origin' => @_);
-}
-
-sub sec_websocket_protocol {
-  scalar shift->header('Sec-WebSocket-Protocol' => @_);
-}
-sub www_authenticate { scalar shift->header('WWW-Authenticate' => @_) }
+sub www_authenticate  { scalar shift->header('WWW-Authenticate'  => @_) }
 
 1;
 __END__
@@ -595,6 +597,13 @@ Shortcut for the C<Sec-WebSocket-Origin> header.
   $headers     = $headers->sec_websocket_protocol('sample');
 
 Shortcut for the C<Sec-WebSocket-Protocol> header.
+
+=head2 C<sec_websocket_version>
+
+  my $version = $headers->sec_websocket_version;
+  $headers    = $headers->sec_websocket_version(8);
+
+Shortcut for the C<Sec-WebSocket-Version> header.
 
 =head2 C<server>
 

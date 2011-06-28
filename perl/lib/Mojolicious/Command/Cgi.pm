@@ -14,7 +14,7 @@ These options are available:
   --nph   Enable non-parsed-header mode.
 EOF
 
-# "Hi, Super Nintendo Chalmers!"
+# "Fire all weapons and open a hailing frequency for my victory yodel."
 sub run {
   my $self = shift;
 
@@ -23,7 +23,7 @@ sub run {
   GetOptions(nph => sub { $cgi->nph(1) });
   $cgi->run;
 
-  return $self;
+  $self;
 }
 
 1;

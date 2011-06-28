@@ -136,7 +136,7 @@ optimized for rapid prototyping.
 =head2 Differences
 
 You likely know the feeling, you've got a really cool idea and want to try it
-as quickly as possible, thats exactly why L<Mojolicious::Lite> applications
+as quickly as possible, that's exactly why L<Mojolicious::Lite> applications
 don't need more than a single file.
 
   myapp.pl   # Templates and even static files can be inlined
@@ -166,10 +166,7 @@ organized CPAN distribution to maximize maintainability.
 Both application skeletons can be automatically generated.
 
   % mojo generate lite_app
-  ...
-
   % mojo generate app
-  ...
 
 =head2 Foundation
 
@@ -192,10 +189,10 @@ This will be the foundation for our login manager example application.
 
   app->start;
 
-The built in web server makes working on your application a lot of fun thanks
-to automatic reloading.
+The built-in development web server makes working on your application a lot
+of fun thanks to automatic reloading.
 
-  % ./myapp.pl daemon --reload
+  % morbo myapp.pl
   Server available at http://127.0.0.1:3000.
 
 Just save your changes and they will be automatically in effect the next time
@@ -321,9 +318,7 @@ From now on you can always check your progress by running these unit tests
 against your application.
 
   % ./myapp.pl test
-  ...
   % ./myapp.pl test t/login.t
-  ...
 
 To make the tests less noisy and limit log output to just C<error> messages
 you can also add a line like this.
@@ -459,7 +454,7 @@ like this.
   Welcome <%= session 'user' %>!<br>
   <%= link_to Logout => 'logout' %>
 
-More information about built in template helpers can be found in
+More information about built-in template helpers can be found in
 L<Mojolicious::Plugin::DefaultHelpers> and
 L<Mojolicious::Plugin::TagHelpers>.
 
@@ -476,7 +471,6 @@ automatically turned into separate files in the C<templates> and C<public>
 directories.
 
   % ./myapp.pl inflate
-  ...
 
 Those directories always get priority, so inflating can also be a great way
 to allow your users to customize their applications.

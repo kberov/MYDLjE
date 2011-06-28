@@ -15,11 +15,9 @@ has [qw/cleanup path/];
 has handle => sub {
   my $self = shift;
 
-  # Handle
-  my $handle = IO::File->new;
-
   # Already got a file without handle
-  my $file = $self->path;
+  my $handle = IO::File->new;
+  my $file   = $self->path;
   if ($file && -f $file) {
     $handle->open("< $file")
       or croak qq/Can't open file "$file": $!/;
@@ -43,7 +41,7 @@ has handle => sub {
   # Open for read/write access
   $handle->fdopen(fileno($fh), "+>") or croak qq/Can't open file "$name": $!/;
 
-  return $handle;
+  $handle;
 };
 has tmpdir => sub { $ENV{MOJO_TMPDIR} || File::Spec->tmpdir };
 
@@ -53,8 +51,6 @@ has tmpdir => sub { $ENV{MOJO_TMPDIR} || File::Spec->tmpdir };
 #  claws!"
 sub DESTROY {
   my $self = shift;
-
-  # Cleanup
   my $path = $self->path;
   if ($self->cleanup && -f $path) {
     close $self->handle;
@@ -73,7 +69,7 @@ sub add_chunk {
   utf8::encode $chunk if utf8::is_utf8 $chunk;
   $self->handle->syswrite($chunk, length $chunk);
 
-  return $self;
+  $self;
 }
 
 sub contains {
@@ -107,7 +103,7 @@ sub contains {
     substr $window, 0, $read, '';
   }
 
-  return -1;
+  -1;
 }
 
 sub get_chunk {
@@ -131,7 +127,7 @@ sub get_chunk {
   }
   else { $self->handle->sysread($buffer, $size) }
 
-  return $buffer;
+  $buffer;
 }
 
 sub move_to {
@@ -150,7 +146,7 @@ sub move_to {
   # Don't clean up a moved file
   $self->cleanup(0);
 
-  return $self;
+  $self;
 }
 
 sub size {
@@ -160,7 +156,7 @@ sub size {
   my $file = $self->path;
   return -s $file if $file;
 
-  return 0;
+  0;
 }
 
 sub slurp {
@@ -173,7 +169,7 @@ sub slurp {
   my $content = '';
   while ($self->handle->sysread(my $buffer, 131072)) { $content .= $buffer }
 
-  return $content;
+  $content;
 }
 
 1;

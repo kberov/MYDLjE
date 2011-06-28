@@ -37,7 +37,7 @@ sub expires {
   $self->{expires} = Mojo::Date->new($self->{expires})
     unless ref $self->{expires};
 
-  return $self->{expires};
+  $self->{expires};
 }
 
 # "Remember the time he ate my goldfish?
@@ -45,8 +45,9 @@ sub expires {
 #  Then why did I have the bowl Bart? Why did I have the bowl?"
 sub parse {
   my ($self, $string) = @_;
-  my @cookies;
 
+  # Walk tree
+  my @cookies;
   for my $knot ($self->_tokenize($string)) {
     for my $i (0 .. $#{$knot}) {
       my ($name, $value) = @{$knot->[$i]};
@@ -74,7 +75,7 @@ sub parse {
     }
   }
 
-  return \@cookies;
+  \@cookies;
 }
 
 sub to_string {
@@ -115,7 +116,7 @@ sub to_string {
   # Comment
   if (my $comment = $self->comment) { $cookie .= "; Comment=$comment" }
 
-  return $cookie;
+  $cookie;
 }
 
 1;

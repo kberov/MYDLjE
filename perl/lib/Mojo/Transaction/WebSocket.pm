@@ -12,12 +12,14 @@ use constant DEBUG => $ENV{MOJO_WEBSOCKET_DEBUG} || 0;
 use constant GUID => '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
 
 # Opcodes
-use constant CONTINUATION => 0;
-use constant TEXT         => 1;
-use constant BINARY       => 2;
-use constant CLOSE        => 8;
-use constant PING         => 9;
-use constant PONG         => 10;
+use constant {
+  CONTINUATION => 0,
+  TEXT         => 1,
+  BINARY       => 2,
+  CLOSE        => 8,
+  PING         => 9,
+  PONG         => 10
+};
 
 # Core module since Perl 5.9.3
 use constant SHA1 => eval 'use Digest::SHA (); 1';
@@ -32,7 +34,7 @@ sub client_challenge {
   # WebSocket challenge
   my $solution = $self->_challenge($self->req->headers->sec_websocket_key);
   return unless $solution eq $self->res->headers->sec_websocket_accept;
-  return 1;
+  1;
 }
 
 sub client_close { shift->server_close(@_) }
@@ -46,13 +48,14 @@ sub client_handshake {
   $headers->connection('Upgrade') unless $headers->connection;
   $headers->sec_websocket_protocol('mojo')
     unless $headers->sec_websocket_protocol;
+  $headers->sec_websocket_version(8) unless $headers->sec_websocket_version;
 
   # Generate challenge
   my $key = pack 'N*', int(rand 9999999);
   b64_encode $key, '';
   $headers->sec_websocket_key($key) unless $headers->sec_websocket_key;
 
-  return $self;
+  $self;
 }
 
 sub client_read  { shift->server_read(@_) }
@@ -68,7 +71,7 @@ sub finish {
   # Finish after writing
   $self->{_finished} = 1;
 
-  return $self;
+  $self;
 }
 
 sub is_websocket {1}
@@ -83,41 +86,34 @@ sub res            { shift->handshake->res(@_) }
 sub resume {
   my $self = shift;
   $self->handshake->resume;
-  return $self;
+  $self;
 }
 
 sub send_message {
   my ($self, $message, $cb) = @_;
-
-  # Drain callback
   $self->{_drain} = $cb if $cb;
-
-  # Encode
   $message = '' unless defined $message;
   encode 'UTF-8', $message;
-
   $self->_send_frame(TEXT, $message);
 }
 
 sub server_handshake {
   my $self = shift;
 
-  my $req         = $self->req;
-  my $res         = $self->res;
-  my $req_headers = $req->headers;
-  my $res_headers = $res->headers;
-
   # Handshake
+  my $res         = $self->res;
+  my $res_headers = $res->headers;
   $res->code(101);
   $res_headers->upgrade('websocket');
   $res_headers->connection('Upgrade');
+  my $req_headers = $self->req->headers;
   my $protocol = $req_headers->sec_websocket_protocol || '';
   $protocol =~ /^\s*([^\,]+)/;
   $res_headers->sec_websocket_protocol($1) if $1;
   $res_headers->sec_websocket_accept(
     $self->_challenge($req_headers->sec_websocket_key));
 
-  return $self;
+  $self;
 }
 
 # "Being eaten by crocodile is just like going to sleep...
@@ -134,8 +130,6 @@ sub server_read {
 
   # Full frames
   while (my $frame = $self->_parse_frame) {
-
-    # Op
     my $op = $frame->[1] || CONTINUATION;
 
     # Ping
@@ -171,7 +165,7 @@ sub server_read {
   # Resume
   $self->on_resume->($self);
 
-  return $self;
+  $self;
 }
 
 sub server_write {
@@ -190,12 +184,11 @@ sub server_write {
   # Empty buffer
   my $write = $self->{_write};
   $self->{_write} = '';
-  return $write;
+  $write;
 }
 
 sub _build_frame {
   my ($self, $op, $payload) = @_;
-
   warn "BUILDING FRAME\n" if DEBUG;
 
   # Head
@@ -246,7 +239,7 @@ sub _build_frame {
   # Payload
   $frame .= $payload;
 
-  return $frame;
+  $frame;
 }
 
 sub _challenge {
@@ -261,12 +254,11 @@ sub _challenge {
   # Accept
   b64_encode $challenge, '';
 
-  return $challenge;
+  $challenge;
 }
 
 sub _parse_frame {
   my $self = shift;
-
   warn "PARSING FRAME\n" if DEBUG;
 
   # Head
@@ -330,11 +322,10 @@ sub _parse_frame {
     warn "UNMASKING PAYLOAD\n" if DEBUG;
     $payload = _xor_mask($payload, substr($payload, 0, 4, ''));
   }
-
   warn "PAYLOAD: $payload\n" if DEBUG;
   $self->{_read} = $buffer;
 
-  return [$fin, $op, $payload];
+  [$fin, $op, $payload];
 }
 
 sub _send_frame {
@@ -362,7 +353,7 @@ sub _xor_mask {
   $output .= $_ ^ $mask while length($_ = substr($input, 0, 512, '')) == 512;
   $output .= $_ ^ substr($mask, 0, length, '');
 
-  return $output;
+  $output;
 }
 
 1;
@@ -392,7 +383,8 @@ L<Mojo::Transaction> and implements the following new ones.
   my $handshake = $ws->handshake;
   $ws           = $ws->handshake(Mojo::Transaction::HTTP->new);
 
-The original handshake transaction.
+The original handshake transaction, defaults to a L<Mojo::Transaction::HTTP>
+object.
 
 =head2 C<masked>
 
@@ -413,7 +405,7 @@ Maximum WebSocket message size in bytes, defaults to C<262144>.
   my $cb = $ws->on_message;
   $ws    = $ws->on_message(sub {...});
 
-The callback that receives decoded messages one by one.
+Callback to be invoked for each decoded message.
 
   $ws->on_message(sub {
     my ($self, $message) = @_;

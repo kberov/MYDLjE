@@ -20,6 +20,7 @@ sub body_size { croak 'Method "body_size" not implemented by subclass' }
 sub build_body {
   my $self = shift;
 
+  # Concatenate all chunks in memory
   my $body   = '';
   my $offset = 0;
   while (1) {
@@ -36,12 +37,13 @@ sub build_body {
     $body .= $chunk;
   }
 
-  return $body;
+  $body;
 }
 
 sub build_headers {
   my $self = shift;
 
+  # Concatenate all chunks in memory
   my $headers = '';
   my $offset  = 0;
   while (1) {
@@ -58,7 +60,7 @@ sub build_headers {
     $headers .= $chunk;
   }
 
-  return $headers;
+  $headers;
 }
 
 # "Aren't we forgetting the true meaning of Christmas?
@@ -66,11 +68,8 @@ sub build_headers {
 sub generate_body_chunk {
   my ($self, $offset) = @_;
 
-  # Delay
-  my $delay = delete $self->{_delay};
-
   # Callback
-  if (!$delay && !length $self->{_b2}) {
+  if (!delete $self->{_delay} && !length $self->{_b2}) {
     my $cb = delete $self->{_drain};
     $self->$cb($offset) if $cb;
   }
@@ -80,10 +79,10 @@ sub generate_body_chunk {
   $chunk = '' unless defined $chunk;
   $self->{_b2} = '';
 
-  # EOF
+  # EOF or delay
   return $self->{_eof} ? '' : undef unless length $chunk;
 
-  return $chunk;
+  $chunk;
 }
 
 sub get_body_chunk {
@@ -95,47 +94,45 @@ sub get_header_chunk {
 
   # Normal headers
   my $copy = $self->{_b1} ||= $self->_build_headers;
-  return substr($copy, $offset, CHUNK_SIZE);
+  substr($copy, $offset, CHUNK_SIZE);
 }
 
 sub has_leftovers {
   my $self = shift;
-
-  # Leftovers
   return 1 if length $self->{_b2} || length $self->{_b1};
-
-  # Empty buffer
-  return;
+  undef;
 }
 
 sub header_size { length shift->build_headers }
 
 sub is_chunked {
   my $self = shift;
-
-  # Chunked
   my $encoding = $self->headers->transfer_encoding || '';
-  return $encoding =~ /chunked/i ? 1 : 0;
+  $encoding =~ /chunked/i ? 1 : 0;
 }
 
 sub is_done {
   return 1 if (shift->{_state} || '') eq 'done';
-  return;
+  undef;
+}
+
+sub is_dynamic {
+  my $self = shift;
+  return 1 if $self->on_read && !defined $self->headers->content_length;
+  undef;
 }
 
 sub is_multipart {
   my $self = shift;
-
-  # Multipart
   my $type = $self->headers->content_type || '';
   $type =~ /multipart.*boundary=\"*([a-zA-Z0-9\'\(\)\,\.\:\?\-\_\+\/]+)/i
     and return $1;
-  return;
+  undef;
 }
 
 sub is_parsing_body {
   return 1 if (shift->{_state} || '') eq 'body';
-  return;
+  undef;
 }
 
 sub leftovers {
@@ -146,7 +143,7 @@ sub leftovers {
   return $self->{_b1} if length $self->{_b1};
 
   # Normal leftovers
-  return $self->{_b2};
+  $self->{_b2};
 }
 
 sub parse {
@@ -196,7 +193,7 @@ sub parse {
     # Normal content
     else {
 
-      # Need
+      # Bytes needed
       my $len = $self->headers->content_length || 0;
       $self->{_size} ||= 0;
       my $need = $len - $self->{_size};
@@ -213,7 +210,7 @@ sub parse {
     }
   }
 
-  return $self;
+  $self;
 }
 
 sub parse_body {
@@ -226,7 +223,7 @@ sub parse_body_once {
   my $self = shift;
   $self->parse_body(@_);
   $self->{_state} = 'done';
-  return $self;
+  $self;
 }
 
 # "Quick Smithers. Bring the mind eraser device!
@@ -258,7 +255,7 @@ sub parse_until_body {
   # Parse headers
   $self->_parse_headers if ($self->{_state} || '') eq 'headers';
 
-  return $self;
+  $self;
 }
 
 sub progress {
@@ -283,6 +280,9 @@ sub write {
 
   # Drain callback
   $self->{_drain} = $cb if $cb;
+
+  # Finish
+  $self->{_eof} = 1 if defined $chunk && $chunk eq '';
 }
 
 # "Here's to alcohol, the cause of—and solution to—all life's problems."
@@ -317,19 +317,14 @@ sub _build_chunk {
     $formatted .= sprintf('%x', length $chunk) . "\x0d\x0a$chunk";
   }
 
-  return $formatted;
+  $formatted;
 }
 
 sub _build_headers {
-  my $self = shift;
-
-  # Build
+  my $self    = shift;
   my $headers = $self->headers->to_string;
-
-  # Empty
   return "\x0d\x0a" unless $headers;
-
-  return "$headers\x0d\x0a\x0d\x0a";
+  "$headers\x0d\x0a\x0d\x0a";
 }
 
 sub _parse_chunked {
@@ -448,14 +443,14 @@ Try to detect broken web servers and turn on relaxed parsing automatically.
   my $headers = $content->headers;
   $content    = $content->headers(Mojo::Headers->new);
 
-The headers.
+Content headers, defaults to a L<Mojo::Headers> object.
 
 =head2 C<on_read>
 
   my $cb   = $content->on_read;
   $content = $content->on_read(sub {...});
 
-Content parser callback.
+Callback to be invoked when new content arrives.
 
   $content = $content->on_read(sub {
     my ($self, $chunk) = @_;
@@ -532,7 +527,7 @@ Size of headers in bytes.
 
   my $chunked = $content->is_chunked;
 
-Chunked transfer encoding.
+Check if content is chunked.
 
 =head2 C<is_done>
 
@@ -540,11 +535,18 @@ Chunked transfer encoding.
 
 Check if parser is done.
 
+=head2 C<is_dynamic>
+
+  my $dynamic = $content->is_dynamic;
+
+Check if content will be dynamic.
+Note that this method is EXPERIMENTAL and might change without warning!
+
 =head2 C<is_multipart>
 
   my $multipart = $content->is_multipart;
 
-Multipart content.
+Check if content is multipart.
 
 =head2 C<is_parsing_body>
 
@@ -556,25 +558,25 @@ Check if body parsing started yet.
 
   my $bytes = $content->leftovers;
 
-Leftovers for next HTTP message.
+Remove leftover data from content parser.
 
 =head2 C<parse>
 
   $content = $content->parse("Content-Length: 12\r\n\r\nHello World!");
 
-Parse content.
+Parse content chunk.
 
 =head2 C<parse_body>
 
   $content = $content->parse_body("Hi!");
 
-Parse body.
+Parse body chunk.
 
 =head2 C<parse_body_once>
 
   $content = $content->parse_body_once("Hi!");
 
-Parse body once.
+Parse body chunk once.
 
 =head2 C<parse_until_body>
 
@@ -582,7 +584,7 @@ Parse body once.
     "Content-Length: 12\r\n\r\nHello World!"
   );
 
-Parse and stop after headers.
+Parse chunk and stop after headers.
 
 =head2 C<progress>
 

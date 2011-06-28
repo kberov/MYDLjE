@@ -33,7 +33,7 @@ to some kind of response generator.
 
 While it is very well possible to make all these connections static, it is
 also rather inefficient.
-Thats why regular expressions are commonly used to make the dispatch process
+That's why regular expressions are commonly used to make the dispatch process
 more dynamic.
 
   qr|/user/show/(\d+)| -> $self->render(text => $users{$1});
@@ -108,9 +108,21 @@ surrounding text.
   /sebastian23hello  -> /(:name)hello -> {name => 'sebastian23'}
   /sebastian 23hello -> /(:name)hello -> {name => 'sebastian 23'}
 
+=head2 Wildcard Placeholders
+
+Wildcard placeholders are just like generic placeholders, but match
+absolutely everything.
+
+  /hello              -> /*name/hello -> undef
+  /sebastian/23/hello -> /*name/hello -> {name => 'sebastian/23'}
+  /sebastian.23/hello -> /*name/hello -> {name => 'sebastian.23'}
+  /sebastian/hello    -> /*name/hello -> {name => 'sebastian'}
+  /sebastian23/hello  -> /*name/hello -> {name => 'sebastian23'}
+  /sebastian 23/hello -> /*name/hello -> {name => 'sebastian 23'}
+
 =head2 Relaxed Placeholders
 
-Relaxed placeholders are very similar to generic placeholders but always
+Relaxed placeholders are similar to the two placeholders above, but always
 require brackets and match all characters except C</>.
 
   /hello              -> /(.name)/hello -> undef
@@ -119,18 +131,6 @@ require brackets and match all characters except C</>.
   /sebastian/hello    -> /(.name)/hello -> {name => 'sebastian'}
   /sebastian23/hello  -> /(.name)/hello -> {name => 'sebastian23'}
   /sebastian 23/hello -> /(.name)/hello -> {name => 'sebastian 23'}
-
-=head2 Wildcard Placeholders
-
-Wildcard placeholders are just like relaxed placeholders but match absolutely
-everything.
-
-  /hello              -> /(*name)/hello -> undef
-  /sebastian/23/hello -> /(*name)/hello -> {name => 'sebastian/23'}
-  /sebastian.23/hello -> /(*name)/hello -> {name => 'sebastian.23'}
-  /sebastian/hello    -> /(*name)/hello -> {name => 'sebastian'}
-  /sebastian23/hello  -> /(*name)/hello -> {name => 'sebastian23'}
-  /sebastian 23/hello -> /(*name)/hello -> {name => 'sebastian 23'}
 
 =head1 BASICS
 
@@ -626,7 +626,7 @@ language in normal L<Mojolicious> controllers.
   package MyApp::Bar;
   use Mojolicious::Lite;
 
-  # GET /hello
+  # /hello
   get '/hello' => sub {
     my $self = shift;
     my $name = $self->param('name');
@@ -657,11 +657,18 @@ containing a C<handler> method accepting L<Mojolicious::Controller> objects.
 
   1;
 
-Because the remaining path always gets stored in the C<path> stash value, you
-could also just use it directly instead of C<detour>.
+You can also just use L<Mojolicious::Plugin::Mount> to mount whole
+self-contained applications under a prefix.
 
-  # /foo/*
-  $r->route('/foo/(*path)')->to('bar#', name => 'Mojo');
+  use Mojolicious::Lite;
+
+  # Whole application mounted under "/prefix"
+  plugin mount => {'/prefix' => '/home/sri/myapp.pl'};
+
+  # Normal route
+  get '/' => sub { shift->render_text('Hello World!') };
+
+  app->start;
 
 =head2 Application Plugins
 
@@ -746,9 +753,9 @@ The C<routes> command can be used from the command line to list all available
 routes together with name and underlying regular expressions.
 
   % script/myapp routes
-  /foo/:name          GET   fooname        (?-xism:^/foo/([^\/\.]+))
-  /bar/(.test)        *     bartest        (?-xism:^/bar/([^\/]+))
-  /baz/(*everything)  POST  bazeverything  (?-xism:^/baz/(.+))
+  /foo/:name        GET   fooname        (?-xism:^/foo/([^\/\.]+))
+  /baz/*everything  POST  bazeverything  (?-xism:^/baz/(.+))
+  /bar/(.test)      *     bartest        (?-xism:^/bar/([^\/]+))
 
 =head1 MORE
 

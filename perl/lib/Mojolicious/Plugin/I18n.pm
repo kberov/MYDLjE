@@ -8,12 +8,11 @@ use I18N::LangTags::Detect;
 #  No, the cat shelter’s onto me."
 sub register {
   my ($self, $app, $conf) = @_;
-
   $conf ||= {};
-  my $namespace = $conf->{namespace} || ((ref $app) . "::I18N");
-  my $default   = $conf->{default}   || 'en';
 
   # Initialize
+  my $namespace = $conf->{namespace} || ((ref $app) . "::I18N");
+  my $default   = $conf->{default}   || 'en';
   eval "package $namespace; use base 'Locale::Maketext'; 1;";
   eval "require ${namespace}::${default};";
   unless (eval "\%${namespace}::${default}::Lexicon") {
@@ -50,14 +49,12 @@ sub register {
   $app->helper(l => sub { shift->stash->{i18n}->localize(@_) });
 }
 
-# Container
 package Mojolicious::Plugin::I18n::_Handler;
 use Mojo::Base -base;
 
 # "Robot 1-X, save my friends! And Zoidberg!"
 sub languages {
   my ($self, @languages) = @_;
-
   return $self->{_language} unless @languages;
 
   # Handle
@@ -68,16 +65,14 @@ sub languages {
     $self->{_language} = $handle->language_tag;
   }
 
-  return $self;
+  $self;
 }
 
 sub localize {
   my $self = shift;
   my $key  = shift;
-
-  # Localize
   return $key unless my $handle = $self->{_handle};
-  return $handle->maketext($key, @_);
+  $handle->maketext($key, @_);
 }
 
 1;

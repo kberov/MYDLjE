@@ -14,9 +14,7 @@ use POSIX qw/setsid WNOHANG/;
 use Scalar::Util 'weaken';
 
 # Preload
-use Mojo::DOM;
 use Mojo::UserAgent;
-use Mojolicious::Controller;
 
 use constant DEBUG => $ENV{HYPNOTOAD_DEBUG} || 0;
 
@@ -58,24 +56,18 @@ sub run {
   # Config
   $ENV{HYPNOTOAD_CONFIG} ||= abs_path $config;
 
-  # Production
+  # This is a production server
   $ENV{MOJO_MODE} ||= 'production';
 
   # Executable
   $ENV{HYPNOTOAD_EXE} ||= $0;
   $0 = $ENV{HYPNOTOAD_APP};
 
-  # Cleanup
-  delete $ENV{MOJO_COMMANDS_DONE};
-  delete $ENV{MOJO_RELOAD};
-
   # Clean start
   exec $ENV{HYPNOTOAD_EXE} unless $ENV{HYPNOTOAD_REV}++;
 
-  # Daemon
-  my $daemon = $self->{_daemon} = Mojo::Server::Daemon->new;
-
   # Preload application
+  my $daemon = $self->{_daemon} = Mojo::Server::Daemon->new;
   warn "APPLICATION $ENV{HYPNOTOAD_APP}\n" if DEBUG;
   $daemon->load_app($ENV{HYPNOTOAD_APP});
 
@@ -108,10 +100,8 @@ sub run {
     open STDERR, '>&STDOUT';
   }
 
-  # Config
-  my $c = $self->{_config};
-
   # Manager signals
+  my $c = $self->{_config};
   $SIG{INT} = $SIG{TERM} = sub { $self->{_done} = 1 };
   $SIG{CHLD} = sub {
     while ((my $pid = waitpid -1, WNOHANG) > 0) { $self->_reap($pid) }
@@ -134,11 +124,9 @@ sub run {
 sub _config {
   my $self = shift;
 
-  # File
+  # Load config file
   my $file = $ENV{HYPNOTOAD_CONFIG};
   warn "CONFIG $file\n" if DEBUG;
-
-  # Config
   my $c = {};
   if (-r $file) {
     unless ($c = do $file) {
@@ -150,84 +138,46 @@ sub _config {
   }
   $self->{_config} = $c;
 
-  # Graceful timeout
-  $c->{graceful_timeout} ||= 30;
-
-  # Heartbeat interval
+  # Hypnotoad settings
+  $c->{graceful_timeout}   ||= 30;
   $c->{heartbeat_interval} ||= 5;
-
-  # Heartbeat timeout
-  $c->{heartbeat_timeout} ||= 2;
-
-  # Lock file
+  $c->{heartbeat_timeout}  ||= 2;
   $c->{lock_file}
     ||= File::Spec->catfile($ENV{MOJO_TMPDIR} || File::Spec->tmpdir,
     "hypnotoad.$$.lock");
-
-  # PID file
   $c->{pid_file}
     ||= File::Spec->catfile(dirname($ENV{HYPNOTOAD_APP}), 'hypnotoad.pid');
-
-  # Reverse proxy support
-  $ENV{MOJO_REVERSE_PROXY} = 1 if $c->{proxy};
-
-  # Upgrade timeout
   $c->{upgrade_timeout} ||= 30;
+  $c->{workers}         ||= 4;
 
-  # Workers
-  $c->{workers} ||= 4;
-
-  # Daemon
+  # Daemon settings
+  $ENV{MOJO_REVERSE_PROXY} = 1 if $c->{proxy};
   my $daemon = $self->{_daemon};
-
-  # Backlog
   $daemon->backlog($c->{backlog}) if defined $c->{backlog};
-
-  # Clients
   $daemon->max_clients($c->{clients} || 1000);
-
-  # Group
   $daemon->group($c->{group}) if $c->{group};
-
-  # Keep alive requests
-  $daemon->max_requests($c->{keep_alive_requests} || 25);
-
-  # Keep alive timeout
+  $daemon->max_requests($c->{keep_alive_requests}      || 25);
   $daemon->keep_alive_timeout($c->{keep_alive_timeout} || 5);
-
-  # Listen
+  $daemon->user($c->{user}) if $c->{user};
+  $daemon->websocket_timeout($c->{websocket_timeout} || 300);
+  $daemon->ioloop->max_accepts($c->{accepts} || 1000);
   my $listen = $c->{listen} || ['http://*:8080'];
   $listen = [$listen] unless ref $listen;
   $daemon->listen($listen);
-
-  # User
-  $daemon->user($c->{user}) if $c->{user};
-
-  # WebSocket timeout
-  $daemon->websocket_timeout($c->{websocket_timeout} || 300);
-
-  # Accept limit
-  $daemon->ioloop->max_accepts($c->{accepts} || 1000);
 }
 
 sub _heartbeat {
   my $self = shift;
 
-  # Poll
+  # Poll for heartbeats
   my $poll = $self->{_poll};
   $poll->poll(1);
-
-  # Readable
   return unless $poll->handles(POLLIN);
-
-  # Read
   return unless $self->{_reader}->sysread(my $chunk, 4194304);
 
-  # Parse
+  # Heartbeats
   while ($chunk =~ /(\d+)\n/g) {
     my $pid = $1;
-
-    # Heartbeat
     $self->{_workers}->{$pid}->{time} = time if $self->{_workers}->{$pid};
   }
 }
@@ -235,10 +185,8 @@ sub _heartbeat {
 sub _manage {
   my $self = shift;
 
-  # Config
-  my $c = $self->{_config};
-
   # Housekeeping
+  my $c = $self->{_config};
   if (!$self->{_done}) {
 
     # Spawn more workers
@@ -320,14 +268,12 @@ sub _manage {
 sub _pid {
   my $self = shift;
 
-  # PID file
+  # Check PID file
   my $file = $self->{_config}->{pid_file};
-
-  # Check
   return if -e $file;
   warn "PID $file\n" if DEBUG;
 
-  # Create
+  # Create one if it doesn't exist
   my $pid = IO::File->new($file, O_WRONLY | O_CREAT | O_EXCL, 0644)
     or croak qq/Can't create PID file "$file": $!/;
   print $pid $$;
@@ -353,6 +299,7 @@ sub _reap {
   }
 }
 
+# "I hope this has taught you kids a lesson: kids never learn."
 sub _spawn {
   my $self = shift;
 
@@ -364,22 +311,14 @@ sub _spawn {
 
   # Worker
   $ENV{HYPNOTOAD_WORKER} = 1;
-
-  # Daemon
   my $daemon = $self->{_daemon};
+  my $loop   = $daemon->ioloop;
+  my $c      = $self->{_config};
 
-  # Loop
-  my $loop = $daemon->ioloop;
-
-  # Config
-  my $c = $self->{_config};
-
-  # Lock file
+  # Prepare lock file
   my $file = $c->{lock_file};
   my $lock = IO::File->new("> $file")
     or croak qq/Can't open lock file "$file": $!/;
-
-  weaken $self;
 
   # Accept mutex
   $loop->on_lock(
@@ -387,7 +326,7 @@ sub _spawn {
 
       # Blocking
       my $l;
-      if (my $blocking = $_[1]) {
+      if ($_[1]) {
         eval {
           local $SIG{ALRM} = sub { die "alarm\n" };
           my $old = alarm 1;
@@ -403,12 +342,13 @@ sub _spawn {
       # Non blocking
       else { $l = flock $lock, LOCK_EX | LOCK_NB }
 
-      return $l;
+      $l;
     }
   );
   $loop->on_unlock(sub { flock $lock, LOCK_UN });
 
   # Heartbeat
+  weaken $self;
   my $cb;
   $cb = sub {
     my $loop = shift;
@@ -450,7 +390,7 @@ Mojo::Server::Hypnotoad - ALL GLORY TO THE HYPNOTOAD!
   use Mojo::Server::Hypnotoad;
 
   my $toad = Mojo::Server::Hypnotoad->new;
-  $toad->run('myapp.pl', 'hypnotoad.conf');
+  $toad->run('./myapp.pl', './hypnotoad.conf');
 
 =head1 DESCRIPTION
 
@@ -458,6 +398,10 @@ L<Mojo::Server::Hypnotoad> is a full featured UNIX optimized preforking async
 io HTTP 1.1 and WebSocket server built around the very well tested and
 reliable L<Mojo::Server::Daemon> with C<IPv6>, C<TLS>, C<Bonjour>, C<epoll>,
 C<kqueue> and hot deployment support that just works.
+
+To start applications with it you can use the L<hypnotoad> script.
+
+  % hypnotoad myapp.pl
 
 Optional modules L<IO::KQueue>, L<IO::Epoll>, L<IO::Socket::IP>,
 L<IO::Socket::SSL> and L<Net::Rendezvous::Publish> are supported
@@ -531,7 +475,7 @@ C<Hypnotoad> configuration files are normal Perl scripts returning a hash.
   # hypnotoad.conf
   {listen => ['http://*:3000', 'http://*:4000'], workers => 10};
 
-The following parameters are currently available.
+The following parameters are currently available:
 
 =head2 C<accepts>
 
@@ -663,7 +607,7 @@ Start server.
 You can set the C<HYPNOTOAD_DEBUG> environment variable to get some advanced
 diagnostics information printed to C<STDERR>.
 
-  MOJO_HYPNOTOAD_DEBUG=1
+  HYPNOTOAD_DEBUG=1
 
 =head1 SEE ALSO
 

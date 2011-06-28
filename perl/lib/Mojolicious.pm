@@ -3,6 +3,7 @@ use Mojo::Base 'Mojo';
 
 use Carp 'croak';
 use Mojolicious::Commands;
+use Mojolicious::Controller;
 use Mojolicious::Plugins;
 use Mojolicious::Renderer;
 use Mojolicious::Routes;
@@ -25,14 +26,14 @@ has secret   => sub {
   $self->log->debug('Your secret passphrase needs to be changed!!!');
 
   # Default to application name
-  return ref $self;
+  ref $self;
 };
 has sessions => sub { Mojolicious::Sessions->new };
 has static   => sub { Mojolicious::Static->new };
 has types    => sub { Mojolicious::Types->new };
 
 our $CODENAME = 'Smiling Face With Sunglasses';
-our $VERSION  = '1.4';
+our $VERSION  = '1.48';
 
 # "These old doomsday devices are dangerously unstable.
 #  I'll rest easier not knowing where they are."
@@ -46,18 +47,8 @@ sub AUTOLOAD {
   croak qq/Can't locate object method "$method" via package "$package"/
     unless my $helper = $self->renderer->helpers->{$method};
 
-  # Load controller class
-  my $class = $self->controller_class;
-  if (my $e = Mojo::Loader->load($class)) {
-    $self->log->error(
-      ref $e
-      ? qq/Can't load controller class "$class": $e/
-      : qq/Controller class "$class" doesn't exist./
-    );
-  }
-
   # Call helper with fresh controller
-  return $class->new(app => $self)->$helper(@_);
+  $self->controller_class->new(app => $self)->$helper(@_);
 }
 
 sub DESTROY { }
@@ -73,24 +64,23 @@ sub new {
       my $self = shift;
       my $tx   = Mojo::Transaction::HTTP->new;
       $self->plugins->run_hook(after_build_tx => ($tx, $self));
-      return $tx;
+      $tx;
     }
   );
 
+  # Root directories
+  my $home = $self->home;
+  $self->renderer->root($home->rel_dir('templates'));
+  $self->static->root($home->rel_dir('public'));
+
+  # Default to application namespace
   my $r = $self->routes;
   $r->namespace(ref $self);
-  my $renderer = $self->renderer;
-  my $static   = $self->static;
-  my $home     = $self->home;
-
-  # Root
-  $renderer->root($home->rel_dir('templates'));
-  $static->root($home->rel_dir('public'));
 
   # Hide own controller methods
   $r->hide(qw/AUTOLOAD DESTROY client cookie delayed finish finished/);
   $r->hide(qw/flash handler helper on_message param redirect_to render/);
-  $r->hide(qw/render_data render_exception render_inner render_json/);
+  $r->hide(qw/render_content render_data render_exception render_json/);
   $r->hide(qw/render_not_found render_partial render_static render_text/);
   $r->hide(qw/rendered send_message session signed_cookie url_for/);
   $r->hide(qw/write write_chunk/);
@@ -101,7 +91,8 @@ sub new {
     if -w $home->rel_file('log');
 
   # Load default plugins
-  $self->plugin('agent_condition');
+  $self->plugin('callback_condition');
+  $self->plugin('header_condition');
   $self->plugin('default_helpers');
   $self->plugin('tag_helpers');
   $self->plugin('epl_renderer');
@@ -119,7 +110,7 @@ sub new {
   # Startup
   $self->startup(@_);
 
-  return $self;
+  $self;
 }
 
 # "Amy, technology isn't intrinsically good or evil. It's how it's used.
@@ -140,7 +131,7 @@ sub defaults {
     $self->{defaults}->{$key} = $values->{$key};
   }
 
-  return $self;
+  $self;
 }
 
 # The default dispatchers with exception handling
@@ -163,22 +154,15 @@ sub dispatch {
   return if $res->code;
   if (my $code = ($tx->req->error)[1]) { $res->code($code) }
   elsif ($tx->is_websocket) { $res->code(426) }
-  if ($self->routes->dispatch($c)) { $c->render_not_found unless $res->code }
+  unless ($self->routes->dispatch($c)) {
+    $c->render_not_found
+      unless $res->code;
+  }
 }
 
 # "Bite my shiny metal ass!"
 sub handler {
   my ($self, $tx) = @_;
-
-  # Load controller class
-  my $class = $self->controller_class;
-  if (my $e = Mojo::Loader->load($class)) {
-    $self->log->error(
-      ref $e
-      ? qq/Can't load controller class "$class": $e/
-      : qq/Controller class "$class" doesn't exist./
-    );
-  }
 
   # Embedded application
   my $stash = {};
@@ -190,7 +174,8 @@ sub handler {
   # Build default controller and process
   my $defaults = $self->defaults;
   @{$stash}{keys %$defaults} = values %$defaults;
-  my $c = $class->new(app => $self, stash => $stash, tx => $tx);
+  my $c =
+    $self->controller_class->new(app => $self, stash => $stash, tx => $tx);
   unless (eval { $self->on_process->($self, $c); 1 }) {
     $self->log->fatal("Processing request failed: $@");
     $tx->res->code(500);
@@ -198,8 +183,7 @@ sub handler {
   }
 
   # Delayed
-  $self->log->debug(
-    'Waiting for delayed response, forgot to render or resume?')
+  $self->log->debug('Nothing has been rendered, assuming delayed response.')
     unless $stash->{'mojo.rendered'} || $tx->is_writing;
 }
 
@@ -239,7 +223,7 @@ sub start {
   $ENV{MOJO_APP} = ref $class ? $class : $class->new;
 
   # Start!
-  return Mojolicious::Commands->start(@_);
+  Mojolicious::Commands->start(@_);
 }
 
 # This will run once at startup
@@ -283,12 +267,11 @@ Mojolicious - The Web In A Box!
 
 =head1 DESCRIPTION
 
-Back in the early days of the web there was this wonderful Perl library
-called L<CGI>, many people only learned Perl because of it.
+Back in the early days of the web, many people learned Perl because of a
+wonderful Perl library called L<CGI>.
 It was simple enough to get started without knowing much about the language
 and powerful enough to keep you going, learning by doing was much fun.
-While most of the techniques used are outdated now, the idea behind it is
-not.
+While most of the techniques used are outdated now, the idea behind it is not.
 L<Mojolicious> is a new attempt at implementing this idea using state of the
 art technology.
 
@@ -321,8 +304,8 @@ TLS, Bonjour, IDNA, Comet (long polling), chunking and multipart support.
 
 =item *
 
-Builtin async IO web server supporting epoll, kqueue, UNIX domain sockets and
-hot deployment, perfect for embedding.
+Built-in async IO web server supporting epoll, kqueue, UNIX domain sockets
+and hot deployment, perfect for embedding.
 
 =item *
 
@@ -338,26 +321,50 @@ Fresh code based upon years of experience developing L<Catalyst>.
 
 =back
 
+=head2 Installation
+
+All you need is a oneliner.
+
+  sudo sh -c "curl -L cpanmin.us | perl - Mojolicious"
+
+=head2 Getting Started
+
+These three lines are a whole web application.
+
+  use Mojolicious::Lite;
+
+  get '/' => sub { shift->render_text('Hello World!') };
+
+  app->start;
+
+To run this example with the built-in development web server just put the
+code into a file and execute it with C<perl>.
+
+  % perl hello.pl daemon
+  Server available at http://127.0.0.1:3000.
+
+  % curl http://127.0.0.1:3000/
+  Hello World!
+
 =head2 Duct Tape For The HTML5 Web
 
 Web development for humans, making hard things possible and everything fun.
 
   use Mojolicious::Lite;
 
-  # Simple route with plain text response
-  get '/hello' => sub { shift->render_text('Hello World!') };
+  # Simple plain text response
+  get '/' => sub { shift->render_text('Hello World!') };
 
-  # Route to template in DATA section
+  # Route associating the "/time" URL to template in DATA section
   get '/time' => 'clock';
 
   # RESTful web service sending JSON responses
-  get '/:offset' => sub {
-    my $self   = shift;
-    my $offset = $self->param('offset') || 23;
-    $self->render_json({list => [0 .. $offset]});
+  get '/list/:offset' => sub {
+    my $self = shift;
+    $self->render_json({list => [0 .. $self->param('offset')]});
   };
 
-  # Scrape information from remote sites
+  # Scrape and return information from remote sites
   post '/title' => sub {
     my $self = shift;
     my $url  = $self->param('url') || 'http://mojolicio.us';
@@ -383,44 +390,10 @@ Web development for humans, making hard things possible and everything fun.
     The time is <%= $hour %>:<%= $minute %>:<%= $second %>.
   <% end %>
 
-To run this example with the built in development server just put the code
-into a file and execute it with C<perl>.
-
-  % perl example.pl daemon
-  Server available at http://127.0.0.1:3000.
-
 =head2 Growing
 
-Single file prototypes like the one above can easily grow into well
-structured applications.
-
-  package MyApp;
-  use Mojo::Base 'Mojolicious';
-
-  # Runs once on application startup
-  sub startup {
-    my $self = shift;
-    my $r    = $self->routes;
-
-    # Route prefix for "MyApp::Example" controller
-    my $example = $r->route('/example')->to('example#');
-
-    # GET routes connecting the controller prefix with actions
-    $example->get('/hello')->to('#hello');
-    $example->get('/time')->to('#clock');
-    $example->get('/:offset')->to('#restful');
-
-    # All common verbs are supported
-    $example->post('/title')->to('#title');
-
-    # And much more
-    $r->websocket('/echo')->to('realtime#echo');
-  }
-
-  1;
-
-Bigger applications are a lot easier to maintain once routing information has
-been separated from action code, especially when working in teams.
+Single file prototypes can easily grow into well-structured applications.
+A controller collects several actions together.
 
   package MyApp::Example;
   use Mojo::Base 'Mojolicious::Controller';
@@ -433,12 +406,11 @@ been separated from action code, especially when working in teams.
 
   # RESTful web service sending JSON responses
   sub restful {
-    my $self   = shift;
-    my $offset = $self->param('offset') || 23;
-    $self->render_json({list => [0 .. $offset]});
+    my $self = shift;
+    $self->render_json({list => [0 .. $self->param('offset')]});
   }
 
-  # Scrape information from remote sites
+  # Scrape and return information from remote sites
   sub title {
     my $self = shift;
     my $url  = $self->param('url') || 'http://mojolicio.us';
@@ -465,13 +437,46 @@ you like.
 
   1;
 
-Action code and templates can stay almost exactly the same, everything was
-designed from the ground up for this very unique and fun workflow.
+Larger applications benefit from the separation of actions and routes,
+especially when working in a team.
+
+  package MyApp;
+  use Mojo::Base 'Mojolicious';
+
+  # Runs once on application startup
+  sub startup {
+    my $self = shift;
+    my $r    = $self->routes;
+
+    # Create a route at "/example" for the "MyApp::Example" controller
+    my $example = $r->route('/example')->to('example#');
+
+    # Connect these HTTP GET routes to actions in the controller
+    # (paths are relative to the controller)
+    $example->get('/')->to('#hello');
+    $example->get('/time')->to('#clock');
+    $example->get('/list/:offset')->to('#restful');
+
+    # All common HTTP verbs are supported
+    $example->post('/title')->to('#title');
+
+    # ... and much, much more
+    # (including multiple, auto-discovered controllers)
+    $r->websocket('/echo')->to('realtime#echo');
+  }
+
+  1;
+
+Through all of these changes, your action code and templates can stay almost
+exactly the same.
 
   % my ($second, $minute, $hour) = (localtime(time))[0, 1, 2];
   <%= link_to clock => begin %>
     The time is <%= $hour %>:<%= $minute %>:<%= $second %>.
   <% end %>
+
+Mojolicious has been designed from the ground up for a fun and unique
+workflow.
 
 =head2 Have Some Cake
 
@@ -760,9 +765,9 @@ examples.
 
 =over 2
 
-=item L<Mojolicious::Plugin::AgentCondition>
+=item L<Mojolicious::Plugin::CallbackCondition>
 
-Route condition for C<User-Agent> headers.
+Very versatile route condition for arbitrary callbacks.
 
 =item L<Mojolicious::Plugin::Charset>
 
@@ -795,6 +800,10 @@ Internationalization helpers.
 =item L<Mojolicious::Plugin::JsonConfig>
 
 JSON configuration files.
+
+=item L<Mojolicious::Plugin::Mount>
+
+Mount whole L<Mojolicious> applications.
 
 =item L<Mojolicious::Plugin::PodRenderer>
 
@@ -877,9 +886,9 @@ development. jQuery is designed to change the way that you write JavaScript.
 
 Licensed under the MIT License, L<http://creativecommons.org/licenses/MIT>.
 
-=head2 Prettify.js
+=head2 prettify.js
 
-  Version 21-Jul-2010
+  Version 1-Jun-2011
 
 A Javascript module and CSS file that allows syntax highlighting of source
 code snippets in an html page.
@@ -934,6 +943,8 @@ Adam Kennedy
 
 Adriano Ferreira
 
+Al Newkirk
+
 Alex Salimon
 
 Alexey Likhatskiy
@@ -971,6 +982,8 @@ Charlie Brady
 Chas. J. Owens IV
 
 Christian Hansen
+
+chromatic
 
 Curt Tilmes
 
@@ -1059,6 +1072,8 @@ Randal Schwartz
 Robert Hicks
 
 Robin Lee
+
+Roland Lammel
 
 Ryan Jendoubi
 

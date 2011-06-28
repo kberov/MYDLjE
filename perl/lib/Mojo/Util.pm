@@ -12,13 +12,15 @@ require MIME::QuotedPrint;
 use constant SHA1 => eval 'use Digest::SHA (); 1';
 
 # Punycode bootstring parameters
-use constant PUNYCODE_BASE         => 36;
-use constant PUNYCODE_TMIN         => 1;
-use constant PUNYCODE_TMAX         => 26;
-use constant PUNYCODE_SKEW         => 38;
-use constant PUNYCODE_DAMP         => 700;
-use constant PUNYCODE_INITIAL_BIAS => 72;
-use constant PUNYCODE_INITIAL_N    => 128;
+use constant {
+  PUNYCODE_BASE         => 36,
+  PUNYCODE_TMIN         => 1,
+  PUNYCODE_TMAX         => 26,
+  PUNYCODE_SKEW         => 38,
+  PUNYCODE_DAMP         => 700,
+  PUNYCODE_INITIAL_BIAS => 72,
+  PUNYCODE_INITIAL_N    => 128
+};
 
 # Punycode delimiter
 my $DELIMITER = chr 0x2D;
@@ -374,7 +376,7 @@ sub get_line {
   my $line = substr $_[0], 0, $pos + 1, '';
   $line =~ s/\x0d?\x0a$//;
 
-  return $line;
+  $line;
 }
 
 sub hmac_md5_sum { _hmac(\&_md5, @_) }
@@ -382,7 +384,6 @@ sub hmac_md5_sum { _hmac(\&_md5, @_) }
 sub hmac_sha1_sum { _hmac(\&_sha1, @_) }
 
 sub html_escape {
-
   my $escaped = '';
   for (1 .. length $_[0]) {
 
@@ -396,32 +397,37 @@ sub html_escape {
   $_[0] = $escaped;
 }
 
+# "Daddy, I'm scared. Too scared to even wet my pants.
+#  Just relax and it'll come, son."
 sub html_unescape {
-
-  # Unescape
   $_[0] =~ s/
     &
     (?:
-      \#(\d{1,7})             # Number
+      \#
+      (
+        (?:
+          \d{1,7}             # Number
+          |
+          x[0-9A-Fa-f]{1,6}   # Hex
+        )
+      )
       |
-      ([A-Za-z]{1,8})         # Named
-      |
-      \#x([0-9A-Fa-f]{1,6})   # Hex
+      ([A-Za-z]{1,8})         # Name
     )
     ;
-    /_unescape($1, $2, $3)/gex;
+  /_unescape($1, $2)/gex;
 }
 
 sub md5_bytes {
   my $data = shift;
   utf8::encode $data if utf8::is_utf8 $data;
-  return _md5($data);
+  _md5($data);
 }
 
 sub md5_sum {
   my $data = shift;
   utf8::encode $data if utf8::is_utf8 $data;
-  return Digest::MD5::md5_hex($data);
+  Digest::MD5::md5_hex($data);
 }
 
 sub punycode_decode {
@@ -447,14 +453,12 @@ sub punycode_decode {
       # Digit
       my $digit = ord substr $_[0], 0, 1, '';
       $digit = $digit < 0x40 ? $digit + (26 - 0x30) : ($digit & 0x1f) - 1;
-
       $i += $digit * $w;
       my $t = $k - $bias;
       $t =
           $t < PUNYCODE_TMIN ? PUNYCODE_TMIN
         : $t > PUNYCODE_TMAX ? PUNYCODE_TMAX
         :                      $t;
-
       last if $digit < $t;
 
       $w *= (PUNYCODE_BASE - $t);
@@ -462,7 +466,6 @@ sub punycode_decode {
 
     # Bias
     $bias = _adapt($i - $oldi, @output + 1, $oldi == 0);
-
     $n += $i / (@output + 1);
     $i = $i % (@output + 1);
 
@@ -470,12 +473,14 @@ sub punycode_decode {
     splice @output, $i, 0, chr($n);
     $i++;
   }
+
   $_[0] = join '', @output;
 }
 
 sub punycode_encode {
   use integer;
 
+  # Defaults
   my $output = $_[0];
   my $len    = length $_[0];
 
@@ -523,7 +528,6 @@ sub punycode_encode {
               $t < PUNYCODE_TMIN ? PUNYCODE_TMIN
             : $t > PUNYCODE_TMAX ? PUNYCODE_TMAX
             :                      $t;
-
           last if $q < $t;
 
           # Code point for digit "t"
@@ -538,7 +542,6 @@ sub punycode_encode {
 
         # Bias
         $bias = _adapt($delta, $h + 1, $h == $b);
-
         $delta = 0;
         $h++;
       }
@@ -547,6 +550,7 @@ sub punycode_encode {
     $delta++;
     $n++;
   }
+
   $_[0] = $output;
 }
 
@@ -567,7 +571,7 @@ sub quote {
 sub sha1_bytes {
   my $data = shift;
   utf8::encode $data if utf8::is_utf8 $data;
-  return _sha1($data);
+  _sha1($data);
 }
 
 sub sha1_sum {
@@ -577,7 +581,7 @@ Please install it manually or upgrade Perl to at least version 5.10.
 EOF
   my $data = shift;
   utf8::encode $data if utf8::is_utf8 $data;
-  return Digest::SHA::sha1_hex($data);
+  Digest::SHA::sha1_hex($data);
 }
 
 sub trim {
@@ -614,8 +618,6 @@ sub url_escape {
 
 sub url_unescape {
   return if index($_[0], '%') == -1;
-
-  # Unescape
   $_[0] =~ s/%([0-9A-Fa-f]{2})/chr(hex($1))/ge;
 }
 
@@ -636,11 +638,8 @@ sub _adapt {
   my ($delta, $numpoints, $firsttime) = @_;
 
   use integer;
-
-  # Delta
   $delta = $firsttime ? $delta / PUNYCODE_DAMP : $delta / 2;
   $delta += $delta / $numpoints;
-
   my $k = 0;
   while ($delta > ((PUNYCODE_BASE - PUNYCODE_TMIN) * PUNYCODE_TMAX) / 2) {
     $delta /= PUNYCODE_BASE - PUNYCODE_TMIN;
@@ -662,7 +661,7 @@ sub _hmac {
   # HMAC
   my $ipad = $secret ^ (chr(0x36) x 64);
   my $opad = $secret ^ (chr(0x5c) x 64);
-  return unpack 'H*', $_[0]->($opad . $_[0]->($ipad . $_[1]));
+  unpack 'H*', $_[0]->($opad . $_[0]->($ipad . $_[1]));
 }
 
 # Helper for md5_bytes
@@ -679,19 +678,11 @@ EOF
 
 # Helper for html_unescape
 sub _unescape {
-  my ($num, $entitie, $hex) = @_;
-
-  # Named to number
-  if (defined $entitie) { $num = $ENTITIES{$entitie} }
-
-  # Hex to number
-  elsif (defined $hex) { $num = hex $hex }
-
-  # Number
-  return pack 'U', $num if $num;
-
-  # Unknown entitie
-  return "&$entitie;";
+  if ($_[0]) {
+    return chr hex $_[0] if substr($_[0], 0, 1) eq 'x';
+    return chr $_[0];
+  }
+  exists $ENTITIES{$_[1]} ? chr $ENTITIES{$_[1]} : "&$_[1];";
 }
 
 1;

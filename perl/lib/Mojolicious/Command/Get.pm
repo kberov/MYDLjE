@@ -34,10 +34,13 @@ These options are available:
   --verbose    Print verbose debug information to STDERR.
 EOF
 
-# "I hope this has taught you kids a lesson: kids never learn."
+# "Objection.
+#  In the absence of pants, defense's suspenders serve no purpose.
+#  I'm going to allow them... for now."
 sub run {
   my $self = shift;
 
+  # Options
   local @ARGV = @_ if @_;
   my $method = 'GET';
   my @headers;
@@ -59,11 +62,10 @@ sub run {
     $headers->{$1} = $2;
   }
 
-  # URL
+  # URL and selector
   my $url = shift @ARGV;
   die $self->usage unless $url;
   decode 'UTF-8', $url;
-
   my $selector = shift @ARGV;
 
   # Fresh user agent
@@ -149,7 +151,7 @@ sub run {
   # Select
   $self->_select($buffer, $charset, $selector) if $selector;
 
-  return $self;
+  $self;
 }
 
 sub _select {

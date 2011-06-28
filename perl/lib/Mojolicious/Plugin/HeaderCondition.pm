@@ -7,35 +7,32 @@ use Mojo::Base 'Mojolicious::Plugin';
 sub register {
   my ($self, $app) = @_;
 
-  # Header
+  # "headers" condition
+  $app->routes->add_condition(headers => \&_headers);
+
+  # "agent" condition
   $app->routes->add_condition(
-    headers => sub {
-      my ($r, $c, $captures, $patterns) = @_;
+    agent => sub { _headers(@_[0 .. 2], {'User-Agent' => $_[3]}) });
 
-      # Patterns
-      return unless $patterns && ref $patterns eq 'HASH';
+  # "host" condition
+  $app->routes->add_condition(
+    host => sub { _headers(@_[0 .. 2], {'Host' => $_[3]}) });
+}
 
-      # Match
-      my $passed;
-      while (my ($k, $v) = each(%$patterns)) {
-        my $header = $c->req->headers->header($k);
-        if ($header && $v && ref $v eq 'Regexp' && $header =~ $v) {
-          $passed = 1;
-          next;
-        }
-        elsif ($header && defined $v && $v eq $header) {
-          $passed = 1;
-          next;
-        }
-        $passed = undef;
-      }
+# "Wow, there's a million aliens! I've never seen something so mind-blowing!
+#  Ooh, a reception table with muffins!"
+sub _headers {
+  my ($r, $c, $captures, $patterns) = @_;
+  return unless $patterns && ref $patterns eq 'HASH' && keys %$patterns;
 
-      # Success
-      return 1 if $passed;
-
-      return;
-    }
-  );
+  # All headers need to match
+  while (my ($k, $v) = each %$patterns) {
+    my $header = $c->req->headers->header($k);
+    if ($header && $v && ref $v eq 'Regexp' && $header =~ $v) {next}
+    elsif ($header && defined $v && $v eq $header) {next}
+    else                                           {return}
+  }
+  return 1;
 }
 
 1;
@@ -49,22 +46,31 @@ Mojolicious::Plugin::HeaderCondition - Header Condition Plugin
 
   # Mojolicious
   $self->plugin('header_condition');
-
-  # Must match all of these headers
-  $self->routes->route('/:controller/:action')->over(headers => {
-    X-Secret-Header => 'Foo',
-    Referer => qr/^https?:\/\/example\.com\//
-  })->to('foo#bar');
+  $self->routes->route('/:controller/:action')
+    ->over(headers => {Referer => qr/example\.com/});
 
   # Mojolicious::Lite
   plugin 'header_condition';
-  get '/' => (headers => {'Referer' => qr/^https?:\/\/example\.com\//})
-    => sub {...};
+  get '/' => (headers => {Referer => qr/example\.com/}) => sub {...};
+
+  # All headers need to match
+  $self->routes->route('/:controller/:action')->over(headers => {
+    'X-Secret-Header' => 'Foo',
+    Referer => qr/example\.com/
+  });
+
+  # The "agent" condition is a shortcut for the "User-Agent" header
+  get '/' => (agent => qr/Firefox/) => sub {...};
+
+  # The "host" condition is a shortcut for the "Host" header
+  get '/' => (host => qr/mojolicio\.us/) => sub {...};
 
 =head1 DESCRIPTION
 
 L<Mojolicious::Plugin::HeaderCondition> is a routes condition for header
 based routes.
+This is a core plugin, that means it is always enabled and its code a good
+example for learning to build new plugins.
 
 =head1 METHODS
 

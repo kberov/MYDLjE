@@ -17,7 +17,7 @@ sub new {
   $self->log->level('error');
   $self->log->path(undef);
 
-  return $self;
+  $self;
 }
 
 sub handler {
@@ -222,11 +222,8 @@ EOF
 sub _upload {
   my ($self, $tx) = @_;
 
-  # Code
-  my $res = $tx->res;
-  $res->code(200);
-
   # File
+  my $res = $tx->res;
   my $req = $tx->req;
   if (my $file = $req->upload('file')) {
     my $headers = $res->headers;
@@ -255,6 +252,9 @@ sub _upload {
 </html>
 EOF
   }
+
+  # Response
+  $res->code(200);
   $tx->resume;
 }
 
@@ -283,8 +283,14 @@ sub _websocket {
   <head>
     <title>Mojo Diagnostics</title>
     <script language="javascript">
-      if ("WebSocket" in window) {
+      var ws;
+      if ("MozWebSocket" in window) {
+        ws = new MozWebSocket("$url");
+      }
+      else if ("WebSocket" in window) {
         ws = new WebSocket("$url");
+      }
+      if(typeof(ws) !== 'undefined') {
         function wsmessage(event) {
           data = event.data;
           alert(data);

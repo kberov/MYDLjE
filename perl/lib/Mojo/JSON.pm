@@ -110,27 +110,20 @@ sub decode {
     $self->error($e);
   }
 
-  return $res;
+  $res;
 }
 
 sub encode {
   my ($self, $ref) = @_;
-
-  # Encode
   my $string = _encode_values($ref);
-
-  # Unicode
   Mojo::Util::encode 'UTF-8', $string;
-  return $string;
+  $string;
 }
 
 sub false {$FALSE}
-
-sub true {$TRUE}
+sub true  {$TRUE}
 
 sub _decode_array {
-
-  # Array
   my @array;
   until (m/\G$WHITESPACE_RE\]/xogc) {
 
@@ -143,16 +136,14 @@ sub _decode_array {
     # End
     last if m/\G$WHITESPACE_RE\]/xogc;
 
-    # Exception
+    # Invalid character
     _exception('Expected comma or right square bracket while parsing array');
   }
 
-  return \@array;
+  \@array;
 }
 
 sub _decode_object {
-
-  # Object
   my %hash;
   until (m/\G$WHITESPACE_RE\}/xogc) {
 
@@ -176,19 +167,17 @@ sub _decode_object {
     # End
     last if m/\G$WHITESPACE_RE\}/xogc;
 
-    # Exception
+    # Invalid character
     _exception(q/Expected comma or right curly bracket while parsing object/);
   }
 
-  return \%hash;
+  \%hash;
 }
 
 sub _decode_string {
-
-  # Position
   my $pos = pos;
 
-  # String
+  # Extract string with escaped characters
   m/\G(((?:[^\x00-\x1F\\"]|\\(?:["\\\/bfnrt]|u[A-Fa-f0-9]{4})){0,32766})*)/gc;
   my $str = $1;
 
@@ -199,17 +188,15 @@ sub _decode_string {
     _exception('Unterminated string');
   }
 
-  # Popular characters
+  # Unescape popular characters
   if (index($str, '\\u') < 0) {
     $str =~ s/\\(["\\\/bfnrt])/$ESCAPE{$1}/gs;
     return $str;
   }
 
-  # Everything else
+  # Unescape everything else
   my $buffer = '';
   while ($str =~ m/\G([^\\]*)\\(?:([^u])|u(.{4}))/gc) {
-
-    # Pass through
     $buffer .= $1;
 
     # Popular character
@@ -244,9 +231,11 @@ sub _decode_string {
   # The rest
   $buffer .= substr $str, pos($str), length($str);
 
-  return $buffer;
+  $buffer;
 }
 
+# "Eternity with nerds.
+#  It's the Pasadena Star Trek convention all over again."
 sub _decode_value {
 
   # Leading whitespace
@@ -274,7 +263,7 @@ sub _decode_value {
   # Null
   return undef if m/\Gnull/gc;
 
-  # Exception
+  # Invalid data
   _exception('Expected string, array, object, number, boolean or null');
 }
 
@@ -289,7 +278,7 @@ sub _encode_array {
 
   # Stringify
   my $string = join ',', @array;
-  return "[$string]";
+  "[$string]";
 }
 
 sub _encode_object {
@@ -305,18 +294,18 @@ sub _encode_object {
 
   # Stringify
   my $string = join ',', @values;
-  return "{$string}";
+  "{$string}";
 }
 
 sub _encode_string {
   my $string = shift;
 
-  # Escape
+  # Escape string
   $string
     =~ s/([\x00-\x1F\x7F\x{2028}\x{2029}\\\"\/\b\f\n\r\t])/$REVERSE{$1}/gs;
 
   # Stringify
-  return "\"$string\"";
+  "\"$string\"";
 }
 
 sub _encode_values {
@@ -347,7 +336,7 @@ sub _encode_values {
     if $flags & (B::SVp_IOK | B::SVp_NOK) && !($flags & B::SVp_POK);
 
   # String
-  return _encode_string($value);
+  _encode_string($value);
 }
 
 sub _exception {
@@ -370,11 +359,10 @@ sub _exception {
 # Emulate boolean type
 package Mojo::JSON::_Bool;
 use Mojo::Base -base;
-use overload (
+use overload
   '0+'     => sub { $_[0]->{_value} },
   '""'     => sub { $_[0]->{_value} },
-  fallback => 1
-);
+  fallback => 1;
 
 sub new { shift->SUPER::new(_value => shift) }
 
@@ -395,7 +383,7 @@ Mojo::JSON - Minimalistic JSON
 
 =head1 DESCRIPTION
 
-L<Mojo::JSON> is a minimalistic and relaxed implementation of RFC4627.
+L<Mojo::JSON> is a minimalistic and relaxed implementation of RFC 4627.
 While it is possibly the fastest pure-Perl JSON parser available, you should
 not use it for validation.
 

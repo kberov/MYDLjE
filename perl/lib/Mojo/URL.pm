@@ -1,7 +1,9 @@
 package Mojo::URL;
 use Mojo::Base -base;
-use overload 'bool' => sub {1}, fallback => 1;
-use overload '""' => sub { shift->to_string }, fallback => 1;
+use overload
+  'bool'   => sub {1},
+  '""'     => sub { shift->to_string },
+  fallback => 1;
 
 use Mojo::Parameters;
 use Mojo::Path;
@@ -38,7 +40,7 @@ our $IPV6_RE = qr/(?:
 sub new {
   my $self = shift->SUPER::new();
   $self->parse(@_);
-  return $self;
+  $self;
 }
 
 sub authority {
@@ -85,7 +87,7 @@ sub authority {
   $authority .= lc($host || '');
   $authority .= ":$port" if $port;
 
-  return $authority;
+  $authority;
 }
 
 sub clone {
@@ -99,7 +101,7 @@ sub clone {
   $clone->fragment($self->fragment);
   $clone->base($self->base->clone) if $self->{base};
 
-  return $clone;
+  $clone;
 }
 
 sub ihost {
@@ -136,23 +138,23 @@ sub ihost {
     push @encoded, $part;
   }
 
-  return join '.', @encoded;
+  join '.', @encoded;
 }
 
 sub is_abs {
   my $self = shift;
   return 1 if $self->scheme && $self->authority;
-  return;
+  undef;
 }
 
 sub is_ipv4 {
   return 1 if shift->host =~ $IPV4_RE;
-  return;
+  undef;
 }
 
 sub is_ipv6 {
   return 1 if shift->host =~ $IPV6_RE;
-  return;
+  undef;
 }
 
 sub parse {
@@ -162,14 +164,13 @@ sub parse {
   # Official regex
   my ($scheme, $authority, $path, $query, $fragment) = $url
     =~ m|(?:([^:/?#]+):)?(?://([^/?#]*))?([^?#]*)(?:\?([^#]*))?(?:#(.*))?|;
-
   $self->scheme($scheme);
   $self->authority($authority);
   $self->path->parse($path);
-  $self->query->parse($query);
+  $self->query($query);
   $self->fragment($fragment);
 
-  return $self;
+  $self;
 }
 
 sub path {
@@ -201,7 +202,7 @@ sub path {
 
   # Get
   $self->{path} ||= Mojo::Path->new;
-  return $self->{path};
+  $self->{path};
 }
 
 sub query {
@@ -230,18 +231,15 @@ sub query {
       $q->append(%{$_[0]});
     }
 
-    # Replace with string or object
-    else {
-      $self->{query} =
-        !ref $_[0] ? Mojo::Parameters->new->append($_[0]) : $_[0];
-    }
+    # Replace with string
+    else { $self->{query} = Mojo::Parameters->new($_[0]) }
 
     return $self;
   }
 
   # Get
   $self->{query} ||= Mojo::Parameters->new;
-  return $self->{query};
+  $self->{query};
 }
 
 sub to_abs {
@@ -278,7 +276,7 @@ sub to_abs {
   $new->trailing_slash($old->trailing_slash);
   $abs->path($new);
 
-  return $abs;
+  $abs;
 }
 
 sub to_rel {
@@ -298,18 +296,16 @@ sub to_rel {
   $rel->scheme('');
   $rel->authority('');
 
+  # Characters after the right-most '/' need to go
   $rel->base($base->clone);
   my $splice = @{$base->path->parts};
-
-  # Characters after the right-most '/' need to go
   $splice -= 1 unless $base->path->trailing_slash;
-
   my $path = $rel->path->clone;
   splice @{$path->parts}, 0, $splice if $splice;
   $rel->path($path);
   $rel->path->leading_slash(0);
 
-  return $rel;
+  $rel;
 }
 
 # "Dad, what's a Muppet?
@@ -318,26 +314,25 @@ sub to_rel {
 sub to_string {
   my $self = shift;
 
+  # Scheme and authority
+  my $url       = '';
   my $scheme    = $self->scheme;
   my $authority = $self->authority;
-  my $path      = $self->path;
-  my $query     = $self->query;
-  my $url       = '';
-
-  # Scheme and authority
   if ($scheme && $authority) {
     $url .= lc "$scheme://";
     $url .= "$authority";
   }
 
   # Path
+  my $path  = $self->path;
   my $slash = $path->leading_slash;
   $path->leading_slash(0) if !$scheme && @{$self->base->path->parts};
   $url .= $path;
   $path->leading_slash($slash);
 
   # Query
-  $url .= "?$query" if @{$query->params};
+  my $query = join '', $self->query;
+  $url .= "?$query" if length $query;
 
   # Fragment
   if (my $fragment = $self->fragment) {
@@ -347,7 +342,7 @@ sub to_string {
     $url .= "#$fragment";
   }
 
-  return $url;
+  $url;
 }
 
 1;

@@ -1,7 +1,9 @@
 package Mojo::Date;
 use Mojo::Base -base;
-use overload 'bool' => sub {1}, fallback => 1;
-use overload '""' => sub { shift->to_string }, fallback => 1;
+use overload
+  'bool'   => sub {1},
+  '""'     => sub { shift->to_string },
+  fallback => 1;
 
 require Time::Local;
 
@@ -10,8 +12,6 @@ has 'epoch';
 # Days and months
 my @DAYS   = qw/Sun Mon Tue Wed Thu Fri Sat/;
 my @MONTHS = qw/Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec/;
-
-# Reverse months
 my %MONTHS;
 {
   my $i = 0;
@@ -24,7 +24,7 @@ my %MONTHS;
 sub new {
   my $self = shift->SUPER::new();
   $self->parse(@_);
-  return $self;
+  $self;
 }
 
 # "I suggest you leave immediately.
@@ -33,7 +33,6 @@ sub new {
 #  at you?"
 sub parse {
   my ($self, $date) = @_;
-
   return $self unless defined $date;
 
   # epoch - 784111777
@@ -49,9 +48,8 @@ sub parse {
   $date =~ s/GMT\s*$//i;
   $date =~ s/\s+$//;
 
+  # RFC 822/1123 - Sun, 06 Nov 1994 08:49:37 GMT
   my ($day, $month, $year, $hour, $minute, $second);
-
-  # RFC822/1123 - Sun, 06 Nov 1994 08:49:37 GMT
   if ($date =~ /^(\d+)\s+(\w+)\s+(\d+)\s+(\d+):(\d+):(\d+)$/) {
     $day    = $1;
     $month  = $MONTHS{$2};
@@ -61,7 +59,7 @@ sub parse {
     $second = $6;
   }
 
-  # RFC850/1036 - Sunday, 06-Nov-94 08:49:37 GMT
+  # RFC 850/1036 - Sunday, 06-Nov-94 08:49:37 GMT
   elsif ($date =~ /^(\d+)-(\w+)-(\d+)\s+(\d+):(\d+):(\d+)$/) {
     $day    = $1;
     $month  = $MONTHS{$2};
@@ -93,17 +91,16 @@ sub parse {
   return $self if $@ || $epoch < 0;
   $self->epoch($epoch);
 
-  return $self;
+  $self;
 }
 
 sub to_string {
   my $self = shift;
 
+  # RFC 822/1123
   my $epoch = $self->epoch;
   $epoch = time unless defined $epoch;
   my ($second, $minute, $hour, $mday, $month, $year, $wday) = gmtime $epoch;
-
-  # Format
   return sprintf(
     "%s, %02d %s %04d %02d:%02d:%02d GMT",
     $DAYS[$wday], $mday, $MONTHS[$month], $year + 1900,

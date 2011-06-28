@@ -100,19 +100,13 @@ especially XS based modules due to its remarkable toolchain.
 With it you can even install modules straight from the source as you would do
 on a Unix based machine.
 
-=head2 Is it possible to run the builtin webserver on Windows?
+=head2 Is it possible to run the built-in webserver on Windows?
 
 It is!
-The builtin webserver is great way to run your L<Mojolicious> web application
-on any platform.
+The built-in webserver is great way to run your L<Mojolicious> web
+application on any platform.
 See L<Mojolicious::Guides::Cookbook> for more information about running and
 deploying L<Mojolicious> applications.
-
-Note that if you run your application with the C<--reload> option Windows
-will lock your files.
-A simple Windows editor like C<WordPad> will complain that the file has
-already been opened by a different proccess.
-More capable editors can handle this accordingly and force the change.
 
 =head2 Whats the easiest way to install L<Mojolicious> on UNIX?
 
@@ -137,7 +131,7 @@ right.
 Writing a test is usually the hardest part of fixing a bug, so the better
 your test case the faster it can be fixed. ;)
 
-Once thats done you can contact the developers via GitHub
+Once that's done you can contact the developers via GitHub
 (L<https://github.com/kraih/mojo/issues>), mailing list
 (L<http://groups.google.com/group/mojolicious>) or IRC
 (C<#mojo> on C<irc.perl.org>).

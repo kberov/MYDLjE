@@ -13,7 +13,7 @@ sub add_hook {
   return $self unless $name && $cb;
   $self->hooks->{$name} ||= [];
   push @{$self->hooks->{$name}}, $cb;
-  return $self;
+  $self;
 }
 
 # "Also you have a rectangular object in your colon.
@@ -33,11 +33,7 @@ sub load_plugin {
 
     # Try all namspaces
     for my $namespace (@{$self->namespaces}) {
-
-      # Module
       my $module = "${namespace}::$class";
-
-      # Load and register
       return $module->new if $self->_load($module);
     }
   }
@@ -51,7 +47,7 @@ sub register_plugin {
   my $self = shift;
   my $name = shift;
   my $app  = shift;
-  return $self->load_plugin($name)->register($app, ref $_[0] ? $_[0] : {@_});
+  $self->load_plugin($name)->register($app, ref $_[0] ? $_[0] : {@_});
 }
 
 sub run_hook {
@@ -59,7 +55,7 @@ sub run_hook {
   return $self unless my $name  = shift;
   return $self unless my $hooks = $self->hooks->{$name};
   for my $hook (@$hooks) { $hook->(@_) }
-  return $self;
+  $self;
 }
 
 # "Everybody's a jerk. You, me, this jerk."
@@ -68,20 +64,21 @@ sub run_hook_reverse {
   return $self unless my $name  = shift;
   return $self unless my $hooks = $self->hooks->{$name};
   for my $hook (reverse @$hooks) { $hook->(@_) }
-  return $self;
+  $self;
 }
 
 sub _load {
   my ($self, $module) = @_;
 
   # Load
-  my $e = Mojo::Loader->load($module);
-  if (ref $e) { die $e }
-  return if $e;
+  if (my $e = Mojo::Loader->load($module)) {
+    die $e if ref $e;
+    return;
+  }
 
   # Module is a plugin
   return unless $module->can('new') && $module->can('register');
-  return 1;
+  1;
 }
 
 1;

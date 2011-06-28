@@ -20,11 +20,12 @@ has handle => sub {
   $file->open(">> $path") or croak qq/Can't open log file "$path": $!/;
   binmode $file, ':utf8';
 
-  return $file;
+  $file;
 };
 has level => 'debug';
 has 'path';
 
+# Supported log level
 my $LEVEL = {debug => 1, info => 2, warn => 3, error => 4, fatal => 5};
 
 # "Yes, I got the most! I win X-Mas!"
@@ -43,7 +44,7 @@ sub is_level {
   return unless $level;
   $level = lc $level;
   my $current = $ENV{MOJO_LOG_LEVEL} || $self->level;
-  return $LEVEL->{$level} >= $LEVEL->{$current};
+  $LEVEL->{$level} >= $LEVEL->{$current};
 }
 
 sub is_warn { shift->is_level('warn') }
@@ -57,10 +58,6 @@ sub log {
   $level = lc $level;
   return $self unless $level && $self->is_level($level);
 
-  my $time = localtime(time);
-  my $msgs = join "\n",
-    map { utf8::decode $_ unless utf8::is_utf8 $_; $_ } @msgs;
-
   # Caller
   my ($pkg, $line) = (caller())[0, 2];
   ($pkg, $line) = (caller(1))[0, 2] if $pkg eq ref $self;
@@ -69,13 +66,16 @@ sub log {
   my $handle = $self->handle;
   flock $handle, LOCK_EX;
 
-  # Log message
+  # Log messages
+  my $time = localtime(time);
+  my $msgs = join "\n",
+    map { utf8::decode $_ unless utf8::is_utf8 $_; $_ } @msgs;
   $handle->syswrite("$time $level $pkg:$line [$$]: $msgs\n");
 
   # Unlock
   flock $handle, LOCK_UN;
 
-  return $self;
+  $self;
 }
 
 sub warn { shift->log('warn', @_) }
@@ -142,7 +142,7 @@ following new ones.
 
 =head2 C<debug>
 
-  $log = $log->debug('You screwed up, but thats ok');
+  $log = $log->debug('You screwed up, but that is ok');
 
 Log debug message.
 

@@ -68,7 +68,7 @@ sub accept_connection {
   }
   $self->app->log->debug('Accepted FastCGI connection.') if DEBUG;
 
-  return $c;
+  $c;
 }
 
 sub read_record {
@@ -95,7 +95,7 @@ sub read_record {
       qq/Reading FastCGI record: $type - $id - "$body"./);
   }
 
-  return $self->type_name($type), $id, $body;
+  $self->type_name($type), $id, $body;
 }
 
 sub read_request {
@@ -178,19 +178,19 @@ sub read_request {
     }
   }
 
-  return $tx;
+  $tx;
 }
 
 sub role_name {
   my ($self, $role) = @_;
   return unless $role;
-  return $ROLES[$role - 1];
+  $ROLES[$role - 1];
 }
 
 sub role_number {
   my ($self, $role) = @_;
   return unless $role;
-  return $ROLE_NUMBERS{uc $role};
+  $ROLE_NUMBERS{uc $role};
 }
 
 sub run {
@@ -199,6 +199,7 @@ sub run {
   # Preload application
   $self->app;
 
+  # New incoming request
   while (my $c = $self->accept_connection) {
 
     # Request
@@ -225,28 +226,24 @@ sub run {
 sub type_name {
   my ($self, $type) = @_;
   return unless $type;
-  return $TYPES[$type - 1];
+  $TYPES[$type - 1];
 }
 
 sub type_number {
   my ($self, $type) = @_;
   return unless $type;
-  return $TYPE_NUMBERS{uc $type};
+  $TYPE_NUMBERS{uc $type};
 }
 
 sub write_records {
   my ($self, $c, $type, $id, $body) = @_;
-
-  # Required
   return unless defined $c && defined $type && defined $id;
-
-  # Defaults
   $body ||= '';
-  my $body_len = length $body;
 
   # Write records
-  my $empty = $body ? 0 : 1;
-  my $offset = 0;
+  my $empty    = $body ? 0 : 1;
+  my $offset   = 0;
+  my $body_len = length $body;
   while (($body_len > 0) || $empty) {
 
     # Need to split content
@@ -262,11 +259,11 @@ sub write_records {
         qq/Writing FastCGI record: $type - $id - "$chunk"./);
     }
 
+    # Write whole record
     my $record = pack $template, 1, $self->type_number($type), $id,
       $payload_len,
       $pad_len,
       substr($body, $offset, $payload_len);
-
     my $woffset = 0;
     while ($woffset < length $record) {
       my $written = $c->syswrite($record, undef, $woffset);
@@ -283,25 +280,23 @@ sub write_records {
 
       $woffset += $written;
     }
-
     $body_len -= $payload_len;
     $offset += $payload_len;
 
+    # Done
     last if $empty;
   }
 
-  return 1;
+  1;
 }
 
 sub write_response {
   my ($self, $tx) = @_;
   $self->app->log->debug('Writing FastCGI response.') if DEBUG;
 
-  my $c   = $tx->connection;
-  my $res = $tx->res;
-
   # Status
-  my $code    = $res->code    || 404;
+  my $res     = $tx->res;
+  my $code    = $res->code || 404;
   my $message = $res->message || $res->default_message;
   $res->headers->status("$code $message") unless $res->headers->status;
 
@@ -309,6 +304,7 @@ sub write_response {
   $res->fix_headers;
 
   # Headers
+  my $c      = $tx->connection;
   my $offset = 0;
   while (1) {
     my $chunk = $res->get_header_chunk($offset);
@@ -369,7 +365,7 @@ sub _nv_length {
     $len = unpack 'N', $len;
   }
 
-  return $len;
+  $len;
 }
 
 sub _read_chunk {
@@ -387,7 +383,7 @@ sub _read_chunk {
     $chunk .= $buffer;
   }
 
-  return $chunk;
+  $chunk;
 }
 
 1;

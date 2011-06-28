@@ -1,7 +1,9 @@
 package Mojo::Exception;
 use Mojo::Base -base;
-use overload 'bool' => sub {1}, fallback => 1;
-use overload '""' => sub { shift->to_string }, fallback => 1;
+use overload
+  'bool'   => sub {1},
+  '""'     => sub { shift->to_string },
+  fallback => 1;
 
 use IO::File;
 use Scalar::Util 'blessed';
@@ -19,7 +21,7 @@ sub new {
   return $self unless @_;
 
   # Detect
-  return $self->_detect(@_);
+  $self->_detect(@_);
 }
 
 sub throw {
@@ -47,7 +49,7 @@ sub trace {
   }
   $e->frames(\@frames);
 
-  return $e;
+  $e;
 }
 
 sub _detect {
@@ -127,7 +129,7 @@ sub _detect {
   # Context
   $self->_parse_context($line, \@lines) if $line;
 
-  return $self;
+  $self;
 }
 
 # "You killed zombie Flanders!
@@ -138,9 +140,8 @@ sub to_string {
   # Message only
   return $self->message unless $self->verbose;
 
+  # Start with message
   my $string = '';
-
-  # Message
   $string .= $self->message if $self->message;
 
   # Before
@@ -157,7 +158,7 @@ sub to_string {
     $string .= $line->[0] . ': ' . $line->[1] . "\n";
   }
 
-  return $string;
+  $string;
 }
 
 sub _parse_context {
@@ -206,7 +207,7 @@ sub _parse_context {
     }
   }
 
-  return $self;
+  $self;
 }
 
 1;

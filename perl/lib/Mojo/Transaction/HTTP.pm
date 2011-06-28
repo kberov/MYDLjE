@@ -13,17 +13,16 @@ has res => sub { Mojo::Message::Response->new };
 sub client_read {
   my ($self, $chunk) = @_;
 
-  my $req  = $self->req;
-  my $res  = $self->res;
-  my $read = length $chunk;
-
   # Preserve state
   my $preserved = $self->{_state};
 
   # Done
+  my $read = length $chunk;
   $self->{_state} = 'done' if $read == 0;
 
   # HEAD response
+  my $req = $self->req;
+  my $res = $self->res;
   if ($req->method =~ /^head$/i) {
     $res->parse_until_body($chunk);
     $self->{_state} = 'done' if $res->content->is_parsing_body;
@@ -46,29 +45,27 @@ sub client_read {
   # Check for errors
   $self->{_state} = 'done' if $self->error;
 
-  return $self;
+  $self;
 }
 
 sub client_write {
   my $self = shift;
-
-  my $chunk = '';
-  my $req   = $self->req;
 
   # Offsets
   $self->{_offset} ||= 0;
   $self->{_write}  ||= 0;
 
   # Writing
+  my $req = $self->req;
   unless ($self->{_state}) {
 
     # Connection header
     my $headers = $req->headers;
     unless ($headers->connection) {
       if ($self->keep_alive || $self->kept_alive) {
-        $headers->connection('Keep-Alive');
+        $headers->connection('keep-alive');
       }
-      else { $headers->connection('Close') }
+      else { $headers->connection('close') }
     }
 
     # Ready for next state
@@ -77,6 +74,7 @@ sub client_write {
   }
 
   # Start line
+  my $chunk = '';
   if ($self->{_state} eq 'write_start_line') {
     my $buffer = $req->get_start_line_chunk($self->{_offset});
 
@@ -84,7 +82,6 @@ sub client_write {
     my $written = defined $buffer ? length $buffer : 0;
     $self->{_write}  = $self->{_write} - $written;
     $self->{_offset} = $self->{_offset} + $written;
-
     $chunk .= $buffer;
 
     # Done
@@ -103,7 +100,6 @@ sub client_write {
     my $written = defined $buffer ? length $buffer : 0;
     $self->{_write}  = $self->{_write} - $written;
     $self->{_offset} = $self->{_offset} + $written;
-
     $chunk .= $buffer;
 
     # Done
@@ -126,7 +122,6 @@ sub client_write {
     my $written = defined $buffer ? length $buffer : 0;
     $self->{_write}  = $self->{_write} - $written;
     $self->{_offset} = $self->{_offset} + $written;
-
     $chunk .= $buffer if defined $buffer;
 
     # End
@@ -140,7 +135,7 @@ sub client_write {
     $self->{_state} = 'read_response' if $self->{_write} <= 0;
   }
 
-  return $chunk;
+  $chunk;
 }
 
 sub keep_alive {
@@ -152,12 +147,11 @@ sub keep_alive {
     return $self;
   }
 
-  my $req = $self->req;
-  my $res = $self->res;
-
   # No keep alive for 0.9 and 1.0
+  my $req     = $self->req;
   my $version = $req->version;
   $self->{keep_alive} ||= 0 if $req->version eq '0.9' || $version eq '1.0';
+  my $res = $self->res;
   $version = $res->version;
   $self->{keep_alive} ||= 0 if $version eq '0.9' || $version eq '1.0';
 
@@ -177,7 +171,7 @@ sub keep_alive {
   # Default
   $self->{keep_alive} = 1 unless defined $self->{keep_alive};
 
-  return $self->{keep_alive};
+  $self->{keep_alive};
 }
 
 sub server_leftovers {
@@ -191,20 +185,19 @@ sub server_leftovers {
   # Done
   $req->{_state} = 'done';
 
-  return $leftovers;
+  $leftovers;
 }
 
 sub server_read {
   my ($self, $chunk) = @_;
 
-  my $req = $self->req;
-  my $res = $self->res;
-
   # Parse
+  my $req = $self->req;
   $req->parse($chunk) unless $req->error;
   $self->{_state} ||= 'read';
 
   # Parser error
+  my $res     = $self->res;
   my $handled = $self->{_handled};
   if ($req->error && !$handled) {
 
@@ -212,7 +205,7 @@ sub server_read {
     $self->on_request->($self);
 
     # Close connection
-    $res->headers->connection('Close');
+    $res->headers->connection('close');
 
     # Protect handler from incoming pipelined requests
     $self->{_handled} = 1;
@@ -245,7 +238,7 @@ sub server_read {
     }
   }
 
-  return $self;
+  $self;
 }
 
 sub server_write {
@@ -259,17 +252,15 @@ sub server_write {
   $self->{_offset} ||= 0;
   $self->{_write}  ||= 0;
 
-  my $req = $self->req;
-  my $res = $self->res;
-
   # Writing
+  my $res = $self->res;
   if ($self->{_state} eq 'write') {
 
     # Connection header
     my $headers = $res->headers;
     unless ($headers->connection) {
-      if   ($self->keep_alive) { $headers->connection('Keep-Alive') }
-      else                     { $headers->connection('Close') }
+      if   ($self->keep_alive) { $headers->connection('keep-alive') }
+      else                     { $headers->connection('close') }
     }
 
     # Ready for next state
@@ -285,7 +276,6 @@ sub server_write {
     my $written = defined $buffer ? length $buffer : 0;
     $self->{_write}  = $self->{_write} - $written;
     $self->{_offset} = $self->{_offset} + $written;
-
     $chunk .= $buffer;
 
     # Done
@@ -304,14 +294,13 @@ sub server_write {
     my $written = defined $buffer ? length $buffer : 0;
     $self->{_write}  = $self->{_write} - $written;
     $self->{_offset} = $self->{_offset} + $written;
-
     $chunk .= $buffer;
 
     # Done
     if ($self->{_write} <= 0) {
 
       # HEAD request
-      if ($req->method =~ /^head$/i) {
+      if ($self->req->method =~ /^head$/i) {
 
         # Don't send body if request method is HEAD
         $self->{_state} = 'done';
@@ -323,8 +312,8 @@ sub server_write {
         $self->{_offset} = 0;
         $self->{_write}  = $res->body_size;
 
-        # Chunked
-        $self->{_write} = 1 if $res->is_chunked;
+        # Dynamic
+        $self->{_write} = 1 if $res->is_dynamic;
       }
     }
   }
@@ -356,7 +345,6 @@ sub server_write {
       my $written = defined $buffer ? length $buffer : 0;
       $self->{_write}  = $self->{_write} - $written;
       $self->{_offset} = $self->{_offset} + $written;
-
       if (defined $buffer) {
         $chunk .= $buffer;
         delete $self->{_delay};
@@ -369,8 +357,8 @@ sub server_write {
         $self->{_delay} = 1 unless $delay;
       }
 
-      # Chunked
-      $self->{_write} = 1 if $res->is_chunked;
+      # Dynamic
+      $self->{_write} = 1 if $res->is_dynamic;
 
       # Done
       $self->{_state} = 'done'
@@ -378,7 +366,7 @@ sub server_write {
     }
   }
 
-  return $chunk;
+  $chunk;
 }
 
 1;
@@ -409,26 +397,19 @@ described in RFC 2616.
 L<Mojo::Transaction::HTTP> inherits all attributes from L<Mojo::Transaction>
 and implements the following new ones.
 
-=head2 C<keep_alive>
-
-  my $keep_alive = $tx->keep_alive;
-  $tx            = $tx->keep_alive(1);
-
-Connection can be kept alive.
-
 =head2 C<on_upgrade>
 
   my $cb = $tx->on_upgrade;
   $tx    = $tx->on_upgrade(sub {...});
 
-WebSocket upgrade callback.
+Callback to be invoked for WebSocket upgrades.
 
 =head2 C<on_request>
 
   my $cb = $tx->on_request;
   $tx    = $tx->on_request(sub {...});
 
-Request callback.
+Callback to be invoked for requests.
 
 =head2 C<req>
 
@@ -460,6 +441,13 @@ Read and process client data.
   my $chunk = $tx->client_write;
 
 Write client data.
+
+=head2 C<keep_alive>
+
+  my $keep_alive = $tx->keep_alive;
+  $tx            = $tx->keep_alive(1);
+
+Connection can be kept alive.
 
 =head2 C<server_leftovers>
 

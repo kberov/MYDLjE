@@ -16,20 +16,14 @@ has [qw/format pattern regex/];
 sub new {
   my $self = shift->SUPER::new();
   $self->parse(@_);
-  return $self;
+  $self;
 }
 
 sub match {
   my ($self, $path) = @_;
-
-  # Match
   my $result = $self->shape_match(\$path);
-
-  # Endpoint
   return $result if !$path || $path eq '/';
-
-  # Partial or no match
-  return;
+  undef;
 }
 
 sub parse {
@@ -51,7 +45,7 @@ sub parse {
   $self->pattern($pattern);
   $self->_tokenize;
 
-  return $self;
+  $self;
 }
 
 sub render {
@@ -61,6 +55,7 @@ sub render {
   $values ||= {};
   $values = {%{$self->defaults}, %$values};
 
+  # Turn pattern into path
   my $string   = '';
   my $optional = 1;
   for my $token (reverse @{$self->tree}) {
@@ -83,10 +78,8 @@ sub render {
       my $name = $token->[1];
       $rendered = $values->{$name};
       $rendered = '' unless defined $rendered;
-
       my $default = $self->defaults->{$name};
       $default = '' unless defined $default;
-
       $optional = 0 unless $default eq $rendered;
       $rendered = '' if $optional && $default eq $rendered;
     }
@@ -94,7 +87,7 @@ sub render {
     $string = "$rendered$string";
   }
 
-  return $string || '/';
+  $string || '/';
 }
 
 sub shape_match {
@@ -120,12 +113,13 @@ sub shape_match {
     return $result;
   }
 
-  return;
+  undef;
 }
 
 sub _compile {
   my $self = shift;
 
+  # Compile tree to regular expression
   my $block    = '';
   my $regex    = '';
   my $optional = 1;
@@ -154,7 +148,6 @@ sub _compile {
     # Symbol
     elsif ($op eq 'relaxed' || $op eq 'symbol' || $op eq 'wildcard') {
       my $name = $token->[1];
-
       unshift @{$self->symbols}, $name;
 
       # Relaxed
@@ -166,11 +159,12 @@ sub _compile {
       # Wildcard
       elsif ($op eq 'wildcard') { $compiled = '(.+)' }
 
+      # Custom regex
       my $req = $self->reqs->{$name};
       $compiled = "($req)" if $req;
 
+      # Optional placeholder
       $optional = 0 unless exists $self->defaults->{$name};
-
       $compiled .= '?' if $optional;
     }
 
@@ -184,22 +178,24 @@ sub _compile {
   $regex = qr/^$regex/;
   $self->regex($regex);
 
-  return $regex;
+  $regex;
 }
 
 sub _tokenize {
   my $self = shift;
 
-  my $pattern        = $self->pattern;
+  # Token
   my $quote_end      = $self->quote_end;
   my $quote_start    = $self->quote_start;
   my $relaxed_start  = $self->relaxed_start;
   my $symbol_start   = $self->symbol_start;
   my $wildcard_start = $self->wildcard_start;
-  my $tree           = [];
-  my $state          = 'text';
-  my $quoted         = 0;
 
+  # Parse the pattern character wise
+  my $pattern = $self->pattern;
+  my $tree    = [];
+  my $state   = 'text';
+  my $quoted  = 0;
   while (length(my $char = substr $pattern, 0, 1, '')) {
 
     # Inside a symbol
@@ -224,28 +220,19 @@ sub _tokenize {
       next;
     }
 
-    # Relaxed start
-    if ($quoted && $char eq $relaxed_start) {
-
-      # Upgrade relaxed to wildcard
-      if ($state eq 'symbol') {
-        $state = 'relaxed';
-        $tree->[-1]->[0] = 'relaxed';
-        next;
-      }
-
+    # Relaxed start (needs to be quoted)
+    if ($quoted && $char eq $relaxed_start && $state eq 'symbol') {
+      $state = 'relaxed';
+      $tree->[-1]->[0] = 'relaxed';
+      next;
     }
 
-    # Wildcard start
-    if ($quoted && $char eq $wildcard_start) {
-
-      # Upgrade relaxed to wildcard
-      if ($state eq 'symbol') {
-        $state = 'wildcard';
-        $tree->[-1]->[0] = 'wildcard';
-        next;
-      }
-
+    # Wildcard start (upgrade when quoted)
+    if ($char eq $wildcard_start) {
+      push @$tree, ['symbol', ''] unless $quoted;
+      $state = 'wildcard';
+      $tree->[-1]->[0] = 'wildcard';
+      next;
     }
 
     # Quote end
@@ -270,7 +257,6 @@ sub _tokenize {
 
     # Text
     else {
-
       $state = 'text';
 
       # New text element
@@ -285,7 +271,7 @@ sub _tokenize {
   }
   $self->tree($tree);
 
-  return $self;
+  $self;
 }
 
 1;

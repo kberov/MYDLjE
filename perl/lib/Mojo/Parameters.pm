@@ -1,14 +1,15 @@
 package Mojo::Parameters;
 use Mojo::Base -base;
-use overload 'bool' => sub {1}, fallback => 1;
-use overload '""' => sub { shift->to_string }, fallback => 1;
+use overload
+  'bool'   => sub {1},
+  '""'     => sub { shift->to_string },
+  fallback => 1;
 
 use Mojo::Util qw/encode decode url_escape url_unescape/;
 use Mojo::URL;
 
 has charset        => 'UTF-8';
 has pair_separator => '&';
-has params         => sub { [] };
 
 # "Yeah, Moe, that team sure did suck last night. They just plain sucked!
 #  I've seen teams suck before,
@@ -22,9 +23,9 @@ sub new {
   if (@_ > 1) { $self->append(@_) }
 
   # String
-  else { $self->parse(@_) }
+  else { $self->{_string} = $_[0] }
 
-  return $self;
+  $self;
 }
 
 sub append {
@@ -38,21 +39,22 @@ sub append {
   }
   push @{$self->params}, map { defined $_ ? "$_" : '' } @params;
 
-  return $self;
+  $self;
 }
 
 sub clone {
   my $self  = shift;
   my $clone = Mojo::Parameters->new;
   $clone->pair_separator($self->pair_separator);
-  $clone->params([@{$self->params}]);
-  return $clone;
+  if (defined $self->{_string}) { $clone->{_string} = $self->{_string} }
+  else                          { $clone->params([@{$self->params}]) }
+  $clone;
 }
 
 sub merge {
   my $self = shift;
   push @{$self->params}, @{$_->params} for @_;
-  return $self;
+  $self;
 }
 
 sub param {
@@ -73,41 +75,29 @@ sub param {
     push @values, $params->[$i + 1] if $params->[$i] eq $name;
   }
 
-  return wantarray ? @values : $values[0];
+  wantarray ? @values : $values[0];
+}
+
+sub params {
+  my ($self, $params) = @_;
+  if ($params) { $self->{_params} = $params }
+  elsif (defined $self->{_string}) { $self->parse }
+  $self->{_params} ||= [];
 }
 
 sub parse {
-  my $self   = shift;
-  my $string = shift;
+  my ($self, $string) = @_;
+  $string = delete $self->{_string} unless defined $string;
 
   # Clear
   $self->params([]);
 
-  return $self unless defined $string;
-  my $charset = $self->charset;
-
-  # Detect query string without key/value pairs
-  if ($string !~ /\=/) {
-
-    # Replace "+" with whitespace
-    $string =~ s/\+/\ /g;
-
-    # Escaped string
-    if (index($string, '%') >= 0) {
-      url_unescape $string;
-      my $backup = $string;
-      decode $charset, $string if $charset;
-      $string = $backup unless defined $string;
-    }
-
-    $self->params([$string, undef]);
-    return $self;
-  }
-
   # Detect pair separator for reconstruction
+  return $self unless defined $string && length $string;
   $self->pair_separator(';') if $string =~ /\;/ && $string !~ /\&/;
 
   # W3C suggests to also accept ";" as a separator
+  my $charset = $self->charset;
   for my $pair (split /[\&\;]+/, $string) {
 
     # Parse
@@ -121,15 +111,13 @@ sub parse {
     $name  =~ s/\+/\ /g;
     $value =~ s/\+/\ /g;
 
-    # Escaped name
+    # Unescape
     if (index($name, '%') >= 0) {
       url_unescape $name;
       my $backup = $name;
       decode $charset, $name if $charset;
       $name = $backup unless defined $name;
     }
-
-    # Escaped value
     if (index($value, '%') >= 0) {
       url_unescape $value;
       my $backup = $value;
@@ -140,7 +128,7 @@ sub parse {
     push @{$self->params}, $name, $value;
   }
 
-  return $self;
+  $self;
 }
 
 # "Don't kid yourself, Jimmy. If a cow ever got the chance,
@@ -157,7 +145,7 @@ sub remove {
   }
   $self->params($params);
 
-  return $self;
+  $self;
 }
 
 sub to_hash {
@@ -181,23 +169,32 @@ sub to_hash {
     else { $params{$name} = $value }
   }
 
-  return \%params;
+  \%params;
 }
 
 sub to_string {
   my $self = shift;
 
+  # String
+  my $charset = $self->charset;
+  if (defined(my $string = $self->{_string})) {
+
+    # Escape
+    encode $charset, $string if $charset;
+    url_escape $string, "$Mojo::URL::UNRESERVED\\&\\;\\=\\+\\%";
+
+    return $string;
+  }
+
+  # Build pairs
   my $params = $self->params;
   return '' unless @{$self->params};
-
-  # Format
   my @params;
-  my $charset = $self->charset;
   for (my $i = 0; $i < @$params; $i += 2) {
     my $name  = $params->[$i];
     my $value = $params->[$i + 1];
 
-    # *( pchar / "/" / "?" ) with the exception of ";", "&" and "="
+    # Escape
     encode $charset, $name if $charset;
     url_escape $name, $Mojo::URL::UNRESERVED;
     if ($value) {
@@ -212,8 +209,9 @@ sub to_string {
     push @params, defined $value ? "$name=$value" : "$name";
   }
 
+  # Concatenate pairs
   my $separator = $self->pair_separator;
-  return join $separator, @params;
+  join $separator, @params;
 }
 
 1;
@@ -242,21 +240,14 @@ L<Mojo::Parameters> implements the following attributes.
   my $charset = $params->charset;
   $params     = $params->charset('UTF-8');
 
-Charset used for decoding parameters.
+Charset used for decoding parameters, defaults to C<UTF-8>.
 
 =head2 C<pair_separator>
 
   my $separator = $params->pair_separator;
   $params       = $params->pair_separator(';');
 
-Separator for parameter pairs.
-
-=head2 C<params>
-
-  my $parameters = $params->params;
-  $params        = $params->params(foo => 'b;ar', baz => 23);
-
-The parameters.
+Separator for parameter pairs, defaults to C<&>.
 
 =head1 METHODS
 
@@ -297,6 +288,13 @@ Merge parameters.
   my $foo   = $params->param(foo => 'ba;r');
 
 Check parameter values.
+
+=head2 C<params>
+
+  my $parameters = $params->params;
+  $params        = $params->params([foo => 'b;ar', baz => 23]);
+
+Parsed parameters.
 
 =head2 C<parse>
 

@@ -14,10 +14,8 @@ has [qw/filename name/];
 #  This game makes no sense.
 #  Tell that to the good men who just lost their lives... SEMPER-FI!"
 sub move_to { shift->asset->move_to(@_) }
-
-sub size { shift->asset->size }
-
-sub slurp { shift->asset->slurp }
+sub size    { shift->asset->size }
+sub slurp   { shift->asset->slurp }
 
 1;
 __END__
@@ -47,8 +45,8 @@ L<Mojo::Upload> implements the following attributes.
   my $asset = $upload->asset;
   $upload   = $upload->asset(Mojo::Asset::File->new);
 
-Asset containing the uploaded data, usually a L<Mojo::Asset::Memory> or
-L<Mojo::Asset::File> object.
+Asset containing the uploaded data, defaults to a L<Mojo::Asset::File>
+object.
 
 =head2 C<filename>
 
@@ -62,7 +60,7 @@ Name of the uploaded file.
   my $headers = $upload->headers;
   $upload     = $upload->headers(Mojo::Headers->new);
 
-Headers for upload, usually a L<Mojo::Headers> object.
+Headers for upload, defaults to a L<Mojo::Headers> object.
 
 =head2 C<name>
 

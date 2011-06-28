@@ -9,6 +9,7 @@ use Mojo::Exception;
 
 use constant CHUNK_SIZE => $ENV{MOJO_CHUNK_SIZE} || 131072;
 
+# "If for any reason you're not completely satisfied, I hate you."
 has [qw/auto_escape compiled/];
 has [qw/append code prepend/] => '';
 has capture_end     => 'end';
@@ -19,7 +20,7 @@ has escape_mark     => '=';
 has expression_mark => '=';
 has line_start      => '%';
 has name            => 'template';
-has namespace       => 'Mojo::Template::Context';
+has namespace       => 'Mojo::Template::SandBox';
 has tag_start       => '<%';
 has tag_end         => '%>';
 has template        => '';
@@ -42,7 +43,7 @@ sub escape;
     $v = "$_[0]";
   }
   Mojo::Util::xml_escape $v;
-  return $v;
+  $v;
 };
 use strict; use warnings;
 EOF
@@ -71,7 +72,7 @@ sub build {
       if ($type eq 'cpen') {
 
         # End block
-        $lines[-1] .= 'return $_M }';
+        $lines[-1] .= 'return b($_M) }';
 
         # No following code
         my $next = $line->[$j + 3];
@@ -145,15 +146,14 @@ sub build {
   $self->code(join "\n", @lines);
   $self->tree([]);
 
-  return $self;
+  $self;
 }
 
 sub compile {
   my $self = shift;
 
-  return unless my $code = $self->code;
-
   # Compile
+  return unless my $code = $self->code;
   my $compiled = eval $code;
 
   # Use local stacktrace for compile exceptions
@@ -162,7 +162,7 @@ sub compile {
     if $@;
 
   $self->compiled($compiled);
-  return;
+  undef;
 }
 
 sub interpret {
@@ -171,8 +171,6 @@ sub interpret {
   # Compile
   unless ($self->compiled) {
     my $e = $self->compile;
-
-    # Exception
     return $e if ref $e;
   }
   my $compiled = $self->compiled;
@@ -191,7 +189,7 @@ sub interpret {
     Mojo::Exception->new($@, [$self->template], $self->name)->verbose(1)
     if $@;
 
-  return $output;
+  $output;
 }
 
 # "I am so smart! I am so smart! S-M-R-T! I mean S-M-A-R-T..."
@@ -272,7 +270,7 @@ sub parse {
   # Perl line regex
   my $line_re = qr/
     ^
-    (\s*)                  # Leading whitespace
+    (\s*)
     $line_start            # Line start
     ($expr)?               # Expression
     ($escp)?               # Escaped expression
@@ -290,8 +288,6 @@ sub parse {
 
     # Perl line
     if ($line =~ /$line_re/) {
-
-      # Token
       my @token = ();
 
       # Capture end
@@ -421,7 +417,7 @@ sub parse {
     push @{$self->tree}, \@token;
   }
 
-  return $self;
+  $self;
 }
 
 sub render {
@@ -439,7 +435,7 @@ sub render {
   return $e if $e;
 
   # Interpret
-  return $self->interpret(@_);
+  $self->interpret(@_);
 }
 
 sub render_file {
@@ -461,7 +457,7 @@ sub render_file {
   $tmpl = decode($self->encoding, $tmpl) if $self->encoding;
 
   # Render
-  return $self->render($tmpl, @_);
+  $self->render($tmpl, @_);
 }
 
 sub render_file_to_file {
@@ -471,12 +467,10 @@ sub render_file_to_file {
 
   # Render
   my $output = $self->render_file($spath, @_);
-
-  # Exception
   return $output if ref $output;
 
   # Write to file
-  return $self->_write_file($tpath, $output);
+  $self->_write_file($tpath, $output);
 }
 
 sub render_to_file {
@@ -486,12 +480,10 @@ sub render_to_file {
 
   # Render
   my $output = $self->render($tmpl, @_);
-
-  # Exception
   return $output if ref $output;
 
   # Write to file
-  return $self->_write_file($path, $output);
+  $self->_write_file($path, $output);
 }
 
 sub _trim_line {
@@ -522,7 +514,7 @@ sub _trim_line {
     return 1 if length $value;
   }
 
-  return;
+  undef;
 }
 
 sub _write_file {
@@ -538,7 +530,7 @@ sub _write_file {
   # Write to file
   $file->syswrite($output) or croak "Can't write to file '$path': $!";
 
-  return;
+  undef;
 }
 
 1;
@@ -649,7 +641,7 @@ them if necessary.
   <% no code just text [@@&& $i @@]
   EOF
 
-There is only one case that we can escape with a backslash, and thats a
+There is only one case that we can escape with a backslash, and that's a
 newline at the end of a template line.
 
   This is <%= 23 * 3 %> a\
@@ -793,7 +785,7 @@ Note that this method is attribute and might change without warning!
   my $namespace = $mt->namespace;
   $mt           = $mt->namespace('main');
 
-Namespace used to compile templates, defaults to C<Mojo::Template::Context>.
+Namespace used to compile templates, defaults to C<Mojo::Template::SandBox>.
 
 =head2 C<prepend>
 

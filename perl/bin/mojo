@@ -17,7 +17,7 @@ Please visit http://mojolicio.us for detailed installation instructions.
 
 EOF
 
-# Start the command system
+# "My eyes! The goggles do nothing!"
 Mojolicious::Commands->start;
 
 __END__
@@ -28,7 +28,7 @@ mojo - The Mojolicious Command System
 
 =head1 SYNOPSIS
 
-    mojo help
+  % mojo --help
 
 =head1 DESCRIPTION
 

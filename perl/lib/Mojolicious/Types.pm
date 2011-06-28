@@ -23,7 +23,7 @@ has types => sub {
     svg  => 'image/svg+xml',
     tar  => 'application/x-tar',
     txt  => 'text/plain',
-    woff => 'application/x-woff',
+    woff => 'application/x-font-woff',
     xml  => 'text/xml',
     zip  => 'application/zip'
   };
@@ -36,7 +36,7 @@ sub type {
     $self->types->{$ext} = $type;
     return $self;
   }
-  return $self->types->{$ext || ''};
+  $self->types->{$ext || ''};
 }
 
 1;

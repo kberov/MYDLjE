@@ -160,7 +160,7 @@ sub build_form_tx {
   }
 
   return $tx unless wantarray;
-  return $tx, $cb;
+  $tx, $cb;
 }
 
 # "Homer, it's easy to criticize.
@@ -187,7 +187,7 @@ sub build_tx {
   $req->headers->from_hash(ref $_[0] eq 'HASH' ? $_[0] : {@_});
 
   return $tx unless wantarray;
-  return $tx, $cb;
+  $tx, $cb;
 }
 
 sub build_websocket_tx {
@@ -208,37 +208,38 @@ sub build_websocket_tx {
     ->client_handshake;
 
   return $tx unless wantarray;
-  return $tx, $cb;
+  $tx, $cb;
 }
 
 # "The only thing I asked you to do for this party was put on clothes,
 #  and you didn't do it."
 sub delete {
   my $self = shift;
-  return $self->start($self->build_tx('DELETE', @_));
+  $self->start($self->build_tx('DELETE', @_));
 }
 
 sub detect_proxy {
   my $self = shift;
 
+  # Uppercase gets priority
   $self->http_proxy($ENV{HTTP_PROXY}   || $ENV{http_proxy});
   $self->https_proxy($ENV{HTTPS_PROXY} || $ENV{https_proxy});
   if (my $no = $ENV{NO_PROXY} || $ENV{no_proxy}) {
     $self->no_proxy([split /,/, $no]);
   }
 
-  return $self;
+  $self;
 }
 
 # "'What are you lookin at?' - the innocent words of a drunken child."
 sub get {
   my $self = shift;
-  return $self->start($self->build_tx('GET', @_));
+  $self->start($self->build_tx('GET', @_));
 }
 
 sub head {
   my $self = shift;
-  return $self->start($self->build_tx('HEAD', @_));
+  $self->start($self->build_tx('HEAD', @_));
 }
 
 sub need_proxy {
@@ -251,19 +252,19 @@ sub need_proxy {
   $host =~ /\Q$_\E$/ and return for @$no;
 
   # Proxy needed
-  return 1;
+  1;
 }
 
 # "Olive oil? Asparagus? If your mother wasn't so fancy,
 #  we could just shop at the gas station like normal people."
 sub post {
   my $self = shift;
-  return $self->start($self->build_tx('POST', @_));
+  $self->start($self->build_tx('POST', @_));
 }
 
 sub post_form {
   my $self = shift;
-  return $self->start($self->build_form_tx(@_));
+  $self->start($self->build_form_tx(@_));
 }
 
 # "And I gave that man directions, even though I didn't know the way,
@@ -278,8 +279,8 @@ sub put {
 sub start {
   my ($self, $tx, $cb) = @_;
 
-  # Default loop
-  $self->{_loop} ||= $self->ioloop;
+  # Blocking loop
+  my $loop = $self->{_loop} ||= $self->ioloop;
 
   # Non-blocking
   if ($cb) {
@@ -300,40 +301,38 @@ sub start {
   $self->_start_tx($tx, sub { $tx = $_[1] });
 
   # Start loop
-  $self->{_loop}->start;
+  $loop->start;
 
   # Cleanup
-  $self->{_loop}->one_tick(0);
+  $loop->one_tick(0);
 
-  return $tx;
+  $tx;
 }
 
 # "It's like my dad always said: eventually, everybody gets shot."
 sub test_server {
   my ($self, $protocol) = @_;
 
-  # Server
+  # Start test server
   unless ($self->{_port}) {
     my $loop = $self->{_loop} || $self->ioloop;
-
     my $server = $self->{_server} =
       Mojo::Server::Daemon->new(ioloop => $loop, silent => 1);
     my $port = $self->{_port} = $loop->generate_port;
     die "Couldn't find a free TCP port for testing.\n" unless $port;
-
     $self->{_protocol} = $protocol ||= 'http';
     $server->listen(["$protocol://*:$port"]);
     $server->prepare_ioloop;
   }
 
-  # Application
+  # Prepare application for testing
   my $server = $self->{_server};
   delete $server->{app};
   my $app = $self->app;
   ref $app ? $server->app($app) : $server->app_class($app);
   $self->log($server->app->log);
 
-  return $self->{_port};
+  $self->{_port};
 }
 
 # "Are we there yet?
@@ -388,7 +387,7 @@ sub _cache {
   }
   $self->{_cache} = \@cache;
 
-  return $result;
+  $result;
 }
 
 sub _cleanup {
@@ -417,15 +416,12 @@ sub _close { shift->_handle(pop, 1) }
 #  Uh, second word, chief."
 sub _connect {
   my ($self, $tx, $cb) = @_;
-  my $loop = $self->{_loop};
-
-  # Info
-  my $id = $tx->connection;
-  my ($scheme, $address, $port) = $self->_tx_info($tx);
-
-  weaken $self;
 
   # Keep alive connection
+  weaken $self;
+  my $loop = $self->{_loop};
+  my $id   = $tx->connection;
+  my ($scheme, $address, $port) = $self->_tx_info($tx);
   $id ||= $self->_cache("$scheme:$address:$port");
   if ($id && !ref $id) {
     warn "KEEP ALIVE CONNECTION ($scheme:$address:$port)\n" if DEBUG;
@@ -463,20 +459,19 @@ sub _connect {
   $loop->on_error($id => sub { $self->_error(@_) });
   $loop->on_read($id => sub { $self->_read(@_) });
 
-  return $id;
+  $id;
 }
 
 # "Hey, Weener Boy... where do you think you're going?"
 sub _connect_proxy {
   my ($self, $old, $cb) = @_;
 
-  my $req = $old->req;
-  my $url = $req->url;
-
   # No proxy
+  my $req = $old->req;
   return unless my $proxy = $req->proxy;
 
   # WebSocket and/or HTTPS
+  my $url = $req->url;
   return
     unless ($req->headers->upgrade || '') eq 'websocket'
     || ($url->scheme || '') eq 'https';
@@ -520,7 +515,7 @@ sub _connect_proxy {
     }
   );
 
-  return 1;
+  1;
 }
 
 # "I don't mind being called a liar when I'm lying, or about to lie,
@@ -528,11 +523,10 @@ sub _connect_proxy {
 sub _connected {
   my ($self, $id) = @_;
 
+  # Store connection information in transaction
   my $loop = $self->{_loop};
   my $tx   = $self->{_cs}->{$id}->{tx};
   $tx->connection($id);
-
-  # Store connection information in transaction
   my $local = $loop->local_info($id);
   $tx->local_address($local->{address});
   $tx->local_port($local->{port});
@@ -576,13 +570,13 @@ sub _drop {
 sub _error {
   my ($self, $loop, $id, $error) = @_;
 
-  # Transaction
+  # Store error in response
   if (my $tx = $self->{_cs}->{$id}->{tx}) { $tx->res->error($error) }
 
-  # Log
+  # Log error
   $self->log->error($error);
 
-  # Finished
+  # Finish connection
   $self->_handle($id, $error);
 }
 
@@ -606,10 +600,9 @@ sub _finish_tx {
 sub _handle {
   my ($self, $id, $close) = @_;
 
+  # WebSocket
   my $c   = $self->{_cs}->{$id};
   my $old = $c->{tx};
-
-  # WebSocket
   if ($old && $old->is_websocket) {
 
     # Finish transaction
@@ -622,17 +615,17 @@ sub _handle {
   # Upgrade connection to WebSocket
   elsif ($old && (my $new = $self->_upgrade($id))) {
 
-    # Finish
+    # Finish transaction
     $self->_finish_tx($new, $c->{cb});
 
-    # Leftovers
+    # Parse leftovers
     $new->client_read($old->res->leftovers);
   }
 
   # Normal connection
   else {
 
-    # Cleanup
+    # Cleanup connection
     $self->_drop($id, $close);
 
     # Idle connection
@@ -718,10 +711,10 @@ sub _redirect {
   $self->{_cs}->{$new_id}->{redirects} = $r + 1;
 
   # Redirecting
-  return 1;
+  1;
 }
 
-# "It's greeat! We can do *anything* now that Science has invented Magic."
+# "It's great! We can do *anything* now that Science has invented Magic."
 sub _start_tx {
   my ($self, $tx, $cb) = @_;
 
@@ -742,11 +735,10 @@ sub _start_tx {
   # Detect proxy
   $self->detect_proxy if $ENV{MOJO_PROXY};
 
+  # Proxy
   my $req    = $tx->req;
   my $url    = $req->url;
   my $scheme = $url->scheme || '';
-
-  # Proxy
   if ($self->need_proxy($url->host)) {
 
     # HTTP proxy
@@ -760,7 +752,7 @@ sub _start_tx {
     }
   }
 
-  # We identify ourself
+  # We identify ourselves
   my $headers = $req->headers;
   $headers->user_agent($self->name) unless $headers->user_agent;
 
@@ -781,7 +773,7 @@ sub _start_tx {
   $self->{_processing} ||= 0;
   $self->{_processing} += 1;
 
-  return $id;
+  $id;
 }
 
 sub _switch_blocking {
@@ -791,9 +783,8 @@ sub _switch_blocking {
   croak 'Non-blocking requests in progress' if $self->{_processing};
   warn "SWITCHING TO BLOCKING MODE\n" if DEBUG;
 
-  $self->_cleanup;
-
   # Normal loop
+  $self->_cleanup;
   $self->{_loop} = $self->ioloop;
   $self->{_nb}   = 0;
 }
@@ -805,9 +796,8 @@ sub _switch_non_blocking {
   croak 'Blocking request in progress' if $self->{_processing};
   warn "SWITCHING TO NON-BLOCKING MODE\n" if DEBUG;
 
-  $self->_cleanup;
-
   # Global loop
+  $self->_cleanup;
   $self->{_loop} = Mojo::IOLoop->singleton;
   $self->{_nb}   = 1;
 }
@@ -815,13 +805,12 @@ sub _switch_non_blocking {
 sub _tx_info {
   my ($self, $tx) = @_;
 
+  # Proxy info
   my $req    = $tx->req;
   my $url    = $req->url;
   my $scheme = $url->scheme || 'http';
   my $host   = $url->ihost;
   my $port   = $url->port;
-
-  # Proxy info
   if (my $proxy = $req->proxy) {
     $scheme = $proxy->scheme;
     $host   = $proxy->ihost;
@@ -831,17 +820,16 @@ sub _tx_info {
   # Default port
   $port ||= $scheme eq 'https' ? 443 : 80;
 
-  return ($scheme, $host, $port);
+  ($scheme, $host, $port);
 }
 
 # "Once the government approves something, it's no longer immoral!"
 sub _upgrade {
   my ($self, $id) = @_;
 
+  # No upgrade request
   my $c   = $self->{_cs}->{$id};
   my $old = $c->{tx};
-
-  # No upgrade request
   return unless $old->req->headers->upgrade;
 
   # Handshake failed
@@ -864,7 +852,7 @@ sub _upgrade {
   weaken $self;
   $new->on_resume(sub { $self->_write($id) });
 
-  return $new;
+  $new;
 }
 
 # "Oh well. At least we'll die doing what we love: inhaling molten rock."
@@ -911,7 +899,7 @@ Mojo::UserAgent - Async IO HTTP 1.1 And WebSocket User Agent
   print $ua->max_redirects(3)->get($latest)->res->body;
 
   # Quick JSON request
-  my $trends = 'http://search.twitter.com/trends.json';
+  my $trends = 'https://api.twitter.com/1/trends.json';
   print $ua->get($trends)->res->json->{trends}->[0]->{name};
 
   # Extract data from HTML and XML resources
@@ -1323,10 +1311,13 @@ Note that this method is EXPERIMENTAL and might change without warning!
 
 Open a non-blocking WebSocket connection with transparent handshake.
 
-  $ua->websocket('ws://localhost:3000' => sub {
+  $ua->websocket('ws://localhost:3000/echo' => sub {
     my $tx = pop;
-    $tx->on_finish(sub { Mojo::IOLoop->stop });
-    $tx->on_message(sub { say pop });
+    $tx->on_finish(sub  { Mojo::IOLoop->stop });
+    $tx->on_message(sub {
+      my ($tx, $message) = @_;
+      print "$message\n";
+    });
     $tx->send_message('Hi!');
   });
   Mojo::IOLoop->start;

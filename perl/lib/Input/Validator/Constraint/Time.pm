@@ -1,9 +1,9 @@
-package MojoX::Validator::Constraint::Time;
+package Input::Validator::Constraint::Time;
 
 use strict;
 use warnings;
 
-use base 'MojoX::Validator::Constraint';
+use base 'Input::Validator::Constraint';
 
 sub is_valid {
     my ($self, $value) = @_;
@@ -31,7 +31,7 @@ __END__
 
 =head1 NAME
 
-MojoX::Validator::Constraint::Time - Time constraint
+Input::Validator::Constraint::Time - Time constraint
 
 =head1 SYNOPSIS
 
@@ -51,6 +51,6 @@ Validates the constraint.
 
 =head1 SEE ALSO
 
-L<MojoX::Validator>, L<MojoX::Constraint>
+L<Input::Validator>, L<Input::Constraint>
 
 =cut

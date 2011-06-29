@@ -1,9 +1,9 @@
-package MojoX::Validator::Constraint::Callback;
+package Input::Validator::Constraint::Callback;
 
 use strict;
 use warnings;
 
-use base 'MojoX::Validator::Constraint';
+use base 'Input::Validator::Constraint';
 
 sub is_valid {
     my ($self, $value) = @_;
@@ -18,7 +18,7 @@ __END__
 
 =head1 NAME
 
-MojoX::Validator::Constraint::Callback - Callback constraint
+Input::Validator::Constraint::Callback - Callback constraint
 
 =head1 SYNOPSIS
 
@@ -46,6 +46,6 @@ Validates the constraint.
 
 =head1 SEE ALSO
 
-L<MojoX::Validator>, L<MojoX::Constraint>
+L<Input::Validator>, L<Input::Constraint>
 
 =cut

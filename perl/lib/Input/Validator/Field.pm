@@ -1,32 +1,92 @@
-package MojoX::Validator::Field;
+package Input::Validator::Field;
 
 use strict;
 use warnings;
 
-use base 'Mojo::Base';
+use base 'Input::Validator::Base';
 
-use MojoX::Validator::Bulk;
-use MojoX::Validator::ConstraintBuilder;
+use Input::Validator::Bulk;
+use Input::Validator::ConstraintBuilder;
 
 our $AUTOLOAD;
 
-__PACKAGE__->attr('error');
-__PACKAGE__->attr('name');
-__PACKAGE__->attr('inflate');
-__PACKAGE__->attr('deflate');
-__PACKAGE__->attr('required'  => 0);
-__PACKAGE__->attr('unknown'   => 0);
-__PACKAGE__->attr('explicit'  => 0);
-__PACKAGE__->attr(constraints => sub { [] });
-__PACKAGE__->attr(messages    => sub { {} });
-__PACKAGE__->attr(trim        => 1);
+sub BUILD {
+    my $self = shift;
+
+    $self->{constraints} ||= [];
+    $self->{messages}    ||= {};
+
+    $self->{trim} = 1 unless defined $self->{trim};
+
+    return $self;
+}
+
+sub name {
+    my $self = shift;
+
+    return $self->{name} unless @_;
+
+    $self->{name} = $_[0];
+
+    return $self;
+}
+
+sub required {
+    my $self = shift;
+
+    return $self->{required} unless @_;
+
+    $self->{required} = $_[0];
+
+    return $self;
+}
+
+sub inflate {
+    my $self = shift;
+
+    return $self->{inflate} unless @_;
+
+    $self->{inflate} = $_[0];
+
+    return $self;
+}
+
+sub deflate {
+    my $self = shift;
+
+    return $self->{deflate} unless @_;
+
+    $self->{deflate} = $_[0];
+
+    return $self;
+}
+
+sub trim {
+    my $self = shift;
+
+    return $self->{trim} unless @_;
+
+    $self->{trim} = $_[0];
+
+    return $self;
+}
+
+sub error {
+    my $self = shift;
+
+    return $self->{error} unless @_;
+
+    $self->{error} = $_[0];
+
+    return $self;
+}
 
 sub constraint {
     my $self = shift;
 
-    my $constraint = MojoX::Validator::ConstraintBuilder->build(@_);
+    my $constraint = Input::Validator::ConstraintBuilder->build(@_);
 
-    push @{$self->constraints}, $constraint;
+    push @{$self->{constraints}}, $constraint;
 
     return $self;
 }
@@ -46,11 +106,9 @@ sub _message {
     my $message = shift;
     my $params  = shift || [];
 
-    if ($self->{message}) {
-        return sprintf($self->{message}, @$params) if $self->{message};
-    }
+    return sprintf($self->{message}, @$params) if $self->{message};
 
-    return $self->messages->{$message} || $message;
+    return $self->{messages}->{$message} || $message;
 }
 
 sub multiple {
@@ -94,11 +152,10 @@ sub is_valid {
 
     $self->error('');
 
-    $self->error($self->_message('NOT_SPECIFIED')), return 0
-      if $self->explicit && $self->unknown;
-
     $self->error($self->_message('REQUIRED')), return 0
       if $self->required && $self->is_empty;
+
+    return 1 if $self->is_empty;
 
     my @values = $self->multiple ? @{$self->value} : $self->value;
 
@@ -113,9 +170,7 @@ sub is_valid {
           if defined $max ? @values > $max : $min != 1 && @values != $min;
     }
 
-    return 1 if $self->is_empty;
-
-    foreach my $c (@{$self->constraints}) {
+    foreach my $c (@{$self->{constraints}}) {
         if ($c->is_multiple) {
             my ($ok, $error) = $c->is_valid([@values]);
 
@@ -158,7 +213,7 @@ sub clear_value {
 sub each {
     my $self = shift;
 
-    my $bulk = MojoX::Validator::Bulk->new(fields => [$self]);
+    my $bulk = Input::Validator::Bulk->new(fields => [$self]);
     return $bulk->each(@_);
 }
 
@@ -172,6 +227,10 @@ sub is_empty {
     my ($self) = @_;
 
     return 1 unless $self->is_defined;
+
+    if (ref $self->value eq 'ARRAY') {
+        return @{$self->value} == 0;
+    }
 
     return $self->value eq '' ? 1 : 0;
 }
@@ -195,7 +254,7 @@ __END__
 
 =head1 NAME
 
-MojoX::Validator::Field - Field object
+Input::Validator::Field - Field object
 
 =head1 SYNOPSIS
 
@@ -230,7 +289,7 @@ Field error.
 
     $field->each(sub { shift->required(1) });
 
-Each method as described in L<MojoX::Validator::Bulk>. Added here for
+Each method as described in L<Input::Validator::Bulk>. Added here for
 convenience.
 
 =head2 C<inflate>
@@ -267,7 +326,7 @@ Field's name.
 
     $field->required(1);
 
-Whether field is required or not. See L<MojoX::Validator> documentation what is
+Whether field is required or not. See L<Input::Validator> documentation what is
 an empty field.
 
 =head2 C<trim>
@@ -332,6 +391,6 @@ Set or get field's value.
 
 =head1 SEE ALSO
 
-L<MojoX::Validator>, L<MojoX::Validator::Constraint>.
+L<Input::Validator>, L<Input::Validator::Constraint>.
 
 =cut

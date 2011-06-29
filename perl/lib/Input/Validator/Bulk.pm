@@ -1,17 +1,23 @@
-package MojoX::Validator::Bulk;
+package Input::Validator::Bulk;
 
 use strict;
 use warnings;
 
-use base 'Mojo::Base';
+use base 'Input::Validator::Base';
 
-__PACKAGE__->attr(fields => sub { [] });
+sub BUILD {
+    my $self = shift;
+
+    $self->{fields} ||= [];
+
+    return $self;
+}
 
 sub each {
     my $self = shift;
     my $cb   = shift;
 
-    foreach my $field (@{$self->fields}) {
+    foreach my $field (@{$self->{fields}}) {
         $cb->($field);
     }
 
@@ -23,7 +29,7 @@ __END__
 
 =head1 NAME
 
-MojoX::Validator::Bulk - Internal object for multiple fields processing
+Input::Validator::Bulk - Internal object for multiple fields processing
 
 =head1 SYNOPSIS
 
@@ -31,7 +37,7 @@ MojoX::Validator::Bulk - Internal object for multiple fields processing
 
 =head1 DESCRIPTION
 
-Bulk object. Holds multiple fields that were created by L<MojoX::Validator>.
+Bulk object. Holds multiple fields that were created by L<Input::Validator>.
 
 =head1 METHODS
 
@@ -43,6 +49,6 @@ Every field is passed to this callback as the first parameter.
 
 =head1 SEE ALSO
 
-L<MojoX::Validator>
+L<Input::Validator>
 
 =cut

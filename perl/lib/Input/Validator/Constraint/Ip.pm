@@ -1,9 +1,9 @@
-package MojoX::Validator::Constraint::Ip;
+package Input::Validator::Constraint::Ip;
 
 use strict;
 use warnings;
 
-use base 'MojoX::Validator::Constraint';
+use base 'Input::Validator::Constraint';
 
 sub is_valid {
     my ($self, $value) = @_;
@@ -32,7 +32,7 @@ __END__
 
 =head1 NAME
 
-MojoX::Validator::Constraint::Ip - Ip constraint
+Input::Validator::Constraint::Ip - Ip constraint
 
 =head1 SYNOPSIS
 
@@ -57,6 +57,6 @@ Validates the constraint.
 
 =head1 SEE ALSO
 
-L<MojoX::Validator>, L<MojoX::Constraint>
+L<Input::Validator>, L<Input::Constraint>
 
 =cut

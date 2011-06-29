@@ -1,16 +1,40 @@
-package MojoX::Validator::Group;
+package Input::Validator::Group;
 
 use strict;
 use warnings;
 
-use base 'Mojo::Base';
+use base 'Input::Validator::Base';
 
-use MojoX::Validator::ConstraintBuilder;
+use Input::Validator::ConstraintBuilder;
 
-__PACKAGE__->attr('name');
-__PACKAGE__->attr('error');
-__PACKAGE__->attr(constraints => sub { [] });
-__PACKAGE__->attr(fields => sub { [] });
+sub BUILD {
+    my $self = shift;
+
+    $self->{constraints} ||= [];
+    $self->{fields}      ||= [];
+
+    return $self;
+}
+
+sub name {
+    my $self = shift;
+
+    return $self->{name} unless @_;
+
+    $self->{name} = $_[0];
+
+    return $self;
+}
+
+sub error {
+    my $self = shift;
+
+    return $self->{error} unless @_;
+
+    $self->{error} = $_[0];
+
+    return $self;
+}
 
 sub unique { shift->constraint('unique') }
 sub equal  { shift->constraint('equal') }
@@ -18,9 +42,9 @@ sub equal  { shift->constraint('equal') }
 sub constraint {
     my $self = shift;
 
-    my $constraint = MojoX::Validator::ConstraintBuilder->build(@_);
+    my $constraint = Input::Validator::ConstraintBuilder->build(@_);
 
-    push @{$self->constraints}, $constraint;
+    push @{$self->{constraints}}, $constraint;
 
     return $self;
 }
@@ -29,12 +53,12 @@ sub is_valid {
     my $self = shift;
 
     # Don't check if some field already has an error
-    return 0 if grep {$_->error} @{$self->fields};
+    return 0 if grep {$_->error} @{$self->{fields}};
 
     # Get all the values
-    my $values = [map { $_->value } @{$self->fields}];
+    my $values = [map { $_->value } @{$self->{fields}}];
 
-    foreach my $c (@{$self->constraints}) {
+    foreach my $c (@{$self->{constraints}}) {
         my ($ok, $error) = $c->is_valid($values);
 
         unless ($ok) {
@@ -51,7 +75,7 @@ __END__
 
 =head1 NAME
 
-MojoX::Validator::Group - Run constraint on group of fields
+Input::Validator::Group - Run constraint on group of fields
 
 =head1 SYNOPSIS
 

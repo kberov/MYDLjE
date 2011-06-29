@@ -1,17 +1,24 @@
-package MojoX::Validator::Constraint;
+package Input::Validator::Constraint;
 
 use strict;
 use warnings;
 
-use base 'Mojo::Base';
+use base 'Input::Validator::Base';
 
-use Mojo::ByteStream;
+use String::CamelCase ();
 
-__PACKAGE__->attr('args' => sub { [] });
+sub BUILD {
+    my $self = shift;
 
-sub is_valid {0}
+    $self->{args} ||= [];
 
+    return $self;
+}
+
+sub is_valid    {0}
 sub is_multiple {0}
+
+sub args { shift->{args} }
 
 sub error {
     my $self = shift;
@@ -20,9 +27,7 @@ sub error {
     my $namespace = __PACKAGE__;
     $name =~ s/^$namespace\:://;
 
-    return
-      uc(Mojo::ByteStream->new($name)->decamelize->to_string)
-      . '_CONSTRAINT_FAILED';
+    return uc(String::CamelCase::decamelize($name)) . '_CONSTRAINT_FAILED';
 }
 
 1;
@@ -30,7 +35,7 @@ __END__
 
 =head1 NAME
 
-MojoX::Validator::Constraint - Basic condition class
+Input::Validator::Constraint - Basic condition class
 
 =head1 SYNOPSIS
 

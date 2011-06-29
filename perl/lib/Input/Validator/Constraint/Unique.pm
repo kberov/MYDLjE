@@ -1,9 +1,9 @@
-package MojoX::Validator::Constraint::Unique;
+package Input::Validator::Constraint::Unique;
 
 use strict;
 use warnings;
 
-use base 'MojoX::Validator::Constraint';
+use base 'Input::Validator::Constraint';
 
 sub is_multiple {1}
 
@@ -22,7 +22,7 @@ __END__
 
 =head1 NAME
 
-MojoX::Validator::Constraint::Unique - Unique constraint
+Input::Validator::Constraint::Unique - Unique constraint
 
 =head1 SYNOPSIS
 
@@ -41,6 +41,6 @@ Validates the constraint.
 
 =head1 SEE ALSO
 
-L<MojoX::Validator>, L<MojoX::Constraint>
+L<Input::Validator>, L<Input::Constraint>
 
 =cut

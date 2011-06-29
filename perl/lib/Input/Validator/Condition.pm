@@ -1,15 +1,20 @@
-package MojoX::Validator::Condition;
+package Input::Validator::Condition;
 
 use strict;
 use warnings;
 
-use base 'Mojo::Base';
+use base 'Input::Validator::Base';
 
-use MojoX::Validator::ConstraintBuilder;
+use Input::Validator::ConstraintBuilder;
 
-__PACKAGE__->attr(matched => 0);
-__PACKAGE__->attr(then    => sub { });
-__PACKAGE__->attr(bulks   => sub { [] });
+sub BUILD {
+    my $self = shift;
+
+    $self->{then} ||= sub { };
+    $self->{bulks} ||= [];
+
+    return $self;
+}
 
 sub regexp { shift->constraint('regexp' => @_) }
 sub length { shift->constraint('length' => @_) }
@@ -19,7 +24,17 @@ sub when {
     my $fields = ref $_[0] eq 'ARRAY' ? shift : [@_];
 
     my $bulk = {fields => $fields, constraints => []};
-    push @{$self->bulks}, $bulk;
+    push @{$self->{bulks}}, $bulk;
+
+    return $self;
+}
+
+sub then {
+    my $self = shift;
+
+    return $self->{then} unless @_;
+
+    $self->{then} = $_[0];
 
     return $self;
 }
@@ -27,19 +42,21 @@ sub when {
 sub constraint {
     my $self = shift;
 
-    my $constraint = MojoX::Validator::ConstraintBuilder->build(@_);
+    my $constraint = Input::Validator::ConstraintBuilder->build(@_);
 
-    my $bulk = $self->bulks->[-1];
+    my $bulk = $self->{bulks}->[-1];
     push @{$bulk->{constraints}}, $constraint;
 
     return $self;
 }
 
+sub is_matched { shift->{matched} }
+
 sub match {
     my $self   = shift;
     my $params = shift;
 
-    foreach my $bulk (@{$self->bulks}) {
+    foreach my $bulk (@{$self->{bulks}}) {
         foreach my $name (@{$bulk->{fields}}) {
             my $field = $params->{$name};
 
@@ -63,7 +80,7 @@ sub match {
         }
     }
 
-    $self->matched(1);
+    $self->{matched} = 1;
 
     return 1;
 }
@@ -73,7 +90,7 @@ __END__
 
 =head1 NAME
 
-MojoX::Validator::Condition - Condition object
+Input::Validator::Condition - Condition object
 
 =head1 SYNOPSIS
 
@@ -128,6 +145,6 @@ Adds fields which values are checked to match the condition.
 
 =head1 SEE ALSO
 
-L<MojoX::Validator>, L<MojoX::Validator::Field>, L<MojoX::Validator::Constraint>
+L<Input::Validator>, L<Input::Validator::Field>, L<Input::Validator::Constraint>
 
 =cut

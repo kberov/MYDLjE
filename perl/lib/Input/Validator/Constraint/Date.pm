@@ -1,9 +1,9 @@
-package MojoX::Validator::Constraint::Date;
+package Input::Validator::Constraint::Date;
 
 use strict;
 use warnings;
 
-use base 'MojoX::Validator::Constraint';
+use base 'Input::Validator::Constraint';
 
 require Time::Local;
 
@@ -27,7 +27,7 @@ __END__
 
 =head1 NAME
 
-MojoX::Validator::Constraint::Date - Date constraint
+Input::Validator::Constraint::Date - Date constraint
 
 =head1 SYNOPSIS
 
@@ -48,6 +48,6 @@ Validates the constraint.
 
 =head1 SEE ALSO
 
-L<MojoX::Validator>, L<MojoX::Constraint>
+L<Input::Validator>, L<Input::Constraint>
 
 =cut

@@ -1,6 +1,7 @@
 package MYDLjE;
 use MYDLjE::Base 'Mojolicious';
 use MYDLjE::Config;
+use MYDLjE::C;
 require Mojo::Util;
 
 our $VERSION = '0.3';

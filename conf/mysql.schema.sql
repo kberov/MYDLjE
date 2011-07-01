@@ -1,7 +1,6 @@
 -- <queries>
-
--- <create_schema_and_user>
--- Example: not used in perl code
+-- <create_schema_and_user><![CDATA[
+-- Example: Not executed by MYDLjE::Plugin::SystemSetup::_init_database($c, $validator->values);
 CREATE USER 'mydlje'@'localhost' IDENTIFIED BY  'mydljep';
 
 GRANT USAGE ON * . * TO  'mydlje'@'localhost' IDENTIFIED BY  'mydljep' WITH MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0 ;
@@ -84,11 +83,12 @@ CREATE TABLE IF NOT EXISTS `domains` (
   `domain` varchar(63) NOT NULL COMMENT 'Domain name as in $ENV{HTTP_HOST}',
   `name` varchar(63) NOT NULL COMMENT 'The name of this site.',
   `description` varchar(255) NOT NULL DEFAULT '' COMMENT 'Site description',
-  `user_id` int(11) NOT NULL,
-  `group_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL COMMENT  'User for which the permissions apply (owner).',
+  `group_id` int(11) NOT NULL DEFAULT '1' COMMENT 'Group for which the permissions apply.',
   `permissions` varchar(10) NOT NULL DEFAULT '-rwxr-xr-x' COMMENT 'Domain permissions',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `domain` (`domain`)
+  UNIQUE KEY `domain` (`domain`),
+  KEY `user_id_group_id` (`user_id`, `group_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='Sites managed by this system';
 --]]></table>
 
@@ -106,8 +106,8 @@ CREATE TABLE IF NOT EXISTS `pages` (
   `cache` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1=yes 0=no',
   `expiry` int(11) NOT NULL DEFAULT '86400' COMMENT 'expiry tstamp if cache==1',
   `permissions` varchar(10) NOT NULL DEFAULT '-rwxr-xr-x' COMMENT 'Page editing permissions',
-  `user_id` int(11) NOT NULL DEFAULT '0' COMMENT 'owner',
-  `group_id` int(11) NOT NULL DEFAULT '0' COMMENT 'owner group',
+  `user_id` int(11) NOT NULL COMMENT  'User for which the permissions apply (owner).',
+  `group_id` int(11) NOT NULL DEFAULT '1' COMMENT 'Group for which the permissions apply.',
   `tstamp` int(11) NOT NULL DEFAULT '0',
   `start` int(11) DEFAULT '0',
   `stop` int(11) DEFAULT '0',
@@ -119,6 +119,7 @@ CREATE TABLE IF NOT EXISTS `pages` (
   UNIQUE KEY `alias_in_domain_id` (`alias`,`domain_id`),
   KEY `tstamp` (`tstamp`),
   KEY `page_type` (`page_type`),
+  KEY `user_id_group_id` (`user_id`, `group_id`),
   KEY `hidden` (`hidden`),
   KEY `pid` (`pid`),
   KEY `domain_id` (`domain_id`)
@@ -134,7 +135,8 @@ CREATE TABLE IF NOT EXISTS `content` (
   `alias` varchar(255) NOT NULL DEFAULT 'seo-friendly-id' COMMENT 'Unidecoded, lowercased and trimmed of \\W characters unique identifier for the row data_type',
   `pid` int(11) NOT NULL DEFAULT '0' COMMENT 'Parent Question, Article, Note, Book ID etc',
   `page_id` int(11) NOT NULL DEFAULT '0' COMMENT 'page.id to which this content belongs. Default: 0 ',
-  `user_id` int(11) NOT NULL COMMENT 'User that created it initially.',
+  `user_id` int(11) NOT NULL COMMENT  'User for which the permissions apply (owner).',
+  `group_id` int(11) NOT NULL DEFAULT '1' COMMENT 'Group for which the permissions apply.',
   `sorting` int(10) NOT NULL DEFAULT '0' COMMENT 'For sorting chapters in a book, pages in a menu etc.',
   `data_type` varchar(32) NOT NULL DEFAULT 'note' COMMENT 'Semantic Content Types. See MYDLjE::M::Content::*.',
   `data_format` varchar(32) NOT NULL DEFAULT 'text' COMMENT 'Corresponding engine will be used to process the content before output. Ie Text::Textile for textile.',
@@ -146,7 +148,6 @@ CREATE TABLE IF NOT EXISTS `content` (
   `tags` varchar(100) NOT NULL DEFAULT '' COMMENT 'Used in tag cloud boxes. merged with keywords and added to keywords meta tag.',
   `body` text NOT NULL COMMENT 'Main content when applicable.',
   `language` varchar(2) NOT NULL DEFAULT 'en' COMMENT 'Language of this content. All languages when empty string',
-  `group_id` int(11) NOT NULL DEFAULT '1' COMMENT 'Group ID of the owner of this content.',
   `permissions` char(10) NOT NULL DEFAULT '-rwxr-xr-x' COMMENT 'tuuugggooo - Experimental permissions for the content.',
   `featured` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Show on top independently of other sorting.',
   `accepted` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Answer accepted?',
@@ -155,49 +156,49 @@ CREATE TABLE IF NOT EXISTS `content` (
   `start` int(11) NOT NULL COMMENT 'Date/Time from which the record will be accessible in the site.',
   `stop` int(11) NOT NULL COMMENT 'Date/Time till which the record will be accessible in the site.',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `alias` (`alias`,`data_type`),
+  UNIQUE KEY `alias_data_type` (`alias`,`data_type`),
   KEY `pid` (`pid`),
   KEY `tstamp` (`tstamp`),
   KEY `tags` (`tags`),
   KEY `permissions` (`permissions`),
-  KEY `user_id` (`user_id`),
+  KEY `user_id_group_id` (`user_id`, `group_id`),
   KEY `data_type` (`data_type`),
   KEY `language` (`language`),
   KEY `page_id` (`page_id`),
   KEY `deleted` (`deleted`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='MYDLjE content elements. Different  data_typeS may be used.';
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 
+COMMENT='MYDLjE content elements. Different  data_typeS may be used.';
 
 --]]></table>
 
--- <table name="users_groups"><![CDATA[
-DROP TABLE IF EXISTS `users_groups`;
-CREATE TABLE IF NOT EXISTS `users_groups` (
-  `uid` int(11) NOT NULL COMMENT 'User  ID',
-  `gid` int(11) NOT NULL COMMENT 'Group ID',
-  PRIMARY KEY (`uid`,`gid`),
-  KEY `gid` (`gid`)
+-- <table name="user_group"><![CDATA[
+DROP TABLE IF EXISTS `user_group`;
+CREATE TABLE IF NOT EXISTS `user_group` (
+  `user_id` int(11) NOT NULL COMMENT 'ID of the user belonging to the group with group_id.',
+  `group_id` int(11) NOT NULL COMMENT 'ID of the group to which the user with user_id belongs.',
+  PRIMARY KEY `user_id_group_id` (`user_id`, `group_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Which user to which group belongs';
 --]]></table>
 
--- <table name="properties"><![CDATA[
-DROP TABLE IF EXISTS `properties`;
-CREATE TABLE IF NOT EXISTS `properties` (
-  `property` varchar(30) NOT NULL COMMENT 'group or/and user property',
-  `description` varchar(255) NOT NULL COMMENT 'What this property means?',
-  `default_value` varchar(255) NOT NULL DEFAULT '' COMMENT 'Default value for this property?',
-  PRIMARY KEY (`property`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Properties which can be used as permissions, capabilities or whatever business logic you put in.';
+-- <table name="abilities"><![CDATA[
+DROP TABLE IF EXISTS `abilities`;
+CREATE TABLE IF NOT EXISTS `abilities` (
+  `ability` varchar(30) NOT NULL COMMENT 'Group or/and user abilities to do or be something',
+  `description` varchar(255) NOT NULL COMMENT 'What this ability means?',
+  `default_value` varchar(255) NOT NULL DEFAULT '' COMMENT 'Default value for this ability?',
+  PRIMARY KEY (`ability`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 
+COMMENT='Abilities which can be used as permissions, capabilities or whatever business logic you put in.';
 --]]></table>
 
--- <table name="user_properties"><![CDATA[
-
-DROP TABLE IF EXISTS `users_properties`;
-CREATE TABLE IF NOT EXISTS `users_properties` (
-  `uid` int(11) NOT NULL COMMENT 'User  ID',
-  `property` varchar(30) NOT NULL COMMENT 'user property',
-  `property_value` varchar(30) NOT NULL COMMENT 'Value interperted depending on business logic',
-  PRIMARY KEY (`uid`,`property`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Users owning properties.';
+-- <table name="group_abilities"><![CDATA[
+DROP TABLE IF EXISTS `group_abilities`;
+CREATE TABLE IF NOT EXISTS `group_abilities` (
+  `group_id` int(11) NOT NULL COMMENT 'Group  ID',
+  `ability` varchar(30) NOT NULL COMMENT 'Group ability-all users with this group_id have the ability',
+  `a_value` varchar(30) NOT NULL COMMENT 'Value interpreted depending on business logic',
+  PRIMARY KEY (`group_id`,`ability`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Users having abilities.';
 --]]></table>
 
 --
@@ -211,8 +212,11 @@ CREATE TABLE IF NOT EXISTS `users_properties` (
 -- when a database suports this.
 -- EXAMPLE EDITABLE VIEWS
 --<view name="vguest_content"><![CDATA[
-CREATE OR REPLACE VIEW vguest_content AS SELECT 
-`id`, `alias`, `pid`, `page_id`, `user_id`, `sorting`, `data_type`, `data_format`, `time_created`, `tstamp`, `title`, `description`, `keywords`, `tags`, `body`, `language`, `group_id`, `permissions`, `featured`, `accepted`, `bad`
+DROP VIEW IF EXISTS  vguest_content;
+CREATE VIEW vguest_content AS SELECT 
+`id`, `alias`, `pid`, `page_id`, `user_id`, `group_id`, `sorting`, `data_type`, `data_format`, 
+`time_created`, `tstamp`, `title`, `description`, `keywords`, `tags`, `body`, 
+`language`, `permissions`, `featured`, `accepted`, `bad`
 FROM content WHERE(
   deleted = 0 AND (
     (start = 0 OR start < UNIX_TIMESTAMP()) AND (STOP = 0 OR STOP > UNIX_TIMESTAMP())
@@ -223,29 +227,45 @@ FROM content WHERE(
 
 --<view name="varticle"><![CDATA[
 DROP VIEW IF EXISTS  varticle;
-
 --]]></view>
-
---]]></queries>
 --<do id="constraints"><![CDATA[
-ALTER TABLE `pages`
-  ADD CONSTRAINT `pages_id_fk` FOREIGN KEY (`pid`) REFERENCES `pages` (`id`) ,
-  ADD CONSTRAINT `pages_domain_id_fk` FOREIGN KEY (`domain_id`) REFERENCES `domains` (`id`) ON DELETE CASCADE;
-
-ALTER TABLE `content`
-  ADD CONSTRAINT `content_page_id_fk` FOREIGN KEY (`page_id`) REFERENCES `pages` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `content_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
-
-ALTER TABLE `sessions`
-  ADD CONSTRAINT `sessions_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 ALTER TABLE `users`
   ADD CONSTRAINT `users_group_id_fk` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`);
 
-ALTER TABLE `users_groups`
-  ADD CONSTRAINT `users_groups_group_id_fk` FOREIGN KEY (`gid`) REFERENCES `groups` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `users_groups_user_id_fk` FOREIGN KEY (`uid`) REFERENCES `users` (`id`) ON DELETE CASCADE ;
+ALTER TABLE `user_group`
+  ADD CONSTRAINT `user_group_groups_id_fk` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`),
+  ADD CONSTRAINT `user_group_users_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+
+ALTER TABLE `domains`
+  ADD CONSTRAINT `domains_user_id_group_id_fk` FOREIGN KEY (`user_id`, `group_id`) REFERENCES `user_group` (`user_id`, `group_id`);
+
+ALTER TABLE `pages`
+  ADD CONSTRAINT `pages_id_fk` FOREIGN KEY (`pid`) REFERENCES `pages` (`id`) ,
+  ADD CONSTRAINT `pages_user_id_group_id_fk` FOREIGN KEY (`user_id`, `group_id`) REFERENCES `user_group` (`user_id`, `group_id`) ,
+  ADD CONSTRAINT `pages_domain_id_fk` FOREIGN KEY (`domain_id`) REFERENCES `domains` (`id`);
+
+ALTER TABLE `content`
+  ADD CONSTRAINT `content_page_id_fk` FOREIGN KEY (`page_id`) REFERENCES `pages` (`id`),
+  ADD CONSTRAINT `content_user_id_group_id_fk` FOREIGN KEY (`user_id`, `group_id`) REFERENCES `user_group` (`user_id`, `group_id`);
+
+ALTER TABLE `sessions`
+  ADD CONSTRAINT `sessions_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+
+ALTER TABLE `group_abilities`
+  ADD CONSTRAINT `group_abilities_ability_fk` FOREIGN KEY (`ability`) REFERENCES `abilities` (`ability`),
+  ADD CONSTRAINT `group_abilities_group_id_fk` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`);
 
 --]]></do>
 --<do id="enable_foreign_key_checks"><![CDATA[
 SET FOREIGN_KEY_CHECKS=1;
 --]]></do>
+
+-- Examples here are just stored as snippets for my reference. They are not executed by mydlje
+-- <example><![CDATA[
+-- SET FOREIGN_KEY_CHECKS=0;
+-- DROP TABLE `abilities`, `content`, `domains`, `groups`, `group_abilities`, `pages`, `sessions`, `users`, `user_group`;
+-- DROP VIEW;
+--]]></example>
+
+--</queries>
+

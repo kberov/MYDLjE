@@ -6,8 +6,8 @@ INSERT INTO `groups` (
     `id`, `name`, `description`, `namespaces`, `created_by`, `changed_by`, `disabled`,
     `start`, `stop`, `properties`) VALUES
     (1, 'admin', 'Users belonging to this group have no access restrictions', 'MYDLjE::ControlPanel, MYDLjE::Site', 1, 1, 0, 0, 0, NULL),
-    (2, 'guest', 'The guets user only is in this group', 'MYDLjE::Site', 1, 1, 0, 0, 0, NULL),
-    (3, 'customers', 'In this group are all customers (all registered users via site)', 'MYDLjE::Site', 1, 1, 0, 0, 0, NULL),
+    (2, 'guest', 'Only the guest user is in this group and has access only to the site.', 'MYDLjE::Site', 1, 1, 0, 0, 0, NULL),
+    (3, 'customers', 'Default group for all registered users via site.', 'MYDLjE::Site', 1, 1, 0, 0, 0, NULL),
     (4, 'editors', 'Pages and Site Editors', 'MYDLjE::ControlPanel', 1, 1, 0, 0, 0, NULL);
 
 -- ]]></query>
@@ -19,6 +19,9 @@ INSERT INTO `users` (`id`, `group_id`, `login_name`, `login_password`, `first_na
     (2, 2, 'guest', 'fda87185f0186097655acb7beb954115', '', '', 'guest@localhost.com', 'Default not logged in user. Do not remove!', 1, 1, 0, 0, 0, 0, 0, NULL);
 
 -- ]]></query>
+-- <query name="user_group"><![CDATA[
+ INSERT INTO `user_group` (`user_id`, `group_id`) VALUES (1, 1), (2, 2);
+-- ]]></quey>
 
 -- <query name="domains"><![CDATA[
 
@@ -35,14 +38,13 @@ INSERT INTO `pages` (`id`, `pid`, `domain_id`, `alias`, `page_type`, `sorting`, 
 -- ]]></quey>
 
 -- <query name="content"><![CDATA[
-INSERT INTO `content` (`id`, `alias`, `pid`, `page_id`, `user_id`, `sorting`, `data_type`, `data_format`, `time_created`, `tstamp`, `title`, `description`, `keywords`, `tags`, `body`, `language`, `group_id`, `permissions`, `featured`, `accepted`, `bad`, `deleted`,`start`, `stop`) VALUES
-(0, 'system_content-do_not_use_or_delete', 0, 0, 1, 0, 'note', 'text', 1, 1, 'Parent content of all contents', '', '', '', 'This content is used only to keep foreign key constraints happy.', 'en', 1, 'drwx------', 0, 0, 0, 1, 1, 1);
+INSERT INTO `content` (`id`, `alias`, `pid`, `page_id`, `user_id`, `group_id`, `sorting`, `data_type`, `data_format`, 
+`time_created`, `tstamp`, `title`, `description`, `keywords`, `tags`, `body`, `language`, `permissions`, `featured`, 
+`accepted`, `bad`, `deleted`,`start`, `stop`) VALUES
+(0, 'system_content-do_not_use_or_delete', 0, 0, 1, 1, 0, 'note', 'text', 1, 1, 'Parent content of all contents', '', '', '', 'This content is used only to keep foreign key constraints happy.', 'en', 'drwx------', 0, 0, 0, 1, 1, 1);
 
 -- ]]></quey>
 
--- <query name="users_groups"><![CDATA[
- INSERT INTO `users_groups` (`uid`, `gid`) VALUES (1, 1), (2, 2);
--- ]]></quey>
 
 -- ]]></queries>
 

@@ -53,7 +53,7 @@ sub _validate_and_login {
   my $and      = <<"AND";
     EXISTS (
         SELECT g.id FROM groups g WHERE g.namespaces LIKE '%$mojo_app%' AND
-        g.id IN( SELECT ug.gid FROM users_groups ug WHERE ug.uid=id)
+        g.id IN( SELECT ug.group_id FROM user_group ug WHERE ug.user_id=id)
         )
 AND
 

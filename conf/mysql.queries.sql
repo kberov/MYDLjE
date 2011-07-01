@@ -7,7 +7,7 @@
   
   (
     (user_id = ? AND permissions LIKE '_rw%')
-    OR ( group_id IN (SELECT gid FROM users_groups WHERE uid= ?) 
+    OR ( group_id IN (SELECT group_id FROM user_group WHERE user_id= ?) 
       AND permissions LIKE '____rw%')
   )
 
@@ -18,7 +18,7 @@
      WHERE pid=? AND domain_id=? AND pid !=? AND id>0  AND 
   (
     (user_id = ? AND permissions LIKE '_rw%')
-    OR ( group_id IN (SELECT gid FROM users_groups WHERE uid= ?) 
+    OR ( group_id IN (SELECT group_id FROM user_group WHERE user_id= ?) 
       AND permissions LIKE '____rw%')
   )
 -- ]]></query>

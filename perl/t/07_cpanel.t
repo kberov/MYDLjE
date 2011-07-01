@@ -87,7 +87,8 @@ my $user = MYDLjE::M::User->new();
 #get the first added user (during setup)
 $user->WHERE(
   { disabled => 0,
-    -and     => [\['exists(select gid from users_groups where uid=id and gid=1)']]
+    -and =>
+      [\['exists(select group_id from user_group where user_id=id and group_id=1)']]
   }
 );
 $user->select();
@@ -239,5 +240,7 @@ $t->post_form_ok($ENV{MYDLjE_ROOT_URL} . 'cpanel/site/edit_domain')
 
 #warn $dom->to_xml;
 #TODO: continue with post and get for each route
+#now really try to add a new domain
+$t->post_form_ok($ENV{MYDLjE_ROOT_URL} . 'cpanel/site/edit_domain');
 
 done_testing();

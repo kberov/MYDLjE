@@ -78,7 +78,8 @@ sub add {
     my $uid = $user->save();
     unshift @$group_ids, $user->group_id;
     foreach my $gid (@$group_ids) {
-      $dbix->query('INSERT INTO users_groups (uid,gid) VALUES(?,?)', $uid, $gid);
+      $dbix->query('INSERT INTO user_group (user_id, group_id) VALUES(?,?)', $uid,
+        $gid);
     }
     $dbix->commit;
   };

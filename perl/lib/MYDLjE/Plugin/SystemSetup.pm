@@ -43,7 +43,8 @@ sub check_writables {
   my $home      = $c->app->home;
   my $writables = [
     'conf', 'log', 'pub/home', 'tmp',
-    'conf/' . lc(ref($c->app) . '.' . $c->app->mode . '.yaml'),
+
+    #'conf/' . lc(ref($c->app) . '.' . $c->app->mode . '.yaml'),
     'index.xhtml'
   ];
   my $writables_json = {};
@@ -173,21 +174,27 @@ sub _init_database {
     $c->dbix->dbh->do($_);
   }
 
-  # Loop
+  # Loop over table|view tags with name attributes only
   for my $e ($dom->find('table[name],view[name]')->each) {
-    my ($drop, $create) = split(/;/x, $e->text);
+    my ($drop, $create) = split(/\s*?;\s*?/x, $e->text);
+    $drop   =~ s/^\s*--.*?$//xmg;
+    $create =~ s/^\s*--.*?$//xmg;
 
     #$log->debug("do:table/view[name]" . $e->attrs->{name});
     #$log->debug("do:table/view[name] text" . $e->text);
 
-    $c->dbix->dbh->do($drop);
-    $c->dbix->dbh->do($create);
+    $c->dbix->dbh->do($drop)   if $drop;
+    $c->dbix->dbh->do($create) if $create;
   }
   my ($constraints) = $dom->at('#constraints');
   my @constraints = split(/;/x, $constraints->text);
 
   #$log->debug("do:#constraints");
-  $c->dbix->dbh->do($_) for @constraints;
+  foreach my $co (@constraints) {
+
+    #$log->debug("do:#constraints:" . $co);
+    $c->dbix->dbh->do($co);
+  }
   my ($enable_foreign_key_checks) = $dom->at('#enable_foreign_key_checks');
   my @end_init = split(/;/x, $enable_foreign_key_checks->text);
   $c->dbix->dbh->do($_) for @end_init;

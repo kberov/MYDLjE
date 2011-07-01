@@ -34,7 +34,7 @@ if (not $config->stash('installed')) {
   plan skip_all => 'System is not installed. Will not test MYDLjE::M.';
 }
 else {
-  plan tests => 80;
+  plan tests => 83;
 }
 isa_ok('MYDLjE::M::Content', 'MYDLjE::M');
 
@@ -47,6 +47,7 @@ my $time  = time;
 my $alias = 'test-' . $time . '-test';
 my $data  = {
   user_id     => 1,
+  group_id    => 2,
   data_type   => 'note',
   data_format => 'html',
   alias       => $alias
@@ -95,8 +96,10 @@ ok($id, 'new id is:' . $id);
 require MYDLjE::M::Content::Note;
 my $note = MYDLjE::M::Content::Note->select(id => $id);
 
-is($note->user_id, $content->user_id, '$note->user_id is ' . $note->user_id);
-is($note->alias,   $content->alias,   '$note->alias is ' . $note->alias);
+is($note->user_id,  $content->user_id,  '$note->user_id is ' . $note->user_id);
+is($note->group_id, $content->group_id, '$note->group_id is ' . $note->group_id);
+
+is($note->alias, $content->alias, '$note->alias is ' . $note->alias);
 
 require MYDLjE::M::Content::Question;
 my $question = MYDLjE::M::Content::Question->select(id => $id);
@@ -110,6 +113,8 @@ $question->body('A longer description of the question');
 is($question->alias,     'what-brcan-i-doooo', 'alias is "what-can-i-doooo"');
 is($question->data_type, 'question',           '$question->data_type is "question"');
 is($question->user_id($note->user_id)->user_id, $note->user_id, 'question has owner');
+is($question->group_id($note->group_id)->group_id,
+  $note->group_id, 'question has group');
 
 require MYDLjE::M::Content::Answer;
 my $answer = MYDLjE::M::Content::Answer->new(pid => $question->save);
@@ -118,7 +123,8 @@ is($answer->pid,               $question->id, '$answer->pid is $question->id');
 $answer->body('You can not do anything');
 ok($answer->alias, $answer->alias);
 is($answer->data_type, 'answer', '$answer->data_type is "answer"');
-is($answer->user_id($note->user_id)->user_id, $note->user_id, 'answer has owner');
+is($answer->user_id($note->user_id)->user_id,    $note->user_id,  'answer has owner');
+is($answer->group_id($note->group_id)->group_id, $note->group_id, 'answer has group');
 
 $answer->save();
 
@@ -129,7 +135,7 @@ is($page_content->title('Христос възкръсна!')->alias,
 is($page_content->language('bg')->language, 'bg', 'language bg ok');
 
 #Use Custom data_type
-my $custom = MYDLjE::M::Content->new(alias => $alias, user_id => 2);
+my $custom = MYDLjE::M::Content->new(alias => $alias, user_id => 2, group_id => 2);
 delete $custom->FIELDS_VALIDATION->{data_type}{constraints};
 $custom->data_type('alabala');
 $custom->body('alabala body');
@@ -233,7 +239,7 @@ $user->TABLE($user->TABLE . ' AS u');
 $user->WHERE(
   { disabled => 0,
     -and     => [
-      \"EXISTS (SELECT g.gid FROM users_groups g WHERE g.uid=u.id and g.gid=u.group_id)"
+      \"EXISTS (SELECT g.group_id FROM user_group g WHERE g.user_id=u.id and g.group_id=u.group_id)"
     ],
   }
 );
@@ -254,7 +260,7 @@ my $new_user       = MYDLjE::M::User->add(
   login_password => $login_password,
   email          => $login_name . '@localhost.com',
 );
-my @added_users = ($login_name);
+my @added_users = ($new_user->data);
 ok($new_user->id, 'addedd user with id:' . $new_user->id . ' and with minimal params.');
 is(
   $new_user->email,
@@ -271,7 +277,7 @@ $new_user = MYDLjE::M::User->add(
   group_ids      => [3, 4],
   email          => $login_name . '@localhost.com',
 );
-push @added_users, $login_name;
+push @added_users, $new_user->data;
 ok($new_user->id, 'added user with id:' . $new_user->id . ' and with more group_ids.');
 
 # more namespaces
@@ -283,7 +289,7 @@ $new_user = MYDLjE::M::User->add(
   email          => $login_name . '@localhost.com',
   namespaces     => $ENV{MOJO_APP} . ', MYDLjE::Site'
 );
-push @added_users, $login_name;
+push @added_users, $new_user->data;
 ok($new_user->id, 'added user with id:' . $new_user->id . ' and with more namespaces.');
 
 
@@ -297,7 +303,7 @@ $sstorage->user(
       \qq|disabled=0|,
       \qq|EXISTS (
     SELECT g.id FROM groups g WHERE g.namespaces LIKE '%$ENV{MOJO_APP}%' AND
-    g.id IN( SELECT ug.gid FROM users_groups ug WHERE ug.uid=id)
+    g.id IN( SELECT ug.group_id FROM user_group ug WHERE ug.user_id=id)
     )|,
       \qq|((start=0 OR start<$time) AND (stop=0 OR stop>$time))|,
     ],
@@ -316,8 +322,9 @@ is($sstorage->user->login_name, $login_name, "user $login_name logged in accordi
 
 $dbix->delete('sessions', {id => $sstorage->id});
 foreach my $u (@added_users) {
-  $dbix->delete('users',  {login_name => $u});
-  $dbix->delete('groups', {name       => $u});
+  $dbix->delete('user_group', {user_id    => $u->{id}});
+  $dbix->delete('users',      {login_name => $u->{login_name}});
+  $dbix->delete('groups',     {name       => $u->{login_name}});
 }
 
 #=cut
@@ -345,5 +352,6 @@ $page = MYDLjE::M::Page->add(%{$page->data}, page_content => $page_content);
 is($page->id, $page_content->page_id, '$page->id is $page_content->page_id');
 
 #clean up...
-$dbix->delete('pages', {id => $page->id});
+$dbix->delete('content', {page_id => $page->id});
+$dbix->delete('pages',   {id      => $page->id});
 

@@ -18,9 +18,7 @@ use MYDLjE::Config;
 if (MYDLjE::Config->new->stash('installed')) {
   plan skip_all => 'System is already installed. Will not test system_setup.';
 }
-else {
-  plan tests => 25;
-}
+
 my $t = Test::Mojo->new(app => 'MYDLjE');
 
 for (qw(/check_readables /check_writables /check_modules)) {
@@ -46,3 +44,7 @@ $t->post_form_ok(
   ->content_like(qr|"validator_errors":\{|)->content_like(qr|"admin_password":|)
   ->content_like(qr|"site_name":|)
   ->content_like(qr|"validator_has_unknown_params":null|);
+
+
+done_testing();
+

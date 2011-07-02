@@ -13,4 +13,10 @@
       TEMPLATE_WRAPPER = DEFAULT_WRAPPER
     END;
     TITLE = app.routes.namespace _'::' _ controller _ '/' _ action;
+    published_options = [
+      {label => 'not published', value => 0 },
+      {label => 'for review', value => 1 },
+      {label => 'published', value => 2 }
+    ];
+
 ~%]

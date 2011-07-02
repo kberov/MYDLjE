@@ -6,7 +6,7 @@ use MYDLjE::M::Content;
 has WHERE => sub { {} };
 has TABLE => sub {'domains'};
 has COLUMNS => sub {
-  [qw(id domain name description user_id group_id permissions)];
+  [qw(id domain name description user_id group_id permissions published)];
 };
 
 has FIELDS_VALIDATION => sub {

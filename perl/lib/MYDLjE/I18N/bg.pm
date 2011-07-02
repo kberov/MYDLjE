@@ -146,7 +146,8 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   'Regular Record' => 'Обикновен запис',
   Link             => 'Връзка към запис',
   Container        => 'Съдържа други записи',
-
+  delete_domain_confirm_message =>
+    'Сигурни ли сте, че искате да изтриете домейна "[_1]"? Това ще изтрие всички страници и съдържание в него! Всичко ще бъде загубено завинаги!',
 
 );
 

@@ -1,6 +1,8 @@
 package MYDLjE::ControlPanel::C::Site;
 use MYDLjE::Base 'MYDLjE::ControlPanel::C';
 use List::Util;
+use MYDLjE::M::Domain;
+use MYDLjE::M::Page;
 
 sub domains {
   my $c   = shift;
@@ -19,8 +21,7 @@ sub domains {
 }
 
 sub edit_domain {
-  my $c = shift;
-  require MYDLjE::M::Domain;
+  my $c      = shift;
   my $id     = $c->stash('id');
   my $domain = MYDLjE::M::Domain->new;
   my $user   = $c->msession->user;
@@ -51,27 +52,57 @@ sub edit_domain {
   $v->field('permissions')->required(1)
     ->regexp($domain->FIELDS_VALIDATION->{permissions}{regexp})
     ->message('Please enter valid value for permissions like "drwxrwxr--"!');
+  $v->field('published')->required(1)->in(0, 1, 2);
+
 
   my $all_ok = $c->validate($v);
   $c->stash(form => {%{$c->req->body_params->to_hash}, %{$v->values}});
 
   return unless $all_ok;
 
-  my %ugids = ();
+  my %ug_ids = ();
 
   #add user_id and group_id only if the domain is not the default or is new
   unless (defined $domain->id) {
-    %ugids = (user_id => $user->id, group_id => $user->group_id);
+    %ug_ids = (user_id => $user->id, group_id => $user->group_id);
   }
 
   #now we are ready to save
-  $domain->save(%{$v->values}, %ugids);
+  $domain->save(%{$v->values}, %ug_ids);
   $c->stash(id => $domain->id);
   if (defined $c->stash('form')->{save_and_close}) {
     $c->redirect_to('/site/domains');
   }
 
   #$c->render();
+  return;
+}
+
+sub delete_domain {
+  my $c         = shift;
+  my $id        = $c->stash('id');
+  my $confirmed = $c->req->param('confirmed');
+  my $dbix      = $c->dbix;
+  if ($confirmed && $id) {
+    unless (
+      eval {
+        $dbix->begin;
+        $dbix->query($c->sql('delete_domain_content'), $id);
+        $dbix->delete(MYDLjE::M::Page->TABLE,   {domain_id => $id});
+        $dbix->delete(MYDLjE::M::Domain->TABLE, {id        => $id});
+        $dbix->commit;
+      }
+      )
+    {
+      $dbix->rollback or Mojo::Exception->throw($dbix->error);
+      Mojo::Exception->throw("Error deleting domain:" . $@);
+    }
+
+  }
+
+  delete $c->msession->sessiondata->{domains};
+  $c->domains();    #fill in "domains" stash variable
+  $c->redirect_to('/site/domains');
   return;
 }
 
@@ -94,8 +125,6 @@ sub pages {
 
 sub edit_page {
   my $c = shift;
-
-  require MYDLjE::M::Page;
   require MYDLjE::M::Content::Page;
   my $id      = $c->stash('id');
   my $page    = MYDLjE::M::Page->new;

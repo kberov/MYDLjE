@@ -22,6 +22,9 @@
       AND permissions LIKE '____rw%')
   )
 -- ]]></query>
-
+-- <query name="delete_domain_content" params="domain_id"><![CDATA[
+  DELETE FROM content WHERE page_id IN 
+  (SELECT id FROM pages WHERE domain_id=?)
+-- ]]></query>
 -- </queries>
 

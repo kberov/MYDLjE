@@ -52,6 +52,8 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
     . 'The first symbol defines if the record is parent(pid) for other records in the same table, or is a link to other records in the same table, or is just a regular record. When the record is a link to other record in the site will be shown/executed the body of the record to which this record links using the other record identifier(id).'
     . "\n\n"
     . 'The next three symbols define the permissions for the owner of the record. The second triple defines the group permissions. The third triple defines the permisions for the rest of the users.',
+  delete_domain_confirm_message =>
+    'Are you sure you want to delete domain "[_1]"? This will delete recursively its pages and content too! All will be lost forever!',
 );
 
 1;

@@ -25,8 +25,8 @@ INSERT INTO `users` (`id`, `group_id`, `login_name`, `login_password`, `first_na
 
 -- <query name="domains"><![CDATA[
 
-INSERT INTO `domains` (`id`, `domain`, `name`, `description`, `user_id`, `group_id`, `permissions`) VALUES
-(0, 'localhost', 'Local Host', 'Default domain for all pages in the system.', 1, 1, 'drwxrwxr-x');
+INSERT INTO `domains` (`id`, `domain`, `name`, `description`, `user_id`, `group_id`, `permissions`, `published`) VALUES
+(0, 'localhost', 'Local Host', 'Default domain for all pages in the system.', 1, 1, 'drwxrwxr-x', 2);
 
 -- ]]></quey>
 

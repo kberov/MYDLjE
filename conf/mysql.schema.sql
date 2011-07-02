@@ -10,6 +10,9 @@
 -- <do id="disable_foreign_key_checks"><![CDATA[
 SET FOREIGN_KEY_CHECKS=0;
 SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
+DROP TABLE IF EXISTS `abilities`, `content`, `domains`, `groups`, `group_abilities`, `pages`, `sessions`, `users`, `user_group`;
+DROP VIEW IF EXISTS vguest_content, varticle;
+
 --]]></do>
 -- <table name="groups"><![CDATA[
 DROP TABLE IF EXISTS `groups`;
@@ -83,6 +86,8 @@ CREATE TABLE IF NOT EXISTS `domains` (
   `user_id` int(11) NOT NULL COMMENT  'User for which the permissions apply (owner).',
   `group_id` int(11) NOT NULL DEFAULT '1' COMMENT 'Group for which the permissions apply.',
   `permissions` varchar(10) NOT NULL DEFAULT '-rwxr-xr-x' COMMENT 'Domain permissions',
+  `published` int(1) NOT NULL DEFAULT '0' COMMENT '0=not published, 1=for review, 2=published',
+
   PRIMARY KEY (`id`),
   UNIQUE KEY `domain` (`domain`),
   KEY `user_id_group_id` (`user_id`, `group_id`)
@@ -108,7 +113,7 @@ CREATE TABLE IF NOT EXISTS `pages` (
   `tstamp` int(11) NOT NULL DEFAULT '0',
   `start` int(11) DEFAULT '0',
   `stop` int(11) DEFAULT '0',
-  `published` int(11) NOT NULL DEFAULT '0' COMMENT '0=not published,1=waiting,2=published',
+  `published` int(1) NOT NULL DEFAULT '0' COMMENT '0=not published, 1=for review, 2=published',
   `hidden` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'Is this page hidden? 0=No, 1=Yes',
   `deleted` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'Is this page deleted? 0=No, 1=Yes',
   `changed_by` int(11) NOT NULL COMMENT 'Who modified this page the last time?',
@@ -261,8 +266,8 @@ SET FOREIGN_KEY_CHECKS=1;
 -- Examples here are just stored as snippets for my reference. They are not executed by mydlje
 -- <example><![CDATA[
 -- SET FOREIGN_KEY_CHECKS=0;
--- DROP TABLE `abilities`, `content`, `domains`, `groups`, `group_abilities`, `pages`, `sessions`, `users`, `user_group`;
--- DROP VIEW vguest_content;
+-- DROP TABLE IF EXISTS `abilities`, `content`, `domains`, `groups`, `group_abilities`, `pages`, `sessions`, `users`, `user_group`;
+-- DROP VIEW IF EXISTS vguest_content, varticle;
 --]]></example>
 
 --</queries>

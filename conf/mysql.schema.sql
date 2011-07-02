@@ -1,5 +1,3 @@
--- <queries>
-
 --<queries>
 -- <create_schema_and_user><![CDATA[
 -- Example: Not executed by MYDLjE::Plugin::SystemSetup::_init_database($c, $validator->values);
@@ -239,7 +237,7 @@ ALTER TABLE `domains`
   ADD CONSTRAINT `domains_user_id_group_id_fk` FOREIGN KEY (`user_id`, `group_id`) REFERENCES `user_group` (`user_id`, `group_id`);
 
 ALTER TABLE `pages`
-  ADD CONSTRAINT `pages_id_fk` FOREIGN KEY (`pid`) REFERENCES `pages` (`id`) ,
+  ADD CONSTRAINT `pages_pid_fk` FOREIGN KEY (`pid`) REFERENCES `pages` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `pages_user_id_group_id_fk` FOREIGN KEY (`user_id`, `group_id`) REFERENCES `user_group` (`user_id`, `group_id`) ,
   ADD CONSTRAINT `pages_domain_id_fk` FOREIGN KEY (`domain_id`) REFERENCES `domains` (`id`);
 
@@ -264,7 +262,7 @@ SET FOREIGN_KEY_CHECKS=1;
 -- <example><![CDATA[
 -- SET FOREIGN_KEY_CHECKS=0;
 -- DROP TABLE `abilities`, `content`, `domains`, `groups`, `group_abilities`, `pages`, `sessions`, `users`, `user_group`;
--- DROP VIEW;
+-- DROP VIEW vguest_content;
 --]]></example>
 
 --</queries>

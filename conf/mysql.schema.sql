@@ -1,14 +1,13 @@
 -- <queries>
+
+--<queries>
 -- <create_schema_and_user><![CDATA[
 -- Example: Not executed by MYDLjE::Plugin::SystemSetup::_init_database($c, $validator->values);
-CREATE USER 'mydlje'@'localhost' IDENTIFIED BY  'mydljep';
-
-GRANT USAGE ON * . * TO  'mydlje'@'localhost' IDENTIFIED BY  'mydljep' WITH MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0 ;
-
-CREATE DATABASE IF NOT EXISTS  `mydlje` ;
-
-GRANT ALL PRIVILEGES ON  `mydlje` . * TO  'mydlje'@'localhost';
-ALTER DATABASE  `mydlje` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+-- CREATE USER 'mydlje'@'localhost' IDENTIFIED BY  'mydljep';
+-- GRANT USAGE ON * . * TO  'mydlje'@'localhost' IDENTIFIED BY  'mydljep' WITH MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0 ;
+-- CREATE DATABASE IF NOT EXISTS  `mydlje` ;
+-- GRANT ALL PRIVILEGES ON  `mydlje` . * TO  'mydlje'@'localhost';
+-- ALTER DATABASE  `mydlje` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
 --]]></create_schema_and_user>
 -- <do id="disable_foreign_key_checks"><![CDATA[
 SET FOREIGN_KEY_CHECKS=0;
@@ -133,7 +132,7 @@ DROP TABLE IF EXISTS `content`;
 CREATE TABLE IF NOT EXISTS `content` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Primary unique identyfier',
   `alias` varchar(255) NOT NULL DEFAULT 'seo-friendly-id' COMMENT 'Unidecoded, lowercased and trimmed of \\W characters unique identifier for the row data_type',
-  `pid` int(11) NOT NULL DEFAULT '0' COMMENT 'Parent Question, Article, Note, Book ID etc',
+  `pid` int(11) NOT NULL DEFAULT '0' COMMENT 'Parent content: Question, Article, Note, Book ID etc.',
   `page_id` int(11) NOT NULL DEFAULT '0' COMMENT 'page.id to which this content belongs. Default: 0 ',
   `user_id` int(11) NOT NULL COMMENT  'User for which the permissions apply (owner).',
   `group_id` int(11) NOT NULL DEFAULT '1' COMMENT 'Group for which the permissions apply.',
@@ -194,9 +193,9 @@ COMMENT='Abilities which can be used as permissions, capabilities or whatever bu
 -- <table name="group_abilities"><![CDATA[
 DROP TABLE IF EXISTS `group_abilities`;
 CREATE TABLE IF NOT EXISTS `group_abilities` (
-  `group_id` int(11) NOT NULL COMMENT 'Group  ID',
-  `ability` varchar(30) NOT NULL COMMENT 'Group ability-all users with this group_id have the ability',
-  `a_value` varchar(30) NOT NULL COMMENT 'Value interpreted depending on business logic',
+  `group_id` int(11) NOT NULL COMMENT 'All users in the group with this group_id have the ability',
+  `ability` varchar(30) NOT NULL COMMENT 'The ability',
+  `a_value` varchar(255) NOT NULL COMMENT 'Value interpreted depending on business logic',
   PRIMARY KEY (`group_id`,`ability`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Users having abilities.';
 --]]></table>
@@ -246,6 +245,7 @@ ALTER TABLE `pages`
 
 ALTER TABLE `content`
   ADD CONSTRAINT `content_page_id_fk` FOREIGN KEY (`page_id`) REFERENCES `pages` (`id`),
+  ADD CONSTRAINT `content_pid_fk` FOREIGN KEY (`pid`) REFERENCES `content` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `content_user_id_group_id_fk` FOREIGN KEY (`user_id`, `group_id`) REFERENCES `user_group` (`user_id`, `group_id`);
 
 ALTER TABLE `sessions`
@@ -253,7 +253,7 @@ ALTER TABLE `sessions`
 
 ALTER TABLE `group_abilities`
   ADD CONSTRAINT `group_abilities_ability_fk` FOREIGN KEY (`ability`) REFERENCES `abilities` (`ability`),
-  ADD CONSTRAINT `group_abilities_group_id_fk` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`);
+  ADD CONSTRAINT `group_abilities_group_id_fk` FOREIGN KEY (`group_id`) REFERENCES `user_group` (`group_id`);
 
 --]]></do>
 --<do id="enable_foreign_key_checks"><![CDATA[

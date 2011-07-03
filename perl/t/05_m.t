@@ -110,6 +110,7 @@ is(
   'seting title'
 );
 $question->body('A longer description of the question');
+$question->alias(lc MYDLjE::Unidecode::unidecode($question->title));
 is($question->alias,     'what-brcan-i-doooo', 'alias is "what-can-i-doooo"');
 is($question->data_type, 'question',           '$question->data_type is "question"');
 is($question->user_id($note->user_id)->user_id, $note->user_id, 'question has owner');
@@ -121,6 +122,8 @@ my $answer = MYDLjE::M::Content::Answer->new(pid => $question->save);
 is($answer->{data}{data_type}, 'answer',      'answer has correctly guessed data_type');
 is($answer->pid,               $question->id, '$answer->pid is $question->id');
 $answer->body('You can not do anything');
+$answer->alias(lc MYDLjE::Unidecode::unidecode('a' . $question->title));
+
 ok($answer->alias, $answer->alias);
 is($answer->data_type, 'answer', '$answer->data_type is "answer"');
 is($answer->user_id($note->user_id)->user_id,    $note->user_id,  'answer has owner');
@@ -130,8 +133,9 @@ $answer->save();
 
 require MYDLjE::M::Content::Page;
 my $page_content = MYDLjE::M::Content::Page->new();
-is($page_content->title('Христос възкръсна!')->alias,
-  'xristos-vazkrasna', 'alias is unidecoded ok');
+$page_content->title('Христос възкръсна!');
+$page_content->alias(lc MYDLjE::Unidecode::unidecode($page_content->title));
+is($page_content->alias, 'xristos-vazkrasna', 'alias is unidecoded ok');
 is($page_content->language('bg')->language, 'bg', 'language bg ok');
 
 #Use Custom data_type

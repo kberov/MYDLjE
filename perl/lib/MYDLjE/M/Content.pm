@@ -83,18 +83,20 @@ sub alias {
   my ($self, $value) = @_;
   if ($value) {
     $self->{data}{alias} = $self->validate_field(alias => $value);
+    $self->{data}{alias} =~ s/\W+$//x;
+    $self->{data}{alias} =~ s/^\W+//x;
     return $self;
   }
 
-  unless ($self->{data}{alias}) {
-    $self->{data}{alias} = lc(
-      $self->title
-      ? MYDLjE::Unidecode::unidecode($self->title)
-      : Mojo::Util::md5_sum(Time::HiRes::time())
-    );
-    $self->{data}{alias} =~ s/\W+$//x;
-    $self->{data}{alias} =~ s/^\W+//x;
-  }
+  # unless ($self->{data}{alias}) {
+  # $self->{data}{alias} = lc(
+  # $self->title
+  # ? MYDLjE::Unidecode::unidecode($self->title)
+  # : Mojo::Util::md5_sum(Time::HiRes::time())
+  # );
+  # $self->{data}{alias} =~ s/\W+$//x;
+  # $self->{data}{alias} =~ s/^\W+//x;
+  # }
   return $self->{data}{alias};
 }
 

@@ -171,9 +171,6 @@ is($custom->body, 'alabala body', 'custom retrieved ok');
 #cleanup
 $content->dbix->delete($content->TABLE,
   {alias => {-like => ['test%', 'what-brcan-i-doooo']}});
-$answer->dbix->delete($answer->TABLE, {id => $answer->id});
-$question->dbix->delete($question->TABLE, id => $question->id);
-
 #=cut
 
 # test MYDLjE::M::Session

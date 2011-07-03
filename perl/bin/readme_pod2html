@@ -19,7 +19,10 @@ pod2html(
     "--infile=$ENV{MOJO_HOME}/README.pod",
     "--outfile=$ENV{MOJO_HOME}/README.html"
 );
-my $config = MYDLjE::Config->new(files =>[$ENV{MOJO_HOME}.'/conf/mydlje.development.yaml']);
+my $config = MYDLjE::Config->new(files =>[
+  $ENV{MOJO_HOME}.'/conf/mydlje.development.yaml',
+  $ENV{MOJO_HOME}.'/conf/local.mydlje-controlpanel.development.yaml'
+  ]);
 my $html_css = '<link rel="stylesheet" type="text/css" 
     href="pub/css/'.$config->stash('jq_ui_theme').'/jquery-ui-current.custom.css" />
     <link rel="stylesheet" type="text/css" href="pub/css/readme.css" />';
@@ -37,16 +40,16 @@ $dom->find('h1, h2, h3')->each(
           'ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix';
     }
 );
-my $head  = $dom->at('head')->inner_xml . $html_css;
+my $head  = $dom->at('head')->content_xml . $html_css;
 my $title = $dom->at('title')->text;
 $dom->at('h1')->replace('');
 $dom->at('ul li')->replace('');
-$dom->at('head')->replace_inner($head);
+$dom->at('head')->replace_content($head);
 $dom->at('[name="index"] p')->replace('');
 while (my $e = $dom->at('hr')) { $e->replace(''); }
-my $body = $dom->at('body')->inner_xml;
+my $body = $dom->at('body')->content_xml;
 $dom->at('body')
-  ->replace_inner('<div class="ui-widget ui-widget-content ui-corner-all ">
+  ->replace_content('<div class="ui-widget ui-widget-content ui-corner-all ">
     <h1 id="title" class="ui-dialog-titlebar ui-widget-header ui-corner-all">' 
       . $title
       . '</h1><div class="inner">'

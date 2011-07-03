@@ -1,54 +1,52 @@
-=head1 MYDLjE - Web-presence rethought
+=head1 MYDLjE - Web-presence rewrote
 
 =head1 DESCRIPTION
 
-B<NOTE: Almost everything below is just a TODO-list for now.>
+B<NOTE: This is a work in progress. Help is wellcome.>
 
 MYDLjE is a lightweight Web-Applications and Content Management Framework.
 It is a collection of Perl, JavaScript, CSS and HTML5 code to make a General Purpose Platform for building Web-Applications.
-We build on top of several I<"State Of the Art"> open-source software projects to make a powerful platform for starting your own business online.
+We build on top of several I<"State Of the Art"> open-source software projects to make a powerful platform for starting business online.
 
 The framework name is an acronym. It stands for: B<Mojolicious, YAML, DBI*, Locale::Maketext, jQuery, Elastic CSS> which are the main building blocks. B<Template::Alloy> is chosen as view system. B<SILK & FLAG ICONS> are used too.
 
 =head1 APPLICATIONS
 
-MYDLjE comes with three bundled web applications around and on top of which you can build even more powerful domain specific applications. 
-The applications are intended to be easy to use (intuitive) for the average computer-literate user.
+MYDLjE comes with three bundled web-applications around and on top of which you (the developer) can build even more powerful domain specific applications. 
+The applications are based on Mojolicious, so if you (the developer) know how it works, please feel at home!
+The applications are intended to be easy to use (intuitive) for the average computer-literate user, so the admin is not needed all the time :).
 
 =head2 CONTROL PANEL (cpanel)
 
-This application is for managing your online presence. You access and manage your users, customers, site, pages, content, applications etc.  
+This application is for managing your online presence. You (the business owner) access and manage your users, customers, domains, pages, content, applications etc.  
 Only trusted people (back-end users) should be allowed to use it.
 
 =head2 MYDLjE (mydlje)
 
-This is a bare-bones application. It is used as the base for the other two applications and for setting up the system for the first time when you unpack it where it will work.
+This is a bare-bones application. It is used as the base for the other two applications and for setting up the system for the first time when you (the administrator) deploy it.
 
 =head2 SITE (site)
 
 This is your front-end application intended for the public. Build a site or a custom application to be used by your community and/or customers. 
-Build whatever you want on top of and around it.
-
+Build whatever you want on top of and around it or call me to build it for you.
 
 
 =head1 MINIMAL REQUIREMENTS
 
 =over
 
-=item * Perl 5.8.8 or next;
+=item * Perl 5.8.8 or next; Perl 5.10.1 or next is highly recommended;
 
-=item * Apache with mod_cgi (standard) or (better/faster) mod_fcgi/mod_fastcgi;
+=item * Apache2 with mod_cgi (standard) or (better/faster) mod_fcgi/mod_fastcgi;
 
-=item * MySQL >=5.0 server, provided on every shared hosting;
+=item * MySQL >=5.0 server, provided by almost every shared hosting;
 
 =item * C<DBI>, C<DBD::mysql>, C<Time::Piece> and C<GD> Perl Modules.
 
 =back
 
-
 Almost all (even the cheapest) hosting providers meet the system requirements. 
-To make sure, send the list to your (potential) hosting provider and ask them if they meet the requirements below. The setup screen also checks for the requirements. The system runs under mod_cgi by default, but cen be configured very easily to run under mod_fastcgi (or mod_fcgi) if available. See the .htaccess file in the project root directory.
-
+To make sure, send the above-mentioned list to your (potential) hosting provider and ask them if they meet the requirements below. The setup screen also checks for the requirements. The system runs under mod_cgi by default, but can be switched in seconds to run under mod_fastcgi (or mod_fcgi) if available. See the I<.htaccess> file in the project root directory.
 
 =head1 INSTALLATION
 
@@ -56,17 +54,24 @@ To make sure, send the list to your (potential) hosting provider and ask them if
 
 =item 1 Unpack the bundle in a directory visible by Apache.
 
-=item 2 Use your browser to access B<index.xhtml> - see L</SETUP>.
+=item 2 Create a database using the example found in I<conf/mysql.schema.sql> or use the 
+tool (PHPMyAdmin) provided by your hosting provider
 
-=item 3 Fill in the "System Configuration" form. You are ready to go.
+=item 3 Use your browser to access B<index.xhtml> - see L</SETUP>.
 
-=item 4 Enjoy your new site and start building your presence.
+=item 4 Check the system and troubleshoot :) if needed. Look at the apache error-log and log/development.log.
+
+=item 5 Fill in the "System Configuration" form. You are ready to go.
+
+=item 6 Enjoy your new site and start building your presence.
 
 =back
 
 =head1 ROADMAP
 
-Below is the list of things to do. It is possible to work on several things at the same time so feel your self invited to help.
+Below is the list of things to do. This is a general list, so look at L<https://github.com/kberov/MYDLjE/issues> for the specific tasks. 
+It is possible to work on several issues at the same time so feel your self invited to help. 
+Write me a message and we can define together a specific enough task.
 
 =over
 
@@ -78,15 +83,17 @@ Below is the list of things to do. It is possible to work on several things at t
 
 =over
 
-=item * Implement the Configuration Management controller;
+=item * Implement the Domains Management controllers (mostlly done);
 
-=item * Implement the Users/Groups Management controllers;
-
-=item * Implement the Screens/Pages Management plugin;
+=item * Implement the Pages Management controllers (in progress);
 
 =item * Implement the Content Management controllers (in progress);
 
-=item * Implement Applications/Plugins Management plugin;
+=item * Implement Applications/Plugins Management controllers;
+
+=item * Implement the Configuration Management controller;
+
+=item * Implement the Users/Groups Management controllers;
 
 =back
 
@@ -101,7 +108,6 @@ Below is the list of things to do. It is possible to work on several things at t
 =item * Implement the "Profile" Site plugin;
 
 =item * Implement the "Q&A" Site plugin;
-
 
 =back
 
@@ -156,7 +162,8 @@ If you think your name should be listed here, please notify me.
 
 =begin html
 
-To begin setting up your system <a href="index.xhtml">go to index.xhtml</a>
+To begin setting up your system <a href="index.xhtml">go to index.xhtml</a>.
+Make sure the file is accessed trough HTTP(S) and not directly trough some file system.
 
 =end html
 

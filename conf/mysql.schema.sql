@@ -1,6 +1,7 @@
 --<queries>
 -- <create_schema_and_user><![CDATA[
 -- Example: Not executed by MYDLjE::Plugin::SystemSetup::_init_database($c, $validator->values);
+-- Uncomment the SQL lines below and execute them using some mysql client.
 -- CREATE USER 'mydlje'@'localhost' IDENTIFIED BY  'mydljep';
 -- GRANT USAGE ON * . * TO  'mydlje'@'localhost' IDENTIFIED BY  'mydljep' WITH MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0 ;
 -- CREATE DATABASE IF NOT EXISTS  `mydlje` ;

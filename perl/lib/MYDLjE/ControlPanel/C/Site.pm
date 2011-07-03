@@ -107,20 +107,19 @@ sub delete_domain {
 }
 
 sub pages {
-  my $c = shift;
-  $c->stash(form => $c->req->params->to_hash);
-  my $form = $c->stash('form');
+  my $c    = shift;
+  my $form = {@{$c->req->params->params}};
+  $c->stash(form => $form);
   $c->domains();
-  if (exists $form->{'page.domain_id'}) {
-    $form->{'pid'} = 0;
-    $c->msession('domain_id', $form->{'page.domain_id'});
-    $c->msession('language',  $form->{'content.language'});
-  }
-  else {
-    $c->msession('domain_id', 0);
-    $c->msession('language',  $c->app->config('plugins')->{i18n}{default});
-  }
+  $c->_persist_domain_id($form);
   return;
+}
+
+sub _persist_domain_id {
+  my ($c, $form) = @_;
+  if (exists $form->{'page.domain_id'}) {
+    $c->msession('domain_id', $form->{'page.domain_id'});
+  }
 }
 
 sub edit_page {
@@ -131,11 +130,13 @@ sub edit_page {
   my $content = MYDLjE::M::Content::Page->new;
   my $user    = $c->msession->user;
   my $method  = $c->req->method;
+  my $form    = {@{$c->req->params->params}};
+
   $c->domains();    #fill in "domains" stash variable
+  $c->_persist_domain_id($form);
+
   $c->stash(page_types => $page->FIELDS_VALIDATION->{page_type}{constraints}[0]{in});
   $c->stash(page_pid_options => $c->_set_page_pid_options($user));
-
-  my $form = $c->req->params->to_hash;
   $form->{'content.language'} ||= $c->app->config('plugins')->{i18n}{default};
   my $language =
     (List::Util::first { $form->{'content.language'} eq $_ }
@@ -169,6 +170,7 @@ sub edit_page {
     %$form,
   };
 
+  #$c->debug($c->dumper($form));
   $c->stash(form => $form);
 
   if ($c->req->method eq 'POST') {
@@ -239,7 +241,7 @@ sub _save_page {
     }
   );
   if (exists $form->{save_and_close}) {
-    $c->redirect_to('/site/pages');
+    $c->redirect_to('/site/pages?page.domain_id=' . $form->{'page.domain_id'});
   }
   return;
 }
@@ -259,12 +261,8 @@ sub _validate_page {
   }
   $v->field('page.alias')->regexp($page->FIELDS_VALIDATION->{alias}{regexp})
     ->message('Please enter valid page alias!');
-  my $domain_ids;
-  foreach my $domain (@{$c->stash('domains')}) {
-    push @$domain_ids, $domain->{id};
-  }
 
-  $v->field('page.domain_id')->in(@$domain_ids)
+  $v->field('page.domain_id')->in(map { $_->{id} } @{$c->stash('domains')})
     ->message('Please use one of the availabe domains or first add a new domain!');
 
   # if domain_id is switched remove current pid and set the msession domain id
@@ -303,7 +301,7 @@ sub _traverse_children {
   #Be reasonable and prevent deadly recursion
   $depth++;
   return if $depth > 10;
-  my $domain_id = $c->req->param('page.domain_id') || $c->msession('domain_id') || 0;
+  my ($domain_id) = $c->msession('domain_id') || 0;
   my $pages = $c->dbix->query($c->sql('writable_pages'),
     $pid, $domain_id, $id, $user->id, $user->id)->hashes;
   $id = ($c->stash('id') || 0);

@@ -208,7 +208,8 @@ function post_form() {
     error: function(jqXHR, textStatus, errorThrown) {
       alert(
         textStatus + ': ' + errorThrown.toString() +
-        "\n\nCheck Apache error log and log/development.log for errors."
+        "\n\nCheck Apache error log and \n" +
+        "(log/development.log or log/production.log)\nfor errors."
         )
     }
   });

@@ -206,7 +206,10 @@ function post_form() {
       }
     },
     error: function(jqXHR, textStatus, errorThrown) {
-      alert(textStatus + ': ' + errorThrown.toString())
+      alert(
+        textStatus + ': ' + errorThrown.toString() +
+        "\n\nCheck Apache error log and log/development.log for errors."
+        )
     }
   });
   return false;

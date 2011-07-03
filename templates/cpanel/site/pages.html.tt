@@ -12,7 +12,7 @@ PROCESS 'site/page_options.tt';
            id="new_domain_button"
            class="new domain">
              <span class="ui-icon" 
-             style="background-image: url(pub/css/icons/page_add.png) "></span></a></span>
+             style="background-image: url(pub/css/icons/layout_add.png) "></span></a></span>
         </legend>
         
 <div class="ui-widget-header ui-corner-all">

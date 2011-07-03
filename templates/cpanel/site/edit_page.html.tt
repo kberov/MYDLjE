@@ -21,7 +21,7 @@ PROCESS 'site/page_options.tt';
 <fieldset class="ui-widget-content ui-corner-all">
   <legend class="ui-widget-header ui-corner-all">
   [% legend %]<span class="legend_icon"><span class="ui-icon" 
-        style="background-image: url(pub/css/icons/world_edit.png) "></span>
+  style="background-image: url(pub/css/icons/layout_[%id?'edit':'add'%].png) "></span>
   </span></legend>
   [%#
   pid sorting template cache expiry user_id group_id tstamp start stop published hidden deleted changed_by

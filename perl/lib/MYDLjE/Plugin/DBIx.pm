@@ -34,7 +34,7 @@ sub register {
   my $queries = {};
   for my $q ($dom->find('query[name]')->each) {
 
-    $app->log->debug("query[name]: " . $q->attrs->{name});
+    #$app->log->debug("query[name]: " . $q->attrs->{name});
     my $query = $q->text;
 
     #Treat string as multiple lines.
@@ -76,7 +76,8 @@ sub dbix {
     $DBIX->dbh->{Callbacks} = {
       prepare => sub {
         my ($dbh, $query, $attrs) = @_;
-        $app && $app->log->debug("Preparing query:\n$query\n");
+
+        #$app && $app->log->debug("Preparing query:\n$query\n");
         return;
       },
     };

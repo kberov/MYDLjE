@@ -80,10 +80,10 @@ sub edit_domain {
 
 sub delete_domain {
   my $c         = shift;
-  my $id        = $c->stash('id');
+  my $id        = $c->stash('id') || 0;
   my $confirmed = $c->req->param('confirmed');
   my $dbix      = $c->dbix;
-  if ($confirmed && $id) {
+  if ($confirmed && $id > 0) {
     unless (
       eval {
         $dbix->begin;

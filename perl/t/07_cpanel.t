@@ -22,6 +22,13 @@ use MYDLjE::Config;
 use MYDLjE::Plugin::DBIx;
 use MYDLjE::M::User;
 
+BEGIN {
+  if ($Test::More::VERSION < 0.92) {
+    no warnings 'redefine';
+    sub note { print @_, $/; }
+    sub explain { Dumper(@_); }
+  }
+}
 my $config = MYDLjE::Config->new(
   files => [
     $ENV{MOJO_HOME} . '/conf/mydlje.development.yaml',
@@ -31,7 +38,6 @@ my $config = MYDLjE::Config->new(
   ]
 );
 
-#print Dumper();
 my $dbix =
   MYDLjE::Plugin::DBIx::dbix($config->stash('plugins')->{'MYDLjE::Plugin::DBIx'});
 
@@ -46,8 +52,8 @@ $ENV{MYDLjE_ROOT_URL} =~ m|/$| or do { $ENV{MYDLjE_ROOT_URL} .= '/' };
 
 my $t = Test::Mojo->new();
 
-#Login functionality
-#How it looks?
+note 'Login functionality';
+note 'How it looks?';
 $t->get_ok($ENV{MYDLjE_ROOT_URL} . 'cpanel/loginscreen')->status_is(200)
   ->content_like(qr/guest\@MYDLjE\:\:ControlPanel\@MYDLjE/x)
   ->element_exists('form#login_form')->element_exists('label#login_name_label')
@@ -64,14 +70,14 @@ my $dom   = $t->tx->res->dom;
 my $style = $dom->at('form#other_form')->attrs->{style};
 ok($style =~ m/display\:none;/x, 'form#other_form is hidden');
 
-#Does it seem usable?
+note 'Does it seem usable?';
 like($dom->at('label#login_name_label')->text, qr/User/x, 'Label reads: "User:"');
 like($dom->at('label#login_password_label')->text,
   qr/Password/x, 'Label reads: "Password:"');
 is($dom->at('button[type="submit"]')->text, 'Login', 'Button reads: "Login"');
 
 
-#And mainly does it work?
+note 'And mainly does it work?';
 $t->post_form_ok(
   $ENV{MYDLjE_ROOT_URL} . 'cpanel/loginscreen',
   'UTF-8',
@@ -84,7 +90,7 @@ ok($dom->at('div[class="ui-state-error ui-corner-all"]')->text =~ m/Invalid\sses
   'Invalid session');
 my $user = MYDLjE::M::User->new();
 
-#get the first added user (during setup)
+note 'Get the first added user (during setup) and login.';
 $user->WHERE(
   { disabled => 0,
     -and =>
@@ -108,7 +114,7 @@ $t->post_form_ok(
     session_id         => $session_id
   },
 )->status_is(302)->header_like(Location => qr|home|x);
-
+note 'Go to /home and check the main menu.';
 $t->get_ok($ENV{MYDLjE_ROOT_URL} . 'cpanel/home')->status_is(200)
   ->text_like('#title-main-header', qr/$login_name/x, 'admin user logged in')
   ->element_exists('#main-left-navigation', 'Main left navigation is present')->text_is(
@@ -178,7 +184,7 @@ $t->get_ok($ENV{MYDLjE_ROOT_URL} . 'cpanel/home')->status_is(200)
   'Preferences menu item text ok'
   );
 
-#Test Domains
+note 'Test Domains';
 $t->get_ok($ENV{MYDLjE_ROOT_URL} . 'cpanel/site/domains')->status_is(200)
   ->element_exists('#domains_form', 'Domains list is present')
   ->element_exists('#domains_form legend .legend_icon a#new_domain_button',
@@ -189,7 +195,7 @@ $t->get_ok($ENV{MYDLjE_ROOT_URL} . 'cpanel/site/domains')->status_is(200)
   ->text_is('#domains_form ul.items li:nth-of-type(1) .columns .column .container',
   'localhost', 'localhost is present');
 
-#Add Domain
+note ' * Add Domain';
 $t->get_ok($ENV{MYDLjE_ROOT_URL} . 'cpanel/site/edit_domain')->status_is(200)
   ->element_exists('#edit_domain_form', '"New Domain form" is present')
   ->element_exists('#edit_domain_form legend:nth-of-type(1)', 'legend is present')
@@ -219,12 +225,9 @@ $t->get_ok($ENV{MYDLjE_ROOT_URL} . 'cpanel/site/edit_domain')->status_is(200)
   '"Save and close" button is present'
   )->element_exists('#buttons_unit button[type="reset"]', '"Reset" button is present');
 
-#$dom = $t->tx->res->dom;
 
-$t->post_form_ok($ENV{MYDLjE_ROOT_URL} . 'cpanel/site/edit_domain')
-
-#there should be errors
-  ->text_is(
+note ' * there should be errors';
+$t->post_form_ok($ENV{MYDLjE_ROOT_URL} . 'cpanel/site/edit_domain')->text_is(
   '#domain_error .container',
   'Please enter valid domain name!',
   '"Please enter valid domain name!" error is ok'
@@ -238,9 +241,133 @@ $t->post_form_ok($ENV{MYDLjE_ROOT_URL} . 'cpanel/site/edit_domain')
   '"Please enter valid value for description!" error is ok'
   );
 
-#warn $dom->to_xml;
+note ' * now really try to add a new domain';
+my $time        = time;
+my $domain_name = "example-$time.com";
+my $permissions = '-rwxr-xr-x';
+my $published   = 1;
+my $name        = "Example test $time";
+$t->post_form_ok(
+  $ENV{MYDLjE_ROOT_URL} . 'cpanel/site/edit_domain',
+  'UTF-8',
+  { domain      => $domain_name,
+    name        => $name,
+    description => "Description of $time <script>malicious</script>",
+    permissions => $permissions,
+    published   => $published,
+  }
+  )->status_is(200)
+  ->element_exists('#edit_domain_form', '"Edit Domain form" is present')
+  ->element_exists('#edit_domain_form legend:nth-of-type(1)', 'legend is present')
+  ->text_is(
+  '#edit_domain_form legend:nth-of-type(1)',
+  'Edit Domain',
+  'legend text is "Edit Domain"'
+  )->text_is('#domain_label', 'Domain:', '"Domain:" label is ok')
+  ->element_exists('input[type="text"][name="domain"]',
+  '"domain" input type text is present')
+  ->text_is('#name_label', 'Title/Name:', '"Title/Name:" label is ok')
+  ->element_exists('input[type="text"][name="name"]',
+  '"name" input type text is present')
+  ->text_is('#description_label', 'Description:', '"Description:" label is ok')
+  ->element_exists(
+  'input[type="text"][name="description"]',
+  '"description" input type text is present'
+  )->text_is('#permissions_label', 'Permissions:', '"Permissions:" label is ok')
+  ->element_exists(
+  'input[type="text"][name="permissions"]',
+  '"permissions" input type text is present'
+  )->element_exists('#buttons_unit', 'Form buttons should be present')->element_exists(
+  '#buttons_unit button[type="submit"][name="save"]',
+  '"Save" button is present'
+  )->element_exists(
+  '#buttons_unit button[type="submit"][name="save_and_close"]',
+  '"Save and close" button is present'
+  )->element_exists('#buttons_unit button[type="reset"]', '"Reset" button is present');
+
+$dom = $t->tx->res->dom;
+my $action =
+  ($dom->at('#edit_domain_form') ? $dom->at('#edit_domain_form')->attrs->{action} : '');
+like($action, qr|site/edit_domain/\d+$|, 'action contains domain_id');
+$action =~ m|site/edit_domain/(\d+)$|x;
+my $domain_id = $1 || '0';
+my $description = "Description of $time scriptmaliciousscript";
+
+is($dom->at('input[type="text"][name="domain"]')->attrs->{value},
+  $domain_name, 'name is: ' . $domain_name);
+is($dom->at('input[type="text"][name="name"]')->attrs->{value},
+  $name, 'name is: ' . $name);
+is($dom->at('input[type="text"][name="description"]')->attrs->{value},
+  $description, 'description is: ' . $description);
+is($dom->at('input[type="text"][name="permissions"]')->attrs->{value},
+  $permissions, 'permissions are: ' . $permissions);
+is($dom->at('select[name="published"] option[selected="selected"]')->attrs->{value},
+  $published, 'published is: ' . $published);
+
+note
+  ' * GET the "/site/edit_domain/" form to see that all fields have required values.';
+$t->get_ok($ENV{MYDLjE_ROOT_URL} . 'cpanel/site/edit_domain/' . $domain_id)
+  ->status_is(200);
+$dom = $t->tx->res->dom;
+$action =
+  ($dom->at('#edit_domain_form') ? $dom->at('#edit_domain_form')->attrs->{action} : '');
+like($action, qr|/site/edit_domain/$domain_id$|, 'action contains domain_id');
+is($dom->at('input[type="text"][name="domain"]')->attrs->{value},
+  $domain_name, 'name is: ' . $domain_name);
+is($dom->at('input[type="text"][name="description"]')->attrs->{value},
+  $description, 'description is: ' . $description);
+is($dom->at('input[type="text"][name="permissions"]')->attrs->{value},
+  $permissions, 'permissions are: ' . $permissions);
+is($dom->at('select[name="published"] option[selected="selected"]')->attrs->{value},
+  $published, 'published is: ' . $published);
+
+note ' * Now edit it.';
+$domain_name = 'www.' . $domain_name;
+$name        = "Example $time";
+$permissions = 'drwxr-xr-x';
+$published   = 2;
+$description = "Description of $time";
+
+$t->post_form_ok(
+  $ENV{MYDLjE_ROOT_URL} . 'cpanel/site/edit_domain/' . $domain_id,
+  'UTF-8',
+  { domain      => $domain_name,
+    name        => $name,
+    description => $description,
+    permissions => $permissions,
+    published   => $published,
+  }
+)->status_is(200);
+
+note ' * Check it again to see if everything is as we changed it.';
+$dom = $t->tx->res->dom;
+$action =
+  ($dom->at('#edit_domain_form') ? $dom->at('#edit_domain_form')->attrs->{action} : '');
+like($action, qr|/site/edit_domain/$domain_id$|, 'action contains domain_id');
+is($dom->at('input[type="text"][name="domain"]')->attrs->{value},
+  $domain_name, 'name is: ' . $domain_name);
+is($dom->at('input[type="text"][name="name"]')->attrs->{value},
+  $name, 'name is: ' . $name);
+is($dom->at('input[type="text"][name="description"]')->attrs->{value},
+  $description, 'description is: ' . $description);
+is($dom->at('input[type="text"][name="permissions"]')->attrs->{value},
+  $permissions, 'permissions are: ' . $permissions);
+is($dom->at('select[name="published"] option[selected="selected"]')->attrs->{value},
+  $published, 'published is: ' . $published);
+
+note '... let us clenup this mess.';
+
+#TODO: Add pages and content in this domain
+note ' * Delete domain!';
+$t->get_ok($ENV{MYDLjE_ROOT_URL} . 'cpanel/site/domains')->status_is(200)
+  ->element_exists('#domains_form', 'Domains list is present')
+  ->content_like(qr|$domain_name|, "Domain $domain_name is in the list");
+$t->get_ok(
+  $ENV{MYDLjE_ROOT_URL} . 'cpanel/site/delete_domain/' . $domain_id . '?confirmed=1')
+  ->content_unlike(qr|$domain_name|, "Domain $domain_name is NOT in the list");
+
+#ENOUGH!
+
 #TODO: continue with post and get for each route
-#now really try to add a new domain
-$t->post_form_ok($ENV{MYDLjE_ROOT_URL} . 'cpanel/site/edit_domain');
 
 done_testing();

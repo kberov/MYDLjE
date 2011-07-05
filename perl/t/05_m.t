@@ -225,19 +225,19 @@ $user->WHERE({disabled => 0});
 #$user->dbix->{debug}=1;
 $user->select(login_name => 'admin');
 is($user->id, undef, "WHERE user.disabled=0 AND login_name='admin'");
-$user = MYDLjE::M::User->new();
-$user->WHERE({disabled => 0});
-$user->select(login_name => 'guest');
-is($user->id,       2, " id WHERE user.disabled=0 AND login_name='guest'");
-is($user->group_id, 2, " group_id WHERE user.disabled=0 AND login_name='guest'");
+my $guest = MYDLjE::M::User->new();
+$guest->WHERE({disabled => 0});
+$guest->select(login_name => 'guest');
+is($guest->id,       2, " id WHERE user.disabled=0 AND login_name='guest'");
+is($guest->group_id, 2, " group_id WHERE user.disabled=0 AND login_name='guest'");
 
 
 #try with foreign keys
-$user = MYDLjE::M::User->new();
-$user->TABLE($user->TABLE . ' AS u');
+$guest = MYDLjE::M::User->new();
+$guest->TABLE($user->TABLE . ' AS u');
 
 #select a user only if he is from a group with id 2(guest)
-$user->WHERE(
+$guest->WHERE(
   { disabled => 0,
     -and     => [
       \"EXISTS (SELECT g.group_id FROM user_group g WHERE g.user_id=u.id and g.group_id=u.group_id)"
@@ -245,10 +245,8 @@ $user->WHERE(
   }
 );
 
-#TODO: leverage $dbh->{Callbacks} for debugging.
-#$user->dbix->{debug} =1;
-$user->select(login_name => 'guest', group_id => 2);
-is($user->id, 2, "custom WHERE with literal SQL");
+$guest->select(login_name => 'guest', group_id => 2);
+is($guest->id, 2, "custom WHERE with literal SQL");
 
 
 #Add a new user
@@ -330,8 +328,8 @@ my $page = MYDLjE::M::Page->new(
 is($page->pid,       0,              '$page->pid is ' . $page->pid);
 is($page->alias,     'home' . $time, '$page->alias is ' . $page->alias);
 is($page->page_type, 'root',         '$page->page_type is ' . $page->page_type);
-is($page->user_id(1)->user_id,   1, '$page->user_id is ' . $page->user_id);
-is($page->group_id(1)->group_id, 1, '$page->group_id is ' . $page->group_id);
+is($page->user_id($sstorage->user->id)->user_id,   $sstorage->user->id, '$page->user_id is ' . $page->user_id);
+is($page->group_id($sstorage->user->group_id)->group_id, $sstorage->user->group_id, '$page->group_id is ' . $page->group_id);
 is($page->permissions('-rwxrw-r-x')->permissions,
   '-rwxrw-r-x', '$page->permissions are ' . $page->permissions);
 
@@ -344,6 +342,10 @@ is($page->id, $page_content->page_id, '$page->id is $page_content->page_id');
 
 #=pod
 
+#clean up...
+$dbix->delete('content', {page_id => $page->id});
+$dbix->delete('pages',   {id      => $page->id});
+
 $dbix->delete('sessions', {id => $sstorage->id});
 foreach my $u (@added_users) {
   $dbix->delete('user_group', {user_id    => $u->{id}});
@@ -352,8 +354,4 @@ foreach my $u (@added_users) {
 }
 
 #=cut
-
-#clean up...
-$dbix->delete('content', {page_id => $page->id});
-$dbix->delete('pages',   {id      => $page->id});
 

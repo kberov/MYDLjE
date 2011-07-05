@@ -252,7 +252,7 @@ Example:
     email          => $values->{admin_email},
   );
 
-head2 can_read
+=head2 can_read
 
 Checks if the user can read the passed database record. The record must be a HASH reference
 and have at least "permissions", "user_id" and "group_id" fields. 
@@ -262,6 +262,30 @@ if it is accessible by the user.
 This method is for cases when you could not check earlier.
 
   if($c->msession->user->can_read($page->data)){
+    #show the record
+  }
+
+=head2 can_write
+
+Checks if the user can edit the passed database record. The record must be a HASH reference
+and have at least "permissions", "user_id" and "group_id" fields. 
+Returns 1 on succes, 0 otherwise. Note that it is best to filter records by permissions 
+in your SQL queries so you do not have to fetch needleslly data from the database and then check 
+if it is accessible by the user. 
+This method is for cases when you could not check using SQL. See I<conf/mysql.queries.sql>
+
+Examples:
+
+  #in SQL (no check if user is admin)
+  SELECT * FROM pages WHERE  
+  (
+    (user_id = ? AND permissions LIKE '__w%')
+    OR ( group_id IN (SELECT group_id FROM user_group WHERE user_id= ?) 
+      AND permissions LIKE '_____w%')   
+  )
+  
+  #in perl code
+  if($c->msession->user->can_write($page->data)){
     #show the record
   }
 

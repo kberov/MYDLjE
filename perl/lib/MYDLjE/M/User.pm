@@ -1,6 +1,8 @@
 package MYDLjE::M::User;
 use MYDLjE::Base 'MYDLjE::M';
 use Mojo::Util qw();
+use Scalar::Util qw(blessed reftype);
+use List::Util;
 
 has TABLE => 'users';
 
@@ -36,6 +38,14 @@ has FIELDS_VALIDATION => sub {
   };
   return $fields;
 };
+
+has groups => sub {
+  my $self = shift;
+  return $self->dbix->query(
+    'SELECT g.* FROM groups g,user_group ug WHERE ug.user_id=? AND ug.group_id=g.id',
+    $self->id)->hashes;
+};
+
 
 sub tstamp { return $_[0]->{data}{tstamp} = time; }
 
@@ -91,10 +101,62 @@ sub add {
   return $user;
 }
 
+sub _validate_row {
+  my ($row) = @_;
+  unless ((reftype($row) eq 'HASH')
+    && $row->{permissions}
+    && $row->{user_id}
+    && $row->{group_id})
+  {
+    local $Carp::CarpLevel = 2;
+    Carp::confess(
+          'Please pass a HASH reference($db_row_obj->data()) containing at least'
+        . '"permissions", "user_id" and "group_id" fields!');
+  }
+}
+
+sub can_read {
+  my ($self, $row) = @_;
+  _validate_row($row);
+
+  #everybody can read or is owner
+  if (
+    $row->{permissions} =~ /^[\w\-]{7}r/x
+    || ( $self->id == $row->{user_id}
+      && $row->{permissions} =~ /^[\w\-]r/x)
+    )
+  {
+    return 1;
+  }
+
+  #is in a suitable group
+  if ((List::Util::first { $row->{group_id} == $_->{id} } @{$self->groups})
+    && $row->{permissions} =~ /^[\w\-]{4}r/x)
+  {
+    return 1;
+  }
+
+  #is in admin group
+  if (List::Util::first { $_->{name} eq 'admin' } @{$self->groups}) {
+    return 1;
+  }
+  return 0;
+}
+
+sub can_write {
+
+}
+
+sub can_execute {
+
+}
+
 1;
 
 
 __END__
+
+=encoding utf8
 
 =head1 NAME
 
@@ -108,7 +170,7 @@ MYDLjE::M::User - MYDLjE::M-based User class
 
 This class is used to instantiate user objects. 
 
-=head1 ATTRIBUTES
+=head1 DATA ATTRIBUTES
 
 This class inherits all attributes from MYDLjE::M and overrides the ones listed below.
 
@@ -117,6 +179,8 @@ Note also that all columns are available as setters and getters for the instanti
   id login_name login_password first_name last_name email
   description created_by changed_by tstamp reg_tstamp
   disabled start stop properties
+
+=head1 ATTRIBUTES
 
 =head2 COLUMNS
 
@@ -130,6 +194,11 @@ Returns the table name from which rows L<MYDLjE::M::User> instances are construc
 =head2 FIELDS_VALIDATION
 
 Returns a HASHREF with column-names as keys and L<MojoX::Validator> constraints used when retreiving and inserting values.
+
+=head2 groups
+
+Returns a list of HASHREFs. These are the groups the user is member of.
+
 
 =head1 METHODS
 
@@ -158,7 +227,30 @@ Example:
     group_ids      => [1],                         #admin group
     email          => $values->{admin_email},
   );
-    
 
-    
+head2 can_read
+
+Checks if the user can read the passed database record. The record must be a HASH reference
+and have at least "permissions", "user_id" and "group_id" fields. 
+Returns 1 on succes, 0 otherwise. Note that it is best to filter records by permissions 
+in your SQL queries so you do not have to fetch needleslly data from the database and then check 
+if it is accessible by the user. 
+This method is for cases when you could not check earlier.
+
+  if($c->msession->user->can_read($page->data)){
+    #show the record
+  }
+
+=head1 SEE ALSO
+
+L<MYDLjE::M>, L<MYDLjE::M::Session>, L<MYDLjE::M::Content>
+
+
+=head1 AUTHOR AND COPYRIGHT
+
+(c) 2011 Красимир Беров L<k.berov@gmail.com>
+
+This code is licensed under LGPLv3.
+
+
 

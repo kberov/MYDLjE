@@ -33,9 +33,7 @@ my $config = MYDLjE::Config->new(
 if (not $config->stash('installed')) {
   plan skip_all => 'System is not installed. Will not test MYDLjE::M.';
 }
-else {
-  plan tests => 83;
-}
+
 isa_ok('MYDLjE::M::Content', 'MYDLjE::M');
 
 can_ok('MYDLjE::M::Content', 'TABLE', 'COLUMNS', 'data', 'sql', 'make_field_attrs');
@@ -131,13 +129,6 @@ is($answer->group_id($note->group_id)->group_id, $note->group_id, 'answer has gr
 
 $answer->save();
 
-require MYDLjE::M::Content::Page;
-my $page_content = MYDLjE::M::Content::Page->new();
-$page_content->title('Христос възкръсна!');
-$page_content->alias(lc MYDLjE::Unidecode::unidecode($page_content->title));
-is($page_content->alias, 'xristos-vazkrasna', 'alias is unidecoded ok');
-is($page_content->language('bg')->language, 'bg', 'language bg ok');
-
 #Use Custom data_type
 my $custom = MYDLjE::M::Content->new(alias => $alias, user_id => 2, group_id => 2);
 delete $custom->FIELDS_VALIDATION->{data_type}{constraints};
@@ -171,6 +162,7 @@ is($custom->body, 'alabala body', 'custom retrieved ok');
 #cleanup
 $content->dbix->delete($content->TABLE,
   {alias => {-like => ['test%', 'what-brcan-i-doooo']}});
+
 #=cut
 
 # test MYDLjE::M::Session
@@ -328,10 +320,76 @@ my $page = MYDLjE::M::Page->new(
 is($page->pid,       0,              '$page->pid is ' . $page->pid);
 is($page->alias,     'home' . $time, '$page->alias is ' . $page->alias);
 is($page->page_type, 'root',         '$page->page_type is ' . $page->page_type);
-is($page->user_id($sstorage->user->id)->user_id,   $sstorage->user->id, '$page->user_id is ' . $page->user_id);
-is($page->group_id($sstorage->user->group_id)->group_id, $sstorage->user->group_id, '$page->group_id is ' . $page->group_id);
-is($page->permissions('-rwxrw-r-x')->permissions,
-  '-rwxrw-r-x', '$page->permissions are ' . $page->permissions);
+is($page->user_id($sstorage->user->id)->user_id,
+  $sstorage->user->id, '$page->user_id is ' . $page->user_id);
+is($page->group_id($sstorage->user->group_id)->group_id,
+  $sstorage->user->group_id, '$page->group_id is ' . $page->group_id);
+is($page->permissions('-r--r--r--')->permissions,
+  '-r--r--r--', '$page->permissions are ' . $page->permissions);
+ok($sstorage->user->can_read($page->data), 'user can read ' . $page->permissions);
+is($page->permissions('-r--r-----')->permissions,
+  '-r--r-----', '$page->permissions are ' . $page->permissions);
+ok($sstorage->user->can_read($page->data), 'user can read ' . $page->permissions);
+is($page->permissions('-r--------')->permissions,
+  '-r--------', '$page->permissions are ' . $page->permissions);
+ok($sstorage->user->can_read($page->data), 'user can read ' . $page->permissions);
+is($page->permissions('----r--r--')->permissions,
+  '----r--r--', '$page->permissions are ' . $page->permissions);
+ok($sstorage->user->can_read($page->data), 'user can read ' . $page->permissions);
+is($page->permissions('-------r--')->permissions,
+  '-------r--', '$page->permissions are ' . $page->permissions);
+ok($sstorage->user->can_read($page->data), 'user can read ' . $page->permissions);
+is($page->permissions('----------')->permissions,
+  '----------', '$page->permissions are ' . $page->permissions);
+ok(
+  (not $sstorage->user->can_read($page->data)),
+  'user can not read ' . $page->permissions
+);
+
+is($page->permissions('----------')->permissions,
+  '----------', '$page->permissions are ' . $page->permissions);
+
+#excuse me
+$sstorage->user->groups->[-1]{name} = 'admin';
+ok($sstorage->user->can_read($page->data),
+  'user can read ' . $page->permissions . ' because he is admin');
+
+is($page->permissions('----r-----')->permissions,
+  '----r-----', '$page->permissions are ' . $page->permissions);
+
+#excuse me
+$sstorage->user->groups->[-1]{name} = 'notadmin';
+$sstorage->user->groups->[-1]{id}   = 0;
+
+#note explain $sstorage->user->groups;
+ok(
+  (not $sstorage->user->can_read($page->data)),
+  'user can not read '
+    . $page->permissions
+    . ' because $page->group_id is '
+    . $page->group_id
+    . ' but the user is not in this group any more'
+);
+is($page->permissions('-r--r-----')->permissions,
+  '-r--r-----', '$page->permissions are ' . $page->permissions);
+my $user_id = $page->user_id;
+$page->user_id(1);
+ok(
+  (not $sstorage->user->can_read($page->data)),
+  'user can not read '
+    . $page->permissions
+    . ' because $page->user_id is '
+    . $page->user_id
+);
+$page->user_id($user_id);
+
+
+require MYDLjE::M::Content::Page;
+my $page_content = MYDLjE::M::Content::Page->new();
+$page_content->title('Христос възкръсна!');
+$page_content->alias(lc MYDLjE::Unidecode::unidecode($page_content->title));
+is($page_content->alias, 'xristos-vazkrasna', 'alias is unidecoded ok');
+is($page_content->language('bg')->language, 'bg', 'language bg ok');
 
 #reuse some data
 $page_content->user_id($page->user_id);
@@ -355,3 +413,4 @@ foreach my $u (@added_users) {
 
 #=cut
 
+done_testing();

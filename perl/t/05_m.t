@@ -324,6 +324,8 @@ is($page->user_id($sstorage->user->id)->user_id,
   $sstorage->user->id, '$page->user_id is ' . $page->user_id);
 is($page->group_id($sstorage->user->group_id)->group_id,
   $sstorage->user->group_id, '$page->group_id is ' . $page->group_id);
+
+#READ
 is($page->permissions('-r--r--r--')->permissions,
   '-r--r--r--', '$page->permissions are ' . $page->permissions);
 ok($sstorage->user->can_read($page->data), 'user can read ' . $page->permissions);
@@ -346,10 +348,8 @@ ok(
   'user can not read ' . $page->permissions
 );
 
-is($page->permissions('----------')->permissions,
-  '----------', '$page->permissions are ' . $page->permissions);
-
 #excuse me
+my $user_group = \%{$sstorage->user->groups->[-1]};
 $sstorage->user->groups->[-1]{name} = 'admin';
 ok($sstorage->user->can_read($page->data),
   'user can read ' . $page->permissions . ' because he is admin');
@@ -377,6 +377,70 @@ $page->user_id(1);
 ok(
   (not $sstorage->user->can_read($page->data)),
   'user can not read '
+    . $page->permissions
+    . ' because $page->user_id is '
+    . $page->user_id
+);
+$page->user_id($user_id);
+
+#READ DONE
+#WRITE NOW
+my $user_group = \%{$sstorage->user->groups->[-1]};
+$sstorage->user->groups->[-1] = $user_group;
+is($page->user_id($sstorage->user->id)->user_id,
+  $sstorage->user->id, '$page->user_id is ' . $page->user_id);
+is($page->group_id($sstorage->user->group_id)->group_id,
+  $sstorage->user->group_id, '$page->group_id is ' . $page->group_id);
+
+is($page->permissions('-rw-rw-rw-')->permissions,
+  '-rw-rw-rw-', '$page->permissions are ' . $page->permissions);
+ok($sstorage->user->can_write($page->data), 'user can write ' . $page->permissions);
+is($page->permissions('-rw-rw----')->permissions,
+  '-rw-rw----', '$page->permissions are ' . $page->permissions);
+ok($sstorage->user->can_write($page->data), 'user can write ' . $page->permissions);
+is($page->permissions('-rw-------')->permissions,
+  '-rw-------', '$page->permissions are ' . $page->permissions);
+ok($sstorage->user->can_write($page->data), 'user can write ' . $page->permissions);
+is($page->permissions('----rw-rw-')->permissions,
+  '----rw-rw-', '$page->permissions are ' . $page->permissions);
+ok($sstorage->user->can_write($page->data), 'user can write ' . $page->permissions);
+is($page->permissions('-------rw-')->permissions,
+  '-------rw-', '$page->permissions are ' . $page->permissions);
+ok($sstorage->user->can_write($page->data), 'user can write ' . $page->permissions);
+is($page->permissions('----------')->permissions,
+  '----------', '$page->permissions are ' . $page->permissions);
+ok(
+  (not $sstorage->user->can_write($page->data)),
+  'user can not write ' . $page->permissions
+);
+
+#excuse me
+$sstorage->user->groups->[-1]{name} = 'admin';
+ok($sstorage->user->can_write($page->data),
+  'user can write ' . $page->permissions . ' because he is admin');
+
+is($page->permissions('----rw----')->permissions,
+  '----rw----', '$page->permissions are ' . $page->permissions);
+
+#excuse me
+$sstorage->user->groups->[-1]{name} = 'notadmin';
+$sstorage->user->groups->[-1]{id}   = 0;
+
+#note explain $sstorage->user->groups;
+ok(
+  (not $sstorage->user->can_write($page->data)),
+  'user can not write '
+    . $page->permissions
+    . ' because $page->group_id is '
+    . $page->group_id
+    . ' but the user is not in this group any more'
+);
+is($page->permissions('-rw-rw----')->permissions,
+  '-rw-rw----', '$page->permissions are ' . $page->permissions);
+$page->user_id(1);
+ok(
+  (not $sstorage->user->can_write($page->data)),
+  'user can not write '
     . $page->permissions
     . ' because $page->user_id is '
     . $page->user_id

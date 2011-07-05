@@ -144,7 +144,31 @@ sub can_read {
 }
 
 sub can_write {
+  my ($self, $row) = @_;
+  _validate_row($row);
 
+  #everybody can write or is owner
+  if (
+    $row->{permissions} =~ /^[\w\-]{8}w/x
+    || ( $self->id == $row->{user_id}
+      && $row->{permissions} =~ /^[\w\-]{2}w/x)
+    )
+  {
+    return 1;
+  }
+
+  #is in a suitable group
+  if ((List::Util::first { $row->{group_id} == $_->{id} } @{$self->groups})
+    && $row->{permissions} =~ /^[\w\-]{5}w/x)
+  {
+    return 1;
+  }
+
+  #is in admin group
+  if (List::Util::first { $_->{name} eq 'admin' } @{$self->groups}) {
+    return 1;
+  }
+  return 0;
 }
 
 sub can_execute {

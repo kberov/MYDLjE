@@ -137,10 +137,7 @@ sub can_read {
   }
 
   #is in admin group
-  if (List::Util::first { $_->{name} eq 'admin' } @{$self->groups}) {
-    return 1;
-  }
-  return 0;
+  return $self->is_admin;
 }
 
 sub can_write {
@@ -165,13 +162,21 @@ sub can_write {
   }
 
   #is in admin group
+  return $self->is_admin;
+}
+
+sub can_execute {
+
+}
+
+sub is_admin {
+  my $self = shift;
+
+  #is in admin group
   if (List::Util::first { $_->{name} eq 'admin' } @{$self->groups}) {
     return 1;
   }
   return 0;
-}
-
-sub can_execute {
 
 }
 
@@ -288,6 +293,11 @@ Examples:
   if($c->msession->user->can_write($page->data)){
     #show the record
   }
+
+=head2 is_admin
+
+Checks if the user is member of the "admin" group.
+Returns 1 on succes, 0 otherwise.
 
 =head1 SEE ALSO
 

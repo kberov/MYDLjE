@@ -319,17 +319,6 @@ $sstorage->user(
 #5. Some of his groups namespaces allows this
 is($sstorage->user->login_name, $login_name, "user $login_name logged in accordingly");
 
-#=pod
-
-$dbix->delete('sessions', {id => $sstorage->id});
-foreach my $u (@added_users) {
-  $dbix->delete('user_group', {user_id    => $u->{id}});
-  $dbix->delete('users',      {login_name => $u->{login_name}});
-  $dbix->delete('groups',     {name       => $u->{login_name}});
-}
-
-#=cut
-
 # test MYDLjE::M::Page
 require MYDLjE::M::Page;
 
@@ -351,6 +340,18 @@ $page_content->user_id($page->user_id);
 $page_content->group_id($page->group_id);
 $page = MYDLjE::M::Page->add(%{$page->data}, page_content => $page_content);
 is($page->id, $page_content->page_id, '$page->id is $page_content->page_id');
+
+
+#=pod
+
+$dbix->delete('sessions', {id => $sstorage->id});
+foreach my $u (@added_users) {
+  $dbix->delete('user_group', {user_id    => $u->{id}});
+  $dbix->delete('users',      {login_name => $u->{login_name}});
+  $dbix->delete('groups',     {name       => $u->{login_name}});
+}
+
+#=cut
 
 #clean up...
 $dbix->delete('content', {page_id => $page->id});

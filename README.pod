@@ -1,4 +1,4 @@
-=head1 MYDLjE - Web-presence rewrote
+=head1 MYDLjE - Web-presence rewritten
 
 =head1 DESCRIPTION
 

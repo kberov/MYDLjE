@@ -169,14 +169,15 @@ $content->dbix->delete($content->TABLE,
 require MYDLjE::M::Session;
 my $session_id = Mojo::Util::md5_sum(1234567890);
 my $sstorage = MYDLjE::M::Session->select(id => $session_id);
-is($sstorage->id, undef, "No such session id: $session_id");
+like($sstorage->id, qr/^[a-f0-9]{32}$/x, "session id is valid: $session_id");
+is($sstorage->id, $session_id, '($c->msession->id==parameter $session_id) always');
 ok($sstorage->guest, '$sstorage->guest - yes');
 
 #$sstorage->user_id is always the same as $sstorage->user->id
 is($sstorage->user_id, 2,
   "\$sstorage->user_id is guest user_id: " . $sstorage->user->id);
 $sstorage->sessiondata->{something} = 'Някакъв текст';
-ok($session_id = $sstorage->save, 'session stored');
+ok($sstorage->save, 'session stored');
 is(
   $sstorage->sessiondata->{user_data}->{login_name},
   $sstorage->user->login_name,
@@ -489,3 +490,5 @@ foreach my $u (@added_users) {
 #=cut
 
 done_testing();
+
+

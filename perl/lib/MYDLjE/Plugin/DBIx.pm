@@ -15,7 +15,7 @@ my %COMMON_DBH_HANDLERS = (
   AutoCommit  => 1,
 );
 my $DRIVER_DBH_HANDLERS = {
-  'DBI:mysql'  => {mysql_enable_utf8 => 1},
+  'DBI:mysql'  => {mysql_enable_utf8 => 1, mysql_bind_type_guessing => 1},
   'DBI:SQLite' => {sqlite_unicode    => 1},
   'DBI:Pg'     => {pg_enable_utf8    => 1}
 };

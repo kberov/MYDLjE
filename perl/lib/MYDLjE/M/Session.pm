@@ -39,7 +39,7 @@ has FIELDS_VALIDATION => sub {
 sub new_id {
   my ($self, $new_id) = @_;
   if ($new_id) {
-    Carp::confess('News session id does not look like an md5_sum!')
+    Carp::confess('New session id does not look like an md5_sum!')
       unless $new_id =~ m|^[a-f0-9]{32}$|x;
     $self->{new_id} = $new_id;
   }
@@ -151,11 +151,17 @@ sub select {    ##no critic (Subroutines::ProhibitBuiltinHomonyms)
   if ($self->sessiondata->{user_data}) {
     $self->user(MYDLjE::M::User->new($self->sessiondata->{user_data}));
   }
+  unless ($self->id) {
+    $self->new_id($where->{id});
+  }
   return $self;
 }
 
 #hopefully this will get called when the object goes out of scope
-sub DESTROY { shift->save(); return; }
+sub DESTROY {
+  shift->save();
+  return;
+}
 
 1;
 

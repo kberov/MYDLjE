@@ -3,7 +3,7 @@ use MYDLjE::Base 'MYDLjE::M';
 use Mojo::Util qw();
 use MYDLjE::M::User;
 require Time::HiRes;
-has user => sub { MYDLjE::M::User->select(login_name => 'guest') };
+
 has TABLE => 'sessions';
 
 has COLUMNS => sub { [qw(id cid user_id tstamp sessiondata)] };
@@ -35,6 +35,22 @@ has FIELDS_VALIDATION => sub {
     },
   };
 };
+
+sub user {
+  my ($self, $user) = @_;
+  if ($user) {
+    Carp::confess('Please pass a MYDLjE::M::User instance')
+      if ref($user) ne 'MYDLjE::M::User';
+    $self->{user} = $user;
+
+    $self->dbix->update('msession', {avalue => $user->id}, {name => 'USER_ID'});
+  }
+  else {
+    $self->{user} ||= MYDLjE::M::User->select(login_name => 'guest');
+
+  }
+  return $self->{user};
+}
 
 sub new_id {
   my ($self, $new_id) = @_;
@@ -146,6 +162,12 @@ sub select {    ##no critic (Subroutines::ProhibitBuiltinHomonyms)
   if ($self->sessiondata && !ref($self->sessiondata)) {
     $self->data(sessiondata => _thaw_sessiondata($self->sessiondata));
   }
+
+  #make a temporary table to reuse well known values in queries
+  $self->dbix->dbh->do('DROP TABLE IF EXISTS msession');
+  $self->dbix->dbh->do('CREATE TEMPORARY TABLE msession'
+      . '(name varchar(30) NOT NULL, avalue text, PRIMARY KEY ( name ))');
+  $self->dbix->insert('msession', {name => 'USER_ID', avalue => 2});
 
   #Restore user object from sessiondata
   if ($self->sessiondata->{user_data}) {

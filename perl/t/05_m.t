@@ -171,7 +171,7 @@ my $session_id = Mojo::Util::md5_sum(1234567890);
 my $sstorage = MYDLjE::M::Session->select(id => $session_id);
 like($sstorage->id, qr/^[a-f0-9]{32}$/x, "session id is valid: $session_id");
 is($sstorage->id, $session_id, '($c->msession->id==parameter $session_id) always');
-ok($sstorage->guest, '$sstorage->guest - yes');
+ok($sstorage->guest, '$sstorage->guest? yes');
 
 #$sstorage->user_id is always the same as $sstorage->user->id
 is($sstorage->user_id, 2,
@@ -473,7 +473,34 @@ $page_content->group_id($page->group_id);
 $page = MYDLjE::M::Page->add(%{$page->data}, page_content => $page_content);
 is($page->id, $page_content->page_id, '$page->id is $page_content->page_id');
 
+#test msession temporary table
 
+my $admin_session =
+  MYDLjE::M::Session->select(id => Mojo::Util::md5_sum('123' . $time));
+
+$admin_session->user(MYDLjE::M::User->select(login_name => 'admin'));
+is( $admin_session->user->id, $admin_session->dbix->select('msession', 'avalue', {name => 'USER_ID'})
+  ->hash->{avalue},'USER_ID in TEMPORARY table OK');
+my $write_permissions = <<SQL;
+  ((user_id =? AND permissions LIKE '_rw%')
+    OR ( group_id IN (SELECT group_id FROM user_group WHERE user_id=?) 
+      AND permissions LIKE '____rw%')
+    OR permissions LIKE '_______rw_%'
+    -- user is from admin group
+    OR EXISTS(SELECT ug.group_id FROM user_group ug 
+        WHERE ug.user_id IN(SELECT avalue FROM msession WHERE name='USER_ID')
+        AND group_id=1
+    ))
+    limit 5
+SQL
+
+my $pages = $admin_session->dbix->query('SELECT * FROM pages WHERE '.$write_permissions,1,1)->hashes;
+#note explain $pages;
+ok(scalar @$pages>1, 'Admin user can read/write records with any permissions');
+foreach my $p(@$pages){
+  ok($admin_session->user->can_read($p), "permissions are $p->{permissions} but an admin user can read page." );
+  ok($admin_session->user->can_write($p), "permissions are $p->{permissions} but an admin user can write" );
+}
 #=pod
 
 #clean up...

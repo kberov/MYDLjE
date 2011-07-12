@@ -169,8 +169,10 @@ $content->dbix->delete($content->TABLE,
 require MYDLjE::M::Session;
 my $session_id = Mojo::Util::md5_sum(1234567890);
 my $sstorage = MYDLjE::M::Session->select(id => $session_id);
-like($sstorage->id, qr/^[a-f0-9]{32}$/x, "session id is valid: $session_id");
-is($sstorage->id, $session_id, '($c->msession->id==parameter $session_id) always');
+like(($sstorage->id || $sstorage->new_id),
+  qr/^[a-f0-9]{32}$/x, "session id is valid: $session_id");
+is(($sstorage->id || $sstorage->new_id),
+  $session_id, '(msession id == $session_id) always');
 ok($sstorage->guest, '$sstorage->guest? yes');
 
 #$sstorage->user_id is always the same as $sstorage->user->id

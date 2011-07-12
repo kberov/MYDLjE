@@ -5,17 +5,18 @@ use MYDLjE::M::Domain;
 use MYDLjE::M::Page;
 
 sub domains {
-  my $c   = shift;
-  my $uid = $c->msession->user->id;
+  my $c = shift;
 
   #save some selects
   if ($c->msession('domains')) {
     $c->stash(domains => $c->msession('domains'));
   }
   else {
+    my $uid         = $c->msession->user->id;
     my $domains_SQL = 'SELECT * FROM domains WHERE ' . $c->sql('write_permissions_sql');
-    $c->stash(domains => [$c->dbix->query($domains_SQL, $uid, $uid)->hashes]);
-    $c->msession(domains => $c->stash('domains'));
+    my $domains     = [$c->dbix->query($domains_SQL, $uid, $uid, $uid)->hashes];
+    $c->stash(domains => $domains);
+    $c->msession(domains => $domains);
   }
   return;
 }
@@ -28,7 +29,7 @@ sub edit_domain {
   if (defined $id) {
     $domain->select(
       id   => $id,
-      -and => [\[$c->sql('write_permissions_sql'), $user->id, $user->id]]
+      -and => [\[$c->sql('write_permissions_sql'), $user->id, $user->id, $user->id]]
     );
   }
   else {
@@ -120,6 +121,7 @@ sub _persist_domain_id {
   if (exists $form->{'page.domain_id'}) {
     $c->msession('domain_id', $form->{'page.domain_id'});
   }
+  return;
 }
 
 sub edit_page {
@@ -129,7 +131,6 @@ sub edit_page {
   my $page    = MYDLjE::M::Page->new;
   my $content = MYDLjE::M::Content::Page->new;
   my $user    = $c->msession->user;
-  my $method  = $c->req->method;
   my $form    = {@{$c->req->params->params}};
 
   $c->domains();    #fill in "domains" stash variable
@@ -142,10 +143,14 @@ sub edit_page {
     (List::Util::first { $form->{'content.language'} eq $_ }
     @{$c->app->config('languages')});
   if ($id) {        #edit
+
+    #See SQL::Abstract#Literal SQL with placeholders and bind values (subqueries)
+    my $uid = $user->id;
+    my $and_sql = [$c->sql('write_permissions_sql'), $uid, $uid, $uid];
     $page->select(
       id      => $id,
       deleted => 0,
-      -and    => [\[$c->sql('write_permissions_sql'), $user->id, $user->id]]
+      -and    => [\$and_sql]
     );
     if ($page->id) {
 
@@ -153,7 +158,7 @@ sub edit_page {
         page_id  => $page->id,
         language => $language,
         deleted  => 0,
-        -and     => [\[$c->sql('write_permissions_sql'), $user->id, $user->id]]
+        -and     => [\$and_sql]
       );
     }
 
@@ -302,7 +307,7 @@ sub _traverse_children {
   $depth++;
   return if $depth > 10;
   my ($domain_id) = $c->msession('domain_id') || 0;
-  my $pages = $c->dbix->query($c->sql('writable_pages'),
+  my $pages = $c->dbix->query($c->sql('writable_pages_select_menu'),
     $pid, $domain_id, $id, $user->id, $user->id)->hashes;
   $id = ($c->stash('id') || 0);
   if (@$pages) {

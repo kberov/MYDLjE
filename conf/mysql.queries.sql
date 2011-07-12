@@ -3,17 +3,27 @@
     The "params" attribute is mostly informative for now but can be used in the future
     to pass/add/append parameters for the placeholders in the queries.
 */
--- <query name="write_permissions_sql" params="user_id,user_id"><![CDATA[
-  
+-- <query name="write_permissions_sql" params="user_id,user_id,user_id"><![CDATA[
   (
     (user_id = ? AND permissions LIKE '_rw%')
     OR ( group_id IN (SELECT group_id FROM user_group WHERE user_id= ?) 
       AND permissions LIKE '____rw____')
     OR permissions LIKE '_______rw_'
+    OR EXISTS 
+        (SELECT ug.group_id FROM user_group ug WHERE ug.user_id= ? and ug.group_id=1)
   )
 
 -- ]]></query>
-
+-- <query name="read_permissions_sql" params="user_id,user_id"><![CDATA[
+  (
+    (user_id = ? AND permissions LIKE '_r%')
+    OR ( group_id IN (SELECT group_id FROM user_group WHERE user_id= ?) 
+      AND permissions LIKE '____r_____')
+    OR permissions LIKE '_______r__'
+    OR EXISTS 
+        (SELECT ug.group_id FROM user_group ug WHERE ug.user_id= ? and ug.group_id=1)
+  )
+-- ]]></query>
 -- <query name="writable_pages_select_menu" params="pid,domain_id,id,user_id,user_id"><![CDATA[
   SELECT id as value, alias as label, page_type, pid, permissions FROM pages
      WHERE pid=? AND domain_id=? AND pid !=? AND id>0  AND 
@@ -37,7 +47,9 @@
     OR ( p.group_id IN (SELECT ug.group_id FROM user_group ug WHERE ug.user_id= ?) 
          AND p.permissions LIKE '____r_____'
     )
-    OR p.permissions LIKE '_______r__%'
+    OR p.permissions LIKE '_______r__'
+    OR EXISTS 
+        (SELECT ug.group_id FROM user_group ug WHERE ug.user_id= ? and ug.group_id=1)
   )
 -- ]]></query>
 

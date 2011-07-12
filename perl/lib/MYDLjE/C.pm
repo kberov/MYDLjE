@@ -32,6 +32,7 @@ sub hisession {
 }
 
 #Controller helper for using MYDLjE session storage along the Mojolicious session
+#TODO move this method to a plugin and register it
 sub msession {
   my ($c, $key, $value) = @_;
   unless ($c->{msession}) {

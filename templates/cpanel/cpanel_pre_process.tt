@@ -4,8 +4,10 @@
 %][%
     app = c.app;
     MOJO_APP = app.env.MOJO_APP;
+    #the current user
+    USER = c.msession.user;
     MOJO_APP_AT_SITE = MOJO_APP _ '@'_ app.config('site_name');
-    USER_AT_MOJO_APP_AT_SITE = c.msession.user.login_name _'@' _ MOJO_APP_AT_SITE;
+    USER_AT_MOJO_APP_AT_SITE = USER.login_name _'@' _ MOJO_APP_AT_SITE;
     JQ_UI_THEME = app.config('jq_ui_theme');
     LANGUAGE = c.languages();
     DEFAULT_WRAPPER = 'layouts/cpanel_layout.html.tt';

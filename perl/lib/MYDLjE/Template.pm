@@ -12,8 +12,8 @@ sub set { return shift->stash->set(@_); }
 has c    => sub { shift->get('c'); };
 has app  => sub { shift->c->app; };
 has dbix => sub { shift->c->dbix; };
-sub msession { shift->get('c')->msession(@_); return; }
-has user => sub { shift->msession->user; };
+sub msession { return shift->get('c')->msession(@_); }
+has USER => sub { shift->get('USER'); };
 sub process { return shift->{_CONTEXT}->process(@_); }
 sub include { return shift->{_CONTEXT}->include(@_); }
 sub insert  { return shift->{_CONTEXT}->insert(@_); }

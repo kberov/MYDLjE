@@ -42,8 +42,6 @@ sub user {
     Carp::confess('Please pass a MYDLjE::M::User instance')
       if ref($user) ne 'MYDLjE::M::User';
     $self->{user} = $user;
-
-    $self->dbix->update('msession', {avalue => $user->id}, {name => 'USER_ID'});
   }
   else {
     $self->{user} ||= MYDLjE::M::User->select(login_name => 'guest');
@@ -163,11 +161,11 @@ sub select {    ##no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->data(sessiondata => _thaw_sessiondata($self->sessiondata));
   }
 
-  #make a temporary table to reuse well known values in queries
-  $self->dbix->dbh->do('DROP TABLE IF EXISTS msession');
-  $self->dbix->dbh->do('CREATE TEMPORARY TABLE msession'
-      . '(name varchar(30) NOT NULL, avalue text, PRIMARY KEY ( name ))');
-  $self->dbix->insert('msession', {name => 'USER_ID', avalue => 2});
+  #TODO IDEA:make a temporary table to reuse well known values in queries
+  #$self->dbix->dbh->do('DROP TABLE IF EXISTS msession');
+  #$self->dbix->dbh->do('CREATE TEMPORARY TABLE msession'
+  #    . '(name varchar(30) NOT NULL, avalue text, PRIMARY KEY ( name ))');
+  #$self->dbix->insert('msession', {name => 'USER_ID', avalue => 2});
 
   #Restore user object from sessiondata
   if ($self->sessiondata->{user_data}) {

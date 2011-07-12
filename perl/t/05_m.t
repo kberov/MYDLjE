@@ -247,7 +247,8 @@ is($guest->id, 2, "custom WHERE with literal SQL");
 $login_name = 'perko' . $sstorage->cid . 'I';
 
 my $login_password = rand($time) . $login_name;
-my $new_user       = MYDLjE::M::User->add(
+note "\$login_password is [$login_password]";
+my $new_user = MYDLjE::M::User->add(
   login_name     => $login_name,
   login_password => $login_password,
   email          => $login_name . '@localhost.com',
@@ -473,8 +474,9 @@ $page_content->group_id($page->group_id);
 $page = MYDLjE::M::Page->add(%{$page->data}, page_content => $page_content);
 is($page->id, $page_content->page_id, '$page->id is $page_content->page_id');
 
-#test msession temporary table
+=pod TODO IDEA
 
+#test msession temporary table
 my $admin_session =
   MYDLjE::M::Session->select(id => Mojo::Util::md5_sum('123' . $time));
 
@@ -501,7 +503,9 @@ foreach my $p(@$pages){
   ok($admin_session->user->can_read($p), "permissions are $p->{permissions} but an admin user can read page." );
   ok($admin_session->user->can_write($p), "permissions are $p->{permissions} but an admin user can write" );
 }
-#=pod
+
+
+=cut
 
 #clean up...
 $dbix->delete('content', {page_id => $page->id});
@@ -513,8 +517,6 @@ foreach my $u (@added_users) {
   $dbix->delete('users',      {login_name => $u->{login_name}});
   $dbix->delete('groups',     {name       => $u->{login_name}});
 }
-
-#=cut
 
 done_testing();
 

@@ -48,16 +48,15 @@ sub msession {
     }
     $c->{msession} = MYDLjE::M::Session->select(id => $c->session('id'));
   }
-  my $msession = $c->{msession};
 
   if (defined $value) {
-    $msession->sessiondata->{$key} = $value;
-    return $msession->sessiondata->{$key};
+    $c->{msession}->sessiondata->{$key} = $value;
+    return $c->{msession}->sessiondata->{$key};
   }
   elsif ($key) {
-    return $msession->sessiondata->{$key};
+    return $c->{msession}->sessiondata->{$key};
   }
-  return $msession;
+  return $c->{msession};
 }
 
 1;

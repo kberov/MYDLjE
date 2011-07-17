@@ -16,16 +16,8 @@ sub render {
 
 sub render_pages {
   my ($self) = @_;
-  my $uid = $self->USER->id;
-  my $sql =
-      'SELECT id, user_id, group_id, pid, alias, page_type, permissions'
-    . ' FROM pages WHERE pid=? AND domain_id=? and id !=0 AND '
-    . $self->c->sql('read_permissions_sql');
-  $self->app->debug($sql);
-  my $pages =
-    $self->dbix->query($sql, $self->pid, $self->domain_id, $uid, $uid, $uid)->hashes;
   my $html = '';
-  foreach my $p (@$pages) {
+  foreach my $p (@{$self->get('pages')}) {
     $html .= $self->process('site/pages_item.html.tt', {p => $p});
   }
   return $html;

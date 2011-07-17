@@ -113,14 +113,29 @@ sub pages {
   $c->stash(form => $form);
   $c->domains();
   $c->_persist_domain_id($form);
+  my $pid       = $c->stash('id') || 0;
+  my $domain_id = $c->msession('domain_id');
+  my $language  = $form->{'content.language'}
+    || $c->app->config('plugins')->{i18n}{default};
+  my $sql =
+      'SELECT id, user_id, group_id, pid, alias, page_type, permissions'
+    . ' FROM pages WHERE pid=? AND domain_id=? and id !=0 AND '
+    . $c->sql('read_permissions_sql');
+  $c->debug($sql);
+  my $uid = $c->msession->user->id;
+  $c->stash(pages => $c->dbix->query($sql, $pid, $domain_id, $uid, $uid, $uid)->hashes
+      || []);
+
+
   return;
 }
 
 sub _persist_domain_id {
   my ($c, $form) = @_;
   if (exists $form->{'page.domain_id'}) {
-    $c->msession('domain_id', $form->{'page.domain_id'});
+    $c->msession('domain_id', $form->{'page.domain_id'} || 0);
   }
+
   return;
 }
 

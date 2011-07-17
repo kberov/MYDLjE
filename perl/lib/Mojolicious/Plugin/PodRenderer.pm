@@ -74,8 +74,7 @@ sub register {
         unless $path && -r $path;
 
       # Turn POD into HTML
-      my $file = IO::File->new;
-      $file->open("< $path");
+      my $file = IO::File->new("< $path");
       my $html = _pod_to_html(join '', <$file>);
 
       # Rewrite links
@@ -167,7 +166,7 @@ sub _pod_to_html {
   $output =~ s/<a name='___top' class='dummyTopAnchor'\s*?><\/a>\n//g;
   $output =~ s/<a class='u'.*?name=".*?"\s*>(.*?)<\/a>/$1/sg;
 
-  $output;
+  return $output;
 }
 
 1;

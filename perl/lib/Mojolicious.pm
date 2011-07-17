@@ -26,14 +26,14 @@ has secret   => sub {
   $self->log->debug('Your secret passphrase needs to be changed!!!');
 
   # Default to application name
-  ref $self;
+  return ref $self;
 };
 has sessions => sub { Mojolicious::Sessions->new };
 has static   => sub { Mojolicious::Static->new };
 has types    => sub { Mojolicious::Types->new };
 
 our $CODENAME = 'Smiling Face With Sunglasses';
-our $VERSION  = '1.48';
+our $VERSION  = '1.64';
 
 # "These old doomsday devices are dangerously unstable.
 #  I'll rest easier not knowing where they are."
@@ -48,7 +48,7 @@ sub AUTOLOAD {
     unless my $helper = $self->renderer->helpers->{$method};
 
   # Call helper with fresh controller
-  $self->controller_class->new(app => $self)->$helper(@_);
+  return $self->controller_class->new(app => $self)->$helper(@_);
 }
 
 sub DESTROY { }
@@ -64,7 +64,7 @@ sub new {
       my $self = shift;
       my $tx   = Mojo::Transaction::HTTP->new;
       $self->plugins->run_hook(after_build_tx => ($tx, $self));
-      $tx;
+      return $tx;
     }
   );
 
@@ -110,7 +110,7 @@ sub new {
   # Startup
   $self->startup(@_);
 
-  $self;
+  return $self;
 }
 
 # "Amy, technology isn't intrinsically good or evil. It's how it's used.
@@ -131,7 +131,7 @@ sub defaults {
     $self->{defaults}->{$key} = $values->{$key};
   }
 
-  $self;
+  return $self;
 }
 
 # The default dispatchers with exception handling
@@ -295,7 +295,7 @@ I18N, first class unicode support and much more for you to discover.
 =item *
 
 Very clean, portable and Object Oriented pure Perl API without any hidden
-magic and no requirements besides Perl 5.8.7 (although 5.10+ is recommended).
+magic and no requirements besides Perl 5.8.7 (although 5.12+ is recommended).
 
 =item *
 
@@ -313,7 +313,7 @@ Automatic CGI, FastCGI and L<PSGI> detection.
 
 =item *
 
-JSON and XML/HTML5 parser with CSS3 selector support.
+JSON and HTML5/XML parser with CSS3 selector support.
 
 =item *
 
@@ -323,7 +323,7 @@ Fresh code based upon years of experience developing L<Catalyst>.
 
 =head2 Installation
 
-All you need is a oneliner.
+All you need is a oneliner, it takes less than a minute.
 
   sudo sh -c "curl -L cpanmin.us | perl - Mojolicious"
 
@@ -333,7 +333,7 @@ These three lines are a whole web application.
 
   use Mojolicious::Lite;
 
-  get '/' => sub { shift->render_text('Hello World!') };
+  get '/' => {text => 'Hello World!'};
 
   app->start;
 
@@ -353,7 +353,10 @@ Web development for humans, making hard things possible and everything fun.
   use Mojolicious::Lite;
 
   # Simple plain text response
-  get '/' => sub { shift->render_text('Hello World!') };
+  get '/' => sub {
+    my $self = shift;
+    $self->render_text('Hello World!');
+  };
 
   # Route associating the "/time" URL to template in DATA section
   get '/time' => 'clock';
@@ -399,10 +402,13 @@ A controller collects several actions together.
   use Mojo::Base 'Mojolicious::Controller';
 
   # Plain text response
-  sub hello { shift->render_text('Hello World!') }
+  sub hello {
+    my $self = shift;
+    $self->render_text('Hello World!');
+  }
 
   # Render external template "templates/example/clock.html.ep"
-  sub clock { shift->render }
+  sub clock { }
 
   # RESTful web service sending JSON responses
   sub restful {
@@ -478,7 +484,11 @@ exactly the same.
 Mojolicious has been designed from the ground up for a fun and unique
 workflow.
 
-=head2 Have Some Cake
+=head2 Want To Know More?
+
+Take a look at our excellent documentation in L<Mojolicious::Guides>!
+
+=head1 ARCHITECTURE
 
 Loosely coupled building blocks, use what you like and just ignore the rest.
 
@@ -497,9 +507,6 @@ Loosely coupled building blocks, use what you like and just ignore the rest.
   .-------. .-----------. .--------. .------------. .-------------.
   |  CGI  | |  FastCGI  | |  PSGI  | |  HTTP 1.1  | |  WebSocket  |
   '-------' '-----------' '--------' '------------' '-------------'
-
-For more documentation see L<Mojolicious::Guides> and the tutorial in
-L<Mojolicious::Lite>!
 
 =head1 ATTRIBUTES
 
@@ -692,7 +699,7 @@ The following events are available and run in the listed order.
 =item after_build_tx
 
 Triggered right after the transaction is built and before the HTTP request
-gets parsed.
+gets parsed, the callbacks of this hook run in the order they were added.
 One use case would be upload progress bars.
 (Passed the transaction and application instances)
 
@@ -702,7 +709,8 @@ One use case would be upload progress bars.
 
 =item before_dispatch
 
-Triggered right before the static and routes dispatchers start their work.
+Triggered right before the static and routes dispatchers start their work,
+the callbacks of this hook run in the order they were added.
 Very useful for rewriting incoming requests and other preprocessing tasks.
 (Passed the default controller instance)
 
@@ -724,7 +732,8 @@ Mostly used for custom dispatchers and postprocessing static file responses.
 
 =item before_render
 
-Triggered right before the renderer turns the stash into a response.
+Triggered right before the renderer turns the stash into a response, the
+callbacks of this hook run in the order they were added.
 Very useful for making adjustments to the stash right before rendering.
 (Passed the current controller instance and argument hash)
 
@@ -842,6 +851,15 @@ startup.
     my $self = shift;
   }
 
+=head1 HELPERS
+
+In addition to the attributes and methods above you can also call helpers on
+instances of L<Mojolicious>.
+This includes all helpers from L<Mojolicious::Plugin::DefaultHelpers> and
+L<Mojolicious::Plugin::TagHelpers>.
+
+  $app->log->debug($app->dumper({foo => 'bar'}));
+
 =head1 SUPPORT
 
 =head2 Web
@@ -876,7 +894,7 @@ L<http://creativecommons.org/licenses/by-sa/3.0>.
 
 =head2 jQuery
 
-  Version 1.6.1
+  Version 1.6.2
 
 jQuery is a fast and concise JavaScript Library that simplifies HTML document
 traversing, event handling, animating, and Ajax interactions for rapid web
@@ -1042,6 +1060,8 @@ Matthew Lineen
 Maksym Komar
 
 Maxim Vuets
+
+Michael Harris
 
 Mirko Westermeier
 

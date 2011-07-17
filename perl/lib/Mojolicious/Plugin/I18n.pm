@@ -35,7 +35,7 @@ sub register {
 
       # Handler
       $self->stash->{i18n} =
-        Mojolicious::Plugin::I18n::_Handler->new(_namespace => $namespace);
+        Mojolicious::Plugin::I18n::_Handler->new(namespace => $namespace);
 
       # Languages
       $self->stash->{i18n}->languages(@languages, $default);
@@ -55,24 +55,24 @@ use Mojo::Base -base;
 # "Robot 1-X, save my friends! And Zoidberg!"
 sub languages {
   my ($self, @languages) = @_;
-  return $self->{_language} unless @languages;
+  return $self->{language} unless @languages;
 
   # Handle
-  my $namespace = $self->{_namespace};
+  my $namespace = $self->{namespace};
   if (my $handle = $namespace->get_handle(@languages)) {
     $handle->fail_with(sub { $_[1] });
-    $self->{_handle}   = $handle;
-    $self->{_language} = $handle->language_tag;
+    $self->{handle}   = $handle;
+    $self->{language} = $handle->language_tag;
   }
 
-  $self;
+  return $self;
 }
 
 sub localize {
   my $self = shift;
   my $key  = shift;
-  return $key unless my $handle = $self->{_handle};
-  $handle->maketext($key, @_);
+  return $key unless my $handle = $self->{handle};
+  return $handle->maketext($key, @_);
 }
 
 1;

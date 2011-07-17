@@ -25,6 +25,7 @@ has types => sub {
     txt  => 'text/plain',
     woff => 'application/x-font-woff',
     xml  => 'text/xml',
+    xsl  => 'text/xml',
     zip  => 'application/zip'
   };
 };
@@ -36,7 +37,7 @@ sub type {
     $self->types->{$ext} = $type;
     return $self;
   }
-  $self->types->{$ext || ''};
+  return $self->types->{$ext || ''};
 }
 
 1;

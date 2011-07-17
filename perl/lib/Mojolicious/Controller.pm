@@ -59,7 +59,7 @@ sub AUTOLOAD {
   # Call helper
   Carp::croak(qq/Can't locate object method "$method" via package "$package"/)
     unless my $helper = $self->app->renderer->helpers->{$method};
-  $self->$helper(@_);
+  return $self->$helper(@_);
 }
 
 sub DESTROY { }
@@ -97,7 +97,7 @@ sub cookie {
 
   # Request cookies
   my @cookies = $self->req->cookie($name);
-  map { $_->value } @cookies;
+  return map { $_->value } @cookies;
 }
 
 # "Something's wrong, she's not responding to my poking stick."
@@ -145,7 +145,7 @@ sub flash {
   my $values = exists $_[1] ? {@_} : $_[0];
   $session->{new_flash} = {%$flash, %$values};
 
-  $self;
+  return $self;
 }
 
 # "My parents may be evil, but at least they're stupid."
@@ -154,6 +154,8 @@ sub on_finish {
   $self->tx->on_finish(sub { shift and $self->$cb(@_) });
 }
 
+# "I like being a women.
+#  Now when I say something stupid, everyone laughs and buys me things."
 sub on_message {
   my $self = shift;
 
@@ -164,7 +166,7 @@ sub on_message {
   $tx->on_message(sub { shift and $self->$cb(@_) });
   $self->rendered(101);
 
-  $self;
+  return $self;
 }
 
 # "Just make a simple cake. And this time, if someone's going to jump out of
@@ -192,7 +194,7 @@ sub param {
   return $p->{$name} if !$RESERVED{$name} && exists $p->{$name};
 
   # Param value
-  $self->req->param($name);
+  return $self->req->param($name);
 }
 
 # "Is there an app for kissing my shiny metal ass?
@@ -206,7 +208,7 @@ sub redirect_to {
   $headers->content_length(0);
   $self->rendered(302);
 
-  $self;
+  return $self;
 }
 
 # "Mamma Mia! The cruel meatball of war has rolled onto our laps and ruined
@@ -262,9 +264,10 @@ sub render {
   $headers->content_type($type) unless $headers->content_type;
   $self->rendered($stash->{status});
 
-  1;
+  return 1;
 }
 
+# "She's built like a steakhouse, but she handles like a bistro!"
 sub render_content {
   my $self    = shift;
   my $name    = shift;
@@ -295,7 +298,7 @@ sub render_content {
   # Get
   $content = $c->{$name};
   $content = '' unless defined $content;
-  Mojo::ByteStream->new("$content");
+  return Mojo::ByteStream->new("$content");
 }
 
 sub render_data { shift->render(data => shift, @_) }
@@ -364,7 +367,7 @@ sub render_json {
   my $json = shift;
   my $args = ref $_[0] ? $_[0] : {@_};
   $args->{json} = $json;
-  $self->render($args);
+  return $self->render($args);
 }
 
 sub render_later { shift->stash->{'mojo.rendered'} = 1 }
@@ -423,7 +426,7 @@ sub render_partial {
   $args->{template} = $template if defined $template;
   $args->{partial} = 1;
 
-  Mojo::ByteStream->new($self->render($args));
+  return Mojo::ByteStream->new($self->render($args));
 }
 
 sub render_static {
@@ -437,7 +440,7 @@ sub render_static {
   }
   $self->rendered;
 
-  1;
+  return 1;
 }
 
 sub render_text { shift->render(text => shift, @_) }
@@ -466,9 +469,10 @@ sub rendered {
   }
   $self->tx->resume;
 
-  $self;
+  return $self;
 }
 
+# "A three month calendar? What is this, Mercury?"
 sub req { shift->tx->req }
 sub res { shift->tx->res }
 
@@ -481,7 +485,7 @@ sub send_message {
   $tx->send_message($message, sub { shift and $self->$cb(@_) if $cb });
   $self->rendered(101);
 
-  $self;
+  return $self;
 }
 
 # "Why am I sticky and naked? Did I miss something fun?"
@@ -505,7 +509,7 @@ sub session {
   my $values = exists $_[1] ? {@_} : $_[0];
   $stash->{'mojo.session'} = {%$session, %$values};
 
-  $self;
+  return $self;
 }
 
 sub signed_cookie {
@@ -549,7 +553,7 @@ sub signed_cookie {
     else { $self->app->log->debug(qq/Cookie "$name" not signed./) }
   }
 
-  wantarray ? @results : $results[0];
+  return wantarray ? @results : $results[0];
 }
 
 # "All this knowledge is giving me a raging brainer."
@@ -571,7 +575,7 @@ sub stash {
     $self->{stash}->{$key} = $values->{$key};
   }
 
-  $self;
+  return $self;
 }
 
 sub ua { shift->app->ua }
@@ -623,6 +627,11 @@ sub url_for {
     my ($p, $ws) = $match->path_for($target, @_);
     $path->parse($p) if $p;
 
+    # Fix trailing slash
+    $path->trailing_slash(1)
+      if (!$target || $target eq 'current')
+      && $req->url->path->trailing_slash;
+
     # Fix scheme for WebSockets
     $base->scheme(($base->scheme || '') eq 'https' ? 'wss' : 'ws') if $ws;
   }
@@ -632,7 +641,7 @@ sub url_for {
   unshift @{$path->parts}, @{$base_path->parts};
   $base_path->parts([]);
 
-  $url;
+  return $url;
 }
 
 # "I wax my rocket every day!"
@@ -646,7 +655,7 @@ sub write {
   $self->res->write($chunk, sub { shift and $self->$cb(@_) if $cb });
   $self->rendered;
 
-  $self;
+  return $self;
 }
 
 sub write_chunk {
@@ -659,7 +668,7 @@ sub write_chunk {
   $self->res->write_chunk($chunk, sub { shift and $self->$cb(@_) if $cb });
   $self->rendered;
 
-  $self;
+  return $self;
 }
 
 1;
@@ -982,6 +991,12 @@ A L<Mojo::UserAgent> prepared for the current environment.
 
 Generate a portable L<Mojo::URL> object with base for a route, path or URL.
 
+  # "/perldoc" if application is deployed under "/"
+  print $c->url_for('/perldoc');
+
+  # "/myapp/perldoc" if application is deployed under "/myapp"
+  print $c->url_for('/perldoc');
+
 =head2 C<write>
 
   $c->write;
@@ -1037,6 +1052,16 @@ You can call C<finish> at any time to end the stream.
   2
   o!
   0
+
+=head1 HELPERS
+
+In addition to the attributes and methods above you can also call helpers on
+instances of L<Mojolicious::Controller>.
+This includes all helpers from L<Mojolicious::Plugin::DefaultHelpers> and
+L<Mojolicious::Plugin::TagHelpers>.
+
+  $c->layout('green');
+  $c->title('Welcome!');
 
 =head1 SEE ALSO
 

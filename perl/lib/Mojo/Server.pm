@@ -44,7 +44,7 @@ has on_websocket => sub {
 sub load_app {
   my ($self, $file) = @_;
 
-  # Cleanup environment
+  # Clean up environment
   local $ENV{MOJO_APP_LOADER} = 1;
   local $ENV{MOJO_APP};
   local $ENV{MOJO_EXE};
@@ -66,7 +66,7 @@ EOF
   die qq/"$file" is not a valid application.\n/
     unless blessed $app && $app->isa('Mojo');
   $self->app($app);
-  $app;
+  return $app;
 }
 
 # "Are you saying you're never going to eat any animal again? What about

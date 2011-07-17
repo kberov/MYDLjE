@@ -7,121 +7,9 @@ use overload
   fallback => 1;
 
 use Carp 'croak';
-use Mojo::Util qw/decode encode html_unescape xml_escape/;
-use Scalar::Util 'weaken';
-
-use constant DEBUG => $ENV{MOJO_DOM_DEBUG} || 0;
-
-# Regex
-my $CSS_ESCAPE_RE = qr/\\[^0-9a-fA-F]|\\[0-9a-fA-F]{1,6}/;
-my $CSS_ATTR_RE   = qr/
-  \[
-  ((?:$CSS_ESCAPE_RE|\w)+)        # Key
-  (?:
-    (\W)?                         # Operator
-    =
-    (?:"((?:\\"|[^"])+)"|(\S+))   # Value
-  )?
-  \]
-/x;
-my $CSS_CLASS_ID_RE = qr/
-  (?:
-    (?:\.((?:\\\.|[^\#\.])+))   # Class
-  |
-    (?:\#((?:\\\#|[^\.\#])+))   # ID
-  )
-/x;
-my $CSS_ELEMENT_RE      = qr/^((?:\\\.|\\\#|[^\.\#])+)/;
-my $CSS_PSEUDO_CLASS_RE = qr/(?:\:([\w\-]+)(?:\(((?:\([^\)]+\)|[^\)])+)\))?)/;
-my $CSS_TOKEN_RE        = qr/
-  (\s*,\s*)?                                # Separator
-  ((?:[^\[\\\:\s\,]|$CSS_ESCAPE_RE\s?)+)?   # Element
-  ($CSS_PSEUDO_CLASS_RE*)?                  # Pseudoclass
-  ((?:$CSS_ATTR_RE)*)?                      # Attributes
-  (?:
-  \s*
-  ([\>\+\~])                                # Combinator
-  )?
-/x;
-my $XML_ATTR_RE = qr/
-  \s*
-  ([^=\s>]+)       # Key
-  (?:
-    \s*
-    =
-    \s*
-    (?:
-      "([^"]*?)"   # Quotation marks
-      |
-      '([^']*?)'   # Apostrophes
-      |
-      ([^>\s]+)    # Unquoted
-    )
-  )?
-  \s*
-/x;
-my $XML_END_RE   = qr/^\s*\/\s*(.+)\s*/;
-my $XML_START_RE = qr/([^\s\/]+)([\s\S]*)/;
-my $XML_TOKEN_RE = qr/
-  ([^<]*)                                           # Text
-  (?:
-    <\?(.*?)\?>                                     # Processing Instruction
-    |
-    <\!--(.*?)-->                                   # Comment
-    |
-    <\!\[CDATA\[(.*?)\]\]>                          # CDATA
-    |
-    <!DOCTYPE(
-      \s+\w+
-      (?:(?:\s+\w+)?(?:\s+(?:"[^"]*"|'[^']*'))+)?   # External ID
-      (?:\s+\[.+?\])?                               # Int Subset
-      \s*
-    )>
-    |
-    <(
-      \s*
-      [^>\s]+                                       # Tag
-      (?:$XML_ATTR_RE)*                             # Attributes
-    )>
-  )??
-/xis;
-
-# Optional HTML tags
-my @OPTIONAL_TAGS =
-  qw/body colgroup dd head li optgroup option p rt rp tbody td tfoot th/;
-my %HTML_OPTIONAL;
-$HTML_OPTIONAL{$_}++ for @OPTIONAL_TAGS;
-
-# Tags that break HTML paragraphs
-my @PARAGRAPH_TAGS = (
-  qw/address article aside blockquote dir div dl fieldset footer form h1 h2/,
-  qw/h3 h4 h5 h6 header hgroup hr menu nav ol p pre section table or ul/
-);
-my %HTML_PARAGRAPH;
-$HTML_PARAGRAPH{$_}++ for @PARAGRAPH_TAGS;
-
-# HTML table tags
-my @TABLE_TAGS = qw/col colgroup tbody td th thead tr/;
-my %HTML_TABLE;
-$HTML_TABLE{$_}++ for @TABLE_TAGS;
-
-# HTML5 void tags
-my @VOID_TAGS = (
-  qw/area base br col command embed hr img input keygen link meta param/,
-  qw/source track wbr/
-);
-my %HTML_VOID;
-$HTML_VOID{$_}++ for @VOID_TAGS;
-
-# HTML5 block tags + "<head>" + "<html>"
-my @BLOCK_TAGS = (
-  qw/article aside blockquote body br button canvas caption col colgroup dd/,
-  qw/div dl dt embed fieldset figcaption figure footer form h1 h2 h3 h4 h5/,
-  qw/h6 head header hgroup hr html li map object ol output p pre progress/,
-  qw/section table tbody textarea tfooter th thead tr ul video/
-);
-my %HTML_BLOCK;
-$HTML_BLOCK{$_}++ for @BLOCK_TAGS;
+use Mojo::DOM::Collection;
+use Mojo::DOM::CSS;
+use Mojo::DOM::HTML;
 
 sub AUTOLOAD {
   my $self = shift;
@@ -144,19 +32,20 @@ sub new {
   my $self = bless [], ref $class || $class;
 
   # Input
-  my $xml;
-  $xml = shift if @_ % 2;
+  my $input;
+  $input = shift if @_ % 2;
 
   # Attributes
   my %attrs = (@_);
-  $self->[0] = exists $attrs{tree} ? $attrs{tree} : ['root'];
-  $self->[1] = $attrs{charset} if exists $attrs{charset};
-  $self->[2] = $attrs{xml}     if exists $attrs{xml};
+  my $html = $self->[0] = Mojo::DOM::HTML->new;
+  $html->tree($attrs{tree})       if $attrs{tree};
+  $html->charset($attrs{charset}) if exists $attrs{charset};
+  $html->xml($attrs{xml})         if exists $attrs{xml};
 
   # Parse right away
-  $self->parse($xml) if defined $xml;
+  $self->parse($input) if defined $input;
 
-  $self;
+  return $self;
 }
 
 # DEPRECATED in Smiling Face With Sunglasses!
@@ -202,7 +91,7 @@ sub all_text {
     $text .= $content if $content =~ /\S+/;
   }
 
-  $text;
+  return $text;
 }
 
 sub append { shift->_add(1, @_) }
@@ -210,8 +99,8 @@ sub append { shift->_add(1, @_) }
 sub append_content {
   my ($self, $new) = @_;
   my $tree = $self->tree;
-  push @$tree, @{_parent($self->_parse_xml("$new"), $tree->[3])};
-  $self;
+  push @$tree, @{_parent($self->_parse("$new"), $tree->[3])};
+  return $self;
 }
 
 sub at { shift->find(@_)->[0] }
@@ -236,14 +125,14 @@ sub attrs {
     $attrs->{$key} = $values->{$key};
   }
 
-  $self;
+  return $self;
 }
 
 sub charset {
   my $self = shift;
-  return $self->[1] if @_ == 0;
-  $self->[1] = shift;
-  $self;
+  return $self->[0]->charset if @_ == 0;
+  $self->[0]->charset(shift);
+  return $self;
 }
 
 # "Oh boy! Sleep! That's when I'm a Viking!"
@@ -265,7 +154,7 @@ sub children {
       $self->new(charset => $self->charset, tree => $e, xml => $self->xml);
   }
 
-  bless \@children, 'Mojo::DOM::_Collection';
+  return Mojo::DOM::Collection->new(\@children);
 }
 
 sub content_xml {
@@ -276,19 +165,28 @@ sub content_xml {
   my $tree   = $self->tree;
   my $start  = $tree->[0] eq 'root' ? 1 : 4;
   for my $e (@$tree[$start .. $#$tree]) {
-    $result .= $self->_render($e);
+    $result .= Mojo::DOM::HTML->new(
+      charset => $self->charset,
+      tree    => $e,
+      xml     => $self->xml
+    )->render;
   }
 
-  # Encode
-  my $charset = $self->charset;
-  encode $charset, $result if $charset;
-
-  $result;
+  return $result;
 }
 
 sub find {
-  my ($self, $css) = @_;
-  $self->_match_tree($self->tree, $self->_parse_css($css));
+  my ($self, $selector) = @_;
+
+  # Match selector against tree
+  my $results = Mojo::DOM::CSS->new(tree => $self->tree)->select($selector);
+
+  # Upgrade results
+  @$results = map {
+    $self->new(charset => $self->charset, tree => $_, xml => $self->xml)
+  } @$results;
+
+  return Mojo::DOM::Collection->new($results);
 }
 
 # DEPRECATED in Smiling Face With Sunglasses!
@@ -328,7 +226,6 @@ sub namespace {
   }
 }
 
-# "Why can't she just drink herself happy like a normal person?"
 sub parent {
   my $self = shift;
 
@@ -347,7 +244,8 @@ sub parent {
 sub parse {
   my ($self, $xml) = @_;
   $self->charset(undef) if utf8::is_utf8 $xml;
-  $self->tree($self->_parse_xml($xml));
+  $self->[0]->parse($xml);
+  return $self;
 }
 
 sub prepend { shift->_add(0, @_) }
@@ -356,8 +254,8 @@ sub prepend_content {
   my ($self, $new) = @_;
   my $tree = $self->tree;
   splice @$tree, $tree->[0] eq 'root' ? 1 : 4, 0,
-    @{_parent($self->_parse_xml("$new"), $tree->[3])};
-  $self;
+    @{_parent($self->_parse("$new"), $tree->[3])};
+  return $self;
 }
 
 sub replace {
@@ -365,29 +263,29 @@ sub replace {
 
   # Parse
   my $tree = $self->tree;
-  $self->xml(undef) if my $r = $tree->[0] eq 'root';
-  $new = $self->_parse_xml("$new");
-  return $self->tree($new) if $r;
+  if ($tree->[0] eq 'root') {
+    $self->xml(undef);
+    return $self->parse($new);
+  }
+  else { $new = $self->_parse("$new") }
 
-  # Find
+  # Find and replace
   my $parent = $tree->[3];
   my $i = $parent->[0] eq 'root' ? 1 : 4;
   for my $e (@$parent[$i .. $#$parent]) {
     last if $e == $tree;
     $i++;
   }
-
-  # Replace
   splice @$parent, $i, 1, @{_parent($new, $parent)};
 
-  $self;
+  return $self;
 }
 
 sub replace_content {
   my ($self, $new) = @_;
 
   # Parse
-  $new = $self->_parse_xml("$new");
+  $new = $self->_parse("$new");
 
   # Replacements
   my $tree = $self->tree;
@@ -401,7 +299,7 @@ sub replace_content {
   my $start = $tree->[0] eq 'root' ? 1 : 4;
   splice @$tree, $start, $#$tree, @new;
 
-  $self;
+  return $self;
 }
 
 # DEPRECATED in Smiling Face With Sunglasses!
@@ -452,22 +350,16 @@ sub text {
     $text .= $content if $content =~ /\S+/;
   }
 
-  $text;
+  return $text;
 }
 
-sub to_xml {
-  my $self    = shift;
-  my $result  = $self->_render($self->tree);
-  my $charset = $self->charset;
-  encode $charset, $result if $charset;
-  $result;
-}
+sub to_xml { shift->[0]->render }
 
 sub tree {
   my $self = shift;
-  return $self->[0] if @_ == 0;
-  $self->[0] = shift;
-  $self;
+  return $self->[0]->tree if @_ == 0;
+  $self->[0]->tree(shift);
+  return $self;
 }
 
 sub type {
@@ -483,21 +375,21 @@ sub type {
   # Set
   $tree->[1] = $type;
 
-  $self;
+  return $self;
 }
 
 sub xml {
   my $self = shift;
-  return $self->[2] if @_ == 0;
-  $self->[2] = shift;
-  $self;
+  return $self->[0]->xml if @_ == 0;
+  $self->[0]->xml(shift);
+  return $self;
 }
 
 sub _add {
   my ($self, $offset, $new) = @_;
 
   # Parse
-  $new = $self->_parse_xml("$new");
+  $new = $self->_parse("$new");
 
   # Not a tag
   my $tree = $self->tree;
@@ -514,435 +406,7 @@ sub _add {
   # Add
   splice @$parent, $i + $offset, 0, @{_parent($new, $parent)};
 
-  $self;
-}
-
-# "Woah! God is so in your face!
-#  Yeah, he's my favorite fictional character."
-sub _cdata {
-  my ($self, $cdata, $current) = @_;
-  push @$$current, ['cdata', $cdata];
-}
-
-sub _close {
-  my ($self, $current, $tags, $stop) = @_;
-  $tags ||= \%HTML_TABLE;
-  $stop ||= 'table';
-
-  # Check if parents need to be closed
-  my $parent = $$current;
-  while ($parent) {
-    last if $parent->[0] eq 'root' || $parent->[1] eq $stop;
-
-    # Close
-    $tags->{$parent->[1]} and $self->_end($parent->[1], $current);
-
-    # Try next
-    $parent = $parent->[3];
-  }
-}
-
-sub _comment {
-  my ($self, $comment, $current) = @_;
-  push @$$current, ['comment', $comment];
-}
-
-sub _css_equation {
-  my ($self, $equation) = @_;
-
-  # "even"
-  my $num = [1, 1];
-  if ($equation =~ /^even$/i) { $num = [2, 2] }
-
-  # "odd"
-  elsif ($equation =~ /^odd$/i) { $num = [2, 1] }
-
-  # Equation
-  elsif ($equation =~ /(?:(\-?(?:\d+)?)?(n))?\s*\+?\s*(\-?\s*\d+)?\s*$/i) {
-    $num->[0] = $1;
-    $num->[0] = $2 ? 1 : 0 unless defined($num->[0]) && length($num->[0]);
-    $num->[0] = -1 if $num->[0] eq '-';
-    $num->[1] = $3 || 0;
-    $num->[1] =~ s/\s+//g;
-  }
-
-  $num;
-}
-
-sub _css_regex {
-  my ($self, $op, $value) = @_;
-  return unless $value;
-  $value = quotemeta $self->_css_unescape($value);
-
-  # "~=" (word)
-  my $regex;
-  if ($op eq '~') { $regex = qr/(?:^|.*\s+)$value(?:\s+.*|$)/ }
-
-  # "*=" (contains)
-  elsif ($op eq '*') { $regex = qr/$value/ }
-
-  # "^=" (begins with)
-  elsif ($op eq '^') { $regex = qr/^$value/ }
-
-  # "$=" (ends with)
-  elsif ($op eq '$') { $regex = qr/$value$/ }
-
-  # Everything else
-  else { $regex = qr/^$value$/ }
-
-  $regex;
-}
-
-sub _css_unescape {
-  my ($self, $value) = @_;
-
-  # Remove escaped newlines
-  $value =~ s/\\\n//g;
-
-  # Unescape unicode characters
-  $value =~ s/\\([0-9a-fA-F]{1,6})\s?/pack('U', hex $1)/gex;
-
-  # Remove backslash
-  $value =~ s/\\//g;
-
-  $value;
-}
-
-sub _doctype {
-  my ($self, $doctype, $current) = @_;
-  push @$$current, ['doctype', $doctype];
-}
-
-sub _end {
-  my ($self, $end, $current) = @_;
-  warn "END $end\n" if DEBUG;
-
-  # Not a tag
-  return if $$current->[0] eq 'root';
-
-  # Search stack for start tag
-  my $found = 0;
-  my $next  = $$current;
-  while ($next) {
-    last if $next->[0] eq 'root';
-
-    # Right tag
-    ++$found and last if $next->[1] eq $end;
-
-    # Don't cross block tags that are not optional tags
-    return
-      if !$self->xml
-        && $HTML_BLOCK{$next->[1]}
-        && !$HTML_OPTIONAL{$next->[1]};
-
-    # Parent
-    $next = $next->[3];
-  }
-
-  # Ignore useless end tag
-  return unless $found;
-
-  # Walk backwards
-  $next = $$current;
-  while ($$current = $next) {
-    last if $$current->[0] eq 'root';
-    $next = $$current->[3];
-
-    # Match
-    if ($end eq $$current->[1]) { return $$current = $$current->[3] }
-
-    # Optional tags
-    elsif ($HTML_OPTIONAL{$$current->[1]}) {
-      $self->_end($$current->[1], $current);
-    }
-
-    # Table
-    elsif ($end eq 'table') { $self->_close($current) }
-
-    # Missing end tag
-    $self->_end($$current->[1], $current);
-  }
-}
-
-sub _match_element {
-  my ($self, $candidate, $selectors) = @_;
-
-  # Match
-  my @selectors  = reverse @$selectors;
-  my $first      = 2;
-  my $parentonly = 0;
-  my $tree       = $self->tree;
-  my ($current, $marker, $snapback, $siblings);
-  for (my $i = 0; $i <= $#selectors; $i++) {
-    my $selector = $selectors[$i];
-
-    # Combinator
-    $parentonly-- if $parentonly > 0;
-    if ($selector->[0] eq 'combinator') {
-      my $c = $selector->[1];
-
-      # Parent only ">"
-      if ($c eq '>') {
-        $parentonly += 2;
-
-        # Can't go back to the first
-        unless ($first) {
-          $marker   = $i       unless defined $marker;
-          $snapback = $current unless $snapback;
-        }
-      }
-
-      # Preceding siblings "~" and "+"
-      elsif ($c eq '~' || $c eq '+') {
-        my $parent = $current->[3];
-        my $start = $parent->[0] eq 'root' ? 1 : 4;
-        $siblings = [];
-
-        # Siblings
-        for my $i ($start .. $#$parent) {
-          my $sibling = $parent->[$i];
-          next unless $sibling->[0] eq 'tag';
-
-          # Reached current
-          if ($sibling eq $current) {
-            @$siblings = ($siblings->[-1]) if $c eq '+';
-            last;
-          }
-          push @$siblings, $sibling;
-        }
-      }
-
-      # Move on
-      next;
-    }
-
-    # Walk backwards
-    while (1) {
-      $first-- if $first > 0;
-
-      # Next sibling
-      if ($siblings) {
-
-        # Last sibling
-        unless ($current = shift @$siblings) {
-          $siblings = undef;
-          return;
-        }
-      }
-
-      # Next parent
-      else {
-        return
-          unless $current = $current ? $current->[3] : $candidate;
-
-        # Don't search beyond the current tree
-        return if $current eq $tree;
-      }
-
-      # Not a tag
-      return if $current->[0] ne 'tag';
-
-      # Compare part to element
-      if ($self->_match_selector($selector, $current)) {
-        $siblings = undef;
-        last;
-      }
-
-      # First selector needs to match
-      return if $first;
-
-      # Parent only
-      if ($parentonly) {
-
-        # First parent needs to match
-        return unless defined $marker;
-
-        # Reset
-        $i        = $marker - 2;
-        $current  = $snapback;
-        $snapback = undef;
-        $marker   = undef;
-        last;
-      }
-    }
-  }
-
-  1;
-}
-
-sub _match_selector {
-  my ($self, $selector, $current) = @_;
-
-  # Selectors
-  for my $c (@$selector[1 .. $#$selector]) {
-    my $type = $c->[0];
-
-    # Tag
-    if ($type eq 'tag') {
-      my $type = $c->[1];
-
-      # Wildcard
-      next if $type eq '*';
-
-      # Type (ignore namespace prefix)
-      next if $current->[1] =~ /(?:^|\:)$type$/;
-    }
-
-    # Attribute
-    elsif ($type eq 'attribute') {
-      my $key   = $c->[1];
-      my $regex = $c->[2];
-      my $attrs = $current->[2];
-
-      # Find attributes (ignore namespace prefix)
-      my $found = 0;
-      for my $name (keys %$attrs) {
-        if ($name =~ /\:?$key$/) {
-          ++$found and last
-            if !$regex || ($attrs->{$name} || '') =~ /$regex/;
-        }
-      }
-      next if $found;
-    }
-
-    # Pseudo class
-    elsif ($type eq 'pseudoclass') {
-      my $class = lc $c->[1];
-      my $args  = $c->[2];
-
-      # "first-*"
-      if ($class =~ /^first\-(?:(child)|of-type)$/) {
-        $class = defined $1 ? 'nth-child' : 'nth-of-type';
-        $args = 1;
-      }
-
-      # "last-*"
-      elsif ($class =~ /^last\-(?:(child)|of-type)$/) {
-        $class = defined $1 ? 'nth-last-child' : 'nth-last-of-type';
-        $args = '-n+1';
-      }
-
-      # ":checked"
-      if ($class eq 'checked') {
-        my $attrs = $current->[2];
-        next if ($attrs->{checked}  || '') eq 'checked';
-        next if ($attrs->{selected} || '') eq 'selected';
-      }
-
-      # ":empty"
-      elsif ($class eq 'empty') { next unless exists $current->[4] }
-
-      # ":root"
-      elsif ($class eq 'root') {
-        if (my $parent = $current->[3]) {
-          next if $parent->[0] eq 'root';
-        }
-      }
-
-      # "not"
-      elsif ($class eq 'not') {
-        next unless $self->_match_selector($args, $current);
-      }
-
-      # "nth-*"
-      elsif ($class =~ /^nth-/) {
-
-        # Numbers
-        $args = $c->[2] = $self->_css_equation($args)
-          unless ref $args;
-
-        # Siblings
-        my $parent = $current->[3];
-        my $start = $parent->[0] eq 'root' ? 1 : 4;
-        my @siblings;
-        my $type = $class =~ /of-type$/ ? $current->[1] : undef;
-        for my $j ($start .. $#$parent) {
-          my $sibling = $parent->[$j];
-          next unless $sibling->[0] eq 'tag';
-          next if defined $type && $type ne $sibling->[1];
-          push @siblings, $sibling;
-        }
-
-        # Reverse
-        @siblings = reverse @siblings if $class =~ /^nth-last/;
-
-        # Find
-        my $found = 0;
-        for my $i (0 .. $#siblings) {
-          my $result = $args->[0] * $i + $args->[1];
-          next if $result < 1;
-          last unless my $sibling = $siblings[$result - 1];
-          if ($sibling eq $current) {
-            $found = 1;
-            last;
-          }
-        }
-        next if $found;
-      }
-
-      # "only-*"
-      elsif ($class =~ /^only-(?:child|(of-type))$/) {
-        my $type = $1 ? $current->[1] : undef;
-
-        # Siblings
-        my $parent = $current->[3];
-        my $start = $parent->[0] eq 'root' ? 1 : 4;
-        for my $j ($start .. $#$parent) {
-          my $sibling = $parent->[$j];
-          next unless $sibling->[0] eq 'tag';
-          next if $sibling eq $current;
-          next if defined $type && $sibling->[1] ne $type;
-          return if $sibling ne $current;
-        }
-
-        # No siblings
-        next;
-      }
-    }
-
-    return;
-  }
-
-  1;
-}
-
-sub _match_tree {
-  my ($self, $tree, $pattern) = @_;
-
-  # Walk tree
-  my @results;
-  my @queue = ($tree);
-  while (my $current = shift @queue) {
-    my $type = $current->[0];
-
-    # Root
-    if ($type eq 'root') {
-
-      # Fill queue
-      unshift @queue, @$current[1 .. $#$current];
-      next;
-    }
-
-    # Tag
-    elsif ($type eq 'tag') {
-
-      # Fill queue
-      unshift @queue, @$current[4 .. $#$current];
-
-      # Parts
-      for my $part (@$pattern) {
-        push(@results, $current) and last
-          if $self->_match_element($current, $part);
-      }
-    }
-  }
-
-  # Upgrade results
-  @results = map {
-    $self->new(charset => $self->charset, tree => $_, xml => $self->xml)
-  } @results;
-
-  bless \@results, 'Mojo::DOM::_Collection';
+  return $self;
 }
 
 sub _parent {
@@ -952,323 +416,13 @@ sub _parent {
     $e->[3] = $parent if $e->[0] eq 'tag';
     push @new, $e;
   }
-  \@new;
+  return \@new;
 }
 
-sub _parse_css {
-  my ($self, $css) = @_;
-
-  # Tokenize
-  my $pattern = [[]];
-  while ($css =~ /$CSS_TOKEN_RE/g) {
-    my $separator  = $1;
-    my $element    = $2;
-    my $pc         = $3;
-    my $attributes = $6;
-    my $combinator = $11;
-
-    # Trash
-    next
-      unless $separator || $element || $pc || $attributes || $combinator;
-
-    # New selector
-    push @$pattern, [] if $separator;
-
-    # Selector
-    my $part = $pattern->[-1];
-    push @$part, ['element'];
-    my $selector = $part->[-1];
-
-    # Element
-    $element ||= '';
-    my $tag = '*';
-    $element =~ s/$CSS_ELEMENT_RE// and $tag = $self->_css_unescape($1);
-
-    # Tag
-    push @$selector, ['tag', $tag];
-
-    # Class or ID
-    while ($element =~ /$CSS_CLASS_ID_RE/g) {
-
-      # Class
-      push @$selector, ['attribute', 'class', $self->_css_regex('~', $1)]
-        if defined $1;
-
-      # ID
-      push @$selector, ['attribute', 'id', $self->_css_regex('', $2)]
-        if defined $2;
-    }
-
-    # Pseudo classes
-    while ($pc =~ /$CSS_PSEUDO_CLASS_RE/g) {
-
-      # "not"
-      if ($1 eq 'not') {
-        my $subpattern = $self->_parse_css($2)->[-1]->[-1];
-        push @$selector, ['pseudoclass', 'not', $subpattern];
-      }
-
-      # Everything else
-      else { push @$selector, ['pseudoclass', $1, $2] }
-    }
-
-    # Attributes
-    while ($attributes =~ /$CSS_ATTR_RE/g) {
-      my $key   = $self->_css_unescape($1);
-      my $op    = $2 || '';
-      my $value = $3;
-      $value = $4 unless defined $3;
-
-      push @$selector, ['attribute', $key, $self->_css_regex($op, $value)];
-    }
-
-    # Combinator
-    push @$part, ['combinator', $combinator] if $combinator;
-  }
-
-  $pattern;
-}
-
-sub _parse_xml {
-  my ($self, $xml) = @_;
-
-  # Decode
-  my $charset = $self->charset;
-  decode $charset, $xml if $charset && !utf8::is_utf8 $xml;
-
-  # Tokenize
-  my $tree    = ['root'];
-  my $current = $tree;
-  while ($xml =~ m/\G$XML_TOKEN_RE/gcs) {
-    my $text    = $1;
-    my $pi      = $2;
-    my $comment = $3;
-    my $cdata   = $4;
-    my $doctype = $5;
-    my $tag     = $6;
-
-    # Text
-    if (length $text) {
-      html_unescape $text if (index $text, '&') >= 0;
-      $self->_text($text, \$current);
-    }
-
-    # DOCTYPE
-    if ($doctype) { $self->_doctype($doctype, \$current) }
-
-    # Comment
-    elsif ($comment) {
-      $self->_comment($comment, \$current);
-    }
-
-    # CDATA
-    elsif ($cdata) { $self->_cdata($cdata, \$current) }
-
-    # Processing instruction
-    elsif ($pi) { $self->_pi($pi, \$current) }
-
-    next unless $tag;
-
-    # End
-    my $cs = $self->xml;
-    if ($tag =~ /$XML_END_RE/) {
-      if (my $end = $cs ? $1 : lc($1)) { $self->_end($end, \$current) }
-    }
-
-    # Start
-    elsif ($tag =~ /$XML_START_RE/) {
-      my $start = $cs ? $1 : lc($1);
-      my $attr = $2;
-
-      # Attributes
-      my $attrs = {};
-      while ($attr =~ /$XML_ATTR_RE/g) {
-        my $key = $cs ? $1 : lc($1);
-        my $value = $2;
-        $value = $3 unless defined $value;
-        $value = $4 unless defined $value;
-
-        # Empty tag
-        next if $key eq '/';
-
-        # Add unescaped value
-        html_unescape $value if $value && (index $value, '&') >= 0;
-        $attrs->{$key} = $value;
-      }
-
-      # Start
-      $self->_start($start, $attrs, \$current);
-
-      # Empty tag
-      $self->_end($start, \$current)
-        if (!$self->xml && $HTML_VOID{$start}) || $attr =~ /\/\s*$/;
-
-      # Relaxed "script" or "style"
-      if ($start eq 'script' || $start eq 'style') {
-        if ($xml =~ /\G(.*?)<\s*\/\s*$start\s*>/gcsi) {
-          $self->_raw($1, \$current);
-          $self->_end($start, \$current);
-        }
-      }
-    }
-  }
-
-  $tree;
-}
-
-# Try to detect XML from processing instructions
-sub _pi {
-  my ($self, $pi, $current) = @_;
-  $self->xml(1) if !defined $self->xml && $pi =~ /xml/i;
-  push @$$current, ['pi', $pi];
-}
-
-sub _raw {
-  my ($self, $raw, $current) = @_;
-  push @$$current, ['raw', $raw];
-}
-
-sub _render {
-  my ($self, $tree) = @_;
-
-  # Text (escaped)
-  my $e = $tree->[0];
-  if ($e eq 'text') {
-    my $escaped = $tree->[1];
-    xml_escape $escaped;
-    return $escaped;
-  }
-
-  # Raw text
-  return $tree->[1] if $e eq 'raw';
-
-  # DOCTYPE
-  return "<!DOCTYPE" . $tree->[1] . ">" if $e eq 'doctype';
-
-  # Comment
-  return "<!--" . $tree->[1] . "-->" if $e eq 'comment';
-
-  # CDATA
-  return "<![CDATA[" . $tree->[1] . "]]>" if $e eq 'cdata';
-
-  # Processing instruction
-  return "<?" . $tree->[1] . "?>" if $e eq 'pi';
-
-  # Offset
-  my $start = $e eq 'root' ? 1 : 2;
-
-  # Start tag
-  my $content = '';
-  if ($e eq 'tag') {
-
-    # Offset
-    $start = 4;
-
-    # Open tag
-    $content .= '<' . $tree->[1];
-
-    # Attributes
-    my @attrs;
-    for my $key (sort keys %{$tree->[2]}) {
-      my $value = $tree->[2]->{$key};
-
-      # No value
-      push @attrs, $key and next unless defined $value;
-
-      # Key and value
-      xml_escape $value;
-      push @attrs, qq/$key="$value"/;
-    }
-    my $attrs = join ' ', @attrs;
-    $content .= " $attrs" if $attrs;
-
-    # Empty tag
-    return "$content />" unless $tree->[4];
-
-    # Close tag
-    $content .= '>';
-  }
-
-  # Walk tree
-  $content .= $self->_render($tree->[$_]) for $start .. $#$tree;
-
-  # End tag
-  $content .= '</' . $tree->[1] . '>' if $e eq 'tag';
-
-  $content;
-}
-
-# "It's not important to talk about who got rich off of whom,
-#  or who got exposed to tainted what..."
-sub _start {
-  my ($self, $start, $attrs, $current) = @_;
-  warn "START $start\n" if DEBUG;
-
-  # Autoclose optional HTML tags
-  if (!$self->xml && $$current->[0] ne 'root') {
-
-    # "<li>"
-    if ($start eq 'li') { $self->_close($current, {li => 1}, 'ul') }
-
-    # "<p>"
-    elsif ($HTML_PARAGRAPH{$start}) { $self->_end('p', $current) }
-
-    # "<head>"
-    elsif ($start eq 'body') { $self->_end('head', $current) }
-
-    # "<optgroup>"
-    elsif ($start eq 'optgroup') { $self->_end('optgroup', $current) }
-
-    # "<option>"
-    elsif ($start eq 'option' || $start eq 'optgroup') {
-      $self->_end('option', $current);
-      $self->_end('optgroup', $current) if $start eq 'optgroup';
-    }
-
-    # "<colgroup>"
-    elsif ($start eq 'colgroup') { $self->_close($current) }
-
-    # "<thead>"
-    elsif ($start eq 'thead') { $self->_close($current) }
-
-    # "<tbody>"
-    elsif ($start eq 'tbody') { $self->_close($current) }
-
-    # "<tfoot>"
-    elsif ($start eq 'tfoot') { $self->_close($current) }
-
-    # "<tr>"
-    elsif ($start eq 'tr') { $self->_end('tr', $current) }
-
-    # "<th>" and "<td>"
-    elsif ($start eq 'th' || $start eq 'td') {
-      $self->_end('th', $current);
-      $self->_end('td', $current);
-    }
-
-    # "<dt>" and "<dd>"
-    elsif ($start eq 'dt' || $start eq 'dd') {
-      $self->_end('dt', $current);
-      $self->_end('dd', $current);
-    }
-
-    # "<rt>" and "<rp>"
-    elsif ($start eq 'rt' || $start eq 'rp') {
-      $self->_end('rt', $current);
-      $self->_end('rp', $current);
-    }
-  }
-
-  # New
-  my $new = ['tag', $start, $attrs, $$current];
-  weaken $new->[3];
-  push @$$current, $new;
-  $$current = $new;
-}
-
-sub _text {
-  my ($self, $text, $current) = @_;
-  push @$$current, ['text', $text];
+sub _parse {
+  my $self = shift;
+  Mojo::DOM::HTML->new(charset => $self->charset, xml => $self->xml)
+    ->parse(shift)->tree;
 }
 
 sub _trim {
@@ -1282,32 +436,7 @@ sub _trim {
   # Add leading whitespace if punctuation allows it
   $text = " $text" if $ws && $text =~ /^[^\.\!\?\,\;\:]/;
 
-  $text;
-}
-
-# "Hi, Super Nintendo Chalmers!"
-package Mojo::DOM::_Collection;
-use overload 'bool' => sub {1}, '""' => sub { shift->to_xml }, fallback => 1;
-
-sub each   { shift->_iterate(@_) }
-sub to_xml { join "\n", map({"$_"} @{$_[0]}) }
-sub until  { shift->_iterate(@_, 1) }
-sub while  { shift->_iterate(@_, 0) }
-
-sub _iterate {
-  my ($self, $cb, $cond) = @_;
-  return @$self unless $cb;
-
-  # Iterate until condition is true
-  my $i = 1;
-  if (defined $cond) { !!$_->$cb($i++) == $cond && last for @$self }
-
-  # Iterate over all elements
-  else { $_->$cb($i++) for @$self }
-
-  # Root
-  return unless my $start = $self->[0];
-  $start->root;
+  return $text;
 }
 
 1;
@@ -1315,7 +444,7 @@ __END__
 
 =head1 NAME
 
-Mojo::DOM - Minimalistic XML/HTML5 DOM Parser With CSS3 Selectors
+Mojo::DOM - Minimalistic HTML5/XML DOM Parser With CSS3 Selectors
 
 =head1 SYNOPSIS
 
@@ -1348,8 +477,8 @@ Mojo::DOM - Minimalistic XML/HTML5 DOM Parser With CSS3 Selectors
 
 =head1 DESCRIPTION
 
-L<Mojo::DOM> is a minimalistic and very relaxed XML/HTML5 DOM parser with
-support for CSS3 selectors.
+L<Mojo::DOM> is a minimalistic and relaxed HTML5/XML DOM parser with CSS3
+selector support.
 It will even try to interpret broken XML, so you should not use it for
 validation.
 
@@ -1553,6 +682,30 @@ An C<E> element whose attributes match all following attribute selectors.
 
   my $links = $dom->find('a[foo^="b"][foo$="ar"]');
 
+=head1 CASE SENSITIVITY
+
+L<Mojo::DOM> defaults to HTML5 semantics, that means all tags and attributes
+are lowercased and selectors need to be lowercase as well.
+
+  my $dom = Mojo::DOM->new('<P ID="greeting">Hi!</P>');
+  print $dom->at('p')->text;
+  print $dom->p->{id};
+
+If XML processing instructions are found, the parser will automatically
+switch into XML mode and everything becomes case sensitive.
+
+  my $dom = Mojo::DOM->new('<?xml version="1.0"?><P ID="greeting">Hi!</P>');
+  print $dom->at('P')->text;
+  print $dom->P->{ID};
+
+XML detection can be also deactivated with the C<xml> method.
+
+  # XML sematics
+  $dom->xml(1);
+
+  # HTML5 semantics
+  $dom->xml(0);
+
 =head1 METHODS
 
 L<Mojo::DOM> inherits all methods from L<Mojo::Base> and implements the
@@ -1615,15 +768,15 @@ Element attributes.
   my $charset = $dom->charset;
   $dom        = $dom->charset('UTF-8');
 
-Charset used for decoding and encoding XML.
+Charset used for decoding and encoding HTML5/XML.
 
 =head2 C<children>
 
   my $collection = $dom->children;
   my $collection = $dom->children('div')
 
-Return a collection containing the children of this element, similar to
-C<find>.
+Return a L<Mojo::DOM::Collection> object containing the children of this
+element, similar to C<find>.
 
   # Child elements are also automatically available as object methods
   print $dom->div->text;
@@ -1640,55 +793,10 @@ Render content of this element to XML.
 
   my $collection = $dom->find('html title');
 
-Find elements with CSS3 selectors and return a collection.
+Find elements with CSS3 selectors and return a L<Mojo::DOM::Collection>
+object.
 
   print $dom->find('div')->[23]->text;
-
-Collections are blessed arrays supporting these methods.
-
-=over 2
-
-=item C<each>
-
-  my @elements = $dom->find('div')->each;
-  $dom         = $dom->find('div')->each(sub { print shift->text });
-  $dom         = $dom->find('div')->each(sub {
-    my ($e, $count) = @_;
-    print "$count: ", $e->text;
-  });
-
-Iterate over whole collection.
-
-=item C<to_xml>
-
-  my $xml = $dom->find('div')->to_xml;
-
-Render collection to XML.
-Note that this method is EXPERIMENTAL and might change without warning!
-
-=item C<until>
-
-  $dom = $dom->find('div')->until(sub { $_->text =~ /x/ && print $_->text });
-  $dom = $dom->find('div')->until(sub {
-    my ($e, $count) = @_;
-    $e->text =~ /x/ && print "$count: ", $e->text;
-  });
-
-Iterate over collection until closure returns true.
-
-=item C<while>
-
-  $dom = $dom->find('div')->while(sub {
-    print($_->text) && $_->text =~ /x/
-  });
-  $dom = $dom->find('div')->while(sub {
-    my ($e, $count) = @_;
-    print("$count: ", $e->text) && $e->text =~ /x/;
-  });
-
-Iterate over collection while closure returns true.
-
-=back
 
 =head2 C<namespace>
 
@@ -1706,7 +814,7 @@ Parent of element.
 
   $dom = $dom->parse('<foo bar="baz">test</foo>');
 
-Parse XML document.
+Parse HTML5/XML document.
 
 =head2 C<prepend>
 
@@ -1784,13 +892,6 @@ Element type.
 Disable HTML5 semantics in parser and activate case sensitivity, defaults to
 auto detection based on processing instructions.
 Note that this method is EXPERIMENTAL and might change without warning!
-
-=head1 DEBUGGING
-
-You can set the C<MOJO_DOM_DEBUG> environment variable to get some advanced
-diagnostics information printed to C<STDERR>.
-
-  MOJO_DOM_DEBUG=1
 
 =head1 SEE ALSO
 

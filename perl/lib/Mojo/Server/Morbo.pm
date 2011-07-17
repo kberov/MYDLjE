@@ -19,6 +19,19 @@ my $STATS = {};
 #  In lighter news, the city of New New York is doomed.
 #  Blame rests with known human Professor Hubert Farnsworth and his tiny,
 #  inferior brain."
+sub check_file {
+  my ($self, $file) = @_;
+
+  # Check if modify time and/or size have changed
+  my ($size, $mtime) = (stat $file)[7, 9];
+  return unless defined $mtime;
+  my $stats = $STATS->{$file} ||= [$^T, $size];
+  return if $mtime <= $stats->[0] && $size == $stats->[1];
+  $STATS->{$file} = [$mtime, $size];
+
+  return 1;
+}
+
 sub run {
   my ($self, $app) = @_;
   warn "MANAGER STARTED $$\n" if DEBUG;
@@ -26,12 +39,12 @@ sub run {
   # Watch files and manage worker
   $SIG{CHLD} = sub { $self->_reap };
   $SIG{INT} = $SIG{TERM} = $SIG{QUIT} = sub {
-    $self->{_done} = 1;
-    kill 'TERM', $self->{_running} if $self->{_running};
+    $self->{done} = 1;
+    kill 'TERM', $self->{running} if $self->{running};
   };
   unshift @{$self->watch}, $app;
-  $self->{_modified} = 1;
-  $self->_manage while !$self->{_done} || $self->{_running};
+  $self->{modified} = 1;
+  $self->_manage while !$self->{done} || $self->{running};
   exit 0;
 }
 
@@ -57,24 +70,16 @@ sub _manage {
   # Check files
   for my $file (@files) {
     warn "CHECKING $file\n" if DEBUG;
-    next unless defined(my $mtime = (stat $file)[9]);
-
-    # Startup time as default
-    $STATS->{$file} = $^T unless defined $STATS->{$file};
-
-    # Modified
-    if ($mtime > $STATS->{$file}) {
-      warn "MODIFIED $file\n" if DEBUG;
-      kill 'TERM', $self->{_running} if $self->{_running};
-      $self->{_modified} = 1;
-      $STATS->{$file} = $mtime;
-    }
+    next unless $self->check_file($file);
+    warn "MODIFIED $file\n" if DEBUG;
+    kill 'TERM', $self->{running} if $self->{running};
+    $self->{modified} = 1;
   }
 
   # Housekeeping
   $self->_reap;
-  delete $self->{_running} if $self->{_running} && !kill 0, $self->{_running};
-  $self->_spawn if !$self->{_running} && delete $self->{_modified};
+  delete $self->{running} if $self->{running} && !kill 0, $self->{running};
+  $self->_spawn if !$self->{running} && delete $self->{modified};
   sleep 1;
 }
 
@@ -82,7 +87,7 @@ sub _reap {
   my $self = shift;
   while ((my $pid = waitpid -1, WNOHANG) > 0) {
     warn "WORKER STOPPED $pid\n" if DEBUG;
-    delete $self->{_running};
+    delete $self->{running};
   }
 }
 
@@ -99,12 +104,12 @@ sub _spawn {
   croak "Can't fork: $!" unless defined(my $pid = fork);
 
   # Manager
-  return $self->{_running} = $pid if $pid;
+  return $self->{running} = $pid if $pid;
 
   # Worker
   warn "WORKER STARTED $$\n" if DEBUG;
   $SIG{CHLD} = 'DEFAULT';
-  $SIG{INT} = $SIG{TERM} = $SIG{QUIT} = sub { $self->{_done} = 1 };
+  $SIG{INT} = $SIG{TERM} = $SIG{QUIT} = sub { $self->{done} = 1 };
   my $daemon = Mojo::Server::Daemon->new;
   $daemon->load_app($self->watch->[0]);
   $daemon->silent(1) if $ENV{MORBO_REV} > 1;
@@ -112,7 +117,7 @@ sub _spawn {
   $daemon->prepare_ioloop;
   my $loop = $daemon->ioloop;
   $loop->recurring(
-    1 => sub { shift->stop if !kill(0, $manager) || $self->{_done} });
+    1 => sub { shift->stop if !kill(0, $manager) || $self->{done} });
   $loop->start;
   exit 0;
 }
@@ -141,6 +146,7 @@ C<kqueue> support.
 To start applications with it you can use the L<morbo> script.
 
   % morbo myapp.pl
+  Server available at http://127.0.0.1:3000.
 
 Optional modules L<IO::KQueue>, L<IO::Epoll>, L<IO::Socket::IP>,
 L<IO::Socket::SSL> and L<Net::Rendezvous::Publish> are supported
@@ -172,6 +178,12 @@ working directory.
 
 L<Mojo::Server::Morbo> inherits all methods from L<Mojo::Base> and implements
 the following new ones.
+
+=head2 C<check_file>
+
+  $morbo->check_file('script/myapp');
+
+Check if file has been modified since last check.
 
 =head2 C<run>
 

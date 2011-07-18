@@ -13,7 +13,7 @@ sub domains {
   }
   else {
     my $uid         = $c->msession->user->id;
-    my $domains_SQL = 'SELECT * FROM domains WHERE ' . $c->sql('write_permissions_sql');
+    my $domains_SQL = 'SELECT * FROM domains WHERE ' . $c->sql('read_permissions_sql');
     my $domains     = [$c->dbix->query($domains_SQL, $uid, $uid, $uid)->hashes];
     $c->stash(domains => $domains);
     $c->msession(domains => $domains);
@@ -104,6 +104,32 @@ sub delete_domain {
   delete $c->msession->sessiondata->{domains};
   $c->domains();    #fill in "domains" stash variable
   $c->redirect_to('/site/domains');
+  return;
+}
+
+sub delete_page {
+  my $c         = shift;
+  my $id        = $c->stash('id') || 0;
+  my $confirmed = $c->req->param('confirmed');
+  my $dbix      = $c->dbix;
+  if ($confirmed && $id > 0) {
+    unless (
+      eval {
+        $dbix->begin;
+        $dbix->delete(MYDLjE::M::Content->TABLE, {page_id => $id});
+        $dbix->delete(MYDLjE::M::Page->TABLE,    {id      => $id});
+        $dbix->commit;
+      }
+      )
+    {
+      $dbix->rollback or Mojo::Exception->throw($dbix->error);
+      Mojo::Exception->throw("Error deleting page with id $id:" . $@);
+    }
+
+  }
+
+  #delete something in msession
+  $c->redirect_to('/site/pages');
   return;
 }
 
@@ -281,8 +307,9 @@ sub _validate_page {
   }
   $v->field('page.alias')->regexp($page->FIELDS_VALIDATION->{alias}{regexp})
     ->message('Please enter valid page alias!');
-
-  $v->field('page.domain_id')->in(map { $_->{id} } @{$c->stash('domains')})
+  $c->debug($c->dumper($c->stash('domains'), $form->{'page.domain_id'}));
+  $v->field('page.domain_id')
+    ->in(map { exists $_->{id} ? $_->{id} : 0 } @{$c->stash('domains')})
     ->message('Please use one of the availabe domains or first add a new domain!');
 
   # if domain_id is switched remove current pid and set the msession domain id

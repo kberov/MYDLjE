@@ -21,7 +21,7 @@ my $i = 0;
 for my $app (@apps) {
   my $time = time;
   my $hi   = "Controller C from $app\::C with action hi and id 1 says Hi";
-  my $t    = Test::Mojo->new(app => $app);
+  my $t    = Test::Mojo->new($app);
   $t->get_ok('/hi')->status_is(200)->content_like(qr/$hi!/, $hi . '!');
   $t->get_ok('/hi/1')->status_is(200)->content_like(qr/$hi!/, $hi . '!');
   $t->post_ok('/hi/1')->status_is(200)->content_like(qr/$hi!/, $hi . '!');
@@ -43,6 +43,6 @@ my $app = 'MYDLjE::ControlPanel';
 my $hi =
   "Controller home from MYDLjE::ControlPanel::C::Home with action hi and id 1 says Hi";
 
-my $t = Test::Mojo->new(app => $app);
+my $t = Test::Mojo->new($app);
 $t->get_ok('/hi')->status_is(200)->content_like(qr/$hi!/, $hi . '!');
 

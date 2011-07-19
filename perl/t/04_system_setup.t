@@ -19,7 +19,7 @@ if (MYDLjE::Config->new->stash('installed')) {
   plan skip_all => 'System is already installed. Will not test system_setup.';
 }
 
-my $t = Test::Mojo->new(app => 'MYDLjE');
+my $t = Test::Mojo->new('MYDLjE');
 
 for (qw(/check_readables /check_writables /check_modules)) {
   $t->get_ok($_)->status_is(200)->content_type_is('application/json')

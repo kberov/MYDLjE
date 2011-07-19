@@ -45,8 +45,12 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   bad          => 'Bad Content',
 
   #TODO: use I18N::LangTags::List better
-  bg               => I18N::LangTags::List::name('bg'),
-  en               => I18N::LangTags::List::name('en'),
+  bg      => I18N::LangTags::List::name('bg'),
+  en      => I18N::LangTags::List::name('en'),
+  default => 'Domain index-page',
+  regular => 'Regular',
+  folder  => 'Folder',
+
   hidden_help      => 'A Page can be hidden from menus',
   permissions_help => 'Defines who has the right to edit this record. ' . "\n\n"
     . 'The first symbol defines if the record is parent(pid) for other records in the same table, or is a link to other records in the same table, or is just a regular record. When the record is a link to other record in the site will be shown/executed the body of the record to which this record links using the other record identifier(id).'

@@ -319,11 +319,11 @@ require MYDLjE::M::Page;
 my $page = MYDLjE::M::Page->new(
   pid       => 0,
   alias     => 'home' . $time,
-  page_type => 'root'
+  page_type => 'default'
 );
 is($page->pid,       0,              '$page->pid is ' . $page->pid);
 is($page->alias,     'home' . $time, '$page->alias is ' . $page->alias);
-is($page->page_type, 'root',         '$page->page_type is ' . $page->page_type);
+is($page->page_type, 'default',      '$page->page_type is ' . $page->page_type);
 is($page->user_id($sstorage->user->id)->user_id,
   $sstorage->user->id, '$page->user_id is ' . $page->user_id);
 is($page->group_id($sstorage->user->group_id)->group_id,

@@ -29,7 +29,7 @@ has FIELDS_VALIDATION => sub {
     %alias,
     page_type => {
       required    => 1,
-      constraints => [{in => ['regular', 'root', 'folder']},]
+      constraints => [{in => ['regular', 'default', 'folder']},]
     },
     $self->FIELD_DEF('sorting'),
     expiry => {regexp => qr/^\d{1,6}$/x,},
@@ -101,7 +101,8 @@ MYDLjE::M::Page - MYDLjE::M-based Page class
 
 =head1 DESCRIPTION
 
-This class is used to instantiate page objects. 
+This class is used to instantiate page objects. Pages in MYDLjE can form an hierarshical 
+structure. This is achieved by using the L<pid>(parent id) data attribute.
 
 =head1 ATTRIBUTES
 
@@ -136,7 +137,7 @@ Parent id - foreing key referencing the page under which this page is found in t
 
 =head2 alias
 
-Unique seo-friendly alias used to construct the url pointing to this page
+Unique identifier for pages with the same L<domain_id>. SEO-friendly alias used to construct the url pointing to this page.
 
 =head2 page_type
 
@@ -144,22 +145,26 @@ Unique seo-friendly alias used to construct the url pointing to this page
     $page->save;
     #...
 
-    $page->select(page_type =>'root')
+    my $index_pages = $dbix->select(MYDLjE::M::Page->TABLE, {page_type =>'default'});
+    my $page = MYDLjE::M::Page->select(
+      id   => $c->stash('id'),
+      -or  => { page_type => 'default' },
+      -and => [$c->sql('read_permissions_sql'), $uid, $uid, $uid];
+    );
 
 In MYDLjE there are  several types of pages:
 
 =item I<folder> 
 
-Not displayed in the front-end/site neither in menus - used just as container of a list of items possibly stored in other tables.
+Not displayed in the front-end/site neither in menus - used just as container of a list of items possibly stored in other tables like C<content>.
 
 =item I<regular>
 
 Regular pages are used to construct menus in the site and to display content or front-end modules/widgets implemented as TT/TA Plugins
 
-=item I<root>
+=item I<default>
 
-A page representing the root of a domain(there can be several domains managed by a MYDLjE system). It may or may not be displayed in the domain depending on... not decided yet...
-
+A page representing the default index page of a domain(there can be several domains managed by a MYDLjE system). 
 Other types of pages can be added easily and used depending on the business logic you define.
 
 

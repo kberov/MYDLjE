@@ -1,7 +1,12 @@
 <!-- start pages_item -->
-<li class="ui-state-default">
+<li class="ui-state-default"
+  style="list-style-image: url(pub/css/icons/[% page_type_icons.item(p.page_type) %])">
   <div class="columns">
-    <div class="fixed column"><div class="container">[% p.alias %]</div></div>
+    <div class="fixed column">
+        <div class="container">
+        [% p.alias %]
+        </div>
+    </div>
     <div class="elastic column">
       <div class="container buttons">
         [% IF USER.can_write(p); %]

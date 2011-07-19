@@ -128,7 +128,8 @@ sub delete_page {
 
   }
 
-  #delete something in msession
+  #TODO: delete something in msession if needed
+
   $c->redirect_to('/site/pages');
   return;
 }
@@ -358,11 +359,12 @@ sub _traverse_children {
         $page->{disabled} = 1;
       }
       $page->{label} = '-' x $depth . $page->{label};
-      if ($page->{page_type} eq 'root') {
 
-        #there can be only one root in a site
-        $page_pid_options->[0]{disabled} = 1;
-      }
+      #if ($page->{page_type} eq 'root') {
+
+      #there can be only one root in a site
+      #  $page_pid_options->[0]{disabled} = 1;
+      #}
       push @$page_pid_options, $page;
       $c->_traverse_children($user, $page->{value}, $page_pid_options, $depth);
     }

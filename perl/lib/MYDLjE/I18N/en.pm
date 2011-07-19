@@ -54,6 +54,8 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
     . 'The next three symbols define the permissions for the owner of the record. The second triple defines the group permissions. The third triple defines the permisions for the rest of the users.',
   delete_domain_confirm_message =>
     'Are you sure you want to delete domain "[_1]"? This will delete recursively its pages and content too! All will be lost forever!',
+  delete_page_confirm_message =>
+    'Are you sure you want to delete page "[_1]"? This will delete recursively child pages and content too! All will be lost forever!',
 );
 
 1;

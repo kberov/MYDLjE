@@ -46,6 +46,7 @@ $('#[% action %]_form button[type="submit"]').button({
     },
     text:false
   });
+  enhance_delete_buttons('delete_page');
   
 });
 //]]>

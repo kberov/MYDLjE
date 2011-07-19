@@ -26,7 +26,7 @@ d.published==1? 'ui-state-active':(d.published==2?'ui-state-highlight':'ui-state
            id="edit_page_button_[%d.id%]"
            class="edit_page">
              <span class="ui-icon" 
-             style="background-image: url(pub/css/icons/world_add.png) "></span></a>
+             style="background-image: url(pub/css/icons/page_add.png) "></span></a>
            </span>
            <span  class="legend_icon"><a 
            href="[% c.url_for('/site/edit_domain/' _ d.id )%]"

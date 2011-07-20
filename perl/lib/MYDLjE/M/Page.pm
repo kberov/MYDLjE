@@ -72,6 +72,7 @@ sub add {
   my $eval_ok = eval {
     $dbix->begin_work;
     $page->save();
+    $page->modify_pid();
     $page_content->page_id($page->id);
     $page_content->alias('page_' . $page->alias . '_' . $page_content->language);
     $page_content->save();
@@ -82,6 +83,26 @@ sub add {
     Carp::croak("ERROR adding page(rolling back):[$@]");
   }
   return $page;
+}
+
+#modify parent page permissions to reflect the existence of a child page.
+sub modify_pid {
+  my ($self) = @_;
+  if ($self->pid > 0) {
+    my $page_pid = __PACKAGE__->select(id => $self->pid);
+    my $permissions = $page_pid->permissions;
+    if ($permissions =~ /^l/x) {
+      Carp::cluck("Parent page is a link($permissions). Skipping...");
+      $self->pid(0);
+      return 0;
+    }
+    $permissions =~ s/^-/d/x;
+    $page_pid->permissions($permissions);
+    return $page_pid->save();
+  }
+  else {
+    return 0;
+  }
 }
 
 1;

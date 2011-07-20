@@ -264,6 +264,7 @@ sub _save_page {
     $c->dbix->begin;
     $content->save($content_data);
     $page->save($page_data);
+    $page->modify_pid();
     $c->dbix->commit;
   }
   else {

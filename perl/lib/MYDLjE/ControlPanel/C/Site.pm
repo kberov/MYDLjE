@@ -263,8 +263,9 @@ sub _save_page {
     $content->page_id || $content->page_id($page->id);
     $c->dbix->begin;
     $content->save($content_data);
-    $page->save($page_data);
+    $page->data($page_data);
     $page->modify_pid();
+    $page->save();
     $c->dbix->commit;
   }
   else {
@@ -351,12 +352,14 @@ sub _traverse_children {
   $depth++;
   return if $depth > 10;
   my ($domain_id) = $c->msession('domain_id') || 0;
-  my $pages = $c->dbix->query($c->sql('writable_pages_select_menu'),
-    $pid, $domain_id, $id, $user->id, $user->id)->hashes;
+  my $user_id     = $user->id;
+  my $pages       = $c->dbix->query($c->sql('writable_pages_select_menu'),
+    $pid, $domain_id, $id, $user_id, $user_id, $user_id)->hashes;
   $id = ($c->stash('id') || 0);
   if (@$pages) {
+
     foreach my $page (@$pages) {
-      if ($page->{value} == $id) {
+      if ($page->{value} == $id||$page->{permissions} =~ /^l/x) {
         $page->{disabled} = 1;
       }
       $page->{label} = '-' x $depth . $page->{label};

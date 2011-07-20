@@ -71,8 +71,8 @@ sub add {
 
   my $eval_ok = eval {
     $dbix->begin_work;
-    $page->save();
     $page->modify_pid();
+    $page->save();
     $page_content->page_id($page->id);
     $page_content->alias('page_' . $page->alias . '_' . $page_content->language);
     $page_content->save();

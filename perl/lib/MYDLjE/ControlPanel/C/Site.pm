@@ -315,7 +315,7 @@ sub _validate_page {
     ->in(map { exists $_->{id} ? $_->{id} : 0 } @{$c->stash('domains')})
     ->message('Please use one of the availabe domains or first add a new domain!');
 
-  # if domain_id is switched remove current pid
+  # if domain_id of an existing page is switched, set pid=0
   if (($form->{'page.domain_id'} ne $page->domain_id) && $page->id) {
     $form->{'page.pid'} = 0;
   }

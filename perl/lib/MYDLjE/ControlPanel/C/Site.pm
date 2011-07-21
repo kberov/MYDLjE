@@ -315,10 +315,9 @@ sub _validate_page {
     ->in(map { exists $_->{id} ? $_->{id} : 0 } @{$c->stash('domains')})
     ->message('Please use one of the availabe domains or first add a new domain!');
 
-  # if domain_id is switched remove current pid and set the msession domain id
-  if ($form->{'page.domain_id'} ne $page->domain_id) {
+  # if domain_id is switched remove current pid
+  if (($form->{'page.domain_id'} ne $page->domain_id) && $page->id) {
     $form->{'page.pid'} = 0;
-    $c->msession('domain_id', $form->{'page.domain_id'});
   }
   $v->field('page.page_type')->in($c->stash('page_types'));
   $v->field('page.pid')->regexp($page->FIELDS_VALIDATION->{pid}{regexp});

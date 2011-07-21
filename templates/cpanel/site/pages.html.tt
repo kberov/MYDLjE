@@ -58,7 +58,7 @@ $('#[% action %]_form button[type="submit"]').button({
 });
 //]]>
 </script>
-[% DUMP(c.msession.sessiondata); %]
+[%# DUMP(c.msession.sessiondata); %]
 
 </div><!-- end div id="[% action %]-area" -->
 <!-- end [%+ action +%] -->

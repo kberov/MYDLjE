@@ -18,13 +18,19 @@ sub render_pages {
   my ($self, $pages) = @_;
   my $html     = '';
   my $template = $self->item_template;
+  my $depth    = $self->{depth};
   foreach my $p (@$pages) {
     my $subpages_html = '';
     if ($p->{permissions} =~ /^d/x) {
-      $subpages_html = '<ul class="items">'
-        . $self->render_pages($self->_get_pages($self->c, $p->{id})) . '</ul>';
+      $subpages_html = $self->render_pages($self->_get_pages($self->c, $p->{id}));
     }
-    $html .= $self->process($template, {p => $p, subpages_html => $subpages_html});
+    $html .= $self->process(
+      $template,
+      { p             => $p,
+        subpages_html => $subpages_html,
+        depth         => $depth,
+      }
+    );
 
   }
   return $html;

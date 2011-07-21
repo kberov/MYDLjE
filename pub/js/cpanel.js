@@ -46,7 +46,7 @@ function enhance_form() {
 } // end function enhance_form()
 
 function enhance_list_items() {
-  var list_item = 'ul.items li.item';
+  var list_item = 'ul.items li';
   $(list_item).hover(
     function () {                                
       $(this).removeClass("ui-state-default");

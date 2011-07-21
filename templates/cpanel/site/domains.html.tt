@@ -13,7 +13,7 @@
         </legend>
 <ul class="items">
 [% FOREACH d IN domains %]
-<li class="domain ui-corner-all [%+ 
+<li class="domain [%+ 
 d.published==1? 'ui-state-active':(d.published==2?'ui-state-highlight':'ui-state-default')
 %]">
         <div class="columns">

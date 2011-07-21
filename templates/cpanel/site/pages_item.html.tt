@@ -1,9 +1,9 @@
 <!-- start pages_item -->
-<li class="item ui-state-default"
-  style="list-style-image: url(pub/css/icons/[% page_type_icons.item(p.page_type) %])">
+<li id="id_[% p.id %]" class="ui-state-default page level_[% depth +%] pid_[% p.pid %]">
   <div class="columns">
     <div class="fixed column">
         <div class="container">
+        <img src="pub/css/icons/[% page_type_icons.item(p.page_type) %]" class="type_icon"/>
         [% p.alias %]
         </div>
     </div>
@@ -43,9 +43,7 @@
   </div>
 </li>
 [% IF  subpages_html%]
-<li>
 [% subpages_html  %]
-</li>
 [%END %]
 <!-- end pages_item -->
 

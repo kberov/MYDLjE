@@ -164,27 +164,60 @@ width:99%;
 
 #lipsum {padding:1em;}
 #home {overflow: auto;height:100%;position:relative;}
+.ui-widget-header{margin-bottom: 1ex;}
 /* classes for listing */
+#pages_form .ui-widget-content, #domains_form .ui-widget-content {
+  padding:1ex;
+}
+
+ul.items {
+  margin: 0;
+  margin-left: 0ex;
+}
 ul.items a {display: inline-block;}
 
-ul.items li {
-  margin: 1ex 0 1ex 0;
+ul.items li.page, ul.items li.domain {                                                  
+  list-style-type: none;
+  margin: 0;
+  padding-right: 0.5ex;
+  border-top: none;
 }
+ul.items li.page:first-child, ul.items li.domain:first-child {
+border-top: 1px solid ;
+}
+ul.items li.page img.type_icon {
+  float: left;
+  margin-right: 1ex;
+}
+.level_1 {
+  padding-left: 1ex;
+}
+.level_2 {
+  padding-left: 3ex;
+}
+.level_3 {
+  padding-left: 4ex;
+}
+.level_4 {
+  padding-left: 7ex;
+}
+.level_5 {
+  padding-left: 9ex;
+}
+.level_6 {
+  padding-left: 11ex;
+}
+
 ul.items li div.buttons {
   text-align: right;
 }
 ul.items li .container {
-  padding: 0.5ex;
+  padding: 0.2ex;
 }
 ul.items li .fixed {
-width:30ex;
+  width:30ex;
 }
-ul.items li.domain {
-  list-style-image: url(icons/world.png);
-}
-ul.items li.page {
-  list-style-image: url(icons/page.png);
-}
+
 ul.items li.page div.buttons a.edit_content span.ui-icon {
   background-image: url(icons/page_edit.png) ;
 }

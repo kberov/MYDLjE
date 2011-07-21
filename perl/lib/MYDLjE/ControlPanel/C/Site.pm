@@ -276,10 +276,6 @@ sub _save_page {
   }
 
   #after save
-  delete $c->msession->sessiondata->{'domain_id_'
-      . $page->domain_id
-      . '_pages_'
-      . $page->pid};
 
   #replace form entries
   $c->stash(
@@ -320,6 +316,16 @@ sub _validate_page {
     $form->{'page.pid'} = 0;
   }
   $v->field('page.page_type')->in($c->stash('page_types'));
+  if ($form->{'page.pid'} != $page->pid) {
+    delete $c->msession->sessiondata->{'domain_id_'
+        . $page->domain_id
+        . '_pages_'
+        . $form->{'page.pid'}};
+    delete $c->msession->sessiondata->{'domain_id_'
+        . $page->domain_id
+        . '_pages_'
+        . $page->pid};
+  }
   $v->field('page.pid')->regexp($page->FIELDS_VALIDATION->{pid}{regexp});
   $v->field('page.description')->inflate(\&MYDLjE::M::no_markup_inflate);
   $v->field([qw(page.published page.hidden page.cache)])

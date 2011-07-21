@@ -113,6 +113,7 @@ sub delete_page {
   my $confirmed = $c->req->param('confirmed');
   my $dbix      = $c->dbix;
   if ($confirmed && $id > 0) {
+    my $page = MYDLjE::M::Page->select(id => $id);
     unless (
       eval {
         $dbix->begin;
@@ -125,10 +126,18 @@ sub delete_page {
       $dbix->rollback or Mojo::Exception->throw($dbix->error);
       Mojo::Exception->throw("Error deleting page with id $id:" . $@);
     }
-
+    delete $c->msession->sessiondata->{'domain_id_'
+        . $page->domain_id
+        . '_pages_'
+        . $page->pid};
   }
-
-  #TODO: delete something in msession if needed
+  else {
+    $c->flash(
+      message => $c->l(
+        'No page deleted! Parameters: $id:[_1], $confirmed:[_2]', $id, $confirmed
+      )
+    );
+  }
 
   $c->redirect_to('/site/pages');
   return;
@@ -140,20 +149,6 @@ sub pages {
   $c->stash(form => $form);
   $c->domains();
   $c->_persist_domain_id($form);
-  my $pid       = $c->stash('id') || 0;
-  my $domain_id = $c->msession('domain_id');
-  my $language  = $form->{'content.language'}
-    || $c->app->config('plugins')->{i18n}{default};
-  my $sql =
-      'SELECT id, user_id, group_id, pid, alias, page_type, permissions'
-    . ' FROM pages WHERE pid=? AND domain_id=? and id !=0 AND '
-    . $c->sql('read_permissions_sql');
-  $c->debug($sql);
-  my $uid = $c->msession->user->id;
-  $c->stash(pages => $c->dbix->query($sql, $pid, $domain_id, $uid, $uid, $uid)->hashes
-      || []);
-
-
   return;
 }
 
@@ -281,6 +276,11 @@ sub _save_page {
   }
 
   #after save
+  delete $c->msession->sessiondata->{'domain_id_'
+      . $page->domain_id
+      . '_pages_'
+      . $page->pid};
+
   #replace form entries
   $c->stash(
     form => {
@@ -359,7 +359,7 @@ sub _traverse_children {
   if (@$pages) {
 
     foreach my $page (@$pages) {
-      if ($page->{value} == $id||$page->{permissions} =~ /^l/x) {
+      if ($page->{value} == $id || $page->{permissions} =~ /^l/x) {
         $page->{disabled} = 1;
       }
       $page->{label} = '-' x $depth . $page->{label};

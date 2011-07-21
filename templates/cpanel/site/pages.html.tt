@@ -19,6 +19,9 @@ page_type_icons = {
              style="background-image: url(pub/css/icons/layout_add.png) "></span></a></span>
         </legend>
         
+        <div id="message" style="display:[%c.flash('message')?'block':'none'%]">
+            [% c.flash('message') %]
+        </div>
 <div class="ui-widget-header ui-corner-all">
   <div class="columns">
     <div class="elastic column">

@@ -321,11 +321,11 @@ sub _validate_page {
         . $page->domain_id
         . '_pages_'
         . $form->{'page.pid'}};
-    delete $c->msession->sessiondata->{'domain_id_'
-        . $page->domain_id
-        . '_pages_'
-        . $page->pid};
   }
+  delete $c->msession->sessiondata->{'domain_id_'
+      . $page->domain_id
+      . '_pages_'
+      . $page->pid};
   $v->field('page.pid')->regexp($page->FIELDS_VALIDATION->{pid}{regexp});
   $v->field('page.description')->inflate(\&MYDLjE::M::no_markup_inflate);
   $v->field([qw(page.published page.hidden page.cache)])

@@ -366,6 +366,28 @@ sub settings {
   return;
 }
 
+sub templates {
+  my $c = shift;
+
+#$c->render();
+  return;
+}
+
+sub edit_template {
+  my $c = shift;
+
+#$c->render();
+  return;
+}
+
+sub delete_template {
+  my $c = shift;
+
+#$c->render();
+  return;
+}
+
+
 
 1;
 

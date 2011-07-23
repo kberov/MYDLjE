@@ -43,19 +43,19 @@
 </div>
   <ul id="list_data" class="items">
   [%  FOREACH row IN list_data %]
-  <li class="[% data_type +%] ui-state-default"><div class="columns">
+  <li class="[% row.data_type +%] ui-state-default"><div class="columns">
     <div class="fixed column">
         <div class="container">[% row.title.substr(0,20)%]</div>
     </div>
     <div class="elastic column">
         <div class="container buttons">
-        <a href="[% c.url_for('/content/edit/' _ row.id ).query('data_type' => data_type ) %]"
-         title="[% c.l('Edit [_1]', data_type ) %]"
-         id="[%'edit_' _ row.id _ data_type %]"
+        <a href="[% c.url_for('/content/edit/' _ row.id ).query('data_type' => row.data_type ) %]"
+         title="[% c.l('Edit [_1]', row.data_type ) %]"
+         id="[%'edit_' _ row.id _ row.data_type %]"
          class="edit_content"><span class="ui-icon"></span></a>
-         <a href="[% c.url_for('/content/delete/' _ row.id ).query('data_type' => data_type ) %]"
+         <a href="[% c.url_for('/content/delete/' _ row.id ).query('data_type' => row.data_type ) %]"
          title="[% c.l('Delete [_1]', data_type ) %]"
-         id="[%'delete_' _ row.id _ data_type %]"
+         id="[%'delete_' _ row.id _ row.data_type %]"
          class="delete_content"><span class="ui-icon"></span></a>
         </div>
     </div>

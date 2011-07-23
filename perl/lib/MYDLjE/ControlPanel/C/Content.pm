@@ -11,38 +11,23 @@ use MYDLjE::ControlPanel::C::Site;
 
 #all types of content are listed by a single template(for now)
 sub list_content {
-  my $c         = shift;
-  my $user      = $c->msession->user;
-  my $form      = {@{$c->req->params->params}};
-  my $data_type = '';
-  if ($form->{data_type}) {
-    $data_type = $form->{data_type};
+  my $c    = shift;
+  my $user = $c->msession->user;
+  my $form = {@{$c->req->params->params}};
+  $form->{data_type} ||= '';
 
-    #$c->stash('action','list_content');
-  }
-  else {
-    $data_type = $c->stash('action');
+  #just remove "s" - how convennient
+  $form->{data_type} =~ s|s$||x;
 
-    #just remove "s" - how convennient
-    $data_type =~ s|s$||x;
-
-  }
-  my $class;
-  if ($data_type =~ 'list') {
-    $data_type = 'page';
-    $class     = 'MYDLjE::M::Content::Page';
-  }else{
-    $class = 'MYDLjE::M::Content::' . ucfirst($data_type);
-  }
   #fill in "domains" stash variable
   $c->domains();
   $c->persist_domain_id($form);
 
-  $c->stash('data_type', $data_type);
+  $c->stash('data_type', $form->{data_type});
   $c->stash(page_id_options => $c->set_page_pid_options($user));
   $form->{'language'} = $c->get_form_language($form->{'language'});
 
-  $c->get_list($form, $class);
+  $c->get_list($form);
   $c->render(template => 'content/list');
   return;
 }
@@ -143,36 +128,24 @@ sub _edit_post {
 }
 
 sub get_list {
-  my ($c, $form, $class) = @_;
+  my ($c, $form) = @_;
 
-  # Load
-  if (my $e = Mojo::Loader->load($class)) {
-
-    # Doesn't exist
-    unless (ref $e) {
-      $c->app->log->debug("$class does not exist, maybe a typo?");
-      return;
-    }
-
-    # Error
-    $c->app->log->error($e);
-    return $e;
-  }
-  my $where = $class->WHERE;
-  $where->{language} = $form->{language};
+  my $where = {
+    data_type => {like => ($form->{data_type} || '%')},
+    deleted   => 0,
+    language  => $form->{language}
+  };
   $where->{page_id} = $form->{page_id} if $form->{page_id};
 
   #See SQL::Abstract#Literal SQL with placeholders and bind values (subqueries)
   my $uid = $c->msession->user->id;
   $where->{-and} = [\[$c->sql('read_permissions_sql'), $uid, $uid, $uid]];
-
-  #TODO: implement "LIMIT" just for supported databases. See SQL::Abstract::Limit;
   my ($sql, @bind) =
-    $c->dbix->abstract->select($class->TABLE, $class->COLUMNS, $where,
+    $c->dbix->abstract->select('content', '*', $where,
     [{-asc => 'sorting'}, {-desc => 'id'}]);
   $sql .= $c->sql_limit($form->{offset}, $form->{rows});
 
-  #$c->app->log->debug("\n\$sql: $sql\n" . "@bind\n\n");
+  $c->app->log->debug("\n\$sql: $sql\n" . "@bind\n\n");
   $c->stash('list_data' => [$c->dbix->query($sql, @bind)->hashes]);
 
   #$c->app->log->debug($c->dumper($c->stash('list_data')));

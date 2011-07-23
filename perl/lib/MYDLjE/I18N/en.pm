@@ -45,11 +45,21 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   bad          => 'Bad Content',
 
   #TODO: use I18N::LangTags::List better
-  bg      => I18N::LangTags::List::name('bg'),
-  en      => I18N::LangTags::List::name('en'),
-  default => 'Domain index-page',
-  regular => 'Regular',
-  folder  => 'Folder',
+  bg        => I18N::LangTags::List::name('bg'),
+  en        => I18N::LangTags::List::name('en'),
+  default   => 'Domain index-page',
+  regular   => 'Regular',
+  folder    => 'Folder',
+  page_type => 'Page Type',
+
+  #textile
+  page_type_help => 'MYDLjE has different type of pages. ' . "\n\n"
+    . 'bq. *Domain-index (home) page* is the enter point to the domain. It is loaded when the URL does not specify a page to load.'
+    . $/
+    . $/
+    . 'bq. In the *regular page* you can put any type of content. MYDLjE traverses the content and shows it depending on its type. '
+    . "\n\n"
+    . 'bq. The *Folder* is used only to store content records or records from other tables.',
 
   hidden_help      => 'A Page can be hidden from menus',
   permissions_help => 'Defines who has the right to edit this record. ' . "\n\n"

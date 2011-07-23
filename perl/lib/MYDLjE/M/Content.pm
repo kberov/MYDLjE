@@ -156,7 +156,7 @@ sub pid {
     }
     return $self;
   }
-  return $self->{data}{pid};                #getting
+  return $self->{data}{pid}||0;                #getting
 }
 
 sub permissions {

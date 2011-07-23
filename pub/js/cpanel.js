@@ -60,6 +60,18 @@ function enhance_list_items() {
   );
 }
 
+page_type_icons = {
+  regular: 'layout_content.png',
+  default: 'page_world.png',
+  folder: 'folder_page.png'
+};
+function prepend_type_icons(tag){
+  
+  for(pt in page_type_icons ){
+    $(tag +'.' + pt).prepend(
+    '<img src="pub/css/icons/' + page_type_icons[pt] + '" class="type_icon"/>');
+  }
+}
 /**
  * Displays a confirmation dialog box when user clicked on a "delete" button.
  * If user clicks "Ok" calls the corresponding delete action with '?confirmed=1' 
@@ -101,4 +113,5 @@ function enhance_delete_buttons(delete_button_class){
 $(window).load(function() {
   enhance_form();
   enhance_list_items();
+  prepend_type_icons('option');
 });

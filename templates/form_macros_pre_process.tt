@@ -139,7 +139,8 @@ form ||= c.req.params.to_hash;
             [% FOR row IN params.options %]
             <option [%+ params.selected eq row.value ? ' selected="selected"' : '' +%]
                 [%+ row.disabled ? '  disabled="disabled"' : '' +%]
-                value="[% row.value %]">[% c.l(row.label || row.value).xml %]</option>
+                value="[% row.value %]"
+                class="[% row.css_classes %]">[% c.l(row.label || row.value).xml %]</option>
             [% END %]
         </select></div>
     </div>

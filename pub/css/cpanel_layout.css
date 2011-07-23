@@ -187,9 +187,9 @@ ul.items li.page, ul.items li.domain {
 ul.items li.page:first-child, ul.items li.domain:first-child {
 border-top: 1px solid ;
 }
-ul.items li.page img.type_icon {
+img.type_icon {
   float: left;
-  margin-right: 1ex;
+  margin-right: 0.5ex;
 }
 .level_1 {
   padding-left: 1ex;

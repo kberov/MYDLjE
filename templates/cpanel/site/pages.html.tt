@@ -1,10 +1,6 @@
 [% WRAPPER ${TEMPLATE_WRAPPER};
 PROCESS 'site/page_options.tt';
-page_type_icons = {
-  regular =>'layout_content.png',
-  default =>'page_world.png',
-  folder =>'folder_page.png'
-};
+
 %]
 <!-- start [% action %] -->
 <div id="[% action %]-area" class="container ui-corner-all ui-widget-content">
@@ -54,7 +50,7 @@ $('#[% action %]_form button[type="submit"]').button({
     text:false
   });
   enhance_delete_buttons('delete_page');
-  
+    prepend_type_icons('ul.items li .columns div');
 });
 //]]>
 </script>

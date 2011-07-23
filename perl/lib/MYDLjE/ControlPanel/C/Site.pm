@@ -355,13 +355,7 @@ sub traverse_children {
       if ($page->{value} == $id || $page->{permissions} =~ /^l/x) {
         $page->{disabled} = 1;
       }
-      $page->{label} = '-' x $depth . $page->{label};
-
-      #if ($page->{page_type} eq 'root') {
-
-      #there can be only one root in a site
-      #  $page_pid_options->[0]{disabled} = 1;
-      #}
+      $page->{css_classes} ="level_$depth $page->{page_type}";
       push @$page_pid_options, $page;
       $c->traverse_children($user, $page->{value}, $page_pid_options, $depth);
     }

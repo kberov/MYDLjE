@@ -221,10 +221,10 @@ sub _save_page {
   #save
   my ($content_data, $page_data) = ({}, {});
   foreach my $field (keys %$form) {
-    if ($field =~ /content\.(.+)$/x) {
+    if ($field =~ /content\.(\w+)$/x) {
       $content_data->{$1} = $form->{$field};
     }
-    elsif ($field =~ /page\.(.+)$/x) {
+    elsif ($field =~ /page\.(\w+)$/x && $field !~ /page\.permissions_(\w+)$/x) {
       $page_data->{$1} = $form->{$field};
     }
   }

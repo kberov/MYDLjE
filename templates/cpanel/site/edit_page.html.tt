@@ -92,6 +92,10 @@ PROCESS 'site/page_options.tt';
 <script  type="text/javascript">//<![CDATA[
 $(window).load(function() {
   $('a[href$="pages"]').addClass('ui-state-active');
+  $('.button_close').click(function(){
+      location.href = "[% c.url_for('/site/pages') %]";
+      return false;
+  });
   
 });
 //]]>

@@ -202,8 +202,8 @@ my $FIELD_DEFS  = {
   id        => {required => 0, %$id_regexp},
   pid       => {required => 1, %$id_regexp},
   domain_id => {required => 1, %$id_regexp},
-  alias32   => {required => 1, regexp => qr/^[\-_a-zA-Z0-9]{3,32}$/x,},
-  alias     => {required => 1, regexp => qr/^[\-_a-zA-Z0-9]{3,255}$/x,},
+  alias32   => {required => 1, regexp => qr/^[\-_a-zA-Z0-9]{2,32}$/x,},
+  alias     => {required => 1, regexp => qr/^[\-_a-zA-Z0-9]{2,255}$/x,},
   sorting => {
     required => 1,
     regexp   => qr/^\d+$/x,

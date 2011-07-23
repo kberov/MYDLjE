@@ -41,6 +41,10 @@
   (SELECT id FROM pages WHERE domain_id=?)
 -- ]]></query>
 
+-- <query name="LIMIT" params="offset,rows"><![CDATA[
+    LIMIT offset,rows
+-- ]]></query>
+
 -- <query name="readable_pages" params="pid,domain_id,id,user_id,user_id,user_id"><![CDATA[
   SELECT * FROM pages p
      WHERE p.pid=? AND p.domain_id=? AND p.pid !=? AND id>0  AND 

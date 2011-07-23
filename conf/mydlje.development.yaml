@@ -25,6 +25,7 @@ plugins:
     db_password: mydlje
     db_user: mydlje
     debug: 0
+    limit: 50
   charset:
     charset: UTF-8
   i18n:

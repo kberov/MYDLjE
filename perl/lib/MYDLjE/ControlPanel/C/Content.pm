@@ -11,31 +11,38 @@ use MYDLjE::ControlPanel::C::Site;
 
 #all types of content are listed by a single template(for now)
 sub list_content {
-  my $c     = shift;
-  my $user  = $c->msession->user;
-  my $form  = {@{$c->req->params->params}};
-  my $class = '';
+  my $c         = shift;
+  my $user      = $c->msession->user;
+  my $form      = {@{$c->req->params->params}};
+  my $data_type = '';
   if ($form->{data_type}) {
-    $class = $form->{data_type};
+    $data_type = $form->{data_type};
 
     #$c->stash('action','list_content');
   }
   else {
-    $class = $c->stash('action');
+    $data_type = $c->stash('action');
 
     #just remove "s" - how convennient
-    $class =~ s|s$||x;
-  }
+    $data_type =~ s|s$||x;
 
+  }
+  my $class;
+  if ($data_type =~ 'list') {
+    $data_type = 'page';
+    $class     = 'MYDLjE::M::Content::Page';
+  }else{
+    $class = 'MYDLjE::M::Content::' . ucfirst($data_type);
+  }
   #fill in "domains" stash variable
   $c->domains();
   $c->persist_domain_id($form);
 
-  $c->stash('data_type', $class);
+  $c->stash('data_type', $data_type);
   $c->stash(page_id_options => $c->set_page_pid_options($user));
   $form->{'language'} = $c->get_form_language($form->{'language'});
 
-  $c->get_list($form, 'MYDLjE::M::Content::' . ucfirst($class));
+  $c->get_list($form, $class);
   $c->render(template => 'content/list');
   return;
 }
@@ -163,10 +170,7 @@ sub get_list {
   my ($sql, @bind) =
     $c->dbix->abstract->select($class->TABLE, $class->COLUMNS, $where,
     [{-asc => 'sorting'}, {-desc => 'id'}]);
-  $sql
-    .= " LIMIT "
-    . ($form->{offset} ? " $form->{offset}, " : '')
-    . ($form->{rows} || 50);
+  $sql .= $c->sql_limit($form->{offset}, $form->{rows});
 
   #$c->app->log->debug("\n\$sql: $sql\n" . "@bind\n\n");
   $c->stash('list_data' => [$c->dbix->query($sql, @bind)->hashes]);

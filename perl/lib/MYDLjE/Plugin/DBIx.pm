@@ -51,6 +51,20 @@ sub register {
       return $queries;
     }
   );
+  $app->helper(
+    sql_limit => sub {
+      my ($c, $offset, $rows) = @_;
+      $offset ||= 0;
+      if (!$rows) {
+        $rows   = $offset;
+        $offset = 0;
+      }
+      $rows ||= $config->{limit} || 50;
+      $queries->{LIMIT} =~ s/offset/$offset/x;
+      $queries->{LIMIT} =~ s/rows/$rows/x;
+      return $queries->{LIMIT};
+    }
+  );
   return;
 }    #end register
 

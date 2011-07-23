@@ -4,7 +4,7 @@
 %]
 <!-- start [%+ action %] -->
 <div id="[% action %]-area" class="container ui-corner-all ui-widget-content">
-<form id="[% action %]_form" action="[% form_action %]" class="tree_form"
+<form id="list_form" action="[% c.url_for('/content/list') %]" class="tree_form"
     method="POST">
 <fieldset class="ui-widget-content ui-corner-all">
         <legend class="ui-widget-header ui-corner-all">[% c.l('list_' _ action) %]
@@ -43,7 +43,7 @@
 </div>
   <ul id="list_data" class="items">
   [%  FOREACH row IN list_data %]
-  <li class="[% data_type +%] ui-state-default ui-corner-all"><div class="columns">
+  <li class="[% data_type +%] ui-state-default"><div class="columns">
     <div class="fixed column">
         <div class="container">[% row.title.substr(0,20)%]</div>
     </div>

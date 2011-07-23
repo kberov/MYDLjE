@@ -355,7 +355,7 @@ sub traverse_children {
       if ($page->{value} == $id || $page->{permissions} =~ /^l/x) {
         $page->{disabled} = 1;
       }
-      $page->{css_classes} ="level_$depth $page->{page_type}";
+      $page->{css_classes} = "level_$depth $page->{page_type}";
       push @$page_pid_options, $page;
       $c->traverse_children($user, $page->{value}, $page_pid_options, $depth);
     }

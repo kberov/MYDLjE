@@ -14,10 +14,22 @@ sub list_content {
   my $c     = shift;
   my $user  = $c->msession->user;
   my $form  = {@{$c->req->params->params}};
-  my $class = $c->stash('action');            #just remove "s" - how convennient
-  $class =~ s|s$||x;
-  $c->domains();                              #fill in "domains" stash variable
-  $c->_persist_domain_id($form);
+  my $class = '';
+  if ($form->{data_type}) {
+    $class = $form->{data_type};
+
+    #$c->stash('action','list_content');
+  }
+  else {
+    $class = $c->stash('action');
+
+    #just remove "s" - how convennient
+    $class =~ s|s$||x;
+  }
+
+  #fill in "domains" stash variable
+  $c->domains();
+  $c->persist_domain_id($form);
 
   $c->stash('data_type', $class);
   $c->stash(page_id_options => $c->set_page_pid_options($user));
@@ -33,6 +45,7 @@ sub articles  { goto &list_content }
 sub questions { goto &list_content }
 sub answers   { goto &list_content }
 sub notes     { goto &list_content }
+sub list      { goto &list_content }
 
 #all types of content are edited using a single template(for now)
 sub edit {
@@ -123,7 +136,7 @@ sub _edit_post {
 }
 
 sub get_list {
-  my ($c, $params, $class) = @_;
+  my ($c, $form, $class) = @_;
 
   # Load
   if (my $e = Mojo::Loader->load($class)) {
@@ -139,28 +152,26 @@ sub get_list {
     return $e;
   }
   my $where = $class->WHERE;
-  if ($params->{where}) {
-    my $add_where;
-    foreach my $column (keys %$params) {
-      if ($column =~ /where_(\w+)$/x && exists $class->COLUMNS->{$1}) {
-        $add_where->{$1} = $params->{"where_$1"};
-      }
-    }
-    $where = {%$add_where, %$where};
-  }
+  $where->{language} = $form->{language};
+  $where->{page_id} = $form->{page_id} if $form->{page_id};
 
-#TODO: implement "LIMIT" just for supported databases. See SQL::Abstract::Limit;
+  #See SQL::Abstract#Literal SQL with placeholders and bind values (subqueries)
+  my $uid = $c->msession->user->id;
+  $where->{-and} = [\[$c->sql('read_permissions_sql'), $uid, $uid, $uid]];
+
+  #TODO: implement "LIMIT" just for supported databases. See SQL::Abstract::Limit;
   my ($sql, @bind) =
     $c->dbix->abstract->select($class->TABLE, $class->COLUMNS, $where,
     [{-asc => 'sorting'}, {-desc => 'id'}]);
   $sql
     .= " LIMIT "
-    . ($params->{offset} ? " $params->{offset}, " : '')
-    . ($params->{rows} || 50);
+    . ($form->{offset} ? " $form->{offset}, " : '')
+    . ($form->{rows} || 50);
 
-  $c->app->log->debug("\n\$sql: $sql\n" . "@bind\n\n");
+  #$c->app->log->debug("\n\$sql: $sql\n" . "@bind\n\n");
   $c->stash('list_data' => [$c->dbix->query($sql, @bind)->hashes]);
-  $c->app->log->debug($c->dumper($c->stash('list_data')));
+
+  #$c->app->log->debug($c->dumper($c->stash('list_data')));
 
   return;
 }

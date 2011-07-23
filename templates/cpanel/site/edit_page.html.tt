@@ -59,7 +59,7 @@ PROCESS 'site/page_options.tt';
 </div>
 <div class="unit on-2 columns">
     <div class="column">
-      [% text_field('page.description');%]
+      [% text_field('content.description');%]
     </div>
     <div class="column">
       [% permissions_field('page.permissions'); %]

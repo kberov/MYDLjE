@@ -44,10 +44,6 @@ sub _get_pages {
   return if $self->{depth} > 10;
 
   my $domain_id = $c->msession('domain_id') || 0;
-  my $pages = $c->msession('domain_id_' . $domain_id . '_pages_' . $pid);
-  if ($pages) {
-    return $pages;
-  }
 
 #  my $language  = $form->{'content.language'}
 #    || $c->app->config('plugins')->{i18n}{default};
@@ -57,9 +53,8 @@ sub _get_pages {
     . $c->sql('read_permissions_sql');
   $c->debug($sql);
   my $uid = $c->msession->user->id;
-  $pages = $c->dbix->query($sql, $pid, $domain_id, $uid, $uid, $uid)->hashes
+  my $pages = $c->dbix->query($sql, $pid, $domain_id, $uid, $uid, $uid)->hashes
     || [];
-  $c->msession('domain_id_' . $domain_id . '_pages_' . $pid => $pages);
   return $pages;
 }
 

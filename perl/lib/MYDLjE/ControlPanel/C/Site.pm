@@ -115,10 +115,6 @@ sub delete_page {
   if ($confirmed && $id > 0) {
     my $page = MYDLjE::M::Page->select(id => $id);
     $dbix->delete(MYDLjE::M::Page->TABLE, {id => $id});
-    delete $c->msession->sessiondata->{'domain_id_'
-        . $page->domain_id
-        . '_pages_'
-        . $page->pid};
   }
   else {
     $c->flash(

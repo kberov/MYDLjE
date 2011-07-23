@@ -248,7 +248,7 @@ ALTER TABLE `pages`
   ADD CONSTRAINT `pages_domain_id_fk` FOREIGN KEY (`domain_id`) REFERENCES `domains` (`id`);
 
 ALTER TABLE `content`
-  ADD CONSTRAINT `content_page_id_fk` FOREIGN KEY (`page_id`) REFERENCES `pages` (`id`),
+  ADD CONSTRAINT `content_page_id_fk` FOREIGN KEY (`page_id`) REFERENCES `pages` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `content_pid_fk` FOREIGN KEY (`pid`) REFERENCES `content` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `content_user_id_group_id_fk` FOREIGN KEY (`user_id`, `group_id`) REFERENCES `user_group` (`user_id`, `group_id`);
 

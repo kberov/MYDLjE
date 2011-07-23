@@ -114,18 +114,7 @@ sub delete_page {
   my $dbix      = $c->dbix;
   if ($confirmed && $id > 0) {
     my $page = MYDLjE::M::Page->select(id => $id);
-    unless (
-      eval {
-        $dbix->begin;
-        $dbix->delete(MYDLjE::M::Content->TABLE, {page_id => $id});
-        $dbix->delete(MYDLjE::M::Page->TABLE,    {id      => $id});
-        $dbix->commit;
-      }
-      )
-    {
-      $dbix->rollback or Mojo::Exception->throw($dbix->error);
-      Mojo::Exception->throw("Error deleting page with id $id:" . $@);
-    }
+    $dbix->delete(MYDLjE::M::Page->TABLE, {id => $id});
     delete $c->msession->sessiondata->{'domain_id_'
         . $page->domain_id
         . '_pages_'

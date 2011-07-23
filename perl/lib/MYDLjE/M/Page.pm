@@ -88,7 +88,7 @@ sub add {
 #modify parent page permissions to reflect the existence of a child page.
 sub modify_pid {
   my ($self) = @_;
-  if ($self->pid > 0) {
+  if ($self->pid||0 > 0) {
     my $page_pid = __PACKAGE__->select(id => $self->pid);
     my $permissions = $page_pid->permissions;
     if ($permissions =~ /^l/x) {

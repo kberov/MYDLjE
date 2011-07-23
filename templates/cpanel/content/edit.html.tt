@@ -1,36 +1,11 @@
-[% WRAPPER ${TEMPLATE_WRAPPER} %]
-<!-- start [% action %] -->
-[% 
-
-data_type_locale = c.l(data_type);
-fields_ui_data = app.config('MYDLjE::Content::Form::ui');
-#some default values
-UNLESS id;
-  legend = c.l('New [_1]', data_type_locale );
-  form.invisible = 1;
-ELSE;
-  legend = c.l('Edit [_1]', data_type_locale );
-END;
-language_options = [];
-FOR option IN app.config('languages');
-  language_options.push({label => option, value => option }); 
-END;
-
-data_type_options = [];
-FOR option IN fields_ui_data.data_type;
-  
-  data_type_options.push({
-    label => option, value => option
-    disabled => (option != data_type?1:0),
-    });
-END;
-
-data_format_options = [];
-FOR option IN fields_ui_data.data_format;
-  
-  data_format_options.push({label => option, value => option});
-END;
+[% WRAPPER ${TEMPLATE_WRAPPER} ;
+  PROCESS 'content/content_options.tt';
+  language_options = [];
+  FOR option IN app.config('languages');
+    language_options.push({label => option, value => option }); 
+  END;
 %]
+<!-- start [% action %] -->
     <form id="[% action %]_content_form" action="[% c.url_for('/content/edit/' _ id) %]" 
         method="post" class="unit on-2 columns" >
       <div class="column span-2" style="display: [% validator_errors ? 'block;':'none;' %]">

@@ -133,11 +133,11 @@ sub pages {
   my $form = {@{$c->req->params->params}};
   $c->stash(form => $form);
   $c->domains();
-  $c->_persist_domain_id($form);
+  $c->persist_domain_id($form);
   return;
 }
 
-sub _persist_domain_id {
+sub persist_domain_id {
   my ($c, $form) = @_;
   if (exists $form->{'page.domain_id'}) {
     $c->msession('domain_id', $form->{'page.domain_id'} || 0);
@@ -156,14 +156,11 @@ sub edit_page {
   my $form    = {@{$c->req->params->params}};
 
   $c->domains();    #fill in "domains" stash variable
-  $c->_persist_domain_id($form);
+  $c->persist_domain_id($form);
 
   $c->stash(page_types => $page->FIELDS_VALIDATION->{page_type}{constraints}[0]{in});
-  $c->stash(page_pid_options => $c->_set_page_pid_options($user));
-  $form->{'content.language'} ||= $c->app->config('plugins')->{i18n}{default};
-  my $language =
-    (List::Util::first { $form->{'content.language'} eq $_ }
-    @{$c->app->config('languages')});
+  $c->stash(page_pid_options => $c->set_page_pid_options($user));
+  $form->{'content.language'} = $c->get_form_language($form->{'content.language'});
   if ($id) {        #edit
 
     #See SQL::Abstract#Literal SQL with placeholders and bind values (subqueries)
@@ -178,7 +175,7 @@ sub edit_page {
 
       $content->select(
         page_id  => $page->id,
-        language => $language,
+        language => $form->{'content.language'},
         deleted  => 0,
         -and     => [\$and_sql]
       );
@@ -207,6 +204,19 @@ sub edit_page {
 #$c->render();
   return;
 
+}
+
+#detects and sets default language if not present in the form.
+sub get_form_language {
+  my ($c, $language_field) = @_;
+  if (!$language_field) {
+    $language_field = $c->app->config('plugins')->{i18n}{default};
+  }
+  else {
+    $language_field =
+      (List::Util::first { $language_field eq $_ } @{$c->app->config('languages')});
+  }
+  return $language_field;
 }
 
 sub _save_page {
@@ -318,14 +328,14 @@ sub _validate_page {
 }
 
 #prepares an hierarshical looking list for page.pid select_field
-sub _set_page_pid_options {
+sub set_page_pid_options {
   my ($c, $user) = @_;
   my $page_pid_options = [{label => '/', value => 0}];
-  $c->_traverse_children($user, 0, $page_pid_options, 0);
+  $c->traverse_children($user, 0, $page_pid_options, 0);
   return $page_pid_options;
 }
 
-sub _traverse_children {
+sub traverse_children {
   my ($c, $user, $pid, $page_pid_options, $depth) = @_;
 
   #hack to make the SQL work the first time this method is called
@@ -353,7 +363,7 @@ sub _traverse_children {
       #  $page_pid_options->[0]{disabled} = 1;
       #}
       push @$page_pid_options, $page;
-      $c->_traverse_children($user, $page->{value}, $page_pid_options, $depth);
+      $c->traverse_children($user, $page->{value}, $page_pid_options, $depth);
     }
   }
   return;
@@ -386,7 +396,6 @@ sub delete_template {
 #$c->render();
   return;
 }
-
 
 
 1;

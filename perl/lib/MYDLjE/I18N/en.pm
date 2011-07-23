@@ -51,6 +51,7 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   regular   => 'Regular',
   folder    => 'Folder',
   page_type => 'Page Type',
+  note      => 'Note',
 
   #textile
   page_type_help => 'MYDLjE has different type of pages. ' . "\n\n"

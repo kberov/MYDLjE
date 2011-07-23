@@ -32,11 +32,12 @@ function enhance_form() {
   $('form input[type="text"]').addClass('ui-corner-all');
   $('form input[type="password"]').addClass('ui-corner-all');
 
-  $('form .buttons button[type="reset"]').button({
+  $('form .buttons button[type="reset"], form .buttons button.button_close').button({
     icons: {
       primary: 'ui-icon-close'
     }
   });
+  
   submit_buton = $('form .buttons button[type="submit"]');
   submit_buton.button({
     icons: {

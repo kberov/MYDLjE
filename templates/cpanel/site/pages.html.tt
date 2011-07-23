@@ -8,7 +8,7 @@ page_type_icons = {
 %]
 <!-- start [% action %] -->
 <div id="[% action %]-area" class="container ui-corner-all ui-widget-content">
-<form id="[% action %]_form" method="POST">
+<form id="[% action %]_form" method="POST" class="tree_form">
 <fieldset class="ui-widget-content ui-corner-all">
         <legend class="ui-widget-header ui-corner-all">[% c.l('Pages') %]
             <span  class="legend_icon"><a href="[% c.url_for('/site/edit_page')%]"

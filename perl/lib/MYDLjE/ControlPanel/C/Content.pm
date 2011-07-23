@@ -1,15 +1,29 @@
 package MYDLjE::ControlPanel::C::Content;
 use MYDLjE::Base 'MYDLjE::ControlPanel::C';
 use Mojo::ByteStream qw(b);
+use MYDLjE::ControlPanel::C::Site;
+
+*set_page_pid_options = \&MYDLjE::ControlPanel::C::Site::set_page_pid_options;
+*traverse_children    = \&MYDLjE::ControlPanel::C::Site::traverse_children;
+*get_form_language    = \&MYDLjE::ControlPanel::C::Site::get_form_language;
+*domains              = \&MYDLjE::ControlPanel::C::Site::domains;
+*persist_domain_id    = \&MYDLjE::ControlPanel::C::Site::persist_domain_id;
 
 #all types of content are listed by a single template(for now)
 sub list_content {
-  my $c      = shift;
-  my $params = $c->req->params->to_hash;
-  my $class  = $c->stash('action');        #just remove "s" - how convennient
-  chop($class);
+  my $c     = shift;
+  my $user  = $c->msession->user;
+  my $form  = {@{$c->req->params->params}};
+  my $class = $c->stash('action');            #just remove "s" - how convennient
+  $class =~ s|s$||x;
+  $c->domains();                              #fill in "domains" stash variable
+  $c->_persist_domain_id($form);
+
   $c->stash('data_type', $class);
-  $c->get_list($params, 'MYDLjE::M::Content::' . ucfirst($class));
+  $c->stash(page_id_options => $c->set_page_pid_options($user));
+  $form->{'language'} = $c->get_form_language($form->{'language'});
+
+  $c->get_list($form, 'MYDLjE::M::Content::' . ucfirst($class));
   $c->render(template => 'content/list');
   return;
 }

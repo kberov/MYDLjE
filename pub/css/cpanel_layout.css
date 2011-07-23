@@ -59,9 +59,11 @@ width:130px;
 }
 
 form label, form .field, form .buttons {
-padding:1ex;
+padding:0.5ex;
 }
-
+form.tree_form label {
+  width:100%;
+}
 form .column .ui-state-error{
   margin: 1ex 1ex 0 1ex;
 }

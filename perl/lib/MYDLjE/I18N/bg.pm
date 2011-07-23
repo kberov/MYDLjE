@@ -93,6 +93,7 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   Log         => 'Отчет',
   Files       => 'Файлове',
   Preferences => 'Предпочитания',
+  note        => 'Бележка',
 
   #page_types
   page_type => 'Тип Страница',

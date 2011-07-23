@@ -1,16 +1,46 @@
-[% WRAPPER ${TEMPLATE_WRAPPER} %]
+[% WRAPPER ${TEMPLATE_WRAPPER};
+  PROCESS 'site/page_options.tt';
+  PROCESS 'content/content_options.tt';
+%]
 <!-- start [%+ action %] -->
 <div id="[% action %]-area" class="container ui-corner-all ui-widget-content">
-  <h3 class="ui-widget-header ui-corner-all ui-helper-clearfix">
-    [% c.l('list_' _ action) %]
-  <a href="[% c.url_for('/content/edit/0').query('data_type' =>data_type ) %]"
-     title="[% c.l('New [_1]', data_type ) %]"
-     style="float:right;"
-     id="[%'new_' _ data_type %]"
-     class="new_content">
-     <span class="ui-icon" 
-     style="background-image: url(pub/css/icons/add.png) "></span></a>
-  </h3>
+<form id="[% action %]_form" action="[% form_action %]" class="tree_form"
+    method="POST">
+<fieldset class="ui-widget-content ui-corner-all">
+        <legend class="ui-widget-header ui-corner-all">[% c.l('list_' _ action) %]
+            <span  class="legend_icon"><a href="[% 
+              c.url_for('/content/edit/0').query('data_type' =>data_type ) %]"
+              title="[% c.l('New [_1]', c.l(data_type) ) %]"
+              id="new_[% data_type %]_button"
+              class="new_page">
+             <span class="ui-icon" 
+             style="background-image: url(pub/css/icons/add.png) "></span></a></span>
+        </legend>
+        
+        <div id="message" style="display:[%c.flash('message')?'block':'none'%]">
+            [% c.flash('message') %]
+        </div>
+<div class="ui-widget-header ui-corner-all">
+  <div class="columns">
+    <div class="elastic column">
+      [% select_field('page.domain_id', {label => c.l('Domains'), 
+       options => domains_options, help =>'domain_help',selected=>c.msession('domain_id')} ); %]
+    </div>
+    <div class="elastic column">
+      [% select_field('page_id', {label => c.l('Pages'), 
+       options => page_id_options, help =>'page_type_help',selected=>c.msession('page_id')} ); %]
+    </div>
+    <div class="elastic column">
+      [% select_field('data_type', {selected => data_type, options => data_type_options} ); %]
+    </div>
+    <div class="elastic column">
+      [% select_field('language', {options => language_options} ); %]
+    </div>
+    <div class="fixed column" style="">
+        <button id="set_domain_env" type="submit" name="set_domain_env" value="set">set</button>
+    </div>
+  </div>
+</div>
   <ul id="list_data" class="items">
   [%  FOREACH row IN list_data %]
   <li class="[% data_type +%] ui-state-default ui-corner-all"><div class="columns">
@@ -41,7 +71,22 @@
   
   
   
+
+</fieldset>
+</form>
+<script  type="text/javascript">//<![CDATA[
+$(window).load(function() {
+$('#[% action %]_form button[type="submit"]').button({
+    icons: {
+      primary: 'ui-icon-check'
+    },
+    text:false
+  });
+  enhance_delete_buttons('delete_content');
   
+});
+//]]>
+</script>
   
   <div id="edit-form-dialog"
        title="[% c.l('New [_1]', c.l(data_type) ) %]"

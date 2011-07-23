@@ -65,12 +65,15 @@ PROCESS 'site/page_options.tt';
       [% permissions_field('page.permissions'); %]
     </div>
 </div>
-<div class="unit on-2 columns">
+<div class="unit on-3 columns">
   <div class="column">
     [%  select_field('page.published',{options => published_options}); %]
   </div>
   <div class="column">
     [% checkbox_field('page.hidden'); %]
+  </div>
+  <div class="column">
+    [% text_field('page.sorting'); %]
   </div>
 </div>
 <div class="unit on-2 columns">

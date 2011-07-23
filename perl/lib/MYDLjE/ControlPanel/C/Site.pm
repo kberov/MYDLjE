@@ -291,7 +291,8 @@ sub _validate_page {
   }
   $v->field('page.alias')->regexp($page->FIELDS_VALIDATION->{alias}{regexp})
     ->message('Please enter valid page alias!');
-  $c->debug($c->dumper($c->stash('domains'), $form->{'page.domain_id'}));
+
+  #$c->debug($c->dumper($c->stash('domains'), $form->{'page.domain_id'}));
   $v->field('page.domain_id')
     ->in(map { exists $_->{id} ? $_->{id} : 0 } @{$c->stash('domains')})
     ->message('Please use one of the availabe domains or first add a new domain!');
@@ -306,6 +307,7 @@ sub _validate_page {
   $v->field('content.description')->inflate(\&MYDLjE::M::no_markup_inflate);
   $v->field([qw(page.published page.hidden page.cache)])
     ->each(sub { shift->regexp($page->FIELDS_VALIDATION->{cache}{regexp}) });
+  $v->field('page.sorting')->regexp($page->FIELDS_VALIDATION->{sorting}{regexp});
   $v->field('page.expiry')->regexp($page->FIELDS_VALIDATION->{expiry}{regexp});
   $form->{'page.permissions'} ||= $page->permissions;
   $v->field('page.permissions')

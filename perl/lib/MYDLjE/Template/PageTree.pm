@@ -50,7 +50,8 @@ sub _get_pages {
   my $sql =
       'SELECT id, user_id, group_id, pid, alias, page_type, permissions'
     . ' FROM pages WHERE pid=? AND domain_id=? and id !=0 AND '
-    . $c->sql('read_permissions_sql');
+    . $c->sql('read_permissions_sql')
+    . ' ORDER BY sorting';
   $c->debug($sql);
   my $uid = $c->msession->user->id;
   my $pages = $c->dbix->query($sql, $pid, $domain_id, $uid, $uid, $uid)->hashes

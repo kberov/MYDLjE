@@ -168,7 +168,7 @@ width:99%;
 #home {overflow: auto;height:100%;position:relative;}
 .ui-widget-header{margin-bottom: 1ex;}
 /* classes for listing */
-#pages_form .ui-widget-content, #domains_form .ui-widget-content {
+.tree_form .ui-widget-content {
   padding:1ex;
 }
 

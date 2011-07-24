@@ -43,12 +43,7 @@ USE tree = PageTree();
 </form>
 <script  type="text/javascript">//<![CDATA[
 $(window).load(function() {
-$('#[% action %]_form button[type="submit"]').button({
-    icons: {
-      primary: 'ui-icon-check'
-    },
-    text:false
-  });
+  enhance_tree_form();
   enhance_delete_buttons('delete_page');
     prepend_type_icons('ul.items li .columns div');
 });

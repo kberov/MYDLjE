@@ -4,7 +4,7 @@
 %]
 <!-- start [%+ action %] -->
 <div id="[% action %]-area" class="container ui-corner-all ui-widget-content">
-<form id="list_form" action="[% c.url_for('/content/list') %]" class="tree_form"
+<form id="list_content_form" action="[% c.url_for('/content/list') %]" class="tree_form"
     method="POST">
 <fieldset class="ui-widget-content ui-corner-all">
         <legend class="ui-widget-header ui-corner-all">[% c.l('list_' _ action) %]
@@ -76,12 +76,7 @@
 </form>
 <script  type="text/javascript">//<![CDATA[
 $(window).load(function() {
-$('#[% action %]_form button[type="submit"]').button({
-    icons: {
-      primary: 'ui-icon-check'
-    },
-    text:false
-  });
+  enhance_tree_form();
   enhance_delete_buttons('delete_content');
   
 });

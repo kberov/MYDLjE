@@ -72,6 +72,16 @@ function prepend_type_icons(tag){
     '<img src="pub/css/icons/' + page_type_icons[pt] + '" class="type_icon"/>');
   }
 }
+
+function enhance_tree_form(){
+  prepend_type_icons('option');
+  $('.tree_form button[type="submit"]').button({
+    icons: {
+      primary: 'ui-icon-check'
+    },
+    text:false
+  });
+}
 /**
  * Displays a confirmation dialog box when user clicked on a "delete" button.
  * If user clicks "Ok" calls the corresponding delete action with '?confirmed=1' 
@@ -113,5 +123,4 @@ function enhance_delete_buttons(delete_button_class){
 $(window).load(function() {
   enhance_form();
   enhance_list_items();
-  prepend_type_icons('option');
 });

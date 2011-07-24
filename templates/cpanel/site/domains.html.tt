@@ -1,7 +1,7 @@
 [% WRAPPER ${TEMPLATE_WRAPPER} %]
 <!-- start [% action %] -->
 <div id="[% action %]-area" class="container ui-corner-all ui-widget-content">
-<form id="[% action %]_form">
+<form id="[% action %]_form" class="tree_form">
 <fieldset class="ui-widget-content ui-corner-all">
         <legend class="ui-widget-header ui-corner-all">[% c.l('Domains') %]
             <span  class="legend_icon"><a href="[% c.url_for('/site/edit_domain')%]"

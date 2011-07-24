@@ -17,6 +17,7 @@ sub domains {
     my $domains     = [$c->dbix->query($domains_SQL, $uid, $uid, $uid)->hashes];
     $c->stash(domains => $domains);
     $c->msession(domains => $domains);
+    $c->msession('domain_id', $domains->[-1]{id});    #default domain for this user
   }
   return;
 }
@@ -139,8 +140,8 @@ sub pages {
 
 sub persist_domain_id {
   my ($c, $form) = @_;
-  if (exists $form->{'page.domain_id'}) {
-    $c->msession('domain_id', $form->{'page.domain_id'} || 0);
+  if (exists $form->{'page.domain_id'} && defined $form->{'page.domain_id'}) {
+    $c->msession('domain_id', $form->{'page.domain_id'});
   }
 
   return;
@@ -344,7 +345,7 @@ sub traverse_children {
   #Be reasonable and prevent deadly recursion
   $depth++;
   return if $depth > 10;
-  my ($domain_id) = $c->msession('domain_id') || 0;
+  my ($domain_id) = $c->msession('domain_id');
   my $user_id     = $user->id;
   my $pages       = $c->dbix->query($c->sql('writable_pages_select_menu'),
     $pid, $domain_id, $id, $user_id, $user_id, $user_id)->hashes;

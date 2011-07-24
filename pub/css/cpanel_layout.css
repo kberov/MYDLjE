@@ -54,15 +54,12 @@ padding:.5ex;
 }
 
 form label {
-display:block;
-width:130px;
+  display:block;
+  width: 100px;
 }
 
 form label, form .field, form .buttons {
-padding:0.5ex;
-}
-form.tree_form label {
-  width:100%;
+padding:5px;
 }
 form .column .ui-state-error{
   margin: 1ex 1ex 0 1ex;
@@ -110,10 +107,9 @@ padding:0 1em;
 }
 
 #main-left-navigation #accordion a {
-font-weight:700;
-text-decoration:none;
-font-size:smaller;
-display:block;
+font-weight: bold;
+text-decoration: none;
+display: block;
 padding:.2ex .2ex .2ex 1ex;
 }
 
@@ -168,9 +164,6 @@ width:99%;
 #home {overflow: auto;height:100%;position:relative;}
 .ui-widget-header{margin-bottom: 1ex;}
 /* classes for listing */
-.tree_form .ui-widget-content {
-  padding:1ex;
-}
 
 ul.items {
   margin: 0;
@@ -186,28 +179,6 @@ ul.items li.page, ul.items li.domain {
 }
 ul.items li.page:first-child, ul.items li.domain:first-child {
 border-top: 1px solid ;
-}
-img.type_icon {
-  float: left;
-  margin-right: 0.5ex;
-}
-.level_1 {
-  padding-left: 1ex;
-}
-.level_2 {
-  padding-left: 3ex;
-}
-.level_3 {
-  padding-left: 4ex;
-}
-.level_4 {
-  padding-left: 7ex;
-}
-.level_5 {
-  padding-left: 9ex;
-}
-.level_6 {
-  padding-left: 11ex;
 }
 
 ul.items li div.buttons {
@@ -233,3 +204,33 @@ table.permissions th,table.permissions td {
   text-align: left;
   padding:3px;
 }
+
+.tree_form .ui-widget-content {
+  padding:1ex;
+}
+.ui-widget input, label, .ui-widget select, 
+.ui-widget option, .ui-widget textarea, .ui-widget button, 
+#main-left-navigation #accordion a,
+.ui-state-default,.ui-state-hover,.ui-state-highlight,
+.ui-widget .ui-widget,.ui-widget {
+  font-size:small
+}
+img.type_icon {
+  margin-right: 5px;
+}
+.level_1 {
+  padding-left: 5px;
+}
+.level_2 {
+  padding-left: 10px;
+}
+.level_3 {
+  padding-left: 15px;
+}
+.level_4 {
+  padding-left: 20px;
+}
+.level_5 {
+  padding-left: 25px;
+}
+

@@ -31,12 +31,17 @@
        options => page_id_options, help =>'page_type_help',selected=>c.msession('page_id')} ); %]
     </div>
     <div class="elastic column">
-      [% select_field('data_type', {selected => data_type, options => data_type_options} ); %]
-    </div>
-    <div class="elastic column">
       [% select_field('language', {options => language_options} ); %]
     </div>
-    <div class="fixed column" style="">
+  </div>
+  <div class="columns">
+    <div class="elastic column">
+      [% select_field('data_type', {selected => data_type, options => data_type_options} ); %]
+    </div>
+    <div class="column">
+      [% select_field('order_by', {options => order_by_options} ); %]
+    </div>
+    <div class="fixed column">
         <button id="set_domain_env" type="submit" name="set_domain_env" value="set">set</button>
     </div>
   </div>
@@ -62,23 +67,12 @@
   </div></li>
   [% END %]
   </ul>
-  
-  
-  
-  
-  
-  
-  
-  
-  
-
 </fieldset>
 </form>
 <script  type="text/javascript">//<![CDATA[
 $(window).load(function() {
   enhance_tree_form();
   enhance_delete_buttons('delete_content');
-  
 });
 //]]>
 </script>

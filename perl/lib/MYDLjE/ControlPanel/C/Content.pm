@@ -15,9 +15,12 @@ sub list_content {
   my $user = $c->msession->user;
   my $form = {@{$c->req->params->params}};
   $form->{data_type} ||= '';
+  if (!$form->{data_type} && $c->stash('action') !~ /list/) {
+    $form->{data_type} = $c->stash('action');
 
-  #just remove "s" - how convennient
-  $form->{data_type} =~ s|s$||x;
+    #just remove "s" - how convennient books --> book
+    $form->{data_type} =~ s|s$||x;
+  }
 
   #fill in "domains" stash variable
   $c->domains();
@@ -42,11 +45,11 @@ sub list      { goto &list_content }
 #all types of content are edited using a single template(for now)
 sub edit {
   my $c = shift;
-
-  $c->stash(TEMPLATE_WRAPPER => 'cpanel/layouts/'
-      . ucfirst($c->stash('controller')) . '/'
-      . $c->stash('action')
-      . '.tt');
+  #TODO: be aware of HTTP_X_REQUESTED_WITH
+  #$c->stash(TEMPLATE_WRAPPER => 'cpanel/layouts/'
+  #    . ucfirst($c->stash('controller')) . '/'
+  #    . $c->stash('action')
+  #    . '.tt');
 
   my $data_type = lc($c->req->param('data_type'));
   my $modules   = Mojo::Loader->search('MYDLjE::M::Content');
@@ -136,10 +139,11 @@ sub get_list {
     language  => $form->{language}
   };
   $where->{page_id} = $form->{page_id} if $form->{page_id};
-
+  #restrict always to one domain
+  my $pages_sql =$/.'page_id in(SELECT id FROM pages p WHERE p.domain_id ='.($c->msession('domain_id')||0).')'.$/;
   #See SQL::Abstract#Literal SQL with placeholders and bind values (subqueries)
   my $uid = $c->msession->user->id;
-  $where->{-and} = [\[$c->sql('read_permissions_sql'), $uid, $uid, $uid]];
+  $where->{-and} = [\[$c->sql('read_permissions_sql'), $uid, $uid, $uid],\[$pages_sql]];
   my ($sql, @bind) =
     $c->dbix->abstract->select('content', '*', $where,
     [{-asc => 'sorting'}, {-desc => 'id'}]);

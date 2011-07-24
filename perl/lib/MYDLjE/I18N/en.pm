@@ -33,7 +33,7 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   tags         => 'Tags',
   featured     => 'Featured',
   sorting      => 'Sorting',
-  data_type    => 'Semantic Data Type',
+  data_type    => 'Semantic Type',
   data_format  => 'Data Format',
   time_created => 'Created on',
   tstamp       => 'Changed on',
@@ -51,7 +51,8 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   regular   => 'Regular',
   folder    => 'Folder',
   page_type => 'Page Type',
-  note      => 'Note',
+  order_by => 'Order by',
+  'Please select' => 'Please select',
 
   #textile
   page_type_help => 'MYDLjE has different type of pages. ' . "\n\n"

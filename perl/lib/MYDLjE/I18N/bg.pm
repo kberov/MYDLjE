@@ -93,9 +93,9 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   Log         => 'Отчет',
   Files       => 'Файлове',
   Preferences => 'Предпочитания',
-  note        => 'Бележка',
-
-  #page_types
+  order_by => 'Подредба по',
+  'Please select' => 'Моля, изберете'
+#page_types
   page_type => 'Тип Страница',
   page_type_help =>
     'MYDLjE поддържа различни типове страници. ' . "\n\n"

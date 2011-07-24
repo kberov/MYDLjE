@@ -45,13 +45,13 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   bad          => 'Bad Content',
 
   #TODO: use I18N::LangTags::List better
-  bg        => I18N::LangTags::List::name('bg'),
-  en        => I18N::LangTags::List::name('en'),
-  default   => 'Domain index-page',
-  regular   => 'Regular',
-  folder    => 'Folder',
-  page_type => 'Page Type',
-  order_by => 'Order by',
+  bg              => I18N::LangTags::List::name('bg'),
+  en              => I18N::LangTags::List::name('en'),
+  default         => 'Domain index-page',
+  regular         => 'Regular',
+  folder          => 'Folder',
+  page_type       => 'Page Type',
+  order_by        => 'Order by',
   'Please select' => 'Please select',
 
   #textile

@@ -94,10 +94,15 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   Files           => 'Файлове',
   Preferences     => 'Предпочитания',
   order_by        => 'Подредба по',
-  'Please select' => 'Моля, изберете'
+  order           => 'Ред',
+  ASC             => 'Възходящ',
+  DESC            => 'Низходящ',
+  'Please select' => 'Моля, изберете',
+  'All types'     => 'Всички типове',
+  'All languages' => 'Всички езици',
 
 #page_types
-    page_type => 'Тип Страница',
+  page_type => 'Тип Страница',
   page_type_help =>
     'MYDLjE поддържа различни типове страници. ' . "\n\n"
     . 'bq. *Индексната (начална) страница* е входната точка към домейна. Тя се показва, когато в уеб-адреса не е дефинирана друга страница.'

@@ -45,14 +45,17 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   bad          => 'Bad Content',
 
   #TODO: use I18N::LangTags::List better
-  bg              => I18N::LangTags::List::name('bg'),
-  en              => I18N::LangTags::List::name('en'),
-  default         => 'Domain index-page',
-  regular         => 'Regular',
-  folder          => 'Folder',
-  page_type       => 'Page Type',
-  order_by        => 'Order by',
-  'Please select' => 'Please select',
+  bg        => I18N::LangTags::List::name('bg'),
+  en        => I18N::LangTags::List::name('en'),
+  default   => 'Domain index-page',
+  regular   => 'Regular',
+  folder    => 'Folder',
+  page_type => 'Page Type',
+  order_by  => 'Order by',
+  order     => 'Order',
+
+  ASC  => 'Ascending',
+  DESC => 'Descending',
 
   #textile
   page_type_help => 'MYDLjE has different type of pages. ' . "\n\n"

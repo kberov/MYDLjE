@@ -108,6 +108,14 @@ main_left_navigation:
         title: Books
         icon: book.png
         route: /content/books
+      -
+        title: Page Properties
+        icon: page.png
+        route: /content/pages
+      -
+        title: All types
+        icon: magnifier.png
+        route: /content/list
   -
     header: Accounts
     items:

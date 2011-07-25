@@ -12,12 +12,10 @@ END;
 
 data_type_options = [];
 FOR option IN fields_ui_data.data_type;
-  
   data_type_options.push({
     label => option, value => option
     });
 END;
-
 data_format_options = [];
 FOR option IN fields_ui_data.data_format;
   

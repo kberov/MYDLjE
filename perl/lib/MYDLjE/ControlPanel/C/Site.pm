@@ -268,7 +268,7 @@ sub _save_page {
       group_id => $user->group_id
     );
     $c->stash(id               => $page->id);
-    $c->stash(page_pid_options => $c->_set_page_pid_options($user));
+    $c->stash(page_pid_options => $c->set_page_pid_options($user));
   }
 
   #after save

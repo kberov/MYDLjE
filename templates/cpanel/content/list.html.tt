@@ -15,7 +15,7 @@
 <fieldset class="ui-widget-content ui-corner-all">
         <legend class="ui-widget-header ui-corner-all">[% c.l('list_' _ action) %]
             <span  class="legend_icon"><a href="[% 
-              c.url_for('/content/edit/0').query('data_type' =>data_type ) %]"
+              c.url_for('/content/edit/0').query('data_type' =>data_type?data_type:'note' ) %]"
               title="[% c.l('New [_1]', c.l(data_type) ) %]"
               id="new_[% data_type %]_button"
               class="new_page">
@@ -45,7 +45,7 @@
                 </div>
 
                 <div class="elastic column">
-                  [% select_field('data_type', {selected => data_type, options => data_type_options} ); %]
+                  [% select_field('data_type', {selected => form.data_type, options => data_type_options} ); %]
                 </div>
 
                 <div class="elastic column">

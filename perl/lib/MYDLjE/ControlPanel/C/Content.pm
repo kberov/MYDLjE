@@ -2,6 +2,7 @@ package MYDLjE::ControlPanel::C::Content;
 use MYDLjE::Base 'MYDLjE::ControlPanel::C';
 use Mojo::ByteStream qw(b);
 use MYDLjE::ControlPanel::C::Site;
+use MYDLjE::M::Content::Note;
 
 *set_page_pid_options = \&MYDLjE::ControlPanel::C::Site::set_page_pid_options;
 *traverse_children    = \&MYDLjE::ControlPanel::C::Site::traverse_children;
@@ -26,7 +27,9 @@ sub list_content {
   $c->domains();
   $c->persist_domain_id($form);
 
-  $c->stash('data_type', $form->{data_type});
+  $c->stash(data_type => $form->{data_type}
+      || MYDLjE::M::Content::Note->new->data_type);
+
   $c->stash(page_id_options => $c->set_page_pid_options($user));
   $form->{'language'} = $c->get_form_language($form->{'language'});
 
@@ -140,6 +143,8 @@ sub get_list {
     language  => $form->{language}
   };
   $where->{page_id} = $form->{page_id} if $form->{page_id};
+  my $order = $form->{order} ? '-asc' : '-desc';
+  $form->{order_by} ||= 'id';
 
   #restrict always to one domain
   my $pages_sql = ' page_id in(SELECT id FROM pages p WHERE p.domain_id ='
@@ -150,8 +155,7 @@ sub get_list {
   $where->{-and} =
     [\[$c->sql('read_permissions_sql'), $uid, $uid, $uid], \[$pages_sql]];
   my ($sql, @bind) =
-    $c->dbix->abstract->select('content', '*', $where,
-    [{-asc => 'sorting'}, {-desc => 'id'}]);
+    $c->dbix->abstract->select('content', '*', $where, [{$order => $form->{order_by}}]);
   $sql .= $c->sql_limit($form->{offset}, $form->{rows});
 
   $c->app->log->debug("\n\$sql: $sql\n" . "@bind\n\n");

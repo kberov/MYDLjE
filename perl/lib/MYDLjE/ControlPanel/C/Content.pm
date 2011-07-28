@@ -34,6 +34,7 @@ sub list_content {
   $form->{'language'} = $c->get_form_language($form->{'language'});
 
   $c->get_list($form);
+  $c->stash(form => $form);
   $c->render(template => 'content/list');
   return;
 }

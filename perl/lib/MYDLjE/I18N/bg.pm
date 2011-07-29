@@ -24,28 +24,33 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
 
   #Main left menu items
   #main_left_navigation.html.tt
-  Content        => 'Съдържание',
-  Pages          => 'Страници',
-  Books          => 'Книги',
-  Articles       => 'Статии',
-  Questions      => 'Въпроси',
-  Notes          => 'Бележки',
-  'I18N&L10N'    => 'I18N&L10N',
-  list_pages     => 'Списък със страници',
-  list_questions => 'Списък с questions',
-  list_answers   => 'Списък с отговори',
-  list_articles  => 'Списък със статии',
-  list_notes     => 'Списък с бележки',
-  list_books     => 'Списък с книги',
-  'New [_1]'     => 'Ново съдържание ([_1])',
-  'Edit [_1]'    => 'Редакция на съдържание ([_1])',
-  page           => 'Страница',
-  book           => 'Книга',
-  article        => 'Статия',
-  chapter        => 'Глава',
-  question       => 'Въпрос',
-  answer         => 'Отговор',
-  note           => 'Бележка',
+  Content             => 'Съдържание',
+  Pages               => 'Страници',
+  Books               => 'Книги',
+  Articles            => 'Статии',
+  Questions           => 'Въпроси',
+  Notes               => 'Бележки',
+  'I18N&L10N'         => 'I18N&L10N',
+  list_pages          => 'Списък със страници',
+  list_questions      => 'Списък с въпроси',
+  list_answers        => 'Списък с отговори',
+  list_articles       => 'Списък със статии',
+  list_notes          => 'Списък с бележки',
+  list_books          => 'Списък с книги',
+  list_list           => 'Списък с всякакво съдържание',
+  'New [_1]'          => 'Ново съдържание ([_1])',
+  'Edit [_1]'         => 'Редакция на съдържание ([_1])',
+  page                => 'Страница',
+  book                => 'Книга',
+  article             => 'Статия',
+  chapter             => 'Глава',
+  question            => 'Въпрос',
+  answer              => 'Отговор',
+  note                => 'Бележка',
+  Stores              => 'Магазини',
+  Merchants           => 'Търговци',
+  Products            => 'Продукти',
+  'Rules and Coupons' => 'Правила и Купони',
 
   #MYDLjE::M::Content fields
   title => 'Заглавие/Име',
@@ -157,7 +162,9 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
     'Сигурни ли сте, че искате да изтриете домейна "[_1]"? Това ще изтрие всички страници и съдържание в него! Всичко ще бъде загубено завинаги!',
   delete_page_confirm_message =>
     'Сигурни ли сте, че искате да изтриете страницата "[_1]"? Това ще изтрие също всички под-страници и съдържание в тях! Всичко ще бъде загубено завинаги!',
-
+  Save             => 'Запис',
+  'Save and close' => 'Запис и затваряне',
+  Reset            => 'Нулиране'
 );
 
 1;

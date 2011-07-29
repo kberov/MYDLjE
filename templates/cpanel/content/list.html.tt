@@ -1,8 +1,8 @@
 [% WRAPPER ${TEMPLATE_WRAPPER};
   PROCESS 'site/page_options.tt';
   PROCESS 'content/content_options.tt';
-  data_type_options.unshift({ label => '', value => 'All types' });
-  language_options.unshift({ label => '', value => 'All languages' });
+  data_type_options.unshift({ label =>'All types', value => ''});
+  language_options.unshift({ label => 'All languages', value => '' });
   order_options =[
   {label => 'DESC', value =>0  },
   {label => 'ASC', value => 1 }

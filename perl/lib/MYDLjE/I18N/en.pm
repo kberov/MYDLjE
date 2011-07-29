@@ -20,6 +20,7 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   list_articles     => 'List of articles',
   list_notes        => 'List of notes',
   list_books        => 'List of books',
+  list_list         => 'List of any content',
   page              => 'Page',
   book              => 'Book',
   article           => 'Article',

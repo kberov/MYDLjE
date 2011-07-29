@@ -22,7 +22,7 @@ FOR option IN fields_ui_data.data_format;
   data_format_options.push({label => option, value => option});
 END;
 order_by_options = [
-  {label => '', value => 'Please select'},
+  {label => 'Please select', value => ''},
   {label => sorting, value => 'sorting'},
   {label => id, value => 'id'},
   {label => title, value => 'title'},

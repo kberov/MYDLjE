@@ -46,3 +46,4 @@ script_sections = NAME | USAGE | OPTIONS | AUTHOR
 
 [Variables::ProhibitPackageVars]
 add_packages = Carp
+[CodeLayout::ProhibitHardTabs]

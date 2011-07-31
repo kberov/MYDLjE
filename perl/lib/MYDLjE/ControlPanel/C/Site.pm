@@ -150,8 +150,8 @@ sub persist_domain_id {
 sub edit_page {
   my $c = shift;
   require MYDLjE::M::Content::Page;
-  my $id      = $c->stash('id');
-  $c->stash('current_page_id',$id||0);
+  my $id = $c->stash('id');
+  $c->stash('current_page_id', $id || 0);
   my $page    = MYDLjE::M::Page->new;
   my $content = MYDLjE::M::Content::Page->new;
   my $user    = $c->msession->user;
@@ -188,6 +188,7 @@ sub edit_page {
   else {    #new
 
   }
+
   #prefill form but keep existing params
   $form = {
     (map { 'content.' . $_ => $content->$_() } @{$content->COLUMNS}),

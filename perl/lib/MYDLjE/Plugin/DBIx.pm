@@ -91,7 +91,7 @@ sub dbix {
       prepare => sub {
         my ($dbh, $query, $attrs) = @_;
 
-        #$app && $app->log->debug("Preparing query:\n$query\n");
+        $app && $app->log->debug("Preparing query:\n$query\n");
         return;
       },
     };

@@ -258,7 +258,8 @@ name="[% name_and_id %]" value="[% params.value %]" />
     </div>
     <div class="elastic column"  id="[% name_and_id _ '_field_column' %]">
       <div class="container field">
-      <table id="[% name_and_id _ '_ptable' %]" class="ui-widget-content ui-corner-all permissions">
+      <table id="[% name_and_id _ '_ptable' %]" 
+        class="ui-widget-content ui-corner-all permissions">
         <tbody >
             <tr>
             <th>[% c.l('Record Type') %]</th>
@@ -273,21 +274,39 @@ name="[% name_and_id %]" value="[% params.value %]" />
             <tr><th> </th><th>Read</th><th>Write</th><th>Execute</th></tr>
             <tr>
                 <th>Owner</th>
-                <td><input name="[% name_and_id %]_owner_read" type="checkbox" value="r"/></td>
-                <td><input name="[% name_and_id %]_owner_write" type="checkbox" value="w"/></td>
-                <td><input name="[% name_and_id %]_owner_execute" type="checkbox" value="x"/></td>
+                <td><input name="[% name_and_id %]_owner_read" 
+                [% params.value.match('^[ld\-]r') ? ' checked="checked" ':' ' %]
+                type="checkbox" value="r"/></td>
+                <td><input name="[% name_and_id %]_owner_write" 
+                [% params.value.match('^[ld\-]rw') ? ' checked="checked" ':' ' %]
+                type="checkbox" value="w"/></td>
+                <td><input name="[% name_and_id %]_owner_execute" 
+                [% params.value.match('^[ld\-][rw-]{2}x') ? ' checked="checked" ':' ' %]
+                type="checkbox" value="x"/></td>
             </tr>
             <tr>
                 <th>Group</th>
-                <td><input name="[% name_and_id %]_group_read" type="checkbox" value="r"/></td>
-                <td><input name="[% name_and_id %]_group_write" type="checkbox" value="w"/></td>
-                <td><input name="[% name_and_id %]_group_execute" type="checkbox" value="x"/></td>
+                <td><input name="[% name_and_id %]_group_read" 
+                [% params.value.match('^[ld\-][rwx-]{3}r') ? ' checked="checked" ':' ' %]
+                type="checkbox" value="r"/></td>
+                <td><input name="[% name_and_id %]_group_write" 
+                [% params.value.match('^[ld\-][rwx-]{3}rw') ? ' checked="checked" ':' ' %]
+                type="checkbox" value="w"/></td>
+                <td><input name="[% name_and_id %]_group_execute" 
+                [% params.value.match('^[ld\-][rwx-]{3}[rw-]{2}x') ? ' checked="checked" ':' ' %]
+                type="checkbox" value="x"/></td>
             </tr>
             <tr>
                 <th>Others</th>
-                <td><input name="[% name_and_id %]_others_read" type="checkbox" value="r"/></td>
-                <td><input name="[% name_and_id %]_others_write" type="checkbox" value="w"/></td>
-                <td><input name="[% name_and_id %]_others_execute" type="checkbox" value="x"/></td>
+                <td><input name="[% name_and_id %]_others_read" 
+                [% params.value.match('^[ld\-][rwx-]{3}[rwx-]{3}r') ? ' checked="checked" ':' ' %]
+                type="checkbox" value="r"/></td>
+                <td><input name="[% name_and_id %]_others_write" 
+                [% params.value.match('^[ld\-][rwx-]{3}[rwx-]{3}rw') ? ' checked="checked" ':' ' %]
+                type="checkbox" value="w"/></td>
+                <td><input name="[% name_and_id %]_others_execute" 
+                [% params.value.match('^[ld\-][rwx-]{3}[rwx-]{3}[rw-]{2}x') ? ' checked="checked" ':' ' %]
+                type="checkbox" value="x"/></td>
             </tr>
             <tr>
               <td colspan="4">
@@ -314,7 +333,8 @@ $(window).load(function() {
     $(permissions).removeClass('ui-state-default');
     $(permissions).addClass('ui-state-disabled');
     $(permissions).css({border:'none','font-family':'monospace'});
-    
+    /**
+    TT is doing this on the server side now
     var cvalues = $(permissions).val()
     .match(/^([ld\-])([r\-])([w\-])([x\-])([r\-])([w\-])([x\-])([r\-])([w\-])([x\-])$/);
     
@@ -325,6 +345,7 @@ $(window).load(function() {
           $(this).prop("checked","checked");
         i++;
     });
+    */
     $(checkboxes +', ' + pselect).change(function() {
         var pvalue = '';
         $(checkboxes).each(function() {

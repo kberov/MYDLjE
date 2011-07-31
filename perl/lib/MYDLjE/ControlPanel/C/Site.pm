@@ -151,6 +151,7 @@ sub edit_page {
   my $c = shift;
   require MYDLjE::M::Content::Page;
   my $id      = $c->stash('id');
+  $c->stash('current_page_id',$id||0);
   my $page    = MYDLjE::M::Page->new;
   my $content = MYDLjE::M::Content::Page->new;
   my $user    = $c->msession->user;
@@ -187,7 +188,6 @@ sub edit_page {
   else {    #new
 
   }
-
   #prefill form but keep existing params
   $form = {
     (map { 'content.' . $_ => $content->$_() } @{$content->COLUMNS}),
@@ -349,11 +349,11 @@ sub traverse_children {
   my $user_id     = $user->id;
   my $pages       = $c->dbix->query($c->sql('writable_pages_select_menu'),
     $pid, $domain_id, $id, $user_id, $user_id, $user_id)->hashes;
-  $id = ($c->stash('id') || 0);
+  $id = $c->stash('current_page_id');
   if (@$pages) {
-
+    my $disable = ($c->stash('controller') eq 'site');
     foreach my $page (@$pages) {
-      if ($page->{value} == $id || $page->{permissions} =~ /^l/x) {
+      if (($disable && $page->{value} == $id) || $page->{permissions} =~ /^l/x) {
         $page->{disabled} = 1;
       }
       $page->{css_classes} = "level_$depth $page->{page_type}";

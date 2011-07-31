@@ -30,12 +30,45 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   note              => 'Note',
 
   #MYDLjE::M::Content fields
-  title        => 'Title/Name',
-  tags         => 'Tags',
-  featured     => 'Featured',
-  sorting      => 'Sorting',
-  data_type    => 'Semantic Type',
-  data_format  => 'Data Format',
+  title       => 'Title/Name',
+  tags        => 'Tags',
+  featured    => 'Featured',
+  sorting     => 'Sorting',
+  data_type   => 'Semantic Type',
+  data_format => 'Data Format',
+  data_format_help =>
+
+    'MYDLjE content is stored in different text formats '
+    . '(markup languages): *html*, *text*, *textile*, *markdown*, *pod*, *template*. '
+    . 'The format designates how the content will be processed before '
+    . 'being displayed to the site users. ' . "\n\n"
+    . 'bq. HTML: Will be converted to valid XHTML and displayed.' . "\n\n"
+    . 'bq. TEXT: Will be formatted minimally. Every new line designates a new paragraph.'
+    . "\n\n"
+    . 'bq. TEXTILE: Will be processed by the *textile* processor '
+    . '("Text::Textile":http://search.cpan.org/dist/Text-Textile/). '
+    . 'See "examples on Wikipedia":http://en.wikipedia.org/wiki/Textile_%28markup_language%29 '
+    . 'and "This reference":http://redcloth.org/hobix.com/textile/.' . "\n\n"
+    . 'bq. MARKDOWN: This is another popular text markup, similar to the one above. '
+    . 'It will be processed by the *markdown* processor '
+    . '("Text::MultiMarkdown":http://search.cpan.org/dist/Text-MultiMarkdown/). '
+    . 'See "examples on Wikipedia":http://en.wikipedia.org/wiki/Markdown '
+    . ' and "the original syntax":http://daringfireball.net/projects/markdown/syntax/.'
+    . "\n\n"
+    . 'bq. POD(Plain Old Documentation): Format, '
+    . 'for writing documentation for Perl programs. '
+    . 'It can be used safely for any type of structured text. '
+    . 'See "perlpod":http://perldoc.perl.org/perlpod.html and'
+    . ' "the specification":http://perldoc.perl.org/perlpodspec.html.' . "\n\n"
+    . 'bq. TEMPLATE(Template::Toolkit): This is a mini-language, '
+    . 'used by MYDLjE for its templates. '
+    . 'Use this format to write mini-programs directly in the pages. '
+    . 'MYDLjE uses the implementation '
+    . '"Template::Alloy::TT":http://search.cpan.org/dist/Template-Alloy/lib/Template/Alloy/TT.pm.'
+    . ' See also "the original syntax page"'
+    . ':http://template-toolkit.org/docs/manual/Syntax.html. '
+    . ' To use maximally template features you need to know how MYDLjE works.' . "\n\n",
+
   time_created => 'Created on',
   tstamp       => 'Changed on',
   body         => 'Content (body)',
@@ -55,8 +88,10 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   order_by  => 'Order by',
   order     => 'Order',
 
-  ASC  => 'Ascending',
-  DESC => 'Descending',
+  ASC          => 'Ascending',
+  DESC         => 'Descending',
+  page_id      => 'Page',
+  page_id_help => 'Parent page for this record.',
 
   #textile
   page_type_help => 'MYDLjE has different type of pages. ' . "\n\n"

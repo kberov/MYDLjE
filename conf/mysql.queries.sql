@@ -36,6 +36,18 @@
         (SELECT ug.group_id FROM user_group ug WHERE ug.user_id= ? and ug.group_id=1)
   )
 -- ]]></query>
+-- <query name="writable_content_select_menu" params="pid,domain_id,id,user_id,user_id,user_id"><![CDATA[
+  SELECT id as value, alias as label, data_type, pid, permissions FROM content
+     WHERE pid=? AND pid !=? AND id>0  AND 
+  (
+    (user_id = ? AND permissions LIKE '_rw%')
+    OR ( group_id IN (SELECT group_id FROM user_group WHERE user_id= ?) 
+      AND permissions LIKE '____rw____')
+    OR permissions LIKE '_______rw_'
+    OR EXISTS 
+        (SELECT ug.group_id FROM user_group ug WHERE ug.user_id= ? and ug.group_id=1)
+  )
+-- ]]></query>
 -- <query name="delete_domain_content" params="domain_id"><![CDATA[
   DELETE FROM content WHERE page_id IN 
   (SELECT id FROM pages WHERE domain_id=?)

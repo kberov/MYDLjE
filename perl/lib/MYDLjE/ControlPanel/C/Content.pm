@@ -15,6 +15,7 @@ sub list_content {
   my $c    = shift;
   my $user = $c->msession->user;
   my $form = {@{$c->req->params->params}};
+  $c->stash('current_page_id', $form->{page_id} || 0);
   $form->{data_type} ||= '';
   if (!$form->{data_type} && $c->stash('action') !~ /list/) {
     $form->{data_type} = $c->stash('action');
@@ -48,91 +49,102 @@ sub list      { goto &list_content }
 
 #all types of content are edited using a single template(for now)
 sub edit {
-  my $c = shift;
+  my $c    = shift;
+  my $user = $c->msession->user;
 
   #TODO: be aware of HTTP_X_REQUESTED_WITH
   #$c->stash(TEMPLATE_WRAPPER => 'cpanel/layouts/'
   #    . ucfirst($c->stash('controller')) . '/'
   #    . $c->stash('action')
   #    . '.tt');
-
   my $data_type = lc($c->req->param('data_type'));
   my $modules   = Mojo::Loader->search('MYDLjE::M::Content');
-  my $data_object;
-  for (@$modules) {
-    if ($_ =~ /\:$data_type$/xi) {
+  my $content;
+  for my $module (@$modules) {
+    if ($module =~ /$data_type$/xi) {
       $c->stash('data_type', $data_type);
-      Mojo::Loader->load($_);
-      my $class = ucfirst($data_type);
-      $class = "MYDLjE::M::Content::$class";
+      my $e = Mojo::Loader->load($module);
+      Mojo::Exception->throw($e) if $e;
       if ($c->stash('id')) {
-        $data_object = $class->select(id => $c->stash('id'));
+        $content = $module->select(id => $c->stash('id'));
       }
       else {
-        $data_object = $class->new();
+        $content = $module->new();
       }
-      $c->stash('data_object', $data_object);
+      $c->stash('content', $content);
       last;
     }
   }
+  $c->stash('current_page_id', $content->page_id || 0);
+  $c->stash(page_id_options => $c->set_page_pid_options($user));
+  $c->stash(pid_options     => $c->set_pid_options($user));
 
   if ($c->req->method eq 'POST') {
-    $c->_edit_post();
+    $c->_save_content($user);
   }
   else {
-    $c->stash(form => $data_object->data);
-
+    $c->stash(form => $content->data);
   }
   $c->render();
   return;
 }
 
 #handles POST. Saves form data using the appropriate Content object
-sub _edit_post {
-  my ($c) = @_;
-  my $app = $c->app;
-
-  #$app->log->debug($c->dumper($c->req->body_params->to_hash));
+sub _save_content {
+  my ($c, $user) = @_;
+  my $app  = $c->app;
+  my $form = {@{$c->req->params->params}};
 
   #validate
   #TODO: Implement FIELDS_VALIDATION like in MYDLjE::M
-  my $fields_ui_data = $app->config('MYDLjE::Content::Form::ui');
-  my $v              = $c->create_validator;
-  $v->field('title')->required(1)->inflate(
-    sub {
-      Mojo::DOM->new->parse(shift->value)->text;
-    }
-  )->length(3, 255);
-  $v->field('description')->length(0, 255);
-  $v->field('data_type')->in(@{$fields_ui_data->{data_type}});
-  $v->field('data_format')->in(@{$fields_ui_data->{data_format}});
-  $v->field('language')->in(@{$app->config('languages')});
-  my $form = $c->req->body_params->to_hash;
-  $form->{id} = $form->{id}[0]
-    if (ref($form->{id}) && ref($form->{id}) eq 'ARRAY');
-  my $ok = $c->validate($v, $form);
-  $app->log->debug($c->dumper($c->stash('validator_errors'), $v->errors));
-  $c->stash('form', {%$form, %{$v->values}});
-  $form = $c->stash('form');
-
-  return unless $ok;
+  return unless $c->_validate_content($form);
 
   #save
-  my $data_object = $c->stash('data_object');
-  $data_object->data($form);
-
-  #new content needs alias
-  if ($form->{id} == 0) {
-    $data_object->alias();    #internally setting alias
-    $data_object->time_created;
+  my $content = $c->stash('content');
+  foreach my $attr (@{$content->COLUMNS}) {
+    if (exists $form->{$attr}) {
+      $content->$attr($form->{$attr});
+    }
   }
-
-  my $user = $c->msession->user;
-  $data_object->user_id($user->id)->group_id($user->group_id)->tstamp;
-  $data_object->save();
-  $form = {%$form, %{$data_object->data}};
-  $c->stash(id => $data_object->id);
+  unless ($c->stash->{id}) {
+    $content->user_id($user->id);
+    $content->group_id($user->group_id);
+  }
+  $content->tstamp;
+  $content->save();
+  $form = {%$form, %{$content->data}};
+  $c->stash(id => $content->id);
+  if (exists $form->{save_and_close}) {
+    $c->redirect_to('/content/' . $content->data_type . 's');
+  }
   return;
+}
+
+sub _validate_content {
+  my ($c, $form) = @_;
+  my $content        = $c->stash->{content};
+  my $config         = $c->app->config;
+  my $fields_ui_data = $config->{'MYDLjE::Content::Form::ui'};
+  my $v              = $c->create_validator;
+  $v->field('title')->required(1)->inflate(\&MYDLjE::M::no_markup_inflate)
+    ->length(3, 255)->message($c->l('The field [_1] is required!', $c->l('title')));
+  unless ($form->{'alias'}) {
+    $form->{'alias'} = MYDLjE::Unidecode::unidecode($form->{'title'});
+  }
+  $v->field('alias')->regexp($content->FIELDS_VALIDATION->{alias}{regexp})
+    ->message('Please enter valid alias!');
+  $v->field('description')->inflate(\&MYDLjE::M::no_markup_inflate)->length(0, 255);
+  $v->field('data_type')->in(@{$fields_ui_data->{data_type}});
+  $v->field('data_format')->in(@{$fields_ui_data->{data_format}});
+  $v->field('language')->in(@{$config->{languages}})
+    ->message(
+    $c->l('Please use one of the availabe languages or first add a new language!'));
+  $form->{'permissions'} ||= $content->permissions;
+  $v->field('permissions')->regexp($content->FIELDS_VALIDATION->{permissions}{regexp});
+  my $ok = $c->validate($v, $form);
+  $c->stash(form => {%$form, %{$v->values}});
+
+  return $ok;
 }
 
 sub get_list {
@@ -159,11 +171,46 @@ sub get_list {
     $c->dbix->abstract->select('content', '*', $where, [{$order => $form->{order_by}}]);
   $sql .= $c->sql_limit($form->{offset}, $form->{rows});
 
-  $c->app->log->debug("\n\$sql: $sql\n" . "@bind\n\n");
+  #$c->app->log->debug("\n\$sql: $sql\n" . "@bind\n\n");
   $c->stash('list_data' => [$c->dbix->query($sql, @bind)->hashes]);
 
   #$c->app->log->debug($c->dumper($c->stash('list_data')));
 
+  return;
+}
+
+#prepares an hierarshical looking list for pid select_field
+sub set_pid_options {
+  my ($c, $user) = @_;
+  my $pid_options = [{label => '/', value => 0}];
+  $c->traverse_content_children($user, 0, $pid_options, 0);
+  return $pid_options;
+}
+
+sub traverse_content_children {
+  my ($c, $user, $pid, $pid_options, $depth) = @_;
+
+  #hack to make the SQL work the first time this method is called
+  my $id = ($depth == 0) ? time : 0;
+
+  #Be reasonable and prevent deadly recursion
+  $depth++;
+  return if $depth > 10;
+  my $user_id = $user->id;
+  my $elems   = $c->dbix->query($c->sql('writable_content_select_menu'),
+    $pid, $id, $user_id, $user_id, $user_id)->hashes;
+  $id = ($c->stash('id') || 0);
+  if (@$elems) {
+
+    foreach my $elem (@$elems) {
+      if ($elem->{value} == $id || $elem->{permissions} =~ /^l/x) {
+        $elem->{disabled} = 1;
+      }
+      $elem->{css_classes} = "level_$depth $elem->{data_type}";
+      push @$pid_options, $elem;
+      $c->traverse_content_children($user, $elem->{value}, $pid_options, $depth);
+    }
+  }
   return;
 }
 1;

@@ -93,60 +93,6 @@ $(window).load(function() {
 });
 //]]>
 </script>
-  
-  <div id="edit-form-dialog"
-       title="[% c.l('New [_1]', c.l(data_type) ) %]"
-       style="display:none">
-    <iframe id="edit-form-dialog-iframe" src="about:blank"></iframe>
-  </div>
-[%#
-TODO: Make a dialog for each data type that may be in the content list of this page 
-Make it work in the same window only usin JS.
-Do not retreive data_type from STASH as it it now.
-%]
-<script  type="text/javascript">//<![CDATA[
-function open_edit_dialog(){
-//$(".ui-dialog-titlebar").hide();
-$('#edit-form-dialog-iframe').attr('src',$("#[%'new_' _ data_type %]").attr('href'));
-$('#edit-form-dialog').dialog( 'open' );
-$('#ui-dialog-title-edit-form-dialog').css({
-    'background-image': 'url(pub/css/icons/[% data_type %]_add.png)',
-    'background-repeat':'no-repeat',
-    'padding-left': '22px',
-    'display': 'inline-block'
-});
-}
-function save_data(){
-  var edit_content_form = $('#edit-form-dialog-iframe').contents().find('#edit_content_form');
-  edit_content_form.trigger('submit');
-}
-//end open_edit_dialog()
-$(window).load(function() {
-    $("#[%'new_' _ data_type %]").click(function(){open_edit_dialog(); return false});
-    $( '#edit-form-dialog' ).dialog({
-        autoOpen: false,
-        modal: true,
-        minHeight: 300,
-        minWidth: 450,
-        height: $(window).height() -20,
-        width: $(window).width()-150,
-        buttons: {
-          "[% c.l('Save') %]": function() {
-            save_data();
-          },
-          "[% c.l('Save and close') %]": function() {
-            save_data();
-            $( this ).dialog( "close" );
-          },
-          "[% c.l('Cancel') %]": function() {
-            $( this ).dialog( "close" );
-          }
-        }
-			
-    })
-});
-//]]>
-</script>
 </div><!-- end div id="[% action %]-area" -->
 <!-- end [%+ action %] -->
 [% END %]

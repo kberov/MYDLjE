@@ -76,6 +76,9 @@ form .column .ui-state-error{
   font-size: small;
   font-weight: normal !important;
 }
+.help a {
+  text-decoration: underline !important;
+}
 
 #menu_languages .active {
 border:1px outset silver;
@@ -140,13 +143,6 @@ form#edit_content_form input#sorting {
 width:50px;
 }
 
-#keywords_field_column {
-width:250px!important;
-}
-
-#keywords_field_column input {
-width:250px;
-}
 
 #edit_content_form #description_field_column {
 max-width:400px;

@@ -30,6 +30,12 @@ sub cancel {
   return;
 }
 
+sub detect {
+  my $try = $ENV{MOJO_IOWATCHER} || 'Mojo::IOWatcher::EV';
+  return $try if eval "use $try; 1";
+  return 'Mojo::IOWatcher';
+}
+
 sub is_readable {
   my ($self, $handle) = @_;
 
@@ -50,7 +56,7 @@ sub not_writing {
   my $poll = $self->_poll;
   $poll->remove($handle)
     if delete $self->{handles}->{fileno $handle}->{writing};
-  $poll->mask($handle, $self->POLLIN);
+  $poll->mask($handle, POLLIN);
 
   return $self;
 }
@@ -59,8 +65,17 @@ sub not_writing {
 sub one_tick {
   my ($self, $timeout) = @_;
 
-  # IO
-  $self->watch($timeout);
+  # I/O
+  my $poll = $self->_poll;
+  $poll->poll($timeout);
+  my $handles = $self->{handles};
+  $self->_sandbox('Read', $handles->{fileno $_}->{on_readable}, $_)
+    for $poll->handles(POLLIN | POLLHUP | POLLERR);
+  $self->_sandbox('Write', $handles->{fileno $_}->{on_writable}, $_)
+    for $poll->handles(POLLOUT);
+
+  # Wait for timeout
+  usleep 1000000 * $timeout unless keys %{$self->{handles}};
 
   # Timers
   my $timers = $self->{timers} || {};
@@ -82,10 +97,7 @@ sub one_tick {
   }
 }
 
-sub recurring {
-  my $self = shift;
-  $self->_event(timers => pop, after => pop, recurring => time);
-}
+sub recurring { shift->_timer(pop, after => pop, recurring => time) }
 
 sub remove {
   my ($self, $handle) = @_;
@@ -96,48 +108,25 @@ sub remove {
 
 # "Bart, how did you get a cellphone?
 #  The same way you got me, by accident on a golf course."
-sub timer {
-  my $self = shift;
-  $self->_event(timers => pop, after => pop, started => time);
-}
-
-sub watch {
-  my ($self, $timeout) = @_;
-
-  # Check for IO events
-  my $poll = $self->_poll;
-  $poll->poll($timeout);
-  my $handles = $self->{handles};
-  $self->_sandbox('Read', $handles->{fileno $_}->{on_readable}, $_)
-    for $poll->handles($self->POLLIN | $self->POLLHUP | $self->POLLERR);
-  $self->_sandbox('Write', $handles->{fileno $_}->{on_writable}, $_)
-    for $poll->handles($self->POLLOUT);
-
-  # Wait for timeout
-  usleep 1000000 * $timeout unless keys %{$self->{handles}};
-}
+sub timer { shift->_timer(pop, after => pop, started => time) }
 
 sub writing {
   my ($self, $handle) = @_;
 
   my $poll = $self->_poll;
   $poll->remove($handle);
-  $poll->mask($handle, $self->POLLIN | $self->POLLOUT);
+  $poll->mask($handle, POLLIN | POLLOUT);
   $self->{handles}->{fileno $handle}->{writing} = 1;
 
   return $self;
 }
 
-sub _event {
+sub _timer {
   my $self = shift;
-  my $pool = shift;
   my $cb   = shift;
-
-  # Events have an id for easy removal
-  my $e = {cb => $cb, @_};
-  (my $id) = "$e" =~ /0x([\da-f]+)/;
-  $self->{$pool}->{$id} = $e;
-
+  my $t    = {cb => $cb, @_};
+  (my $id) = "$t" =~ /0x([\da-f]+)/;
+  $self->{timers}->{$id} = $t;
   return $id;
 }
 
@@ -155,13 +144,13 @@ __END__
 
 =head1 NAME
 
-Mojo::IOWatcher - Async IO Watcher
+Mojo::IOWatcher - Async I/O Watcher
 
 =head1 SYNOPSIS
 
   use Mojo::IOWatcher;
 
-  # Watch if io handles become readable or writable
+  # Watch if I/O handles become readable or writable
   my $watcher = Mojo::IOWatcher->new;
   $watcher->add($handle, on_readable => sub {
     my ($watcher, $handle) = @_;
@@ -180,10 +169,9 @@ Mojo::IOWatcher - Async IO Watcher
 
 =head1 DESCRIPTION
 
-L<Mojo::IOWatcher> is a minimalistic async io watcher and the foundation of
+L<Mojo::IOWatcher> is a minimalistic async I/O watcher and the foundation of
 L<Mojo::IOLoop>.
-L<Mojo::IOWatcher::KQueue> and L<Mojo::IOWatcher::Epoll> are good examples
-for its extensibility.
+L<Mojo::IOWatcher::EV> is a good example for its extensibility.
 Note that this module is EXPERIMENTAL and might change without warning!
 
 =head1 METHODS
@@ -195,7 +183,7 @@ following new ones.
 
   $watcher = $watcher->add($handle, on_readable => sub {...});
 
-Add handles and watch for io events.
+Add handles and watch for I/O events.
 
 These options are currently available:
 
@@ -217,6 +205,14 @@ Callback to be invoked once the handle becomes writable.
 
 Cancel timer.
 
+=head2 C<detect>
+
+  my $class = Mojo::IOWatcher->detect;
+
+Detect and load the best watcher implementation available, will try the value
+of the C<MOJO_IOWATCHER> environment variable or L<Mojo::IOWatcher::EV>.
+Note that this method is EXPERIMENTAL and might change without warning!
+
 =head2 C<is_readable>
 
   my $readable = $watcher->is_readable($handle);
@@ -234,7 +230,7 @@ Only watch handle for readable events.
 
   $watcher->one_tick('0.25');
 
-Run for exactly one tick and watch for io and timer events.
+Run for exactly one tick and watch for I/O and timer events.
 
 =head2 C<recurring>
 
@@ -254,12 +250,6 @@ Remove handle.
   my $id = $watcher->timer(3 => sub {...});
 
 Create a new timer, invoking the callback after a given amount of seconds.
-
-=head2 C<watch>
-
-  $watcher->watch('0.25');
-
-Run for exactly one tick and watch only for io events.
 
 =head2 C<writing>
 

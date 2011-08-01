@@ -51,8 +51,8 @@ sub run {
     'content=s' => sub { $content  = $_[1] },
     'header=s'  => \@headers,
     'method=s'  => sub { $method   = $_[1] },
-    'redirect'  => sub { $redirect = 1 },
-    'verbose'   => sub { $verbose  = 1 }
+    redirect    => sub { $redirect = 1 },
+    verbose     => sub { $verbose  = 1 }
   );
 
   # Headers
@@ -163,7 +163,7 @@ sub _select {
 
   # Commands
   my $done = 0;
-  while (my $command = shift @ARGV) {
+  while (defined(my $command = shift @ARGV)) {
 
     # Number
     if ($command =~ /^\d+$/) {

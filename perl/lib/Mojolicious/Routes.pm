@@ -212,6 +212,9 @@ sub over {
   return $self unless @_;
   my $conditions = ref $_[0] eq 'ARRAY' ? $_[0] : [@_];
   push @{$self->conditions}, @$conditions;
+  my $root = my $parent = $self;
+  while ($parent = $parent->parent) { $root = $parent }
+  $root->cache(0);
   return $self;
 }
 
@@ -674,12 +677,8 @@ The children of this routes object, used for nesting routes.
   my $cache = $r->cache;
   $r        = $r->cache(Mojo::Cache->new);
 
-Routing cache, by default a L<Mojo::Cache> object.
+Routing cache, defaults to a L<Mojo::Cache> object.
 Note that this attribute is EXPERIMENTAL and might change without warning!
-
-  $r->cache(0);
-
-Route caching can also be disabled with a false value.
 
 =head2 C<conditions>
 
@@ -743,8 +742,7 @@ Route has no specific end, remaining characters will be captured in C<path>.
   my $pattern = $r->pattern;
   $r          = $r->pattern(Mojolicious::Routes::Pattern->new);
 
-Pattern for this route, by default a L<Mojolicious::Routes::Pattern> object
-and used for matching.
+Pattern for this route, defaults to a L<Mojolicious::Routes::Pattern> object.
 
 =head2 C<shortcuts>
 
@@ -894,7 +892,7 @@ Note that the name C<current> is reserved for refering to the current route.
 
   $r = $r->over(foo => qr/\w+/);
 
-Apply condition parameters to this route.
+Apply condition parameters to this route and disable routing cache.
 
 =head2 C<parse>
 

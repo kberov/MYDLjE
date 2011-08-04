@@ -67,7 +67,10 @@
   [%  FOREACH row IN list_data %]
   <li class="[% row.data_type +%] ui-state-default"><div class="columns">
     <div class="fixed column">
-        <div class="container">[% row.title.substr(0,20)%]</div>
+        <div class="container">
+        <img src="pub/css/icons/[% row.data_type %].png" class="type_icon" />
+        [% row.title.substr(0,50)%]
+        </div>
     </div>
     <div class="elastic column">
         <div class="container buttons">
@@ -77,7 +80,7 @@
          class="edit_content"><span class="ui-icon"></span></a>
          <a href="[% c.url_for('/content/delete/' _ row.id ).query('data_type' => row.data_type ) %]"
          title="[% c.l('Delete [_1]', data_type ) %]"
-         id="[%'delete_' _ row.id _ row.data_type %]"
+         id="[%'delete_' _ row.data_type _ row.id %]"
          class="delete_content"><span class="ui-icon"></span></a>
         </div>
     </div>

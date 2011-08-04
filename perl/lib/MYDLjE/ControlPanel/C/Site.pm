@@ -332,7 +332,7 @@ sub _validate_page {
 #prepares an hierarshical looking list for page.pid select_field
 sub set_page_pid_options {
   my ($c, $user) = @_;
-  my $page_pid_options = [{label => '/', value => 0}];
+  my $page_pid_options = [{label => '/', value => 0, permissions => 'd---------'}];
   $c->traverse_children($user, 0, $page_pid_options, 0);
   return $page_pid_options;
 }
@@ -347,17 +347,22 @@ sub traverse_children {
   $depth++;
   return if $depth > 10;
   my ($domain_id) = $c->msession('domain_id');
-  my $user_id     = $user->id;
-  my $pages       = $c->dbix->query($c->sql('writable_pages_select_menu'),
+  my $user_id = $user->id;
+  my $disable = ($c->stash('controller') eq 'site');
+
+  if ($disable && $page_pid_options->[-1]{permissions} =~ /^[^d]/x) {
+    return;
+  }
+  my $pages = $c->dbix->query($c->sql('writable_pages_select_menu'),
     $pid, $domain_id, $id, $user_id, $user_id, $user_id)->hashes;
   $id = $c->stash('current_page_id');
   if (@$pages) {
-    my $disable = ($c->stash('controller') eq 'site');
     foreach my $page (@$pages) {
       if (($disable && $page->{value} == $id) || $page->{permissions} =~ /^l/x) {
         $page->{disabled} = 1;
       }
       $page->{css_classes} = "level_$depth $page->{page_type}";
+      $page->{label}       = $page->{label};
       push @$page_pid_options, $page;
       $c->traverse_children($user, $page->{value}, $page_pid_options, $depth);
     }

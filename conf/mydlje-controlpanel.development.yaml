@@ -113,6 +113,10 @@ main_left_navigation:
         icon: page.png
         route: /content/pages
       -
+        title: Bricks
+        icon: bricks.png
+        route: /content/bricks
+      -
         title: All types
         icon: zoom.png
         route: /content/list
@@ -198,6 +202,7 @@ MYDLjE::Content::Form::ui:
     - question
     - answer
     - note
+    - brick
   data_format:
     - text
     - textile

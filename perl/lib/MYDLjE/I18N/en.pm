@@ -28,6 +28,8 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   question          => 'Question',
   answer            => 'Answer',
   note              => 'Note',
+  brick             => 'Brick',
+  list_bricks       => 'Bricks',
 
   #MYDLjE::M::Content fields
   title       => 'Title/Name',
@@ -77,10 +79,13 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   group_id     => 'Group',
   protected    => 'Protected',
   bad          => 'Bad Content',
+  pid          => 'Parent',
 
   #TODO: use I18N::LangTags::List better
-  bg        => I18N::LangTags::List::name('bg'),
-  en        => I18N::LangTags::List::name('en'),
+  bg          => I18N::LangTags::List::name('bg'),
+  en          => I18N::LangTags::List::name('en'),
+  domain_help => 'You can manage several domains with just one instance of MYDLjE.'
+    . ' Every domain has its own pages. This way you can run several sites using just one Hosting account.',
   default   => 'Domain index-page',
   regular   => 'Regular',
   folder    => 'Folder',

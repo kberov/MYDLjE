@@ -25,9 +25,8 @@ sub _tags_inflate {
   my $filed = shift;
   my $value = $filed->value || '';
 
-  #$value =~ s/[^\p{IsAlnum}-\,\s]//gxi;
   $value = lc($value);
-  my @words = split /[^\p{IsAlnum}-]+/xi, $value;
+  my @words = split /[^\p{IsAlnum}\-_]+/xi, $value;
   $value = join ", ", @words;
   return $value;
 }
@@ -57,9 +56,12 @@ has FIELDS_VALIDATION => sub {
     keywords => {required => 0, inflate => \&_tags_inflate},
     $self->FIELD_DEF('description'),
     data_type => {
-      required => 1,
-      constraints =>
-        [{regexp => qr/^(page|question|answer|book|note|article|chapter|content)$/x},]
+      required    => 1,
+      constraints => [
+        { regexp =>
+            qr/^(page|question|answer|book|note|article|chapter|content|brick)$/x
+        },
+      ]
     },
     data_format => {
       required    => 1,

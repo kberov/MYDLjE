@@ -45,6 +45,7 @@ sub articles  { goto &list_content }
 sub questions { goto &list_content }
 sub answers   { goto &list_content }
 sub notes     { goto &list_content }
+sub bricks    { goto &list_content }
 sub list      { goto &list_content }
 
 #all types of content are edited using a single template(for now)
@@ -187,6 +188,7 @@ sub set_pid_options {
   return $pid_options;
 }
 
+#traverses only content which holds other content i.e permissions LIKE 'd%'
 sub traverse_content_children {
   my ($c, $user, $pid, $pid_options, $depth) = @_;
 
@@ -203,7 +205,7 @@ sub traverse_content_children {
   if (@$elems) {
 
     foreach my $elem (@$elems) {
-      if ($elem->{value} == $id || $elem->{permissions} =~ /^l/x) {
+      if ($elem->{value} == $id) {
         $elem->{disabled} = 1;
       }
       $elem->{css_classes} = "level_$depth $elem->{data_type}";

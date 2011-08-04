@@ -38,7 +38,7 @@
 -- ]]></query>
 -- <query name="writable_content_select_menu" params="pid,id,user_id,user_id,user_id"><![CDATA[
   SELECT id as value, alias as label, data_type, pid, permissions FROM content
-     WHERE pid=? AND pid !=? AND id>0  AND 
+     WHERE pid=? AND pid !=? AND id>0  AND permissions LIKE 'd%' AND 
   (
     (user_id = ? AND permissions LIKE '_rw%')
     OR ( group_id IN (SELECT group_id FROM user_group WHERE user_id= ?) 

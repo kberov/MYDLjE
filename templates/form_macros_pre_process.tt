@@ -266,8 +266,12 @@ name="[% name_and_id %]" value="[% params.value %]" />
                 <td colspan="3">
                     <select name="[% name_and_id %]_type">
                     <option value="-">[% c.l('Regular Record') %]</option>    
-                       <option value="l">[% c.l('Link') %]</option>
-                       <option value="d">[% c.l('Container') %]</option>
+                       <option 
+                       [% params.value.match('^l') ? ' selected="selected" ':' ' %]
+                       value="l">[% c.l('Link') %]</option>
+                       <option 
+                       [% params.value.match('^d') ? ' selected="selected" ':' ' %]
+                       value="d">[% c.l('Container') %]</option>
                     </select>
                 </td>
             </tr>

@@ -1,6 +1,6 @@
 package MYDLjE::ControlPanel::C::Site;
 use MYDLjE::Base 'MYDLjE::ControlPanel::C';
-use List::Util;
+use List::Util qw(first);
 use MYDLjE::M::Domain;
 use MYDLjE::M::Page;
 
@@ -20,10 +20,14 @@ sub domains {
 
     #choose default domain to work with for this session
     my $domain = $c->req->headers->host;
-    $c->msession(domain_id => List::Util::first { $_->{domain} eq $domain } @$domains);
+    $c->msession(
+      domain_id => (
+        first { $_->{domain} eq $domain || $domain eq 'www.' . $_->{domain} } @$domains
+        )->{id}
+    );
 
     #fallback to the last domain for this user
-    $c->msession('domain_id') or $c->msession(domain_id => $domains->[-1]{id});
+    defined $c->msession('domain_id') or $c->msession(domain_id => $domains->[-1]{id});
   }
   return;
 }
@@ -221,8 +225,7 @@ sub get_form_language {
     $language_field = $c->app->config('plugins')->{i18n}{default};
   }
   else {
-    $language_field =
-      (List::Util::first { $language_field eq $_ } @{$c->app->config('languages')});
+    $language_field = (first { $language_field eq $_ } @{$c->app->config('languages')});
   }
   return $language_field;
 }

@@ -50,12 +50,12 @@ function enhance_list_items() {
   var list_item = 'ul.items li';
   $(list_item).hover(
     function () {                                
-      $(this).removeClass("ui-state-default");
+      //$(this).removeClass("ui-state-default");
       $(this).addClass("ui-state-hover");
     },
     function () {
       $(this).removeClass("ui-state-hover");
-      $(this).addClass("ui-state-default");
+      //$(this).addClass("ui-state-default");
     }
   );
 }

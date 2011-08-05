@@ -175,6 +175,9 @@ ul.items li.page, ul.items li.domain, ul.items li.article {
 ul.items li.page:first-child, ul.items li.domain:first-child {
 border-top: 1px solid ;
 }
+#main-working-area ul.items li.ui-state-disabled {
+border-width: inherit;
+}
 
 ul.items li div.buttons {
   text-align: right;
@@ -210,6 +213,7 @@ ul.items li.note div.buttons a.delete_content span.ui-icon {
 ul.items li.brick div.buttons a.delete_content span.ui-icon {
   background-image: url(icons/brick_delete.png) ;
 }
+
 table.permissions {
   border-collapse:inherit;
 }
@@ -225,9 +229,11 @@ table.permissions th,table.permissions td {
 .ui-widget option, .ui-widget textarea, .ui-widget button, 
 #main-left-navigation #accordion a,
 .ui-state-default,.ui-state-hover,.ui-state-highlight,
+.ui-priority-secondary,.ui-state-disabled
 .ui-widget .ui-widget,.ui-widget {
   font-size:small
 }
+
 img.type_icon {
   margin-right: 5px;
 }

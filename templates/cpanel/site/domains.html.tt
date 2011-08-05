@@ -12,10 +12,15 @@
              style="background-image: url(pub/css/icons/world_add.png) "></span></a></span>
         </legend>
 <ul class="items">
-[% FOREACH d IN domains %]
-<li class="domain [%+ 
-d.published==1? 'ui-state-active':(d.published==2?'ui-state-highlight':'ui-state-default')
-%]">
+[% FOREACH d IN domains;
+    state = 'ui-state-disabled';
+    IF d.published == 1;
+      state = 'ui-state-default';
+    ELSIF d.published == 2;
+      state = 'ui-state-active';
+    END;
+%]
+<li class="domain [%+ state %]">
         <div class="columns">
             <div class="fixed column"><div class="container">[% d.domain %]</div></div>
             <div class="elastic column">

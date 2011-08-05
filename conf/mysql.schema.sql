@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS `sessions` (
 DROP TABLE IF EXISTS `domains`;
 CREATE TABLE IF NOT EXISTS `domains` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Id referenced by pages that belong to this domain.',
-  `domain` varchar(63) NOT NULL COMMENT 'Domain name as in $ENV{HTTP_HOST}',
+  `domain` varchar(63) NOT NULL COMMENT 'Domain name as in $ENV{HTTP_HOST}, but without "www.".',
   `name` varchar(63) NOT NULL COMMENT 'The name of this site.',
   `description` varchar(255) NOT NULL DEFAULT '' COMMENT 'Site description',
   `user_id` int(11) NOT NULL COMMENT  'User for which the permissions apply (owner).',

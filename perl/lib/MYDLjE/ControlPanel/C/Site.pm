@@ -17,7 +17,13 @@ sub domains {
     my $domains     = [$c->dbix->query($domains_SQL, $uid, $uid, $uid)->hashes];
     $c->stash(domains => $domains);
     $c->msession(domains => $domains);
-    $c->msession('domain_id', $domains->[-1]{id});    #default domain for this user
+
+    #choose default domain to work with for this session
+    my $domain = $c->req->headers->host;
+    $c->msession(domain_id => List::Util::first { $_->{domain} eq $domain } @$domains);
+
+    #fallback to the last domain for this user
+    $c->msession('domain_id') or $c->msession(domain_id => $domains->[-1]{id});
   }
   return;
 }

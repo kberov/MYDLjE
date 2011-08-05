@@ -81,7 +81,7 @@ AND
     $c->msession->sessiondata({});    #empty
     $c->msession->user($user);        #efficiently log in user
 
-    #TODO: add hook on_login to do stuff each tyme a user logs in
+    #TODO: add hook on_login to do stuff each time a user logs in
     require MYDLjE::ControlPanel::C::Site;
     $c->MYDLjE::ControlPanel::C::Site::domains();
     return 1;

@@ -348,7 +348,25 @@ sub _validate_system_config {
 
 __END__
 
+=encoding utf8
+
 =head1 NAME
 
 MYDLjE::Plugin::SystemSetup - Checks and actions during installation
+
+
+=head1 SEE ALSO
+
+L<MYDLjE::Plugin::Helpers>, 
+L<MYDLjE::Plugin::DBIx>,
+L<Mojolicious::Plugin>, 
+L<Mojolicious::Plugin::DefaultHelpers>
+
+
+=head1 AUTHOR AND COPYRIGHT
+
+(c) 2011 Красимир Беров L<k.berov@gmail.com>
+
+This code is licensed under LGPLv3.
+
 

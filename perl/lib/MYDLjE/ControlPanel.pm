@@ -11,7 +11,7 @@ sub startup {
   my $app = shift;
   $CONFIG = MYDLjE::Config->singleton(log => $app->log);
 
-  $app->static->root($app->home);
+  $app->static->root($app->home . $app->config('static_root'));
   $app->secret($app->config('secret'));
   $app->sessions->cookie_name($app->config('session_cookie_name'));
 

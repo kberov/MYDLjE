@@ -7,10 +7,14 @@ site_name: MYDLjE
 
 #humanity, smoothness, ui-lightness, redmond, your-own
 jq_ui_theme: humanity
+
 #supported languages:
 languages:
   - en
   - bg
+
+#static files served by MYDLjE
+static_root: /pub
 
 plugins:
   #plugin      Enabled: 1 / Disabled: 0 /Config:

@@ -20,14 +20,13 @@ sub domains {
 
     #choose default domain to work with for this session
     my $domain = $c->req->headers->host;
-    $c->msession(
-      domain_id => (
-        first { $_->{domain} eq $domain || $domain eq 'www.' . $_->{domain} } @$domains
-        )->{id}
-    );
+
+    # "example.com" =~ /example.com/ and "www.example.com" =~ /example.com/ etc.
+    $c->msession(domain_id => (first { $domain =~ /$_->{domain}/x } @$domains)->{id});
 
     #fallback to the last domain for this user
-    defined $c->msession('domain_id') or $c->msession(domain_id => $domains->[-1]{id});
+    $c->msession(domain_id => $domains->[-1]{id})
+      unless defined $c->msession('domain_id');
   }
   return;
 }

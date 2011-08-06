@@ -1,4 +1,4 @@
-package MYDLjE::I18N::en;
+package MYDLjE::I18N::ru;
 use base 'MYDLjE::I18N';
 use strict;
 use warnings;
@@ -82,10 +82,9 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   pid          => 'Parent',
 
   #TODO: use I18N::LangTags::List better
-  bg => I18N::LangTags::List::name('bg'),
-  en => I18N::LangTags::List::name('en'),
-  ru => I18N::LangTags::List::name('ru'),
-
+  bg          => I18N::LangTags::List::name('bg'),
+  en          => I18N::LangTags::List::name('en'),
+  ru          => I18N::LangTags::List::name('ru'),
   domain_help => 'You can manage several domains with just one instance of MYDLjE.'
     . ' Every domain has its own pages. This way you can run several sites using just one Hosting account.',
   default   => 'Domain index-page',

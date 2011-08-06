@@ -12,7 +12,7 @@ jq_ui_theme: humanity
 languages:
   - en
   - bg
-
+  - ru
 #static files served by MYDLjE
 static_root: /pub
 

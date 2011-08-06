@@ -3,6 +3,7 @@ use MYDLjE::Base 'MYDLjE::M';
 require MYDLjE::Unidecode;
 require Time::HiRes;
 require I18N::LangTags::List;
+use MYDLjE::Regexp qw(%MRE);
 
 local $Carp::CarpLevel = 1;
 
@@ -57,11 +58,7 @@ has FIELDS_VALIDATION => sub {
     $self->FIELD_DEF('description'),
     data_type => {
       required    => 1,
-      constraints => [
-        { regexp =>
-            qr/^(page|question|answer|book|note|article|chapter|content|brick)$/x
-        },
-      ]
+      constraints => [{regexp => qr/^$MRE{data_types}$/x},]
     },
     data_format => {
       required    => 1,

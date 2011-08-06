@@ -2,6 +2,7 @@ package MYDLjE::M;
 use MYDLjE::Base -base;
 use MojoX::Validator;
 use Carp();
+use MYDLjE::Regexp qw(%MRE);
 
 sub dbix { return MYDLjE::Plugin::DBIx::instance() }
 my $SQL   = {};
@@ -139,7 +140,7 @@ sub no_markup_inflate {
   my $value = $filed->value || '';
 
   #remove everything strange
-  $value =~ s/[^\p{IsAlnum}\,\s\-\!\.\?\(\);]//gx;
+  $value =~ s/$MRE{no_markup}//gx;
 
   #normalize spaces
   $value =~ s/\s+/ /gx;
@@ -206,18 +207,18 @@ my $FIELD_DEFS  = {
   alias     => {required => 1, regexp => qr/^[\-_a-zA-Z0-9]{2,255}$/x,},
   sorting => {
     required => 1,
-    regexp   => qr/^\d+$/x,
-    inflate  => sub { return ($_[0]->value || time()) },
+    %$id_regexp,
+    inflate => sub { return ($_[0]->value || time()) },
   },
   permissions => {
 
     #required => 1,
     inflate => sub { return $_[0]->value ? $_[0]->value : '-rwxr-xr-x'; },
     regexp => qr/^
-      [ld\-]          # is this a directory, link or a regular record ?
-      [r\-][w\-][x\-] # owner's permissions - (r)ead,(w)rite,e(x)ecute
-      [r\-][w\-][x\-] # group's permissions - (r)ead,(w)rite,e(x)ecute
-      [r\-][w\-][x\-] # other's permissions - (r)ead,(w)rite,e(x)ecute
+      $MRE{perms}{ldn} # is this a directory, link or a regular record ?
+      $MRE{perms}{rwx} # owner's permissions - (r)ead,(w)rite,e(x)ecute
+      $MRE{perms}{rwx} # group's permissions - (r)ead,(w)rite,e(x)ecute
+      $MRE{perms}{rwx} # other's permissions - (r)ead,(w)rite,e(x)ecute
       $/x,
   },
   user_id     => {required => 1, %$id_regexp},

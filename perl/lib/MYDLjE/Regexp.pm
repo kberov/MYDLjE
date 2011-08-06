@@ -62,3 +62,15 @@ a permissions regexp the keys are  C<ldn>, C<l>, C<d>, C<r>, C<w>, C<x> and C<rw
 
 =back
 
+=head1 SEE ALSO
+
+L<Regexp::Common>
+
+
+=head1 AUTHOR AND COPYRIGHT
+
+(c) 2011 Красимир Беров L<k.berov@gmail.com>
+
+This code is licensed under LGPLv3.
+
+

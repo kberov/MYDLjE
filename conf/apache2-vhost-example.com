@@ -1,0 +1,34 @@
+#File: apache2-vhost-example.com
+#
+#This is an Apache2 virtual host example configuration for MYDLjE.
+#It should be includded somewhere in the main httpd.conf
+#You should be familiar with Apache configuration.
+#Just replace "/var/www/MYDLjE" with the path to your MYDLjE Installation.
+#Also replace example.com with your domain.
+#Note the directive "AllowOverride All".
+#It allows the .htacces file in $MYDLjE_ROOT to do its job.
+<VirtualHost example.com>
+	ServerAdmin webmaster@example.com
+	ServerName example.com
+	ServerAlias www.example.com
+	DocumentRoot /var/www/MYDLjE
+	ErrorLog  /var/www/MYDLjE/log/example-error.log
+	CustomLog  /var/www/MYDLjE/log/example-access.log combined
+
+    # use .htaccess files for overriding,
+    AccessFileName .htaccess
+    # and never show them
+    <Files ~ "^\.ht">
+        Order allow,deny
+        Deny from all
+    </Files>
+
+    <Directory "/var/www/MYDLjE">
+	Options Indexes FollowSymLinks MultiViews
+	AllowOverride All		
+	#AllowOverride None
+	Order allow,deny
+	allow from all
+    </Directory>
+
+</VirtualHost>

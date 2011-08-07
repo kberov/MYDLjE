@@ -11,7 +11,7 @@ our $VERSION = '0.1';
 my $DBIX;    #DBIx::Simple instance
 my %COMMON_DBH_HANDLERS = (
   RaiseError  => 1,
-  HandleError => sub { Carp::confess(shift) },
+  HandleError => sub { Carp::croak(shift) },
   AutoCommit  => 1,
 );
 my $DRIVER_DBH_HANDLERS = {

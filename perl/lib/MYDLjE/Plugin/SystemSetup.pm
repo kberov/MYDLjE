@@ -117,7 +117,7 @@ sub system_config {
     $c->render(json => $c->stash);
     return;
   }
-  _init_database($c, $validator->values);
+  init_database($c->dbix, $c->app->log);
   _create_admin_user($c, $validator->values);
   _replace_index_xhtml($c);
   _save_config($c, $validator);
@@ -159,11 +159,10 @@ sub _save_config {
   return;
 }
 
-sub _init_database {
-  my ($c, $validator) = @_;
-  my $log = $c->app->log;
+sub init_database {
+  my ($dbix, $log) = @_;
   my $xml_sql =
-    Mojo::Asset::File->new(path => $c->app->home . '/conf/mysql.schema.sql')->slurp;
+    Mojo::Asset::File->new(path => $ENV{MOJO_HOME} . '/conf/mysql.schema.sql')->slurp;
   my $dom = Mojo::DOM->new;
   $dom->parse($xml_sql);
   my ($disable_foreign_key_checks) = $dom->at('#disable_foreign_key_checks');
@@ -171,7 +170,7 @@ sub _init_database {
   for (@start_init) {
 
     #$log->debug("do:$_");
-    $c->dbix->dbh->do($_);
+    $dbix->dbh->do($_);
   }
 
   # Loop over table|view tags with name attributes only
@@ -183,8 +182,8 @@ sub _init_database {
     #$log->debug("do:table/view[name]" . $e->attrs->{name});
     #$log->debug("do:table/view[name] text" . $e->text);
 
-    $c->dbix->dbh->do($drop)   if $drop;
-    $c->dbix->dbh->do($create) if $create;
+    $dbix->dbh->do($drop)   if $drop;
+    $dbix->dbh->do($create) if $create;
   }
   my ($constraints) = $dom->at('#constraints');
   my @constraints = split(/;/x, $constraints->text);
@@ -193,15 +192,15 @@ sub _init_database {
   foreach my $co (@constraints) {
 
     #$log->debug("do:#constraints:" . $co);
-    $c->dbix->dbh->do($co);
+    $dbix->dbh->do($co);
   }
   my ($enable_foreign_key_checks) = $dom->at('#enable_foreign_key_checks');
   my @end_init = split(/;/x, $enable_foreign_key_checks->text);
-  $c->dbix->dbh->do($_) for @end_init;
+  $dbix->dbh->do($_) for @end_init;
 
   #fill the tables with some initial data
   $xml_sql =
-    Mojo::Asset::File->new(path => $c->app->home . '/conf/mysql.data.sql')->slurp;
+    Mojo::Asset::File->new(path => $ENV{MOJO_HOME} . '/conf/mysql.data.sql')->slurp;
   $dom = Mojo::DOM->new;
   $dom->parse($xml_sql);
 
@@ -215,17 +214,9 @@ sub _init_database {
     $query =~ s/^\s*--.*?$//xmg;
 
     $query =~ s/\)\s*?;\s*?$/)/xg;    #beware... VALUES may contain ';'
-    $c->dbix->query($query);
+    $dbix->query($query);
   }
 
-  #update default domain
-  $c->dbix->update(
-    'domains',
-    { name   => $validator->{site_name},
-      domain => $c->req->headers->host
-    },
-    {id => 0}
-  );
   return;
 }
 

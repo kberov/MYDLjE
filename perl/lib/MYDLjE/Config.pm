@@ -88,6 +88,8 @@ sub singleton { return $CONFIG ||= shift->new(@_) }
 
 __END__
 
+=encoding utf8
+
 =head1 NAME
 
 MYDLjE::Config - use and manipulate system configuration files.

@@ -16,10 +16,11 @@ BEGIN{
 use lib ( "$ENV{MOJO_HOME}/perl/lib", "$ENV{MOJO_HOME}/perl/site/lib");
 
 # Check if Mojo is installed
-eval 'use Mojolicious::Commands';
+eval 'use MYDLjE::Commands';
 die <<EOF if $@;
-It looks like you don't have the Mojo Framework installed.
-Please visit http://mojolicious.org for detailed installation instructions.
+It looks like you don't have the MYDLjE Framework installed properly.
+Please visit https://github.com/kberov/MYDLjE#INSTALLATION 
+for installation instructions.
 
 EOF
 
@@ -27,7 +28,7 @@ EOF
 # Application
 $ENV{MOJO_APP} = 'MYDLjE';
 
-Mojolicious::Commands->start;
+MYDLjE::Commands->start;
 
 __END__
 

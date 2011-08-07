@@ -1,7 +1,13 @@
 #Example nginx configuration for MYDLjE.
 #Add the something like the following to your /etc/hosts file
 #127.0.0.2    example.com www.example.com cpanel.example.com mydlje.example.com
+#Modify this file as you need and put it in nginx conf directory.
+#Run the applications you need:
+#./cpanel daemon --listen "http://127.0.0.1:8081"
+#./site daemon --listen "http://127.0.0.1:8082"
+#restart nginx.
 
+###################
 upstream mydlje {
     server 127.0.0.1:8080;
 }

@@ -118,7 +118,7 @@ sub system_config {
     return;
   }
   init_database($c->dbix, $c->app->log);
-  _create_admin_user($c, $validator->values);
+  create_admin_user($c->dbix, $validator->values);
   _replace_index_xhtml($c);
   _save_config($c, $validator);
 
@@ -220,8 +220,8 @@ sub init_database {
   return;
 }
 
-sub _create_admin_user {
-  my ($c, $values) = @_;
+sub create_admin_user {
+  my ($dbix, $values) = @_;
 
   #$c->app->log->debug($c->dumper($c->stash));
   require MYDLjE::M::User;
@@ -233,14 +233,14 @@ sub _create_admin_user {
   );
 
   #change existing "admin" password
-  $c->dbix->update(
+  $dbix->update(
     'users',
     {login_password => Mojo::Util::md5_sum(rand(Time::HiRes::time()))},
     {login_name     => 'admin'}
   );
 
   #change existing "guest" password
-  $c->dbix->update(
+  $dbix->update(
     'users',
     {login_password => Mojo::Util::md5_sum(rand(0.1 + Time::HiRes::time()))},
     {login_name     => 'guest'}

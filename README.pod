@@ -57,7 +57,7 @@ To make sure, send the above-mentioned list to your (potential) hosting provider
 =item 2 Create a database using the example found in I<conf/mysql.schema.sql> or use the 
 tool (PHPMyAdmin) provided by your hosting provider
 
-=item 3 Use your browser to access B<index.xhtml> - see L</SETUP>.
+=item 3 Use your browser to access B<index.xhtml> or setup via commandline - see L</SETUP>.
 
 =item 4 Check the system and troubleshoot :) if needed. Look at the apache error-log and log/development.log.
 
@@ -83,17 +83,17 @@ Write me a message and we can define together a specific enough task.
 
 =over
 
-=item * Implement the Domains Management controllers (mostlly done);
+=item * Implement the Domains Management controllers (done);
 
-=item * Implement the Pages Management controllers (in progress);
+=item * Implement the Pages Management controllers (done);
 
-=item * Implement the Content Management controllers (in progress);
+=item * Implement the Content Management controllers (mostly done);
 
-=item * Implement Applications/Plugins Management controllers;
+=item * Implement Applications/Plugins Management controllers (later);
 
-=item * Implement the Configuration Management controller;
+=item * Implement the Configuration Management controller (later);
 
-=item * Implement the Users/Groups Management controllers;
+=item * Implement the Users/Groups Management controllers (later);
 
 =back
 
@@ -101,13 +101,15 @@ Write me a message and we can define together a specific enough task.
 
 =over
 
-=item * Implement the "Registration" Site plugin;
+=item *  Implement the base "Site" application;
 
-=item * Implement the "Login" Site plugin(with Oauth2 and/or OpenID);
+=item * Implement the "Registration" Site plugin (later);
 
-=item * Implement the "Profile" Site plugin;
+=item * Implement the "Login" Site plugin(with Oauth2 and/or OpenID) (later);
 
-=item * Implement the "Q&A" Site plugin;
+=item * Implement the "Profile" Site plugin (later);
+
+=item * Implement the "Q&A" Site plugin (later);
 
 =back
 
@@ -160,13 +162,20 @@ If you think your name should be listed here, please notify me.
 
 =head1 SETUP
 
+Create an empty database. See conf/mysql.schema.sql for an example.
+
 =begin html
 
-To begin setting up your system <a href="index.xhtml">go to index.xhtml</a>.
+To setup your system <a href="index.xhtml">go to index.xhtml</a>.
 Make sure the file is accessed trough HTTP(S) and not directly trough some file system.
+Follow the steps and you should be fine.
 
 =end html
 
+Many programmers prefer using a terminal. To set up the system this way, open a terminal 
+and go to the MYDLjE root directory:
+
+    $ ./mydlje help system_setup
 
 -----------------------
 

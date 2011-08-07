@@ -105,7 +105,7 @@ To make sure, send the above-mentioned list to your (potential) hosting provider
 tool (PHPMyAdmin) provided by your hosting provider</a></strong>
 
 </li>
-<li><strong><a class="item" name="use_your_browser_to_access_index_xhtml_see_setup">Use your browser to access <strong>index.xhtml</strong> - see <a href="#setup">SETUP</a>.</a></strong>
+<li><strong><a class="item" name="use_your_browser_to_access_index_xhtml_or_setup_via_commandline_see_setup">Use your browser to access <strong>index.xhtml</strong> or setup via commandline - see <a href="#setup">SETUP</a>.</a></strong>
 
 </li>
 <li><strong><a class="item" name="check_the_system_and_troubleshoot_if_needed_look_at_the_apache_error_log_and_log_development_log">Check the system and troubleshoot :) if needed. Look at the apache error-log and log/development.log.</a></strong>
@@ -135,22 +135,22 @@ Write me a message and we can define together a specific enough task.</p>
 <li><strong><a class="item" name="application">Implement the &quot;Control Panel&quot; application (in progress):</a></strong>
 
 <ul>
-<li><strong><a class="item" name="controllers">Implement the Domains Management controllers (mostlly done);</a></strong>
+<li><strong><a class="item" name="controllers">Implement the Domains Management controllers (done);</a></strong>
 
 </li>
-<li><strong>Implement the Pages Management controllers (in progress);</strong>
+<li><strong>Implement the Pages Management controllers (done);</strong>
 
 </li>
-<li><strong>Implement the Content Management controllers (in progress);</strong>
+<li><strong>Implement the Content Management controllers (mostly done);</strong>
 
 </li>
-<li><strong><a class="item" name="implement_applications_plugins_management_controllers">Implement Applications/Plugins Management controllers;</a></strong>
+<li><strong>Implement Applications/Plugins Management controllers (later);</strong>
 
 </li>
-<li><strong><a class="item" name="implement_the_configuration_management_controller">Implement the Configuration Management controller;</a></strong>
+<li><strong><a class="item" name="controller">Implement the Configuration Management controller (later);</a></strong>
 
 </li>
-<li><strong><a class="item" name="implement_the_users_groups_management_controllers">Implement the Users/Groups Management controllers;</a></strong>
+<li><strong>Implement the Users/Groups Management controllers (later);</strong>
 
 </li>
 </ul>
@@ -158,16 +158,19 @@ Write me a message and we can define together a specific enough task.</p>
 <li><strong><a class="item" name="implement_the_site_application">Implement the &quot;Site&quot; application:</a></strong>
 
 <ul>
-<li><strong><a class="item" name="implement_the_registration_site_plugin">Implement the &quot;Registration&quot; Site plugin;</a></strong>
+<li><strong><a class="item" name="implement_the_base_site_application">Implement the base &quot;Site&quot; application;</a></strong>
 
 </li>
-<li><strong><a class="item" name="plugin">Implement the &quot;Login&quot; Site plugin(with Oauth2 and/or OpenID);</a></strong>
+<li><strong><a class="item" name="plugin">Implement the &quot;Registration&quot; Site plugin (later);</a></strong>
 
 </li>
-<li><strong><a class="item" name="implement_the_profile_site_plugin">Implement the &quot;Profile&quot; Site plugin;</a></strong>
+<li><strong>Implement the &quot;Login&quot; Site plugin(with Oauth2 and/or OpenID) (later);</strong>
 
 </li>
-<li><strong><a class="item" name="implement_the_q_a_site_plugin">Implement the &quot;Q&amp;A&quot; Site plugin;</a></strong>
+<li><strong>Implement the &quot;Profile&quot; Site plugin (later);</strong>
+
+</li>
+<li><strong>Implement the &quot;Q&amp;A&quot; Site plugin (later);</strong>
 
 </li>
 </ul>
@@ -229,8 +232,14 @@ If you think your name should be listed here, please notify me.</p>
 </p>
 
 <h1 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="setup">SETUP</a></h1>
-To begin setting up your system <a href="index.xhtml">go to index.xhtml</a>.
-Make sure the file is accessed trough HTTP(S) and not directly trough some file system.<p>-----------------------</p>
+<p>Create an empty database. See conf/mysql.schema.sql for an example.</p>
+To setup your system <a href="index.xhtml">go to index.xhtml</a>.
+Make sure the file is accessed trough HTTP(S) and not directly trough some file system.
+Follow the steps and you should be fine.<p>Many programmers prefer using a terminal. To set up the system this way, open a terminal 
+and go to the MYDLjE root directory:</p>
+<pre>
+    $ ./mydlje help system_setup</pre>
+<p>-----------------------</p>
 
 </div></div></body>
 

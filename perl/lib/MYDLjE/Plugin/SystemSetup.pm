@@ -1,6 +1,6 @@
 package MYDLjE::Plugin::SystemSetup;
 use MYDLjE::Base 'Mojolicious::Plugin';
-
+use Time::HiRes;
 my $REQUIRED_MODULES = [qw(DBI DBD::mysql Time::Piece GD)];
 
 sub register {

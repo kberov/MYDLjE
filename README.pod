@@ -4,7 +4,7 @@
 
 B<NOTE: This is a work in progress. Help is wellcome.>
 
-MYDLjE is a lightweight Web-Applications and Content Management Framework.
+MYDLjE (pronounced [maidalji]) is a lightweight Web-Applications and Content Management Framework.
 It is a collection of Perl, JavaScript, CSS and HTML5 code to make a General Purpose Platform for building Web-Applications.
 We build on top of several I<"State Of the Art"> open-source software projects to make a powerful platform for starting business online.
 

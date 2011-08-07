@@ -120,41 +120,39 @@ sub system_config {
   init_database($c->dbix, $c->app->log);
   create_admin_user($c->dbix, $validator->values);
   _replace_index_xhtml($c);
-  _save_config($c, $validator);
+  save_config($c->app->config, $validator->values);
 
   $c->render(json => $c->stash);
   return;
 }
 
 #write the new configuration to mydlje.yaml so it is shared by all applications
-sub _save_config {
-  my ($c, $validator) = @_;
+sub save_config {
+  my ($config, $values) = @_;
 
-  #$c->app->log->debug('ref $c:' . ref $c);
-  my $config = $c->app->config;
   my $new_config =
     MYDLjE::Config->new(
-    files => [$c->app->home . '/conf/' . lc("$ENV{MOJO_APP}.$ENV{MOJO_MODE}.yaml")]);
+    files => [$ENV{MOJO_HOME} . '/conf/' . lc("$ENV{MOJO_APP}.$ENV{MOJO_MODE}.yaml")]);
   $new_config->stash('installed', 1);
   $config->{plugins}{system_setup} = 0;
   $new_config->stash('plugins', $config->{plugins});
 
-  foreach my $field_name (keys %{$validator->values}) {
+  foreach my $field_name (keys %$values) {
     if ($field_name =~ /^db_/x) {
       $new_config->stash('plugins')->{'MYDLjE::Plugin::DBIx'}{$field_name} =
-        $validator->values->{$field_name};
+        $values->{$field_name};
     }
   }
   $new_config->stash('plugins')->{'MYDLjE::Plugin::DBIx'}{db_dsn} = '';
   $new_config->stash('routes', $config->{routes});
-  $new_config->stash('secret', $validator->values->{secret});
+  $new_config->stash('secret', $values->{secret});
 
   $new_config->write_config_file();
 
   #replace config
   $config = {};
   foreach my $key (keys %{$new_config->stash}) {
-    $c->app->config($key, $new_config->stash($key));
+    $config->{$key} = $new_config->stash($key);
   }
   return;
 }

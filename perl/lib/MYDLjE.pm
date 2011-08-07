@@ -8,7 +8,7 @@ our $VERSION = '0.3';
 
 has controller_class => 'MYDLjE::C';
 has env              => sub {
-  if   ($_[1] && exists $ENV{$_[1]}) { $ENV{$_[1]} }
+  if   ($_[1]) { $ENV{$_[1]} }
   else                               { \%ENV }
 };
 our $DEBUG = ((!$ENV{MOJO_MODE} || $ENV{MOJO_MODE} =~ /^dev/x) ? 1 : 0);

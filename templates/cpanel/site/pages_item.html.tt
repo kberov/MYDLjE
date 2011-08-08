@@ -2,8 +2,8 @@
 <li id="id_[% p.id %]" class="ui-state-default page level_[% depth +%] pid_[% p.pid %]">
   <div class="columns">
     <div class="fixed column">
-        <div class="container [%+ p.page_type %]">
-        [% p.alias %]
+    <div class="container [%+ p.page_type %]" title="[% p.description %]">
+        [% p.alias _' ('_ p.title _') '%]
         </div>
     </div>
     <div class="elastic column">

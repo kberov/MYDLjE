@@ -4,9 +4,12 @@ use utf8;
 
 require Mojo::Util;
 
-has pid       => sub { shift->get('id')                           || 0 };
-has language  => sub { (shift->c->req->param('content.language')) || 'en' };
-has domain_id => sub { shift->msession('domain_id')               || 0 };
+has pid => sub { shift->get('id') || 0 };
+has language => sub {
+  ($_[0]->c->req->param('content.language'))
+    || $_[0]->app->config('plugins')->{i18n}{default};
+};
+has domain_id => sub { shift->msession('domain_id') || 0 };
 has item_template => 'site/pages_item.html.tt';
 
 sub render {
@@ -45,17 +48,19 @@ sub _get_pages {
 
   my $domain_id = $c->msession('domain_id') || 0;
 
-#  my $language  = $form->{'content.language'}
-#    || $c->app->config('plugins')->{i18n}{default};
-  my $sql =
-      'SELECT id, user_id, group_id, pid, alias, page_type, permissions'
-    . ' FROM pages WHERE pid=? AND domain_id=? and id !=0 AND '
-    . $c->sql('read_permissions_sql')
-    . ' ORDER BY sorting';
+  my $sql = <<"SQL";
+  SELECT id, user_id, group_id, pid, alias, page_type, permissions, c.title, c.description
+  FROM pages p,
+  (SELECT title,description, page_id from content WHERE language=?) as c 
+  WHERE p.pid=? AND p.domain_id=? and p.id !=0 
+  AND p.id=c.page_id 
+SQL
+  $sql .= ' AND ' . $c->sql('read_permissions_sql') . ' ORDER BY sorting';
 
   #$c->debug($sql);
   my $uid = $c->msession->user->id;
-  my $pages = $c->dbix->query($sql, $pid, $domain_id, $uid, $uid, $uid)->hashes
+  my $pages =
+    $c->dbix->query($sql, $self->language, $pid, $domain_id, $uid, $uid, $uid)->hashes
     || [];
   return $pages;
 }

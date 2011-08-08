@@ -325,7 +325,8 @@ sub _validate_page {
 
   $v->field('page.pid')->regexp($page->FIELDS_VALIDATION->{pid}{regexp});
   $v->field('content.description')->inflate(\&MYDLjE::M::no_markup_inflate);
-  $v->field([qw(page.published page.hidden page.cache)])
+  $v->field('page.published')->required(1)->in(0, 1, 2);
+  $v->field([qw(page.hidden page.cache)])
     ->each(sub { shift->regexp($page->FIELDS_VALIDATION->{cache}{regexp}) });
   $v->field('page.sorting')->regexp($page->FIELDS_VALIDATION->{sorting}{regexp});
   $v->field('page.expiry')->regexp($page->FIELDS_VALIDATION->{expiry}{regexp});

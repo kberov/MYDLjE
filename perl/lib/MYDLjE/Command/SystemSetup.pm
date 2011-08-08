@@ -90,11 +90,12 @@ sub run {
   };
   my $dbix;
   unless (eval { $dbix = MYDLjE::Plugin::DBIx::dbix($db_config) }) {
-    print $DBI::error
-      . "$/Please check if the database "
-      . "is created and you enterred correctly database username and password.$/";
+    print $@
+      . qq|$/May be a typo? Please check if the database "$fields{db_name} "|
+      . "exists and you enterred correctly database username and password.$/";
     return 0;
   }
+
   MYDLjE::Plugin::SystemSetup::init_database($dbix, $self->config->log);
   MYDLjE::Plugin::SystemSetup::create_admin_user($dbix, \%fields);
   MYDLjE::Plugin::SystemSetup::save_config($self->config->stash, \%fields);

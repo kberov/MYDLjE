@@ -269,7 +269,7 @@ sub _validate_system_config {
         ->message(
         $field->name . " is required. Field length must be between 4 and 30 symbols");
       if ($field->name eq 'admin_user' && $field->name =~ /(admin|guest)/xi) {
-        ->message("The user can not be named \"admin \" nor \"guest\"!!!");
+        $field->message("The user can not be named \"admin \" nor \"guest\"!!!");
       }
       if ($field->name eq 'admin_password') {
         $field->regexp(qr/[\W]+/x)->length(6, 30)

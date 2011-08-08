@@ -50,6 +50,7 @@ These options are available:
     --site_name      Defaults to "$fields{site_name}".
     --secret         Defaults to a random md5 sum: "$secret"
     --admin_user     Defaults to "$fields{admin_user}"
+         Note: The user can not be named "admin" nor "guest"!!!
     --admin_email    Defaults to "$fields{admin_email}"
     --admin_password is a random string "$fields{admin_password}"
         The password must contain letters, numbers and at least one special character. 

@@ -51,10 +51,10 @@ function enhance_list_items() {
   $(list_item).hover(
     function () {                                
       //$(this).removeClass("ui-state-default");
-      $(this).addClass("ui-state-hover");
+      $(this).addClass("ui-state-highlight");
     },
     function () {
-      $(this).removeClass("ui-state-hover");
+      $(this).removeClass("ui-state-highlight");
       //$(this).addClass("ui-state-default");
     }
   );

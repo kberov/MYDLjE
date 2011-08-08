@@ -10,19 +10,19 @@ Here is the place to start, no matter if you are a developer, admin or editor.
 The L<MYDLjE::Guides::Admins> guide is for those who manage one or several sites based on MYDLjE.
 It is expected that you have general knowledge on how the I<World Wide Web> works and are familiar with notions like Apache, HTTP, FTP, XML, XHTML. Some knowledge of Perl and JavaScript is useful but not mandatory.
 
-Thanks for using MYDLjE
+Thanks for using MYDLjE!
 
 =head1 DEVELOPERS
 
 The L<MYDLjE::Guides::Devs> guide is for those who want to contribute to the project by 
 implementing features and fixing bugs. Please read it before you contribute.
 
-Thanks for joining.
+Thanks for joining!
 
 =head1 DESIGNERS
 
 The L<MYDLjE::Guides::Design> guide is intended for XHTML/CSS savvy people who want to use
-the bundled Elastic CSS framework and jQUery UI(L<http://jqueryui.com/>).
+the bundled Elastic CSS framework and jQuery UI(L<http://jqueryui.com/>).
 Well, for now it is enough to look at the templates files and read the docs on 
 L<http://elasticss.com/documentation/>. There are also very good screencasts.
 

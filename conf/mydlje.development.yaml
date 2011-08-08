@@ -5,6 +5,23 @@ session_cookie_path: ''
 session_default_expiration: 3600
 site_name: MYDLjE
 
+#URLS (relative or absolute) 
+#to the tree applications so they can be used from each other.
+#These URLS may vary on different setups.
+#On a Tipical apache3 shared hosting setup They would be:
+#mydlje_url: http://example.com:8080/mydlje
+#cpanel_url: https://example.com:443/cpanel
+#site_url: site
+#or
+#site_url: / # if you use mod rewrite
+#of course you could add your protocol, domain and port.
+#these settinds are placed directly in some links.
+
+#Here are the defaults for a typical Apache 2 setup:
+mydlje_url: mydlje
+cpanel_url: cpanel
+site_url: site
+
 #humanity, smoothness, ui-lightness, redmond, your-own
 jq_ui_theme: humanity
 
@@ -17,7 +34,7 @@ languages:
 static_root: /pub
 
 plugins:
-  #plugin      Enabled: 1 / Disabled: 0 /Config:
+  #plugin      Enabled: 1 / Disabled: 0 /Config: {} #Config==Enabled
   system_setup: 1
   helpers:
     textile: 1

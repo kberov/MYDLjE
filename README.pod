@@ -1,10 +1,12 @@
+=encoding utf8
+
 =head1 MYDLjE - Web-presence rewritten
 
 =head1 DESCRIPTION
 
 B<NOTE: This is a work in progress. Help is wellcome.>
 
-MYDLjE (pronounced [maidalji]) is a lightweight Web-Applications and Content Management Framework.
+MYDLjE (pronounced [maidalji]/[майдължи]) is a lightweight Web-Applications and Content Management Framework.
 It is a collection of Perl, JavaScript, CSS and HTML5 code to make a General Purpose Platform for building Web-Applications.
 We build on top of several I<"State Of the Art"> open-source software projects to make a powerful platform for starting business online.
 
@@ -154,7 +156,7 @@ If you think your name should be listed here, please notify me.
 
 =item * Sean M. Burke conceived Locale::Maketext - http://search.cpan.org/dist/Locale-Maketext/. Thank You! 
 
-=item * Mark James made SILK & FLAG ICONS -  http://www.famfamfam.com/about/. Thank You!
+=item * Mark James made SILK & FLAG ICONS -  http://www.famfamfam.com/lab/icons/silk/. Thank You!
 
 =item * Fernando Trasvia conceived Elastic CSS - http://elasticss.com/suggestions/. Thank You!
 

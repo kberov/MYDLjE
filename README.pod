@@ -1,3 +1,4 @@
+
 =encoding utf8
 
 =head1 MYDLjE - Web-presence rewritten
@@ -6,32 +7,45 @@
 
 B<NOTE: This is a work in progress. Help is wellcome.>
 
-MYDLjE (pronounced [maidalji]/[майдължи]) is a lightweight Web-Applications and Content Management Framework.
-It is a collection of Perl, JavaScript, CSS and HTML5 code to make a General Purpose Platform for building Web-Applications.
-We build on top of several I<"State Of the Art"> open-source software projects to make a powerful platform for starting business online.
+MYDLjE (pronounced [maidalji]/[майдължи]) is a lightweight
+ Web-Applications and Content Management Framework. It is a collection of
+ Perl, JavaScript, CSS and HTML5 code to make a General Purpose Platform for
+ building Web-Applications. We build on top of several I<"State Of the Art">
+ open-source software projects to make a powerful platform for starting
+ business online.
 
-The framework name is an acronym. It stands for: B<Mojolicious, YAML, DBI*, Locale::Maketext, jQuery, Elastic CSS> which are the main building blocks. B<Template::Alloy> is chosen as view system. B<SILK & FLAG ICONS> are used too.
+The framework name is an acronym. It stands for: B<Mojolicious, YAML, DBI*,
+ Locale::Maketext, jQuery, Elastic CSS> which are the main building blocks.
+ B<Template::Alloy> is chosen as view system. B<SILK & FLAG ICONS> are used
+ too.
 
 =head1 APPLICATIONS
 
-MYDLjE comes with three bundled web-applications around and on top of which you (the developer) can build even more powerful domain specific applications. 
-The applications are based on Mojolicious, so if you (the developer) know how it works, please feel at home!
-The applications are intended to be easy to use (intuitive) for the average computer-literate user, so the admin is not needed all the time :).
+MYDLjE comes with three bundled web-applications around and on top of which
+ you (the developer) can build even more powerful domain specific
+ applications. The applications are based on Mojolicious, so if you (the
+ developer) know how it works, please feel at home! The applications are
+ intended to be easy to use (intuitive) for the average computer-literate
+ user, so the admin is not needed all the time :).
 
 =head2 CONTROL PANEL (cpanel)
 
-This application is for managing your online presence. You (the business owner) access and manage your users, customers, domains, pages, content, applications etc.  
-Only trusted people (back-end users) should be allowed to use it.
+This application is for managing your online presence. You (the business
+ owner) access and manage your users, customers, domains, pages, content,
+ applications etc. Only trusted people (back-end users) should be allowed to
+ use it.
 
 =head2 MYDLjE (mydlje)
 
-This is a bare-bones application. It is used as the base for the other two applications and for setting up the system for the first time when you (the administrator) deploy it.
+This is a bare-bones application. It is used as the base for the other two
+ applications and for setting up the system for the first time when you (the
+ administrator) deploy it.
 
 =head2 SITE (site)
 
-This is your front-end application intended for the public. Build a site or a custom application to be used by your community and/or customers. 
-Build whatever you want on top of and around it or call me to build it for you.
-
+This is your front-end application intended for the public. Build a site or
+ a custom application to be used by your community and/or customers. Build
+ whatever you want on top of and around it or call me to build it for you.
 
 =head1 MINIMAL REQUIREMENTS
 
@@ -39,7 +53,8 @@ Build whatever you want on top of and around it or call me to build it for you.
 
 =item * Perl 5.8.8 or next; Perl 5.10.1 or next is highly recommended;
 
-=item * Apache2 with mod_cgi (standard) or (better/faster) mod_fcgi/mod_fastcgi;
+=item * Apache2 with mod_cgi (standard) or (better/faster)
+ mod_fcgi/mod_fastcgi;
 
 =item * MySQL >=5.0 server, provided by almost every shared hosting;
 
@@ -47,8 +62,13 @@ Build whatever you want on top of and around it or call me to build it for you.
 
 =back
 
-Almost all (even the cheapest) hosting providers meet the system requirements. 
-To make sure, send the above-mentioned list to your (potential) hosting provider and ask them if they meet the requirements below. The setup screen also checks for the requirements. The system runs under mod_cgi by default, but can be switched in seconds to run under mod_fastcgi (or mod_fcgi) if available. See the I<.htaccess> file in the project root directory.
+Almost all (even the cheapest) hosting providers meet the system
+ requirements. To make sure, send the above-mentioned list to your
+ (potential) hosting provider and ask them if they meet the requirements
+ below. The setup screen also checks for the requirements. The system runs
+ under mod_cgi by default, but can be switched in seconds to run under
+ mod_fastcgi (or mod_fcgi) if available. See the I<.htaccess> file in the
+ project root directory.
 
 =head1 INSTALLATION
 
@@ -56,12 +76,15 @@ To make sure, send the above-mentioned list to your (potential) hosting provider
 
 =item 1 Unpack the bundle in a directory visible by Apache.
 
-=item 2 Create a database using the example found in I<conf/mysql.schema.sql> or use the 
-tool (PHPMyAdmin) provided by your hosting provider
+=item 2 Create a database using the example found in
+ I<conf/mysql.schema.sql> or use the tool (PHPMyAdmin) provided by your
+ hosting provider
 
-=item 3 Use your browser to access B<index.xhtml> or setup via commandline - see L</SETUP>.
+=item 3 Use your browser to access B<index.xhtml> or setup via commandline -
+ see L</SETUP>.
 
-=item 4 Check the system and troubleshoot :) if needed. Look at the apache error-log and log/development.log.
+=item 4 Check the system and troubleshoot :) if needed. Look at the apache
+ error-log and log/development.log.
 
 =item 5 Fill in the "System Configuration" form. You are ready to go.
 
@@ -71,13 +94,16 @@ tool (PHPMyAdmin) provided by your hosting provider
 
 =head1 ROADMAP
 
-Below is the list of things to do. This is a general list, so look at L<https://github.com/kberov/MYDLjE/issues> for the specific tasks. 
-It is possible to work on several issues at the same time so feel your self invited to help. 
-Write me a message and we can define together a specific enough task.
+Below is the list of things to do. This is a general list, so look at
+ L<https://github.com/kberov/MYDLjE/issues> for the specific tasks. It is
+ possible to work on several issues at the same time so feel your self
+ invited to help. Write me a message and we can define together a specific
+ enough task.
 
 =over
 
-=item * Implement the base system. Bundle required libraries and write enough tests to be sure the things work together well (done).
+=item * Implement the base system. Bundle required libraries and write
+ enough tests to be sure the things work together well (done).
 
 =item * Implement the MYDLjE initial setup/install (done).
 
@@ -103,11 +129,12 @@ Write me a message and we can define together a specific enough task.
 
 =over
 
-=item *  Implement the base "Site" application;
+=item * Implement the base "Site" application;
 
 =item * Implement the "Registration" Site plugin (later);
 
-=item * Implement the "Login" Site plugin(with Oauth2 and/or OpenID) (later);
+=item * Implement the "Login" Site plugin(with Oauth2 and/or OpenID)
+ (later);
 
 =item * Implement the "Profile" Site plugin (later);
 
@@ -117,17 +144,15 @@ Write me a message and we can define together a specific enough task.
 
 =back
 
-
 =head1 LICENSES and COPYRIGHT
 
-This is a package of libraries written by many authors. 
-Krasimir Berov bundled them together and wrote the domain specific parts
-to form something that works as one. The code written by K. Berov 
-is licenced under the LGPLv3. 
-The other works are licenced under various 
-Open Source Licences that allow redistribution and modifications.
-See: http://www.perlfoundation.org/artistic_license_2_0, 
-http://www.gnu.org/licenses/lgpl-3.0.txt
+This is a package of libraries written by many authors. Krasimir Berov
+ bundled them together and wrote the domain specific parts to form something
+ that works as one. The code written by K. Berov is licenced under the
+ LGPLv3. The other works are licenced under various Open Source Licences that
+ allow redistribution and modifications. See:
+ http://www.perlfoundation.org/artistic_license_2_0,
+ http://www.gnu.org/licenses/lgpl-3.0.txt
 
 How to understand: http://www.perlfoundation.org/artistic_2_0_notes
 
@@ -135,30 +160,38 @@ Copyright (C) 2008-2011, Krasimir Berov
 
 =head1 CREDITS
 
-I wish to thank to all who made something that I use to make MYDLjE works. 
-If you think your name should be listed here, please notify me.
+I wish to thank to all who made something that I use to make MYDLjE works.
+ If you think your name should be listed here, please notify me.
 
 =over
 
 =item * Larry Wall conceived Perl - http://www.perl.org/. Thank You!
 
-=item * Sebastian Riedel makes Mojolicious - http://mojolicio.us/perldoc?Mojolicious . Thank You!
+=item * Sebastian Riedel makes Mojolicious -
+ http://mojolicio.us/perldoc?Mojolicious . Thank You!
 
-=item * YAML thanks to Oren Ben-Kiki, Clark Evans, Ingy döt Net - http://yaml.org/. Thank you all!
+=item * YAML thanks to Oren Ben-Kiki, Clark Evans, Ingy döt Net -
+ http://yaml.org/. Thank you all!
 
-=item * Adam Kennedy makes YAML::Tiny - http://search.cpan.org/dist/YAML-Tiny/. Thank you!
+=item * Adam Kennedy makes YAML::Tiny -
+ http://search.cpan.org/dist/YAML-Tiny/. Thank you!
 
-=item * Paul Seamons makes Template::Alloy - http://search.cpan.org/dist/Template-Alloy/. Thank You!
+=item * Paul Seamons makes Template::Alloy -
+ http://search.cpan.org/dist/Template-Alloy/. Thank You!
 
 =item * John Resig conceived jQuery - http://jquery.org/. Thank You!
 
-=item * jQuery User Interface Team makes jQuery UI - http://jqueryui.com/about . Thank You!
+=item * jQuery User Interface Team makes jQuery UI -
+ http://jqueryui.com/about . Thank You!
 
-=item * Sean M. Burke conceived Locale::Maketext - http://search.cpan.org/dist/Locale-Maketext/. Thank You! 
+=item * Sean M. Burke conceived Locale::Maketext -
+ http://search.cpan.org/dist/Locale-Maketext/. Thank You! 
 
-=item * Mark James made SILK & FLAG ICONS -  http://www.famfamfam.com/lab/icons/silk/. Thank You!
+=item * Mark James made SILK & FLAG ICONS -
+ http://www.famfamfam.com/lab/icons/silk/. Thank You!
 
-=item * Fernando Trasvia conceived Elastic CSS - http://elasticss.com/suggestions/. Thank You!
+=item * Fernando Trasvia conceived Elastic CSS -
+ http://elasticss.com/suggestions/. Thank You!
 
 =back
 
@@ -168,16 +201,15 @@ Create an empty database. See conf/mysql.schema.sql for an example.
 
 =begin html
 
-To setup your system <a href="index.xhtml">go to index.xhtml</a>.
-Make sure the file is accessed trough HTTP(S) and not directly trough some file system.
-Follow the steps and you should be fine.
+To setup your system <a href="index.xhtml">go to index.xhtml</a>. Make sure
+ the file is accessed trough HTTP(S) and not directly trough some file
+ system. Follow the steps and you should be fine.
 
 =end html
 
-Many programmers prefer using a terminal. To set up the system this way, open a terminal 
-and go to the MYDLjE root directory:
+Many programmers prefer using a terminal. To set up the system this way,
+ open a terminal and go to the MYDLjE root directory:
 
-    $ ./mydlje help system_setup
+$ ./mydlje help system_setup
 
 -----------------------
-

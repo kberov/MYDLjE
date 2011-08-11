@@ -5,6 +5,7 @@ use Mojo::IOLoop::Client;
 use Mojo::IOLoop::Resolver;
 use Mojo::IOLoop::Server;
 use Mojo::IOLoop::Stream;
+use Mojo::IOLoop::Trigger;
 use Mojo::IOWatcher;
 use Scalar::Util 'weaken';
 use Time::HiRes 'time';
@@ -135,6 +136,8 @@ sub connection_timeout {
   $c->{timeout} = $timeout and return $self if defined $timeout;
   $c->{timeout};
 }
+
+sub defer { shift->timer(0 => @_) }
 
 sub drop {
   my ($self, $id) = @_;
@@ -320,7 +323,7 @@ sub test {
   my ($self, $id) = @_;
   return unless my $c      = $self->{connections}->{$id};
   return unless my $stream = $c->{stream};
-  return $self->iowatcher->is_readable($stream->handle);
+  return !$self->iowatcher->is_readable($stream->handle);
 }
 
 sub timer {
@@ -328,6 +331,16 @@ sub timer {
   $self = $self->singleton unless ref $self;
   weaken $self;
   return $self->iowatcher->timer($after => sub { $self->$cb(pop) });
+}
+
+sub trigger {
+  my ($self, $cb) = @_;
+  $self = $self->singleton unless ref $self;
+  my $t = Mojo::IOLoop::Trigger->new;
+  $t->ioloop($self);
+  weaken $t->{ioloop};
+  $t->once(done => $cb) if $cb;
+  return $t;
 }
 
 sub write {
@@ -396,7 +409,7 @@ __END__
 
 =head1 NAME
 
-Mojo::IOLoop - Minimalistic Reactor For Async TCP Clients And Servers
+Mojo::IOLoop - Minimalistic Reactor For Non-Blocking TCP Clients And Servers
 
 =head1 SYNOPSIS
 
@@ -448,8 +461,8 @@ Mojo::IOLoop - Minimalistic Reactor For Async TCP Clients And Servers
 =head1 DESCRIPTION
 
 L<Mojo::IOLoop> is a very minimalistic reactor that has been reduced to the
-absolute minimal feature set required to build solid and scalable async TCP
-clients and servers.
+absolute minimal feature set required to build solid and scalable
+non-blocking TCP clients and servers.
 
 Optional modules L<EV>, L<IO::Socket::IP> and L<IO::Socket::SSL> are
 supported transparently and used if installed.
@@ -654,6 +667,14 @@ Path to the TLS key file.
 
 Maximum amount of time in seconds a connection can be inactive before being
 dropped, defaults to C<15>.
+
+=head2 C<defer>
+
+  Mojo::IOLoop->defer(sub {...});
+  $loop->defer(sub {...});
+
+Invoke callback on next reactor tick.
+Note that this method is EXPERIMENTAL and might change without warning!
 
 =head2 C<drop>
 
@@ -893,6 +914,28 @@ Note that this method is EXPERIMENTAL and might change without warning!
   my $id = $loop->timer(0.25 => sub {...});
 
 Create a new timer, invoking the callback after a given amount of seconds.
+
+=head2 C<trigger>
+
+  my $t = Mojo::IOLoop->trigger;
+  my $t = $loop->trigger;
+  my $t = $loop->trigger(sub {...});
+
+Get L<Mojo::IOLoop::Trigger> remote control for the loop.
+Note that this method is EXPERIMENTAL and might change without warning!
+
+  # Synchronize multiple events
+  my $t = Mojo::IOLoop->trigger(sub { print "BOOM!\n" });
+  for my $i (1 .. 10) {
+    $t->begin;
+    Mojo::IOLoop->timer($i => sub {
+      print 10 - $i,"\n";
+      $t->end;
+    });
+  }
+
+  # Stop automatically when done
+  $t->start;
 
 =head2 C<write>
 

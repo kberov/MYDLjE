@@ -64,13 +64,15 @@ sub writing {
 
 sub _io {
   my ($self, $fd, $w, $revents) = @_;
-  my $h = $self->{handles}->{$fd};
+  my $handles = $self->{handles};
+  my $h       = $handles->{$fd};
   $self->_sandbox('Read', $h->{on_readable}, $h->{handle})
     if EV::READ &$revents;
   $self->_sandbox('Write', $h->{on_writable}, $h->{handle})
-    if EV::WRITE &$revents;
+    if EV::WRITE &$revents && $handles->{$fd};
 }
 
+# "It's great! We can do *anything* now that Science has invented Magic."
 sub _timer {
   my $self      = shift;
   my $after     = shift || '0.0001';
@@ -97,7 +99,7 @@ __END__
 
 =head1 NAME
 
-Mojo::IOWatcher::EV - EV Async I/O Watcher
+Mojo::IOWatcher::EV - EV Non-Blocking I/O Watcher
 
 =head1 SYNOPSIS
 
@@ -105,8 +107,8 @@ Mojo::IOWatcher::EV - EV Async I/O Watcher
 
 =head1 DESCRIPTION
 
-L<Mojo::IOWatcher::EV> is a minimalistic async I/O watcher with C<libev>
-support.
+L<Mojo::IOWatcher::EV> is a minimalistic non-blocking I/O watcher with
+C<libev> support.
 Note that this module is EXPERIMENTAL and might change without warning!
 
 =head1 METHODS

@@ -415,10 +415,10 @@ Mojo::Server::Hypnotoad - ALL GLORY TO THE HYPNOTOAD!
 
 =head1 DESCRIPTION
 
-L<Mojo::Server::Hypnotoad> is a full featured UNIX optimized preforking async
-io HTTP 1.1 and WebSocket server built around the very well tested and
-reliable L<Mojo::Server::Daemon> with C<IPv6>, C<TLS>, C<Bonjour>, C<libev>
-and hot deployment support that just works.
+L<Mojo::Server::Hypnotoad> is a full featured UNIX optimized preforking
+non-blocking I/O HTTP 1.1 and WebSocket server built around the very well
+tested and reliable L<Mojo::Server::Daemon> with C<IPv6>, C<TLS>, C<Bonjour>,
+C<libev> and hot deployment support that just works.
 
 To start applications with it you can use the L<hypnotoad> script.
 
@@ -566,7 +566,7 @@ Number of keep alive requests per connection, defaults to C<25>.
   keep_alive_timeout => 10
 
 Maximum amount of time in seconds a connection can be inactive before being
-dropped, defaults to C<5>.
+dropped, defaults to C<15>.
 
 =head2 C<listen>
 

@@ -19,13 +19,13 @@ has timeout => 3;
 
 # IPv4 regex (RFC 3986)
 my $DEC_OCTET_RE = qr/(?:[0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])/;
-our $IPV4_RE =
+my $IPV4_RE =
   qr/^$DEC_OCTET_RE\.$DEC_OCTET_RE\.$DEC_OCTET_RE\.$DEC_OCTET_RE$/;
 
 # IPv6 regex (RFC 3986)
 my $H16_RE  = qr/[0-9A-Fa-f]{1,4}/;
 my $LS32_RE = qr/(?:$H16_RE:$H16_RE|$IPV4_RE)/;
-our $IPV6_RE = qr/(?:
+my $IPV6_RE = qr/(?:
                                            (?: $H16_RE : ){6} $LS32_RE
   |                                     :: (?: $H16_RE : ){5} $LS32_RE
   | (?:                      $H16_RE )? :: (?: $H16_RE : ){4} $LS32_RE
@@ -93,7 +93,7 @@ sub lookup {
 
   # "localhost"
   weaken $self;
-  return $self->ioloop->timer(0 => sub { $self->$cb($LOCALHOST) })
+  return $self->ioloop->defer(sub { $self->$cb($LOCALHOST) })
     if $name eq 'localhost';
 
   # IPv4
@@ -135,7 +135,7 @@ sub resolve {
   my $server = $self->servers;
   my $loop   = $self->ioloop;
   weaken $self;
-  return $loop->timer(0 => sub { $self->$cb([]) })
+  return $loop->defer(sub { $self->$cb([]) })
     if !$server || !$t || ($t ne $DNS_TYPES->{PTR} && ($v4 || $v6));
 
   # Build request
@@ -256,6 +256,8 @@ sub _bind {
   );
 }
 
+# "Mrs. Simpson, bathroom is not for customers.
+#  Please use the crack house across the street."
 sub _cleanup {
   my $self = shift;
   return unless my $loop = $self->ioloop;
@@ -345,10 +347,23 @@ Mojo::IOLoop::Resolver - IOLoop DNS Stub Resolver
 
   use Mojo::IOLoop::Resolver;
 
+  # Lookup address
+  my $resolver = Mojo::IOLoop::Resolver->new;
+  $resolver->lookup('mojolicio.us' => sub {
+    my ($self, $address) = @_;
+    ...
+  });
+
+  # Resolve "MX" records
+  $resolver->resolve('mojolicio.us', 'MX', sub {
+    my ($self, $records) = @_;
+    ...
+  });
+
 =head1 DESCRIPTION
 
-L<Mojo::IOLoop::Resolver> is a minimalistic async I/O DNS stub resolver used
-by L<Mojo:IOLoop>.
+L<Mojo::IOLoop::Resolver> is a minimalistic non-blocking I/O DNS stub
+resolver used by L<Mojo:IOLoop>.
 Note that this module is EXPERIMENTAL and might change without warning!
 
 =head1 ATTRIBUTES

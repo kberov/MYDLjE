@@ -22,6 +22,7 @@ has resolver => sub {
   Mojo::IOLoop::Resolver->new;
 };
 
+# "It's like my dad always said: eventually, everybody gets shot."
 sub DESTROY {
   my $self = shift;
   return if $self->{connected};
@@ -47,7 +48,9 @@ sub connect {
   }
 
   # Connect
-  else { $self->_connect($args) }
+  else {
+    $self->resolver->ioloop->defer(sub { $self->_connect($args) });
+  }
 }
 
 sub _connect {
@@ -86,6 +89,7 @@ sub _connect {
   setsockopt $handle, IPPROTO_TCP, TCP_NODELAY, 1;
 
   # TLS
+  weaken $self;
   if ($args->{tls}) {
 
     # No TLS support
@@ -94,7 +98,6 @@ sub _connect {
       unless TLS;
 
     # Upgrade
-    weaken $self;
     my %options = (
       SSL_startHandshake => 0,
       SSL_error_trap     => sub {
@@ -127,6 +130,8 @@ sub _connect {
   );
 }
 
+# "Have you ever seen that Blue Man Group? Total ripoff of the Smurfs.
+#  And the Smurfs, well, they SUCK."
 sub _connecting {
   my $self = shift;
 

@@ -80,8 +80,8 @@ sub DESTROY {
   $watcher->remove($_) for values %{$self->{handles}};
 }
 
-# "Have you ever seen that Blue Man Group? Total ripoff of the Smurfs.
-#  And the Smurfs, well, they SUCK."
+# "And I gave that man directions, even though I didn't know the way,
+#  because that's the kind of guy I am this week."
 sub listen {
   my $self = shift;
   my $args = ref $_[0] ? $_[0] : {@_};
@@ -181,9 +181,15 @@ sub _accept {
 
   # Accept
   my $handle = $self->{handle}->accept;
-  return $self->emit(accept => $handle) unless my $tls = $self->{tls};
+
+  # Non-blocking
+  $handle->blocking(0);
+
+  # Disable Nagle's algorithm
+  setsockopt $handle, IPPROTO_TCP, TCP_NODELAY, 1;
 
   # Start TLS handshake
+  return $self->emit(accept => $handle) unless my $tls = $self->{tls};
   weaken $self;
   $tls->{SSL_error_trap} = sub {
     my $handle = delete $self->{handles}->{$handle};
@@ -197,12 +203,6 @@ sub _accept {
     on_writable => sub { $self->_tls($handle) }
   );
   $self->{handles}->{$handle} = $handle;
-
-  # Non-blocking
-  $handle->blocking(0);
-
-  # Disable Nagle's algorithm
-  setsockopt($handle, IPPROTO_TCP, TCP_NODELAY, 1) unless $self->{file};
 }
 
 sub _cert_file {
@@ -239,10 +239,12 @@ sub _key_file {
   $self->{key} = $key;
 }
 
+# "Where on my badge does it say anything about protecting people?
+#  Uh, second word, chief."
 sub _tls {
   my ($self, $handle) = @_;
 
-  # Accept
+  # Accepted
   if ($handle->accept_SSL) {
     $self->iowatcher->remove($handle);
     delete $self->{handles}->{$handle};

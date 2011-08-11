@@ -10,6 +10,7 @@ use Mojolicious::Routes;
 use Mojolicious::Sessions;
 use Mojolicious::Static;
 use Mojolicious::Types;
+use Scalar::Util 'weaken';
 
 has controller_class => 'Mojolicious::Controller';
 has mode             => sub { ($ENV{MOJO_MODE} || 'development') };
@@ -33,7 +34,7 @@ has static   => sub { Mojolicious::Static->new };
 has types    => sub { Mojolicious::Types->new };
 
 our $CODENAME = 'Smiling Face With Sunglasses';
-our $VERSION  = '1.68';
+our $VERSION  = '1.74';
 
 # "These old doomsday devices are dangerously unstable.
 #  I'll rest easier not knowing where they are."
@@ -176,6 +177,7 @@ sub handler {
   @{$stash}{keys %$defaults} = values %$defaults;
   my $c =
     $self->controller_class->new(app => $self, stash => $stash, tx => $tx);
+  weaken $c->{app};
   unless (eval { $self->on_process->($self, $c); 1 }) {
     $self->log->fatal("Processing request failed: $@");
     $tx->res->code(500);
@@ -234,7 +236,7 @@ __END__
 
 =head1 NAME
 
-Mojolicious - The Web In A Box!
+Mojolicious - Duct Tape For The Web!
 
 =head1 SYNOPSIS
 
@@ -304,8 +306,8 @@ TLS, Bonjour, IDNA, Comet (long polling), chunking and multipart support.
 
 =item *
 
-Built-in async I/O web server supporting libev and hot deployment, perfect
-for embedding.
+Built-in non-blocking I/O web server supporting libev and hot deployment,
+perfect for embedding.
 
 =item *
 
@@ -628,11 +630,10 @@ L<Mojolicious::Static> object.
   my $types = $app->types;
   $app      = $app->types(Mojolicious::Types->new);
 
-Responsible for tracking the types of content you want to serve in your
-application, defaults to a L<Mojolicious::Types> object.
-You can easily register new types.
+Responsible for connecting file extensions with MIME types, defaults to a
+L<Mojolicious::Types> object.
 
-  $app->types->type(twitter => 'text/tweet');
+  $app->types->type(twt => 'text/tweet');
 
 =head1 METHODS
 
@@ -1113,6 +1114,8 @@ Simon Bertrang
 Simone Tampieri
 
 Shu Cho
+
+Skye Shaw
 
 Stanis Trendelenburg
 

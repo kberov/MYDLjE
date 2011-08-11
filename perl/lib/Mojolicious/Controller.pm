@@ -476,6 +476,40 @@ sub rendered {
 sub req { shift->tx->req }
 sub res { shift->tx->res }
 
+sub respond_to {
+  my $self = shift;
+  my $args = ref $_[0] ? $_[0] : {@_};
+
+  # Detect formats
+  my @formats;
+  my $app = $self->app;
+  push @formats, @{$app->types->detect($self->req->headers->accept)};
+  my $stash = $self->stash;
+  unless (@formats) {
+    if (my $format = $stash->{format}) { push @formats, $format }
+    else { push @formats, $app->renderer->default_format }
+  }
+
+  # Find target
+  my $target;
+  for my $format (@formats) {
+    if ($target = $args->{$format}) {
+      $stash->{format} = $format;
+      last;
+    }
+  }
+
+  # Fallback
+  unless ($target) {
+    return unless $target = $args->{any};
+    delete $stash->{format};
+  }
+
+  # Dispatch
+  ref $target eq 'CODE' ? $target->($self) : $self->render($target);
+  return 1;
+}
+
 sub send_message {
   my ($self, $message, $cb) = @_;
 
@@ -672,7 +706,6 @@ sub write_chunk {
 }
 
 1;
-
 __END__
 
 =head1 NAME
@@ -714,8 +747,8 @@ current request.
 
   my $tx = $c->tx;
 
-The transaction that is currently being processed, defaults to a
-L<Mojo::Transaction::HTTP> object.
+The transaction that is currently being processed, usually a
+L<Mojo::Transaction::HTTP> or L<Mojo::Transaction::WebSocket> object.
 
 =head1 METHODS
 
@@ -920,6 +953,24 @@ Usually refers to a L<Mojo::Message::Request> object.
 Alias for C<$c-E<gt>tx-E<gt>res>.
 Usually refers to a L<Mojo::Message::Response> object.
 
+=head2 C<respond_to>
+
+  my $success = $c->respond_to(
+    json => sub {...},
+    xml  => {text => 'hello!'},
+    any  => sub {...}
+  );
+
+Automatically select best possible representation for resource from C<Accept>
+request header and route C<format>.
+Note that this method is EXPERIMENTAL and might change without warning!
+
+  $c->respond_to(
+    json => sub { $c->render_json({just => 'works'}) },
+    xml  => {text => '<just>works</just>'},
+    any  => {data => '', status => 204}
+  );
+
 =head2 C<send_message>
 
   $c = $c->send_message('Hi there!');
@@ -980,6 +1031,18 @@ A L<Mojo::UserAgent> prepared for the current environment.
     my $tx = pop;
     $c->render_data($tx->res->body);
   });
+
+  # Parallel non-blocking
+  my $t = Mojo::IOLoop->trigger(sub {
+    my ($t, @titles) = @_;
+    $c->render_json(\@titles);
+  });
+  for my $url ('http://mojolicio.us', 'https://metacpan.org') {
+    $t->begin;
+    $c->ua->get($url => sub {
+      $t->end(pop->res->dom->html->head->title->text);
+    });
+  }
 
 =head2 C<url_for>
 

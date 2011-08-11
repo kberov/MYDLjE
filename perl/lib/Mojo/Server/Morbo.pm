@@ -72,6 +72,7 @@ sub _manage {
     warn "CHECKING $file\n" if DEBUG;
     next unless $self->check_file($file);
     warn "MODIFIED $file\n" if DEBUG;
+    print qq/File "$file" changed, restarting.\n/ if $ENV{MORBO_VERBOSE};
     kill 'TERM', $self->{running} if $self->{running};
     $self->{modified} = 1;
   }
@@ -138,10 +139,10 @@ Mojo::Server::Morbo - DOOOOOOOOOOOOOOOOOOM!
 
 =head1 DESCRIPTION
 
-L<Mojo::Server::Morbo> is a full featured self-restart capable async I/O HTTP
-1.1 and WebSocket server built around the very well tested and reliable
-L<Mojo::Server::Daemon> with C<IPv6>, C<TLS>, C<Bonjour> and C<libev>
-support.
+L<Mojo::Server::Morbo> is a full featured self-restart capable non-blocking
+I/O HTTP 1.1 and WebSocket server built around the very well tested and
+reliable L<Mojo::Server::Daemon> with C<IPv6>, C<TLS>, C<Bonjour> and
+C<libev> support.
 
 To start applications with it you can use the L<morbo> script.
 

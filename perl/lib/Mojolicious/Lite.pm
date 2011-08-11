@@ -124,8 +124,7 @@ There is also a helper command to generate a small example application.
 
 =head2 Commands
 
-All the normal L<Mojolicious command options|Mojolicious::Commands> are
-available from the command line.
+All the normal L<Mojolicious::Commands> are available from the command line.
 Note that CGI, FastCGI and PSGI environments can usually be auto detected and
 will just work without commands.
 
@@ -478,6 +477,24 @@ Restrictive placeholders can also be used for format detection.
     $self->render_text('hello world!');
   };
 
+=head2 Content Negotiation
+
+For resources with different representations that require truly C<RESTful>
+content negotiation you can also use C<respond_to>.
+
+  # /hello (Accept: application/json)
+  # /hello (Accept: text/xml)
+  # /hello.json
+  # /hello.xml
+  get '/hello' => sub {
+    my $self = shift;
+    $self->respond_to(
+      json => {json => {hello => 'world'}},
+      xml  => {text => '<hello>world</hello>'},
+      any  => {data => '', status => 204}
+    );
+  };
+
 =head2 Under
 
 Authentication and code shared between multiple routes can be realized easily
@@ -560,25 +577,26 @@ request), this is very useful in combination with C<redirect_to>.
 
   get '/login' => sub {
     my $self = shift;
+
     my $name = $self->param('name') || '';
     my $pass = $self->param('pass') || '';
     return $self->render unless $name eq 'sebastian' && $pass eq '1234';
+
     $self->session(name => $name);
     $self->flash(message => 'Thanks for logging in!');
     $self->redirect_to('index');
-  } => 'login';
+  };
 
   get '/' => sub {
     my $self = shift;
-    return $self->redirect_to('login') unless $self->session('name');
-    $self->render;
+    $self->redirect_to('login') unless $self->session('name');
   } => 'index';
 
   get '/logout' => sub {
     my $self = shift;
     $self->session(expires => 1);
     $self->redirect_to('index');
-  } => 'logout';
+  };
 
   app->start;
   __DATA__

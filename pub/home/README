@@ -1,4 +1,6 @@
 Home dirs for users are here.
-These files are seen trough web.
+These files are by default seen trough web.
+They are served by the Apache/NGINX server.
 Every user when created gets a personal directory - how convenient.
 The users belonging to his group can read and may be write into his directory.
+This directory ($MOJO_HOME/pub/home) MUST be writable by the "cpanel" and "site" applications.

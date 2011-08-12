@@ -1,0 +1,3 @@
+This directory stores only static files.
+These files are by default seen trough web.
+They are served by the Apache/NGINX server.

@@ -553,6 +553,8 @@ sub _write {
 1;
 __END__
 
+=encoding utf8
+
 =head1 NAME
 
 Mojo::UserAgent - Non-Blocking I/O HTTP 1.1 And WebSocket User Agent
@@ -562,50 +564,44 @@ Mojo::UserAgent - Non-Blocking I/O HTTP 1.1 And WebSocket User Agent
   use Mojo::UserAgent;
   my $ua = Mojo::UserAgent->new;
 
-  # Grab the latest Mojolicious release :)
-  my $latest = 'http://latest.mojolicio.us';
-  print $ua->max_redirects(3)->get($latest)->res->body;
+  # Say hello to the unicode snowman
+  print $ua->get('www.☃.net?hello=there')->res->body;
 
-  # Quick JSON request
-  my $trends = 'https://api.twitter.com/1/trends.json';
-  print $ua->get($trends)->res->json->{trends}->[0]->{name};
+  # Quick JSON API request with Basic authentication
+  print $ua->get('https://sri:s3cret@api.twitter.com/1/trends.json')
+    ->res->json->{trends}->[0]->{name};
 
   # Extract data from HTML and XML resources
   print $ua->get('mojolicio.us')->res->dom->html->head->title->text;
 
   # Scrape the latest headlines from a news site
-  my $news = 'http://digg.com';
-  $ua->max_redirects(3);
-  $ua->get($news)->res->dom('h3.story-item-title > a[href]')->each(sub {
-    my $e = shift;
-    print "$e->{href}:\n";
-    print $e->text, "\n";
-  });
+  $ua->max_redirects(5)->get('www.reddit.com/r/perl/')
+    ->res->dom('p.title > a.title')->each(sub { print $_->text, "\n" });
 
   # Form post with exception handling
-  my $cpan   = 'http://search.cpan.org/search';
-  my $search = {q => 'mojo'};
-  my $tx     = $ua->post_form($cpan => $search);
+  my $tx = $ua->post_form('search.cpan.org/search' => {q => 'mojo'});
   if (my $res = $tx->success) { print $res->body }
   else {
     my ($message, $code) = $tx->error;
     print "Error: $message";
   }
 
-  # TLS certificate authentication
-  $ua->cert('tls.crt')->key('tls.key')->get('https://mojolicio.us');
+  # Grab the latest Mojolicious release :)
+  $ua->max_redirects(5)->get('latest.mojolicio.us')
+    ->res->content->asset->move_to('/Users/sri/mojo.tar.gz');
 
   # Parallel requests
   my $t = Mojo::IOLoop->trigger;
   for my $url ('mojolicio.us', 'cpan.org') {
     $t->begin;
-    $ua->get($url => sub {
-      $t->end(pop->res->dom->html->head->title->text);
-    });
+    $ua->get($url => sub { $t->end(pop->res->dom->at('title')->text) });
   }
   my @titles = $t->start;
 
-  # Websocket request
+  # TLS certificate authentication
+  my $tx = $ua->cert('tls.crt')->key('tls.key')->get('https://mojolicio.us');
+
+  # WebSocket request
   $ua->websocket('ws://websockets.org:8787' => sub {
     my $tx = pop;
     $tx->on_finish(sub { Mojo::IOLoop->stop });
@@ -776,28 +772,27 @@ the C<MOJO_APP> environment variable.
 
   my $tx = $ua->build_form_tx('http://kraih.com/foo' => {test => 123});
 
-Alias for the C<form> method in L<Mojo::UserAgent::Transactor>.
+Alias for L<Mojo::UserAgent::Transactor/"form">.
 
 =head2 C<build_tx>
 
   my $tx = $ua->build_tx(GET => 'mojolicio.us');
 
-Alias for the C<tx> method in L<Mojo::UserAgent::Transactor>.
+Alias for L<Mojo::UserAgent::Transactor/"tx">.
 
 =head2 C<build_websocket_tx>
 
   my $tx = $ua->build_websocket_tx('ws://localhost:3000');
 
-Alias for the C<websocket> method in L<Mojo::UserAgent::Transactor>.
+Alias for L<Mojo::UserAgent::Transactor/"websocket">.
 
 =head2 C<delete>
 
   my $tx = $ua->delete('http://kraih.com');
-  my $tx = $ua->delete('http://kraih.com' => {Accept => '*/*'};
-  my $tx = $ua->delete('http://kraih.com' => {Accept => '*/*'} => 'Hi!');
 
 Perform blocking HTTP C<DELETE> request and return resulting
-L<Mojo::Transaction::HTTP> object.
+L<Mojo::Transaction::HTTP> object, takes the exact same arguments as
+L<Mojo::UserAgent::Transactor/"tx"> (except for the method).
 You can also append a callback to perform requests non-blocking.
 
   $ua->delete('http://kraih.com' => sub {
@@ -816,11 +811,10 @@ C<https_proxy>, C<NO_PROXY> and C<no_proxy> for proxy information.
 =head2 C<get>
 
   my $tx = $ua->get('http://kraih.com');
-  my $tx = $ua->get('http://kraih.com' => {Accept => '*/*'});
-  my $tx = $ua->get('http://kraih.com' => {Accept => '*/*'} => 'Hi!');
 
 Perform blocking HTTP C<GET> request and return resulting
-L<Mojo::Transaction::HTTP> object.
+L<Mojo::Transaction::HTTP> object, takes the exact same arguments as
+L<Mojo::UserAgent::Transactor/"tx"> (except for the method).
 You can also append a callback to perform requests non-blocking.
 
   $ua->get('http://kraih.com' => sub {
@@ -832,11 +826,10 @@ You can also append a callback to perform requests non-blocking.
 =head2 C<head>
 
   my $tx = $ua->head('http://kraih.com');
-  my $tx = $ua->head('http://kraih.com' => {Accept => '*/*'});
-  my $tx = $ua->head('http://kraih.com' => {Accept => '*/*'} => 'Hi!');
 
 Perform blocking HTTP C<HEAD> request and return resulting
-L<Mojo::Transaction::HTTP> object.
+L<Mojo::Transaction::HTTP> object, takes the exact same arguments as
+L<Mojo::UserAgent::Transactor/"tx"> (except for the method).
 You can also append a callback to perform requests non-blocking.
 
   $ua->head('http://kraih.com' => sub {
@@ -855,11 +848,10 @@ Note that this method is EXPERIMENTAL and might change without warning!
 =head2 C<post>
 
   my $tx = $ua->post('http://kraih.com');
-  my $tx = $ua->post('http://kraih.com' => {Accept => '*/*'});
-  my $tx = $ua->post('http://kraih.com' => {Accept => '*/*'} => 'Hi!');
 
 Perform blocking HTTP C<POST> request and return resulting
-L<Mojo::Transaction::HTTP> object.
+L<Mojo::Transaction::HTTP> object, takes the exact same arguments as
+L<Mojo::UserAgent::Transactor/"tx"> (except for the method).
 You can also append a callback to perform requests non-blocking.
 
   $ua->post('http://kraih.com' => sub {
@@ -871,37 +863,10 @@ You can also append a callback to perform requests non-blocking.
 =head2 C<post_form>
 
   my $tx = $ua->post_form('http://kraih.com/foo' => {test => 123});
-  my $tx = $ua->post_form(
-    'http://kraih.com/foo'
-    'UTF-8',
-    {test => 123}
-  );
-  my $tx  = $ua->post_form(
-    'http://kraih.com/foo',
-    {test => 123},
-    {Accept => '*/*'}
-  );
-  my $tx  = $ua->post_form(
-    'http://kraih.com/foo',
-    'UTF-8',
-    {test => 123},
-    {Accept => '*/*'}
-  );
-  my $tx = $ua->post_form(
-    'http://kraih.com/foo',
-    {file => {file => '/foo/bar.txt'}}
-  );
-  my $tx= $ua->post_form(
-    'http://kraih.com/foo',
-    {file => {content => 'lalala'}}
-  );
-  my $tx = $ua->post_form(
-    'http://kraih.com/foo',
-    {myzip => {file => $asset, filename => 'foo.zip'}}
-  );
 
 Perform blocking HTTP C<POST> request with form data and return resulting
-L<Mojo::Transaction::HTTP> object.
+L<Mojo::Transaction::HTTP> object, takes the exact same arguments as
+L<Mojo::UserAgent::Transactor/"form">.
 You can also append a callback to perform requests non-blocking.
 
   $ua->post_form('http://kraih.com' => {q => 'test'} => sub {
@@ -913,11 +878,10 @@ You can also append a callback to perform requests non-blocking.
 =head2 C<put>
 
   my $tx = $ua->put('http://kraih.com');
-  my $tx = $ua->put('http://kraih.com' => {Accept => '*/*'});
-  my $tx = $ua->put('http://kraih.com' => {Accept => '*/*'} => 'Hi!');
 
 Perform blocking HTTP C<PUT> request and return resulting
-L<Mojo::Transaction::HTTP> object.
+L<Mojo::Transaction::HTTP> object, takes the exact same arguments as
+L<Mojo::UserAgent::Transactor/"tx"> (except for the method).
 You can also append a callback to perform requests non-blocking.
 
   $ua->put('http://kraih.com' => sub {
@@ -952,11 +916,9 @@ Note that this method is EXPERIMENTAL and might change without warning!
 =head2 C<websocket>
 
   $ua->websocket('ws://localhost:3000' => sub {...});
-  $ua->websocket(
-    'ws://localhost:3000' => {'User-Agent' => 'Agent 1.0'} => sub {...}
-  );
 
-Open a non-blocking WebSocket connection with transparent handshake.
+Open a non-blocking WebSocket connection with transparent handshake, takes
+the exact same arguments as L<Mojo::UserAgent::Transactor/"websocket">.
 
   $ua->websocket('ws://localhost:3000/echo' => sub {
     my $tx = pop;

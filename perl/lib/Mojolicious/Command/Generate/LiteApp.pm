@@ -22,13 +22,14 @@ sub run {
 
 1;
 __DATA__
+
 @@ liteapp
 %% my $class = shift;
 #!/usr/bin/env perl
 use Mojolicious::Lite;
 
 # Documentation browser under "/perldoc" (this plugin requires Perl 5.10)
-plugin 'pod_renderer';
+plugin 'PODRenderer';
 
 get '/welcome' => sub {
   my $self = shift;
@@ -36,18 +37,19 @@ get '/welcome' => sub {
 };
 
 app->start;
-<%%= '__DATA__' %%>
+<%%%%>__DATA__
 
-<%%= '@@ index.html.ep' %%>
+<%%%%>@@ index.html.ep
 % layout 'default';
 % title 'Welcome';
 Welcome to Mojolicious!
 
-<%%= '@@ layouts/default.html.ep' %%>
+<%%%%>@@ layouts/default.html.ep
 <!doctype html><html>
   <head><title><%= title %></title></head>
   <body><%= content %></body>
 </html>
+
 __END__
 =head1 NAME
 

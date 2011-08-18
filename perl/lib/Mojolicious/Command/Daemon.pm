@@ -21,8 +21,8 @@ These options are available:
   --proxy                 Activate reverse proxy support, defaults to the
                           value of MOJO_REVERSE_PROXY.
   --requests <number>     Set maximum number of requests per keep-alive
-                          connection, defaults to 100.
-  --user <name>           Set user name for process.
+                          connection, defaults to 25.
+  --user <name>           Set username for process.
   --websocket <seconds>   Set WebSocket timeout, defaults to 300.
 EOF
 
@@ -33,7 +33,8 @@ sub run {
   my $self   = shift;
   my $daemon = Mojo::Server::Daemon->new;
 
-  local @ARGV = @_ if @_;
+  # Options
+  local @ARGV = @_;
   my @listen;
   GetOptions(
     'backlog=i'   => sub { $daemon->backlog($_[1]) },
@@ -47,10 +48,9 @@ sub run {
     'websocket=i' => sub { $daemon->websocket_timeout($_[1]) }
   );
 
+  # Start
   $daemon->listen(\@listen) if @listen;
   $daemon->run;
-
-  return $self;
 }
 
 1;
@@ -98,7 +98,7 @@ and implements the following new ones.
 
 =head2 C<run>
 
-  $daemon = $daemon->run(@ARGV);
+  $daemon->run(@ARGV);
 
 Run this command.
 

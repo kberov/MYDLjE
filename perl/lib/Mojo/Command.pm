@@ -144,7 +144,7 @@ sub get_data {
 sub help {
   my $self = shift;
   print $self->usage;
-  exit;
+  exit 0;
 }
 
 sub rel_dir {
@@ -284,8 +284,6 @@ sub run {
     print "  $name$padding   $description";
   }
   print $self->hint;
-
-  return $self;
 }
 
 sub start {
@@ -358,7 +356,7 @@ Mojo::Command - Command Base Class
     my $self = shift;
 
     # Handle options
-    local @ARGV = @_ if @_;
+    local @ARGV = @_;
     GetOptions('something' => sub { $something = 1 });
 
     # Magic here! :)

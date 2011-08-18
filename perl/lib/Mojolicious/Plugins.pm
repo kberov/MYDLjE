@@ -21,15 +21,28 @@ sub add_hook {
 sub load_plugin {
   my ($self, $name) = @_;
 
+  # DEPRECATED in Smiling Face With Sunglasses!
+  my %special = (
+    ep_render    => 'EPRenderer',
+    epl_renderer => 'EPLRenderer',
+    i18n         => 'I18N',
+    json_config  => 'JSONConfig',
+    pod_renderer => 'PODRenderer'
+  );
+  if (my $new = $special{$name}) {
+    warn qq/Plugin "$name" is DEPRECATED in favor of "$new"!!!\n/;
+    $name = $new;
+  }
+
   # Module
-  if ($name =~ /^[A-Z]+/) { return $name->new if $self->_load($name) }
+  if ($name =~ /^[A-Z]/ && $self->_load($name)) { return $name->new }
 
   # Search plugin by name
   else {
 
     # Class
     my $class = $name;
-    camelize $class;
+    camelize $class if $class =~ /^[a-z]/;
 
     # Try all namspaces
     for my $namespace (@{$self->namespaces}) {
@@ -134,19 +147,23 @@ from your application.
 
 =head2 C<load_plugin>
 
-  my $plugin = $plugins->load_plugin('something');
-  my $plugin = $plugins->load_plugin('Foo::Bar');
+  my $plugin = $plugins->load_plugin('some_thing');
+  my $plugin = $plugins->load_plugin('SomeThing');
+  my $plugin = $plugins->load_plugin('MyApp::Plugin::SomeThing');
 
 Load a plugin from the configured namespaces or by full module name.
 
 =head2 C<register_plugin>
 
-  $plugins->register_plugin('something', $app);
-  $plugins->register_plugin('something', $app, foo => 23);
-  $plugins->register_plugin('something', $app, {foo => 23});
-  $plugins->register_plugin('Foo::Bar', $app);
-  $plugins->register_plugin('Foo::Bar', $app, foo => 23);
-  $plugins->register_plugin('Foo::Bar', $app, {foo => 23});
+  $plugins->register_plugin('some_thing', $app);
+  $plugins->register_plugin('some_thing', $app, foo => 23);
+  $plugins->register_plugin('some_thing', $app, {foo => 23});
+  $plugins->register_plugin('SomeThing', $app);
+  $plugins->register_plugin('SomeThing', $app, foo => 23);
+  $plugins->register_plugin('SomeThing', $app, {foo => 23});
+  $plugins->register_plugin('MyApp::Plugin::SomeThing', $app);
+  $plugins->register_plugin('MyApp::Plugin::SomeThing', $app, foo => 23);
+  $plugins->register_plugin('MyApp::Plugin::SomeThing', $app, {foo => 23});
 
 Load a plugin from the configured namespaces or by full module name and run
 C<register>.

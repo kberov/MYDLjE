@@ -8,7 +8,7 @@ use overload
 use Mojo::Util qw/url_escape url_unescape/;
 use Mojo::URL;
 
-has [qw/leading_slash trailing_slash/] => 0;
+has [qw/leading_slash trailing_slash/];
 has parts => sub { [] };
 
 sub new {
@@ -17,18 +17,14 @@ sub new {
   return $self;
 }
 
+# DEPRECATED in Smiling Face With Sunglasses!
 sub append {
+  warn <<EOF;
+Mojo::Path->append is DEPRECATED in favor of using Mojo::Path->parts
+directly!!!
+EOF
   my $self = shift;
-
-  for (@_) {
-    my $value = "$_";
-
-    # *( pchar / "/" / "?" )
-    url_escape $value, $Mojo::URL::PCHAR;
-
-    push @{$self->parts}, $value;
-  }
-
+  push @{$self->parts}, @_;
   return $self;
 }
 
@@ -79,8 +75,8 @@ sub parse {
 
   # Leading and trailing slash
   $path = '' unless defined $path;
-  $path =~ /^\// ? $self->leading_slash(1)  : $self->leading_slash(0);
-  $path =~ /\/$/ ? $self->trailing_slash(1) : $self->trailing_slash(0);
+  $path =~ /^\// ? $self->leading_slash(1)  : $self->leading_slash(undef);
+  $path =~ /\/$/ ? $self->trailing_slash(1) : $self->trailing_slash(undef);
 
   # Parse
   url_unescape $path;
@@ -112,10 +108,8 @@ sub to_string {
   # Escape
   my @path;
   for my $part (@{$self->parts}) {
-
-    # *( pchar / "/" / "?" )
     my $escaped = $part;
-    url_escape $escaped, $Mojo::URL::PCHAR;
+    url_escape $escaped, "$Mojo::URL::UNRESERVED$Mojo::URL::SUBDELIM\:\@";
     push @path, $escaped;
   }
 
@@ -182,12 +176,6 @@ following new ones.
   my $path = Mojo::Path->new('/foo/bar%3B/baz.html');
 
 Construct a new L<Mojo::Path> object.
-
-=head2 C<append>
-
-  $path = $path->append(qw/foo bar/);
-
-Append parts to path.
 
 =head2 C<canonicalize>
 

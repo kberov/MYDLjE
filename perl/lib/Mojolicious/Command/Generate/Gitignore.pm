@@ -20,6 +20,7 @@ sub run {
 
 1;
 __DATA__
+
 @@ gitignore
 .*
 !.gitignore
@@ -32,6 +33,7 @@ Makefile*
 MANIFEST*
 !MANIFEST.SKIP
 pm_to_blib
+
 __END__
 =head1 NAME
 
@@ -74,7 +76,7 @@ L<Mojo::Command> and implements the following new ones.
 
 =head2 C<run>
 
-  $gitignore = $gitignore->run(@ARGV);
+  $gitignore->run(@ARGV);
 
 Run this command.
 

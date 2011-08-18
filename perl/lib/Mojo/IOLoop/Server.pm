@@ -75,7 +75,7 @@ sub DESTROY {
   my $self = shift;
   if (my $cert = $self->{cert}) { unlink $cert if -w $cert }
   if (my $key  = $self->{key})  { unlink $key  if -w $key }
-  return unless my $watcher = $self->iowatcher;
+  return unless my $watcher = $self->{iowatcher};
   $self->pause if $self->{handle};
   $watcher->remove($_) for values %{$self->{handles}};
 }
@@ -286,6 +286,14 @@ L<Mojo::IOLoop::Server> accepts incoming socket connections for
 L<Mojo::IOLoop>.
 Note that this module is EXPERIMENTAL and might change without warning!
 
+=head1 EVENTS
+
+L<Mojo::IOLoop::Server> can emit the following events.
+
+=head2 C<accept>
+
+Emitted for each accepted connection.
+
 =head1 ATTRIBUTES
 
 L<Mojo::IOLoop::Server> implements the following attributes.
@@ -362,14 +370,6 @@ Stop accepting connections.
   $server->resume;
 
 Start accepting connections.
-
-=head1 EVENTS
-
-L<Mojo::IOLoop::Server> can emit the following events.
-
-=head2 C<accept>
-
-Emitted for each accepted connection.
 
 =head1 SEE ALSO
 

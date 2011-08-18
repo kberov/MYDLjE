@@ -14,13 +14,6 @@ use File::Spec;
 sub import {
   my $class = shift;
 
-  # Lite apps are strict!
-  strict->import;
-  warnings->import;
-
-  # Lite apps are modern!
-  feature->import(':5.10') if $] >= 5.010;
-
   # Executable
   $ENV{MOJO_EXE} ||= (caller)[1];
 
@@ -65,6 +58,9 @@ sub import {
 
   # Shagadelic!
   *{"${caller}::shagadelic"} = sub { $app->start(@_) };
+
+  # Lite apps are strict!
+  Mojo::Base->import(-strict);
 }
 
 1;
@@ -479,8 +475,8 @@ Restrictive placeholders can also be used for format detection.
 
 =head2 Content Negotiation
 
-For resources with different representations that require truly C<RESTful>
-content negotiation you can also use C<respond_to>.
+For resources with different representations and that require truly
+C<RESTful> content negotiation you can also use C<respond_to>.
 
   # /hello (Accept: application/json)
   # /hello (Accept: text/xml)
@@ -845,38 +841,21 @@ See also the tutorial above for more argument variations.
 
   helper foo => sub {...};
 
-Add a new helper that will be available as a method of the controller object
-and the application object, as well as a function in C<ep> templates.
-
-  # Helper
-  helper add => sub { $_[1] + $_[2] };
-
-  # Controller/Application
-  my $result = $self->add(2, 3);
-
-  # Template
-  <%= add 2, 3 %>
-
+Alias for L<Mojolicious/"helper">.
 Note that this function is EXPERIMENTAL and might change without warning!
 
 =head2 C<hook>
 
   hook after_dispatch => sub {...};
 
-Add hooks to named events, see L<Mojolicious> for a list of all available
-events.
+Alias for L<Mojolicious/"hook">.
 Note that this function is EXPERIMENTAL and might change without warning!
 
 =head2 C<plugin>
 
-  plugin 'something';
-  plugin 'something', foo => 23;
-  plugin 'something', {foo => 23};
-  plugin 'Foo::Bar';
-  plugin 'Foo::Bar', foo => 23;
-  plugin 'Foo::Bar', {foo => 23};
+  plugin 'SomeThing';
 
-Load plugins, see L<Mojolicious> for a list of all included example plugins.
+Alias for L<Mojolicious/"plugin">.
 
 =head2 C<post>
 

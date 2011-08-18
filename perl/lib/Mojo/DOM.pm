@@ -64,7 +64,10 @@ EOF
   shift->prepend(@_);
 }
 
-sub all_text { shift->_text(1) }
+sub all_text {
+  my ($self, $trim) = @_;
+  return $self->_text($self->tree, 1, defined $trim ? $trim : 1);
+}
 
 sub append { shift->_add(1, @_) }
 
@@ -301,7 +304,10 @@ sub root {
   );
 }
 
-sub text { shift->_text(0) }
+sub text {
+  my ($self, $trim) = @_;
+  return $self->_text($self->tree, 0, defined $trim ? $trim : 1);
+}
 
 sub to_xml { shift->[0]->render }
 
@@ -377,42 +383,49 @@ sub _parse {
 }
 
 sub _text {
-  my ($self, $recursive) = @_;
+  my ($self, $tree, $recurse, $trim) = @_;
+
+  # Don't trim preformatted text
+  my $start = 4;
+  if ($tree->[0] eq 'root') { $start = 1 }
+  elsif ($trim) {
+    my $parent = $tree;
+    while ($parent->[0] eq 'tag') {
+      $trim = 0 if $parent->[1] eq 'pre';
+      last unless $parent = $parent->[3];
+    }
+  }
 
   # Walk tree
-  my $text  = '';
-  my $tree  = $self->tree;
-  my $start = $tree->[0] eq 'root' ? 1 : 4;
-  my @stack = @$tree[$start .. $#$tree];
-  while (my $e = shift @stack) {
+  my $text = '';
+  for my $e (@$tree[$start .. $#$tree]) {
     my $type = $e->[0];
 
-    # Add children of nested tag to stack
-    if ($type eq 'tag') {
-      unshift @stack, @$e[4 .. $#$e] if $recursive;
-      next;
-    }
+    # Nested tag
+    my $content = '';
+    if ($type eq 'tag' && $recurse) { $content = $self->_text($e, 1, $trim) }
 
     # Text
-    my $content = '';
-    if ($type eq 'text') {
+    elsif ($type eq 'text') {
       $content = $e->[1];
 
       # Trim whitespace
-      $content =~ s/^\s*\n+\s*//;
-      $content =~ s/\s*\n+\s*$//;
-      $content =~ s/\s*\n+\s*/\ /g;
-
-      # Add leading whitespace if punctuation allows it
-      $content = " $content"
-        if $text =~ /\S$/ && $content =~ /^[^\.\!\?\,\;\:]/;
+      if ($trim) {
+        $content =~ s/^\s*\n+\s*//;
+        $content =~ s/\s*\n+\s*$//;
+        $content =~ s/\s*\n+\s*/\ /g;
+      }
     }
 
     # CDATA or raw text
     elsif ($type eq 'cdata' || $type eq 'raw') { $content = $e->[1] }
 
-    # Ignore whitespace blocks
-    $text .= $content if $content =~ /\S+/;
+    # Add leading whitespace if punctuation allows it
+    $content = " $content"
+      if $text =~ /\S\z/ && $content =~ /^[^\.\!\?\,\;\:\s]+/;
+
+    # Trim whitespace blocks
+    $text .= $content if $content =~ /\S+/ || !$trim;
   }
 
   return $text;
@@ -501,9 +514,13 @@ Construct a new L<Mojo::DOM> object.
 
 =head2 C<all_text>
 
-  my $text = $dom->all_text;
+  my $trimmed   = $dom->all_text;
+  my $untrimmed = $dom->all_text(0);
 
-Extract all text content from DOM structure.
+Extract all text content from DOM structure, smart whitespace trimming is
+activated by default.
+Note that the trim argument of this method is EXPERIMENTAL and might change
+without warning!
 
 =head2 C<append>
 
@@ -641,9 +658,13 @@ Find root node.
 
 =head2 C<text>
 
-  my $text = $dom->text;
+  my $trimmed   = $dom->text;
+  my $untrimmed = $dom->text(0);
 
-Extract text content from element only, not including child elements.
+Extract text content from element only (not including child elements), smart
+whitespace trimming is activated by default.
+Note that the trim argument of this method is EXPERIMENTAL and might change
+without warning!
 
 =head2 C<to_xml>
 

@@ -145,6 +145,11 @@ sub say {
   print $handle $self->{bytestream}, "\n";
 }
 
+sub secure_compare {
+  my ($self, $check) = @_;
+  return Mojo::Util::secure_compare $self->{bytestream}, $check;
+}
+
 sub sha1_bytes {
   my $self = shift;
   $self->{bytestream} = Mojo::Util::sha1_bytes $self->{bytestream};
@@ -277,9 +282,10 @@ Base64 encode bytestream.
 
   $stream = $stream->camelize;
 
-Camelize bytestream.
+Convert snake case bytestream to camel case and replace C<-> with C<::>.
 
-  foo_bar -> FooBar
+  foo_bar     -> FooBar
+  foo_bar-baz -> FooBar::Baz
 
 =head2 C<clone>
 
@@ -291,9 +297,10 @@ Clone bytestream.
 
   $stream = $stream->decamelize;
 
-Decamelize bytestream.
+Convert camel case bytestream to snake case and replace C<::> with C<->.
 
-  FooBar -> foo_bar
+  FooBar      -> foo_bar
+  FooBar::Baz -> foo_bar-baz
 
 =head2 C<decode>
 
@@ -386,6 +393,12 @@ Quote bytestream.
   $stream->say(*STDERR);
 
 Print bytestream to handle or STDOUT and append a newline.
+
+=head2 C<secure_compare>
+
+  my $success = $stream->secure_compare($string);
+
+Constant time comparison algorithm to prevent timing attacks.
 
 =head2 C<sha1_bytes>
 

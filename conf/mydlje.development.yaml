@@ -49,12 +49,12 @@ plugins:
     limit: 50
   charset:
     charset: UTF-8
-  i18n:
+  I18N:
     default: en
     namespace: MYDLjE::I18N
   powered_by:
     name: 'MYDLjE (Mojolicious (Perl))'
-  pod_renderer: 1
+  PODRenderer: 1
   validator: 1
 plugins_namespaces:
   - MYDLjE::Plugin

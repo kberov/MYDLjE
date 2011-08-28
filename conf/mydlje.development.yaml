@@ -85,3 +85,21 @@ routes:
 #Content-TypeS
 types:
   xhtml: application/xhtml+xml; charset=utf-8
+
+MYDLjE::Content::Form::ui:
+  data_type:
+    - page
+    - book
+    - chapter
+    - article
+    - question
+    - answer
+    - note
+    - brick
+  data_format:
+    - text
+    - textile
+    - markdown
+    - html
+    - template
+

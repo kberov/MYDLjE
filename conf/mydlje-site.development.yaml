@@ -1,0 +1,38 @@
+---
+site_name: MYDLjE
+templates_root: templates/site
+#get MORE strict
+types:
+  html: 'application/xhtml+xml; charset=utf-8'
+plugins:
+  alloy_renderer:
+    syntax: TT
+    template_options:
+      TRIM: 1
+      #Note: INCLUDE_PATH works only from within templates
+      #INCLUDE_PATH is relative to MOJO_HOME(for now).
+      INCLUDE_PATH:
+        - templates
+        - templates/site
+      #DEBUG: 1
+      PRE_PROCESS:
+        - site_pre_process.tt
+        - form_macros_pre_process.tt
+        - macros_pre_process.tt
+        - site_macros_pre_process.tt
+      COMPILE_PERL: 2
+      LOAD_PERL: 1
+      DEFAULT: template_not_found.tt
+      ENCODING: 'UTF-8'
+      #EVAL_PERL: *true      #use perl in templates only as last resort - not recommended
+      PLUGINS:
+        PageTree: MYDLjE::Template::PageTree
+      #TODO if needed 
+      #
+      POST_CHOMP: '~'
+      PRE_CHOMP: '~'
+      SEMICOLONS: 0
+      SHOW_UNDEFINED_INTERP: 0
+
+test_utf8: 试验,δοκιμή,проба 
+#TODO: Site routes

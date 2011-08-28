@@ -1,0 +1,16 @@
+[%#
+    This file is for setting up variables, blocks, macros, etc which are available for
+    all templates used in the MYDLjE::Site application.
+%][%
+    app = c.app;
+    MOJO_APP = app.env.MOJO_APP;
+    #the current user
+    USER = c.msession.user;
+    JQ_UI_THEME = app.config('jq_ui_theme');
+    LANGUAGE = c.languages();
+    DEFAULT_WRAPPER = 'layouts/site_layout.html.tt';
+    UNLESS TEMPLATE_WRAPPER;
+      TEMPLATE_WRAPPER = DEFAULT_WRAPPER
+    END;
+
+~%]

@@ -153,10 +153,10 @@ sub get_list {
 
   my $where = {
     data_type => {like => ($form->{data_type} || '%')},
-    deleted   => 0,
-    language  => $form->{language}
+    deleted => 0,
   };
-  $where->{page_id} = $form->{page_id} if $form->{page_id};
+  $where->{language} = $form->{language} if $form->{language};
+  $where->{page_id}  = $form->{page_id}  if $form->{page_id};
   my $order = $form->{order} ? '-asc' : '-desc';
   $form->{order_by} ||= 'id';
 

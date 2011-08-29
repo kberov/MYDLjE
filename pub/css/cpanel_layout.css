@@ -166,7 +166,8 @@ ul.items {
 }
 ul.items a {display: inline-block;}
 
-ul.items li.page, ul.items li.domain, ul.items li.article {                                                  
+ul.items li.page, ul.items li.domain, ul.items li.article,
+ul.items li.brick {                                                  
   list-style-type: none;
   margin: 0;
   padding-right: 0.5ex;

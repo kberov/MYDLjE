@@ -7,7 +7,7 @@ require Mojo::Util;
 has pid => sub { shift->get('id') || 0 };
 has language => sub {
   ($_[0]->c->req->param('content.language'))
-    || $_[0]->app->config('plugins')->{i18n}{default};
+    || $_[0]->app->config('plugins')->{I18N}{default};
 };
 has domain_id => sub { shift->msession('domain_id') || 0 };
 has item_template => 'site/pages_item.html.tt';

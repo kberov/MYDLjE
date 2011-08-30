@@ -4,10 +4,40 @@ use MYDLjE::Site::C;
 
 has controller_class => 'MYDLjE::Site::C';
 
+my $CONFIG;
+
+sub config {
+  shift;
+  return $CONFIG->stash(@_);
+}
 
 sub startup {
   my $app = shift;
-  $app->SUPER::startup;
+  $CONFIG = MYDLjE::Config->singleton(log => $app->log);
+  return unless $app->config('installed');
+
+  $app->static->root($app->home . $app->config('static_root'));
+  $app->secret($app->config('secret'));
+  $app->sessions->cookie_name($app->config('session_cookie_name'));
+
+  #Load Plugins
+  $app->load_plugins();
+
+  # Routes
+  my $r = $app->routes;
+  $r->namespace($app->controller_class);
+  $app->load_routes($r);
+
+  $app->renderer->root($app->home . '/' . $app->config('templates_root'))
+    if $app->config('templates_root');
+
+  #Additional Content-TypeS (formats)
+  $app->add_types();
+
+  #Hooks
+  $app->hook(before_dispatch => \&MYDLjE::before_dispatch);
+  $app->hook(after_dispatch  => \&MYDLjE::after_dispatch);
+
   return;
 }
 
@@ -27,7 +57,8 @@ MYDLjE::Site - The L<site> Application class
 
 =head1 ATTRIBUTES
 
-L<MYDLjE::Site> inherits all attributes from L<MYDLjE> and implements/overrides the following ones.
+L<MYDLjE::Site> inherits all attributes from L<MYDLjE> and 
+implements/overrides the following ones.
 
 =head2 controller_class 
 

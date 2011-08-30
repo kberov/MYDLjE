@@ -8,7 +8,7 @@
     USER = c.msession.user;
     JQ_UI_THEME = app.config('jq_ui_theme');
     LANGUAGE = c.languages();
-    DEFAULT_WRAPPER = 'layouts/site_layout.html.tt';
+    DEFAULT_WRAPPER = 'layouts/default.html.tt';
     UNLESS TEMPLATE_WRAPPER;
       TEMPLATE_WRAPPER = DEFAULT_WRAPPER
     END;

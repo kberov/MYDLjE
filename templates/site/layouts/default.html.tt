@@ -8,11 +8,11 @@
         [% PROCESS 'layouts/default_header.html.tt' %]
         <!-- end main header -->
         <div id="main-columns" class="unit columns">
-          [% PROCESS 'layouts/default_left_navigation.html.tt'; END %]
+          [% PROCESS 'layouts/default_left_navigation.html.tt'; %]
           <div id="main-area" class="elastic column">
           [% content %]
           </div><!-- end div id="main-area" -->
-          [% PROCESS 'layouts/default_right_area.html.tt'; END %]
+          [% PROCESS 'layouts/default_right_area.html.tt'; %]
         </div><!-- end div id="main-columns" -->
       </div><!-- end div id="main-container" -->
     </div><!-- end div class="unit layout" -->

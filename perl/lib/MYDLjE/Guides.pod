@@ -3,11 +3,13 @@
 
 =head1 MYDLjE Guides
 
-Here is the place to start, no matter if you are a developer, admin or editor.
+Here is the place to start, no matter if you are a developer, designer, administrator
+ or editor.
 
 =head1 ADMINISTRATORS
 
-The L<MYDLjE::Guides::Admins> guide is for those who manage one or several sites based on MYDLjE.
+The L<MYDLjE::Guides::Admins> guide is for those who build and manage one 
+or several sites based on MYDLjE.
 It is expected that you have general knowledge on how the I<World Wide Web> works and are familiar with notions like Apache, HTTP, FTP, XML, XHTML. Some knowledge of Perl and JavaScript is useful but not mandatory.
 
 Thanks for using MYDLjE!
@@ -31,6 +33,11 @@ L<http://elasticss.com/documentation/>. There are also very good screencasts.
 
 =head1 EDITORS
 
+Editors are those who just write and publish content on the web. In MYDLjE we do not have 
+a WYSIWYG (What You See Is What You Get ) editor interface. This is in purpose.
+These tools rarely do things right and often hinder full control on the content.
+Instead we leave the content to the editor (human). We just help by adding some buttons for
+ quick formatting  and snippets generation on top of textareas. This is made using the L<MarkItUp|http://markitup.jaysalvat.com/home/> editor.
 
 =head1 SEE ALSO
 

@@ -90,7 +90,7 @@ shamelesly stollen from L<Regexp::Common>.
 
 =head2 user_id and group_id
 
-Tho which user and which group this domain belongs.
+To which user and which group this domain belongs.
 
 
 =head2 permissions

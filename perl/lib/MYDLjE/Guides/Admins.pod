@@ -14,7 +14,51 @@ There are two ways to install MYDLjE: manually and by using your web-browser.
 
 =head2 Domains Management
 
+MYDLjE can manage multiple domains (sites) in just one instalation. 
+The anatomy of a domain is described in L<MYDLjE::M::Domain>. Here we describe how to 
+manage domains via the L<cpanel> application user interface.  
+Click on the C<Domains> link in the left menu to go to the domain management area. 
+
+A list with currently managed domains is displayed. by defauld there 
+is one domain in the list - localhost. This is the fallback domain.
+When the L<site> application detetcts the current domain from C<$ENV{HTTP_HOST}> 
+it will first try to find it in the domains table and then look for pages belonging 
+to thatdomain. If the domain is not found the localhost domain is used.
+You can create a domain by clicking on the button on top:
+
+=begin html 
+
+<img src="/pub/css/icons/world_add.png" /> world with plus sign 
+(http://example.com/cpanel/site/edit_domain)
+
+=end html
+
+Note that you must have "parked" this domain to the directory where MYDLjE is deployed 
+so this can work. 
+This can be achieved for example in Apache by setting up L<ServerAlias|http://httpd.apache.org/docs/2.0/mod/core.html#serveralias>es in 
+Apache virtual host configuration. Further more the domains must
+be configured to the same IP. Ofcourse there are many possibilities, this is just one.
+MYDLjE just detects the current host by reading C<$ENV{HTTP_HOST}> environment variables.
+
+You edit a domain by clicking on the edit icon:
+
+=begin html 
+
+<img src="/pub/css/icons/world_edit.png" /> world with plus sign 
+(http://example.com/cpanel/site/edit_domain/0)
+
+=end html
+
+
 =head2 Pages Management
+
+The anatomy of a page is described in L<MYDLjE::M::Page>. Here we describe how to manage 
+pages via the L<cpanel> application user interface.
+Click on the "Add new Page" icon to create a new page. Click on the "Edit Page" icon 
+to edit a page. Click on the "Delete Page" to delete a page and I<B<all 
+content>> attached to it.
+
+
 
 =head2 Content Management
 

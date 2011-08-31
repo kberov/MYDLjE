@@ -29,7 +29,9 @@ articles, news...
 
 =head1 ACTIONS
 
-=head2 pages
+=head2 page
+
+Fetches a page and its content from database (pages) and renders it.
 
 
 

@@ -41,7 +41,8 @@ Instead we leave the content to the editor (human). We just help by adding some 
 
 =head1 SEE ALSO
 
-L<MYDLjE>
+L<MYDLjE> L<MYDLjE::Guides::Devs>, L<MYDLjE::Guides::Admins>, 
+L<MYDLjE::Guides::Design>
 
 =head1 AUTHOR AND COPYRIGHT
 

@@ -16,7 +16,7 @@ use Data::Dumper;
 use Test::More qw(no_plan);
 use Test::Mojo;
 
-my @apps = ('MYDLjE', 'MYDLjE::Site');
+my @apps = ('MYDLjE');
 my $i = 0;
 for my $app (@apps) {
   my $time = time;

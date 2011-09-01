@@ -8,6 +8,7 @@ MYDLjE::Guides::Admins - know how to manage a MYDLjE based site.
 =head1 INSTALLATION
 
 There are two ways to install MYDLjE: manually and by using your web-browser. 
+TODO:...
 
 
 =head1 ADMINISTRATION
@@ -19,11 +20,13 @@ The anatomy of a domain is described in L<MYDLjE::M::Domain>. Here we describe h
 manage domains via the L<cpanel> application user interface.  
 Click on the C<Domains> link in the left menu to go to the domain management area. 
 
-A list with currently managed domains is displayed. by defauld there 
-is one domain in the list - localhost. This is the fallback domain.
-When the L<site> application detetcts the current domain from C<$ENV{HTTP_HOST}> 
-it will first try to find it in the domains table and then look for pages belonging 
-to thatdomain. If the domain is not found the localhost domain is used.
+A list with currently managed domains is displayed. By defauld there 
+is one domain in the list - B<localhost>. This is the fallback domain.
+When the L<site> application detects the current domain from C<$ENV{HTTP_HOST}> 
+it will first try to find it in the C<domains> table and then look for pages belonging 
+to that domain. If the domain is not found the C<localhost> domain is used.
+This allows you to create pages in the default domain and everything will just work. 
+You can start with a I<one-domain> site and later create new domains if needed. 
 You can create a domain by clicking on the button on top:
 
 =begin html 
@@ -37,8 +40,8 @@ Note that you must have "parked" this domain to the directory where MYDLjE is de
 so this can work. 
 This can be achieved for example in Apache by setting up L<ServerAlias|http://httpd.apache.org/docs/2.0/mod/core.html#serveralias>es in 
 Apache virtual host configuration. Further more the domains must
-be configured to the same IP. Ofcourse there are many possibilities, this is just one.
-MYDLjE just detects the current host by reading C<$ENV{HTTP_HOST}> environment variables.
+be configured to the same IP. Ofcourse there are many possibilities, this is just one. 
+MYDLjE detects the current host by reading C<$ENV{HTTP_HOST}> environment variables.
 
 You edit a domain by clicking on the edit icon:
 
@@ -52,18 +55,24 @@ You edit a domain by clicking on the edit icon:
 
 =head2 Pages Management
 
-The anatomy of a page is described in L<MYDLjE::M::Page>. Here we describe how to manage 
+The anatomy of a page is clarifyed in L<MYDLjE::M::Page>. Here we describe how to manage 
 pages via the L<cpanel> application user interface.
 Click on the "Add new Page" icon to create a new page. Click on the "Edit Page" icon 
 to edit a page. Click on the "Delete Page" to delete a page and I<B<all 
 content>> attached to it.
 
+If you click on the help icon on top of the edit form help text 
+is displayed for each field. Clicking on a separate label help text is shown/hidden 
+for the corresponding field.
 
 
 =head2 Content Management
 
+TODO:...
+
 =head2 Users Management
 
+TODO: Not implemented..
 
 
 
@@ -75,6 +84,12 @@ L<MYDLjE::Guides>, L<MYDLjE::Guides::Devs>
 
 (c) 2011 Красимир Беров L<k.berov@gmail.com>
 
-MYDLjE::Guides by Красимир Беров is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Based on a work at github.com.
+MYDLjE code is licensed under LGPLv3.
+
+
+=begin html
+
+<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-nc-sa/3.0/80x15.png" /></a><br /><span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">MYDLjE::Guides</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="https://github.com/kberov/MYDLjE" property="cc:attributionName" rel="cc:attributionURL">Красимир Беров</a> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License</a>.<br />Based on a work at <a xmlns:dct="http://purl.org/dc/terms/" href="https://github.com/kberov/MYDLjE/blob/master/perl/lib/MYDLjE/Guides.pod" rel="dct:source">github.com</a>.
+
+=end html
 

@@ -33,4 +33,9 @@ L<MYDLjE::ControlPanel::C> inherits most attributes from L<MYDLjE::C> and implem
 L<MYDLjE::Guides>, L<MYDLjE::C>, L<MYDLjE::Site::C>
 
 
+=head1 AUTHOR AND COPYRIGHT
+
+(c) 2011 Красимир Беров L<k.berov@gmail.com>
+
+This code is licensed under LGPLv3.
 

@@ -6,9 +6,12 @@ MYDLjE::Guides::Devs - know how to contribute code to MYDLjE
 
 =head1 INTRO
 
-MYDLjE is simply a bundle of three L<Mojolicious> applications that work together well.
+MYDLjE is simply a bundle of three L<Mojolicious> applications that 
+share a lot of code and work together well. 
 So I<everything> you know so far about L<Mojolicious> applies.
-If you are not sure, go to L<Mojolicious::Guides> and then come back.
+If you are not sure what We are talking about, go to L<Mojolicious::Guides> 
+and then come back.
+
 You are back? Great! Now we can get to the point.
 
 =head1 FILES STRUCTURE
@@ -16,7 +19,12 @@ You are back? Great! Now we can get to the point.
 
   $ENV{MOJO_HOME}
       |-- conf
+      |-- cpanel*
+      |-- favicon.ico
+      |-- index.xhtml
+      |-- LGPLv3.0.txt
       |-- log
+      |-- mydlje*
       |-- perl
       |   |-- bin
       |   |-- lib
@@ -27,12 +35,17 @@ You are back? Great! Now we can get to the point.
       |   |-- dtd
       |   |-- home
       |   `-- js
+      |-- README.html
+      |-- README.pod
+      |-- site*
       |-- templates
       |   |-- cpanel
       |   `-- layouts
       `-- tmp
 
 L<MOJO_HOME|Mojolicious::Guides::Cheatsheet/MOJO_HOME> is the root directory for your L<MYDLjE>-based system. It is auto-discovered when an application starts. 
+The three applications C<cpanel>, C<mydlje> and C<site> reside in C<MOJO_HOME>. 
+This is possible thanks to the L<Mojolicious> flexibility.
 
 In the C<conf> directory are the configuration files. They are in YAML format. By default L<YAML::Tiny> is used for parsing, but if you have L<YAML> installed it will be used instead.
 See L<YAML::Any> for details.  See L<MYDLjE::Config> for details on how it works. 
@@ -94,21 +107,61 @@ L<http://docs.jquery.com/Qunit>
 
 =head2 Template Plugins
 
-=head2 MYDLjE/Mojolicious Applications
+=head1 MYDLjE/Mojolicious Applications
 
+As you already know from the L<README>, there are three applications that compose the 
+MYDLjE Application and Content Management Framework. These are
+L<MYDLjE>, L<MYDLjE::ControlPanel> and L<MYDLjE::Site>. 
+C<cpanel>, C<mydlje> and C<site> are simply startup scripts.
 
+You can write your own custom applications which do not use MYDLjE code at all, 
+but are based on Mojolicious only. In it's turn Mojolicious allows you to 
+use only what you want from it. 
+You can also write front-end applications similar to L<site> and use the MYDLjE 
+framework, database etc. You can also write embedded "applications" 
+which run in the site application or even embedded in a L<site> page. 
+How you will approach depends completely on you. 
+
+As you see we use the term "application" pretty deliberatly 
+and we mean by it I<something which is logically complete>.
+The I<shop> application may be implemented as a controller class 
+(MYDLjE::Site::C::Shop) with its own actions. 
+The I<forum> application may be represented by a page record in which a 
+Template plugin is called and its all business logic happens there 
+(in one page of your site).
+
+Finally... this is Perl. However some recommended approaches are described below.
+
+=head2 MYDLjE application
+
+TODO....
+
+=head2 MYDLjE::Site application
+
+TODO....
+
+=head2 Application embedded into MYDLjE::Site::C::Site->page
+
+TODO....
 
 
 
 
 =head1 SEE ALSO
 
-L<MYDLjE::Guides>, L<MYDLjE::Guides::Admins>
+L<MYDLjE::Guides>, L<MYDLjE::Guides::Admins>, 
+L<MYDLjE::Guides::Design>
 
 =head1 AUTHOR AND COPYRIGHT
 
 (c) 2011 Красимир Беров L<k.berov@gmail.com>
 
-MYDLjE::Guides by Красимир Беров is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-Based on a work at github.com.
+MYDLjE code is licensed under LGPLv3.
+
+
+=begin html
+
+<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-nc-sa/3.0/80x15.png" /></a><br /><span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">MYDLjE::Guides</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="https://github.com/kberov/MYDLjE" property="cc:attributionName" rel="cc:attributionURL">Красимир Беров</a> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License</a>.<br />Based on a work at <a xmlns:dct="http://purl.org/dc/terms/" href="https://github.com/kberov/MYDLjE/blob/master/perl/lib/MYDLjE/Guides.pod" rel="dct:source">github.com</a>.
+
+=end html
 

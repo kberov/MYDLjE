@@ -80,26 +80,28 @@ MYDLjE sends to the browser 100% well formed XML output.
 
 =head1 JavaScript
 
+TODO...
 
 
+=head1 APPLICATIONS
 
-=head1 SCALABILITY
+As you already know from the L<README>, there are three applications that compose the 
+MYDLjE Application and Content Management Framework. These are
+L<MYDLjE>, L<MYDLjE::ControlPanel> and L<MYDLjE::Site>. 
+C<cpanel>, C<mydlje> and C<site> are simply startup scripts.
 
+=head2 MYDLjE
 
-=head2 Tests
+See API documentation for L<MYDLjE>!
 
-Tests, Perltidy and PerlCritc are run by 
-$ENV{MOJO_HOME}/perl/bin/diagnostics.
+=head2 MYDLjE::ControlPanel
 
-=head2 Perl Best Practices
+See API documentation for L<MYDLjE::ControlPanel>!
 
-To enforce a common perl style we use L<perlcritic>.
-The configuration file is $ENV{MOJO_HOME}/.perlcriticrc
+=head2 MYDLjE::Site
 
-=head2 Qunit
+See API documentation for L<MYDLjE::Site>!
 
-TODO: add Qunit
-L<http://docs.jquery.com/Qunit>
 
 =head1 PLUGINS
 
@@ -107,12 +109,8 @@ L<http://docs.jquery.com/Qunit>
 
 =head2 Template Plugins
 
-=head1 MYDLjE/Mojolicious Applications
+=head1 Your own MYDLjE and Mojolicious Applications
 
-As you already know from the L<README>, there are three applications that compose the 
-MYDLjE Application and Content Management Framework. These are
-L<MYDLjE>, L<MYDLjE::ControlPanel> and L<MYDLjE::Site>. 
-C<cpanel>, C<mydlje> and C<site> are simply startup scripts.
 
 You can write your own custom applications which do not use MYDLjE code at all, 
 but are based on Mojolicious only. In it's turn Mojolicious allows you to 
@@ -124,9 +122,9 @@ How you will approach depends completely on you.
 
 As you see we use the term "application" pretty deliberatly 
 and we mean by it I<something which is logically complete>.
-The I<shop> application may be implemented as a controller class 
+The imaginary I<shop> application may be implemented as a controller class 
 (MYDLjE::Site::C::Shop) with its own actions. 
-The I<forum> application may be represented by a page record in which a 
+A I<forum> application may be represented by a page record in which a 
 Template plugin is called and its all business logic happens there 
 (in one page of your site).
 
@@ -144,6 +142,23 @@ TODO....
 
 TODO....
 
+=head1 SCALABILITY
+
+
+=head2 Tests
+
+Tests, Perltidy and PerlCritc are run by 
+C<$ENV{MOJO_HOME}/perl/bin/diagnostics>.
+
+=head2 Perl Best Practices
+
+To enforce a common perl style we use L<perlcritic>.
+The configuration file is C<$ENV{MOJO_HOME}/.perlcriticrc>
+
+=head2 Qunit
+
+TODO: add Qunit
+L<http://docs.jquery.com/Qunit>
 
 
 

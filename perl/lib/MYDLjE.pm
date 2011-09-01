@@ -169,15 +169,15 @@ __END__
 
 =head1 NAME
 
-MYDLjE - The Application class
+MYDLjE - The base Application class
 
 =head1 DESCRIPTION
 
 This class extends the L<Mojolicious> application class. It is the base 
 class that L<MYDLjE::ControlPanel> and L<MYDLjE::Site> extend.
 As the child application classes L<MYDLjE::ControlPanel> and L<MYDLjE::Site> have 
-corresponding starter scripts L<cpanel> and L<site> 
-this application class has its own L<mydlje> application starter. 
+corresponding starter scripts L<cpanel> and L<site>. 
+This application class has its own L<mydlje> application starter. 
 However this class implements only common functionality which is
 shared by the L<cpanel> and L<site> applications.
 

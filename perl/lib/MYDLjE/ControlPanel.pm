@@ -56,6 +56,8 @@ sub config {
 
 __END__
 
+=encoding utf8
+
 =head1 NAME
 
 MYDLjE::ControlPanel - The L<cpanel> Application class

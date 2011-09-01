@@ -92,16 +92,72 @@ C<cpanel>, C<mydlje> and C<site> are simply startup scripts.
 
 =head2 MYDLjE
 
+TODO...
+
 See API documentation for L<MYDLjE>!
 
 =head2 MYDLjE::ControlPanel
+
+TODO...
 
 See API documentation for L<MYDLjE::ControlPanel>!
 
 =head2 MYDLjE::Site
 
-See API documentation for L<MYDLjE::Site>!
+MYDLjE::Site works the same way as MYDLjE::ControlPanel does.
 
+Its main purpose is to display pages and content 
+stored in the databse by L<MYDLjE::ControlPanel>.
+Here is how a page gets displayed in the browser 
+after a user clicks on some link.
+
+=head3 Page request flow
+
+TODO: implement it
+
+=over
+
+The user is restored from L<msession|MYDLjE::C/msession>
+or a new msession is instantiated and an L<MYDLjE::M::User> instance is put in it.
+
+Current language is restored from C<$c-E<gt>msession('language')> or 
+C<$c-E<gt>req-E<gt>param('language')> is used. 
+C<$c-E<gt>req-E<gt>param('language')> takes precedence if both are provided. 
+If none of them is available, language is detected from the browser and 
+is used if supported by the system. Finally the system fallbacks to the 
+default language defined in mydlje-site configuration 
+file (eg. mydlje-site.development.yaml).
+
+The current domain is detected from C<$ENV{HTTP_HOST}> 
+(C<$c-E<gt>req-E<gt>headers-E<gt>host>).
+
+The page is retreived from table C<pages> by alias. 
+The passed alias is taken from C<$c-E<gt>stash('alias')>. 
+It is put there by Mojolicious. 
+If the page has its own template it will be used to render the page. 
+Otherwise the table is searched recursively for C<pid> with template.
+If no parent page with template is found the default page 
+(usually named "home") template is used.
+Finally C<page.html.tt> is used as fallback.
+The page template specifies the template wrapper, 
+which is the layout for the page to be used.
+
+The page content is retreived from table C<content> by C<page_id> and C<language>.
+The the content with C<data_type> "brick" is retreived recursively 
+from curent and then parent pages like the page template.
+
+C<permissions> field is used to filter the page and its content.
+C<published> and other fields are taken into account too 
+(see the L<MYDLjE::Site::C::Site> and mysql.queries.sql source).
+
+After all needed data is retreived it is put in the stash 
+(C<$c-E<gt>stash()>) and the page is rendered. 
+
+In the template furter processing may happen depending on business logic.
+
+=back
+
+See API documentation for L<MYDLjE::Site>!
 
 =head1 PLUGINS
 
@@ -125,7 +181,7 @@ and we mean by it I<something which is logically complete>.
 The imaginary I<shop> application may be implemented as a controller class 
 (MYDLjE::Site::C::Shop) with its own actions. 
 A I<forum> application may be represented by a page record in which a 
-Template plugin is called and its all business logic happens there 
+L<MYDLjE::Template> plugin is called and its all business logic happens there 
 (in one page of your site).
 
 Finally... this is Perl. However some recommended approaches are described below.

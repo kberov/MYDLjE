@@ -120,27 +120,38 @@ TODO: implement it
 The user is restored from L<msession|MYDLjE::C/msession>
 or a new msession is instantiated and an L<MYDLjE::M::User> instance is put in it.
 
-Current language is restored from C<$c-E<gt>msession('language')> or 
-C<$c-E<gt>req-E<gt>param('language')> is used. 
-C<$c-E<gt>req-E<gt>param('language')> takes precedence if both are provided. 
+MYDLjE::Site differenitiates  between content language and user interface language. 
+A user could browse English content while having messages in Bulgarian.
+Current content language is restored from C<$c-E<gt>session('c_language')> or 
+C<$c-E<gt>req-E<gt>param('c_language')> is used. 
+C<$c-E<gt>req-E<gt>param('c_language')> takes precedence if both are defined. 
 If none of them is available, language is detected from the browser and 
 is used if supported by the system. Finally the system fallbacks to the 
 default language defined in mydlje-site configuration 
-file (eg. mydlje-site.development.yaml).
+file (eg. mydlje-site.development.yaml) or its parent configuration 
+(mydlje.development.yaml). 
+
+The language switching and detection for the messages works the same way 
+but C<$c-E<gt>session('ui_language')> or 
+C<$c-E<gt>req-E<gt>param('ui_language')> is used.
 
 The current domain is detected from C<$ENV{HTTP_HOST}> 
 (C<$c-E<gt>req-E<gt>headers-E<gt>host>).
 
-The page is retreived from table C<pages> by alias. 
-The passed alias is taken from C<$c-E<gt>stash('alias')>. 
+The page is retreived from table C<pages> by alias and page properties are 
+retreived from table C<content> by data_type (C<page>) and 
+page_id (C<$page-E<gt>page_id>). 
+The passed alias is taken from C<$c-E<gt>stash('page_alias')>. 
 It is put there by Mojolicious. 
+
 If the page has its own template it will be used to render the page. 
-Otherwise the table is searched recursively for C<pid> with template.
+Otherwise the table is searched recursively for a parent page (C<pid>) 
+with defined template.
 If no parent page with template is found the default page 
 (usually named "home") template is used.
-Finally C<page.html.tt> is used as fallback.
-The page template specifies the template wrapper, 
-which is the layout for the page to be used.
+The page template specifies the template wrapper (C<TEMPLATE_WRAPPER>), 
+which is the layout for the page to be used. Defaults to 
+C<site/layouts/default.html.tt>.
 
 The page content is retreived from table C<content> by C<page_id> and C<language>.
 The the content with C<data_type> "brick" is retreived recursively 

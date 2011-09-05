@@ -6,7 +6,11 @@
     <meta name="keywords" content="[% KEYWORDS %]" />
         <link href="pub/css/[% JQ_UI_THEME %]/jquery-ui-current.custom.css" 
     rel="stylesheet" type="text/css" />
-    <link rel="canonical" href="[%# TODO c.url_for('current').to_abs() _ '.' _ format %]" />
+    [%#TODO Implement cannonical and alternate links
+    #<link rel="canonical" href="" />
+    http://googlewebmastercentral.blogspot.com/2010/09/unifying-content-under-multilingual.html
+    http://googlewebmastercentral.blogspot.com/2009/02/specify-your-canonical.html
+    %]
     <link href="pub/css/elastic.css" rel="stylesheet" type="text/css"/>
     <link href="pub/css/default_site_layout.css" rel="stylesheet" type="text/css"/>
     <script src="pub/js/jquery-current.min.js" type="text/javascript"></script>

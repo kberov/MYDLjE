@@ -309,39 +309,6 @@
        fy="131.30885"
        r="29.08952" />
     <filter
-       id="filter3071"
-       inkscape:label="Drop shadow"
-       width="1.5"
-       height="1.5"
-       x="-0.25"
-       y="-.25">
-      <feGaussianBlur
-         id="feGaussianBlur3073"
-         in="SourceAlpha"
-         stdDeviation="1"
-         result="blur" />
-      <feColorMatrix
-         id="feColorMatrix3075"
-         result="bluralpha"
-         type="matrix"
-         values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0.5 0 " />
-      <feOffset
-         id="feOffset3077"
-         in="bluralpha"
-         dx="4"
-         dy="4"
-         result="offsetBlur" />
-      <feMerge
-         id="feMerge3079">
-        <feMergeNode
-           id="feMergeNode3081"
-           in="offsetBlur" />
-        <feMergeNode
-           id="feMergeNode3083"
-           in="SourceGraphic" />
-      </feMerge>
-    </filter>
-    <filter
        inkscape:collect="always"
        id="filter3899">
       <feGaussianBlur

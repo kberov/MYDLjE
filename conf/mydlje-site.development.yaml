@@ -42,3 +42,54 @@ plugins:
 
 test_utf8: 试验,δοκιμή,проба 
 #TODO: Site routes
+
+routes:
+  /:page_alias/:data_type/:alias:
+    order: 111
+    to:
+      action: page
+      controller: site
+  /:page_alias/:data_type:
+    order: 112
+    to:
+      action: page
+      controller: site
+  /:page_alias:
+    order: 113
+    to:
+      action: page
+      controller: site
+  /:
+    order: 114
+    to:
+      action: page
+      controller: site
+#routes for t/02_mydlje.t
+  /hi:
+    order: 90
+    to:
+      action: hi
+      controller: site
+      id: 1
+  /hi/:id:
+    order: 91
+    to:
+      action: hi
+      controller: site
+      id: 1
+    via:
+      - get
+      - post
+  /c/hi/:id:
+    order: 92
+    to:
+      action: hi
+      controller: site
+      id: 1
+
+  /hisession:
+    order: 90
+    to:
+      action: hisession
+      controller: site
+      id: 1

@@ -76,3 +76,14 @@ __END__
 
 MYDLjE::Template::PageTree - A back-end Pages Tree and a front-end Site Map
 
+=head1 SEE ALSO
+
+L<MYDLjE::Template>, L<MYDLjE::PageContent>
+
+
+=head1 AUTHOR AND COPYRIGHT
+
+(c) 2011 Красимир Беров L<k.berov@gmail.com>
+
+This code is licensed under LGPLv3.
+

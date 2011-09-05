@@ -29,7 +29,7 @@ has FIELDS_VALIDATION => sub {
     %alias,
     page_type => {
       required    => 1,
-      constraints => [{in => ['regular', 'default', 'folder']},]
+      constraints => [{in => ['regular', 'default', 'folder', '404']},]
     },
     $self->FIELD_DEF('sorting'),
     expiry => {regexp => qr/^\d{1,6}$/x,},

@@ -17,7 +17,7 @@ use Test::More qw(no_plan);
 use Test::Mojo;
 
 my @apps = ('MYDLjE');
-my $i = 0;
+my $i    = 0;
 for my $app (@apps) {
   my $time = time;
   my $hi   = "Controller C from $app\::C with action hi and id 1 says Hi";

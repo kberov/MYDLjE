@@ -86,10 +86,11 @@ main_left_navigation:
         title: Pages
         icon: layout.png
         route: /site/pages
-      -
-        title: Templates
-        icon: layout_code.png
-        route: /site/templates
+#May be we will not implement this
+#      -
+#        title: Templates
+#        icon: layout_code.png
+#        route: /site/templates
       -
         title: I18N&L10N
         icon: text_letter_omega.png

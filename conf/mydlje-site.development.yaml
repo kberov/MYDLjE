@@ -33,8 +33,8 @@ plugins:
       #EVAL_PERL: *true      #use perl in templates only as last resort - not recommended
       PLUGINS:
         PageTree: MYDLjE::Template::PageTree
-      #TODO if needed 
-      #
+        PageContent: MYDLjE::Template::PageContent
+
       POST_CHOMP: '~'
       PRE_CHOMP: '~'
       SEMICOLONS: 0

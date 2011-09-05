@@ -1,6 +1,9 @@
 [% WRAPPER ${TEMPLATE_WRAPPER} %]
 <!-- start [%+ action %] -->
-
+[% 
+    USE PAGE_CONTENT = PageContent();
+    PAGE_CONTENT.render();
+%]
 page.html.tt
 <!-- end [%+ action %] -->
 [% END %]

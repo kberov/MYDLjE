@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="[% LANGUAGE %]">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="[% LANGUAGE %]">
   [% PROCESS 'layouts/default_head.html.tt' %]
   <body> <noscript><p>This page requires JavaScript.</p></noscript>
     <div class="unit layout">
+      <!-- start main header -->
+      [% PROCESS 'layouts/default_header.html.tt' %]
+      <!-- end main header -->
       <div id="main-container" class="container ui-widget ui-widget-content ui-corner-all">
-        <!-- start main header -->
-        [% PROCESS 'layouts/default_header.html.tt' %]
-        <!-- end main header -->
         <div id="main-columns" class="unit columns">
           [% PROCESS 'layouts/default_left_navigation.html.tt'; %]
           <div id="main-area" class="elastic column">
@@ -14,7 +14,13 @@
           </div><!-- end div id="main-area" -->
           [% PROCESS 'layouts/default_right_area.html.tt'; %]
         </div><!-- end div id="main-columns" -->
+                <!-- start main header -->
+        [% PROCESS 'layouts/default_header.html.tt' %]
+        <!-- end main header -->
       </div><!-- end div id="main-container" -->
+      <!-- start main footer -->
+      [% PROCESS 'layouts/default_footer.html.tt' %]
+      <!-- end main footer -->
     </div><!-- end div class="unit layout" -->
   </body>
 </html>

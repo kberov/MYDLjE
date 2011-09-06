@@ -16,15 +16,14 @@ sub page {
 
 }
 
-#Retreives page and page properties from database
-#and puts them into stash.
-sub _prepare_page {
-  my ($c, $user) = @_;
-  my $app = $c->app;
 
-  #$c->debug('stash:', $c->dumper($c->stash));
-  my $time        = time;
-  my $ui_language = $c->languages();    #registered by I18N
+#detects ui_language and c_language and returns them
+sub detect_and_set_languages {
+  my ($c) = @_;
+  my ($ui_language) =
+    ($c->stash('ui_language') || $c->req->param('ui_language') || $c->languages());
+  $c->stash(ui_language => $c->languages()) unless $c->stash('ui_language');
+  $c->session('ui_language', $ui_language) if $ui_language ne $c->languages();
   my ($c_language) = ($c->req->param('c_language') || $c->session('c_language'));
   $c_language ||= $ui_language;
   $c->session('c_language', $c_language)
@@ -33,36 +32,54 @@ sub _prepare_page {
   #if ($c_language ne $ui_language) {    #ui_language depends on c_language here
   #  $ui_language = $c->languages($c_language)->languages;
   #}
-  my $page_alias           = $c->stash('page_alias');
-  my $uid                  = $user->id;
-  my $read_permissions_sql = [$c->sql('read_permissions_sql'), $uid, $uid, $uid];
+  return ($ui_language, $c_language);
+}
 
-  my $where = {
-    domain_id => $c->msession('domain_id'),
-    published => 2,
-    start     => [{'=' => 0}, '<' => $time],
-    stop      => [{'=' => 0}, '>' => $time],
-    deleted   => 0,
-    -and      => [\$read_permissions_sql]
-  };
+sub _get_page {
+  my ($c, $where) = @_;
+  my $page_alias = $c->stash('page_alias');
 
   if ($page_alias) {
-    $where->{alias} = $page_alias;
+    $where->{alias} = $c->stash('page_alias');
   }
   else {
     $where->{page_type} = 'default';
   }
-  my $page = MYDLjE::M::Page->select($where);
+  return MYDLjE::M::Page->select($where);
+}
+
+sub _get_page_404 {
+  my ($c, $where) = @_;
+  $where->{page_type} = '404';
+  delete $where->{alias};
+  return MYDLjE::M::Page->select($where);
+}
+
+#Retreives page and page properties (MYDLjE::M::Content::Page) from database
+#and puts them into stash.
+sub _prepare_page {
+  my ($c, $user) = @_;
+  my $app = $c->app;
+
+  #$c->debug('stash:', $c->dumper($c->stash));
+  my $time = time;
+  my ($ui_language, $c_language) = $c->detect_and_set_languages();
+  my $uid                  = $user->id;
+  my $read_permissions_sql = [$c->sql('read_permissions_sql'), $uid, $uid, $uid];
+  my $where                = {
+    domain_id => $c->msession('domain_id'),
+    published => 2,
+    start     => [{'=' => 0}, '<' => $time],
+    stop      => [{'=' => 0}, '>' => $time],
+    -and      => [\$read_permissions_sql]
+  };
 
   #$c->debug($c->dumper($where));
+  my $page = $c->_get_page($where);
 
   #TODO implement a default page with 404 page_type and insert it during install
   if (not $page->id) {
-    $where->{page_type} = '404';
-    delete $where->{alias};
-    $page = MYDLjE::M::Page->select($where);
-
-    #$c->debug('404', $c->dumper($page->data));
+    $page = $c->_get_page_404($where);
     $c->stash(status => $page->page_type);
   }
 
@@ -89,6 +106,8 @@ sub _prepare_page {
   my $default_language = $app->config('plugins')->{I18N}{default};
   my $page_c_where     = {
     page_id => $page->id,
+    start   => [{'=' => 0}, '<' => $time],
+    stop    => [{'=' => 0}, '>' => $time],
     '-and' =>
       [\$read_permissions_sql, \"language IN( '$ui_language','$default_language')"],
   };

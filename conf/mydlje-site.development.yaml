@@ -44,26 +44,40 @@ test_utf8: 试验,δοκιμή,проба
 #TODO: Site routes
 
 routes:
+
   /:page_alias/:data_type/:alias:
     order: 111
     to:
       action: page
       controller: site
+      format: html
+      get_list_of_data_type: 0
+
   /:page_alias/:data_type:
     order: 112
     to:
       action: page
       controller: site
+      format: html
+      get_list_of_data_type: 1
   /:page_alias:
     order: 113
     to:
       action: page
       controller: site
+      data_type: note
+      get_list_of_data_type: 1
+      format: html
+
   /:
     order: 114
     to:
       action: page
       controller: site
+      page_alias: home
+      data_type: note
+      get_list_of_data_type: 1
+      format: html
 #routes for t/02_mydlje.t
   /hi:
     order: 90

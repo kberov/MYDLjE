@@ -134,12 +134,21 @@ sub load_routes {
   $config_routes ||= $app->config('routes') || {};
 
   foreach my $route (
-    sort { ($config_routes->{$a}{order} || 0) <=> ($config_routes->{$b}{order} || 0) }
+    sort {
+      ($config_routes->{$a}{order} || 11111) <=> ($config_routes->{$b}{order} || 11111)
+    }
     keys %$config_routes
     )
   {
+    next unless $config_routes->{$route}{to};
+    my %qrs;
+    if (scalar %{$config_routes->{$route}{qrs} || {}}) {
+      foreach my $k (keys %{$config_routes->{$route}{qrs}}) {
+        $qrs{$k} = qr/$config_routes->{$route}{qrs}{$k}/x;
+      }
+    }
 
-    my $way = $app_routes->route($route);
+    my $way = $app_routes->route($route, %qrs);
 
     #TODO: support other routes descriptions beside 'via'
     if ($config_routes->{$route}{via}) {

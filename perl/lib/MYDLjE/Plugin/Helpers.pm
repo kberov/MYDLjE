@@ -37,6 +37,14 @@ sub register {
       }
     );
     $app->helper(debug => sub { shift->app->log->debug(@_) });
+    $app->helper(
+      trim => sub {
+        my $string = shift;
+        $string =~ s/^\s+//gx;
+        $string =~ s/\s+$//gx;
+        return $string;
+      }
+    );
   }
 
   return;

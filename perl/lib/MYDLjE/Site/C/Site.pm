@@ -2,6 +2,7 @@ package MYDLjE::Site::C::Site;
 use MYDLjE::Base 'MYDLjE::Site::C';
 use List::Util qw(first);
 use MYDLjE::ControlPanel::C::Site;
+use MYDLjE::M::Content::Page;
 sub _domains { goto &MYDLjE::ControlPanel::C::Site::domains; }
 
 sub page {
@@ -19,17 +20,22 @@ sub page {
 #and puts them into stash.
 sub _prepare_page {
   my ($c, $user) = @_;
+  my $app = $c->app;
+
+  #$c->debug('stash:', $c->dumper($c->stash));
   my $time        = time;
   my $ui_language = $c->languages();    #registered by I18N
   my ($c_language) = ($c->req->param('c_language') || $c->session('c_language'));
   $c_language ||= $ui_language;
-  $c->session('c_language', $c_language) unless $c->session('c_language');
-  if ($c_language ne $ui_language) {    #ui_language depends on c_language here
-    $ui_language = $c->languages($c_language)->languages;
-  }
-  my $page_alias = $c->stash('page_alias');
-  my $uid        = $user->id;
-  my $and_sql    = [$c->sql('read_permissions_sql'), $uid, $uid, $uid];
+  $c->session('c_language', $c_language)
+    if $c_language ne ($c->session('c_language') || '');
+
+  #if ($c_language ne $ui_language) {    #ui_language depends on c_language here
+  #  $ui_language = $c->languages($c_language)->languages;
+  #}
+  my $page_alias           = $c->stash('page_alias');
+  my $uid                  = $user->id;
+  my $read_permissions_sql = [$c->sql('read_permissions_sql'), $uid, $uid, $uid];
 
   my $where = {
     domain_id => $c->msession('domain_id'),
@@ -37,7 +43,7 @@ sub _prepare_page {
     start     => [{'=' => 0}, '<' => $time],
     stop      => [{'=' => 0}, '>' => $time],
     deleted   => 0,
-    -and      => [\$and_sql]
+    -and      => [\$read_permissions_sql]
   };
 
   if ($page_alias) {
@@ -47,18 +53,21 @@ sub _prepare_page {
     $where->{page_type} = 'default';
   }
   my $page = MYDLjE::M::Page->select($where);
-  $c->debug($c->dumper($where));
+
+  #$c->debug($c->dumper($where));
 
   #TODO implement a default page with 404 page_type and insert it during install
   if (not $page->id) {
     $where->{page_type} = '404';
     delete $where->{alias};
     $page = MYDLjE::M::Page->select($where);
-    $c->debug('404', $c->dumper($page->data));
+
+    #$c->debug('404', $c->dumper($page->data));
     $c->stash(status => $page->page_type);
   }
 
-  #find page template
+  #Find page template up in the inheritance path and fallback to the default page
+  #for this domain.
   if (not $page->template) {
     my $id = $page->pid;
 
@@ -77,20 +86,28 @@ sub _prepare_page {
     }
 
   }
-  my $page_properties_where = {
-    data_type => 'page',
-    page_id   => $page->id,
-    language  => $ui_language,
+  my $default_language = $app->config('plugins')->{I18N}{default};
+  my $page_c_where     = {
+    page_id => $page->id,
+    '-and' =>
+      [\$read_permissions_sql, \"language IN( '$ui_language','$default_language')"],
   };
-  my $page_properties = MYDLjE::M::Content->select($page_properties_where);
+  my $page_c = MYDLjE::M::Content::Page->new;
+  my @rows = $c->dbix->select($page_c->TABLE, $page_c->COLUMNS, $page_c_where)->hashes;
+
+  #$c->debug($c->dumper(@rows));
+  #fallback to default language
+  $page_c->data($rows[0])
+    unless ($page_c->data($rows[1])->{id} and ($page_c->language eq $ui_language));
+
   $c->stash(
-    TITLE            => $page_properties->title,
-    DESCRIPTION      => $page_properties->description,
-    KEYWORDS         => $page_properties->keywords,
-    BODY             => $page_properties->body,
-    PAGE             => $page,
-    PAGE_PROPERTIES  => $page_properties,
-    CONTENT_LANGUAGE => $c_language,
+    TITLE       => $page_c->title,
+    DESCRIPTION => $page_c->description,
+    KEYWORDS    => $page_c->keywords,
+    BODY        => $page_c->body,
+    PAGE        => $page,
+    PAGE_C      => $page_c,
+    C_LANGUAGE  => $c_language,
 
   );
   my %render_options = ();

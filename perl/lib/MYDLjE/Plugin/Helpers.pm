@@ -36,9 +36,38 @@ sub register {
         return $textile->process($text);
       }
     );
-    $app->helper(debug => sub { shift->app->log->debug(@_) });
+  }    #end if ($config->{textile})
+  $app->helper(debug => sub { shift->app->log->debug(@_) });
+  if ($config->{markdown}) {
+    require Text::MultiMarkdown;
+    my $markdown_config =
+      (ref($config->{markdown}) && ref($config->{markdown}) eq 'HASH')
+      ? $config->{markdown}
+      : {};
+    my $markdown;
+    if (keys %$markdown_config) {
 
-  }
+      $markdown = Text::MultiMarkdown->new(%$markdown_config);
+    }
+    else {
+      $markdown = Text::MultiMarkdown->new(
+        empty_element_suffix => '/>',
+        tab_width            => 2,
+        use_wikilinks        => 1,
+      );
+    }
+    $app->helper(
+      markdown => sub {
+        my ($c, $text, $options) = @_;
+        return $markdown->markdown(
+          $text,
+          { base_url => $c->stash('base_url'),
+            %{$options || {}}
+          }
+        );
+      }
+    );
+  }    #end if ($config->{markdown})
 
   return;
 }    #end register
@@ -60,4 +89,15 @@ MYDLjE::Plugin::Helpers - Default Helpers
 
 =head2 textile
 
+=head2 markdown
+
+=head1 SEE ALSO
+
+L<MYDLjE::Guides>, L<MYDLjE::Site::C>, L<MYDLjE::Site>, L<MYDLjE>
+
+=head1 AUTHOR AND COPYRIGHT
+
+(c) 2011 Красимир Беров L<k.berov@gmail.com>
+
+This code is licensed under LGPLv3.
 

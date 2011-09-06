@@ -62,9 +62,11 @@ sub read_config_files {
     my $conf;
     if (-r $filename) {
 
-      #$self->log->debug('reading: ' . $filename);
+      $self->log->debug('reading: ' . $filename);
       $conf = YAML::Any::LoadFile($filename);
       push @{$self->configs}, $conf;
+
+      #$self->log->debug("parsed $filename: " .$/. Data::Dumper::Dumper($conf));
     }
   }
 

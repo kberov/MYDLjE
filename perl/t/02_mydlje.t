@@ -16,12 +16,20 @@ use Data::Dumper;
 use Test::More qw(no_plan);
 use Test::Mojo;
 
+BEGIN {
+  if ($Test::More::VERSION < 0.92) {
+    no warnings 'redefine';
+    sub note { print "@_", $/; }
+    sub explain { Dumper(@_); }
+  }
+}
 my @apps = ('MYDLjE');
 my $i    = 0;
 for my $app (@apps) {
   my $time = time;
-  my $hi   = "Controller C from $app\::C with action hi and id 1 says Hi";
-  my $t    = Test::Mojo->new($app);
+  my $hi   = "Controller C from MYDLjE::C with action hi and id 1 says Hi";
+  note($app);
+  my $t = Test::Mojo->new($app);
   $t->get_ok('/hi')->status_is(200)->content_like(qr/$hi!/, $hi . '!');
   $t->get_ok('/hi/1')->status_is(200)->content_like(qr/$hi!/, $hi . '!');
   $t->post_ok('/hi/1')->status_is(200)->content_like(qr/$hi!/, $hi . '!');
@@ -29,7 +37,7 @@ for my $app (@apps) {
     ->content_like(qr/id $time/, 'welcome message on ' . localtime($time));
 
   #Test msession
-  my $i = 0;
+  #my $i = 0;
   $i++;
   $t->get_ok('/hisession')->status_is(200)
     ->content_like(qr/\:$i/, 'msession is: ' . $i);

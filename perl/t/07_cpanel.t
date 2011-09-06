@@ -25,7 +25,7 @@ use MYDLjE::M::User;
 BEGIN {
   if ($Test::More::VERSION < 0.92) {
     no warnings 'redefine';
-    sub note { print @_, $/; }
+    sub note { print "@_", $/; }
     sub explain { Dumper(@_); }
   }
 }

@@ -23,6 +23,9 @@ __END__
 
 MYDLjE::Template::PageContent - A front-end Content renderer
 
+=head1 METHODS
+
+=head2 render
 
 =head1 SEE ALSO
 

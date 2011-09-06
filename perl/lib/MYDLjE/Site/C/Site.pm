@@ -12,8 +12,70 @@ sub page {
 
   #Construct the page
   $c->_prepare_page($user);
+  $c->_prepare_content($user);
   return;
 
+}
+
+sub _prepare_content {
+  my ($c, $user) = @_;
+  my $form                 = {@{$c->req->params->params}};
+  my $ct                   = MYDLjE::M::Content->new;
+  my $sql_abstract         = $c->dbix->abstract;
+  my $time                 = time;
+  my $uid                  = $user->id;
+  my $read_permissions_sql = [$c->sql('read_permissions_sql'), $uid, $uid, $uid];
+  my $ct_where             = {
+    page_id => $c->stash('PAGE')->id,
+    start   => [{'=' => 0}, {'<' => $time}],
+    stop    => [{'=' => 0}, {'>' => $time}],
+    deleted => 0,
+    data_type => {'!=' => 'page'},
+    language  => $c->stash('C_LANGUAGE'),
+    '-and'    => [\$read_permissions_sql],
+  };
+  my $data_type = $c->stash('data_type');
+  my $modules   = Mojo::Loader->search('MYDLjE::M::Content');
+
+  if ($c->stash('alias')) {
+    my $module = first { $_ eq $data_type } @$modules;
+    my $e = Mojo::Loader->load($module);
+    Mojo::Exception->throw($e) if $e;
+    $ct_where->{alias} = $c->stash('alias');
+    my $content = $module->select($ct_where);
+    if (not $content->id) {
+      $content = $module->new->data(
+        title       => 'Not found',
+        body        => 'Not found',
+        data_format => 'text',
+      );
+    }
+    $c->stash(CONTENT => [$content]);
+    return;
+  }
+
+  #No alias, so get a list!
+  #Load only specified data_type
+  my $order = {'-asc'=> 'sorting'};
+  if ($data_type) {
+    $ct_where->{data_type} = $data_type;
+    my $order_by = $form->{order_by}||'tstamp';
+    $order = $form->{order} ? {'-asc'=> $order_by} : {'-desc'=> $order_by};
+  }
+  my ($sql, @bind) =
+    $sql_abstract->select($ct->TABLE, '*', $ct_where, [$order]);
+  $sql .= $c->sql_limit($form->{offset}, $form->{rows});
+  my @rows = $c->dbix->query($sql, @bind)->hashes;
+  $c->debug($sql);
+  my @CONTENT;
+  foreach my $row (@rows) {
+    my $module = first { $_ =~ /$row->{data_type}$/xi } @$modules;
+    my $e = Mojo::Loader->load($module);
+    Mojo::Exception->throw($e) if $e;
+    push @CONTENT, $module->new->data($row);
+  }
+  $c->stash(CONTENT => [@CONTENT]);
+  return;
 }
 
 
@@ -104,8 +166,8 @@ sub _prepare_page {
   my $where                = {
     domain_id => $c->msession('domain_id'),
     published => 2,
-    start     => [{'=' => 0}, '<' => $time],
-    stop      => [{'=' => 0}, '>' => $time],
+    start   => [{'=' => 0}, {'<' => $time}],
+    stop    => [{'=' => 0}, {'>' => $time}],
     -and      => [\$read_permissions_sql]
   };
 
@@ -123,8 +185,8 @@ sub _prepare_page {
   my $default_language = $app->config('plugins')->{I18N}{default};
   my $page_c_where     = {
     page_id => $page->id,
-    start   => [{'=' => 0}, '<' => $time],
-    stop    => [{'=' => 0}, '>' => $time],
+    start   => [{'=' => 0}, {'<' => $time}],
+    stop    => [{'=' => 0}, {'>' => $time}],
     '-and' =>
       [\$read_permissions_sql, \"language IN( '$ui_language','$default_language')"],
   };

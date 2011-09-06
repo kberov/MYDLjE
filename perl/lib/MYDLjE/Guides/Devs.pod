@@ -147,15 +147,16 @@ It is put there by Mojolicious.
 If the page has its own template it will be used to render the page. 
 Otherwise the table is searched recursively for a parent page (C<pid>) 
 with defined template.
-If no parent page with template is found the default page 
+If no parent page with template is found the C<default> page 
 (usually named "home") template is used.
 The page template specifies the template wrapper (C<TEMPLATE_WRAPPER>), 
 which is the layout for the page to be used. Defaults to 
 C<site/layouts/default.html.tt>.
 
 The page content is retreived from table C<content> by C<page_id> and C<language>.
+
 The the content with C<data_type> "brick" is retreived recursively 
-from curent and then parent pages like the page template.
+from curent and then parent and C<default> pages like the C<page> template.
 
 C<permissions> field is used to filter the page and its content.
 C<published> and other fields are taken into account too 
@@ -164,7 +165,7 @@ C<published> and other fields are taken into account too
 After all needed data is retreived it is put in the stash 
 (C<$c-E<gt>stash()>) and the page is rendered. 
 
-In the template furter processing may happen depending on business logic.
+In the template further processing is made by L<MYDLjE::Template::PageContent>.
 
 =back
 

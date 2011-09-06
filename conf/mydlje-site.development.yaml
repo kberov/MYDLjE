@@ -47,7 +47,13 @@ routes:
 
   /:page_alias/:data_type/:alias:
     order: 111
+    #the regexes that must match so a variable is put into stash
+    qrs:
+      page_alias: '[\-_a-zA-Z0-9]{2,255}'
+      data_type: '[\w]{2,100}'
+      alias: '[\-_a-zA-Z0-9]{2,255}'
     to:
+      #these variables will be parsed and put into stash
       action: page
       controller: site
       format: html
@@ -55,18 +61,26 @@ routes:
 
   /:page_alias/:data_type:
     order: 112
+    #the regexes that must match so a variable is put into stash
+    qrs:
+      page_alias: '[\-_a-zA-Z0-9]{2,255}'
+      data_type: '[\w]{2,100}'
     to:
       action: page
       controller: site
       format: html
       get_list_of_data_type: 1
   /:page_alias:
+    #the regexes that must match so a variable is put into stash
+    qrs:
+      page_alias: '[\-_a-zA-Z0-9]{2,255}'
     order: 113
     to:
       action: page
       controller: site
       data_type: note
       get_list_of_data_type: 1
+      page_alias: home
       format: html
 
   /:
@@ -83,13 +97,15 @@ routes:
     order: 90
     to:
       action: hi
-      controller: site
+      controller: C
+      namespace: MYDLjE
       id: 1
   /hi/:id:
     order: 91
     to:
       action: hi
-      controller: site
+      controller: C
+      namespace: MYDLjE
       id: 1
     via:
       - get
@@ -98,12 +114,27 @@ routes:
     order: 92
     to:
       action: hi
-      controller: site
+      controller: C
+      namespace: MYDLjE
       id: 1
 
   /hisession:
     order: 90
     to:
       action: hisession
-      controller: site
+      controller: C
+      namespace: MYDLjE
       id: 1
+  #the following routes will be sipped because "to:" is empty
+  /:action:
+    order: 1000
+    to: ~
+  /:action/:id:
+    order: 1001
+    to: ~
+    via:
+      - get
+      - post
+  /:controller/:action/:id:
+    order: 1002
+    to: ~

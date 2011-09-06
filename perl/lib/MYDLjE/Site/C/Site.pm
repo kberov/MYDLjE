@@ -10,7 +10,7 @@ sub page {
   my $user = $c->msession->user;
   $c->_domains();    #fill in "domains" and "domain_id" stash variables
 
-  #Construct the current page
+  #Construct the page
   $c->_prepare_page($user);
   return;
 
@@ -55,6 +55,41 @@ sub _get_page_404 {
   return MYDLjE::M::Page->select($where);
 }
 
+#Find page template up in the inheritance path and fallback to the default page
+#for this domain.
+sub _find_and_set_page_template {
+  my ($c, $page, $where) = @_;
+  return if Mojo::ByteStream->new($page->template)->trim->to_string;
+  my $pid = $page->pid;
+
+  #shallow copy $where to change and reuse most of it
+  my $parent_where = \%{$where};
+  delete $parent_where->{alias};
+  $parent_where->{id} = $pid;
+  my $row = {};
+  for (1 .. 10) {    #try up to 10 levels up
+    $row =
+      $c->dbix->select($page->TABLE, [qw(id pid alias template)], $parent_where)->hash;
+    if ($row->{template}) {
+      $page->template($row->{template});
+      last;
+    }
+    last if $pid == 0;
+    $parent_where->{id} = $row->{pid};
+
+    $pid = $row->{pid};
+  }
+  if (not $page->template) {
+    delete $parent_where->{id};
+    $parent_where->{page_type} = 'default';
+    $row =
+      $c->dbix->select($page->TABLE, [qw(id pid alias template)], $parent_where)->hash;
+    $page->template($row->{template});
+  }
+  $c->debug("found template in $row->{alias}:" . $row->{template});
+  return;
+}
+
 #Retreives page and page properties (MYDLjE::M::Content::Page) from database
 #and puts them into stash.
 sub _prepare_page {
@@ -83,26 +118,8 @@ sub _prepare_page {
     $c->stash(status => $page->page_type);
   }
 
-  #Find page template up in the inheritance path and fallback to the default page
-  #for this domain.
-  if (not $page->template) {
-    my $id = $page->pid;
+  $c->_find_and_set_page_template($page, $where);
 
-    #shallow copy $where to change and reuse most of it
-    my $parent_where = \%{$where};
-    delete $parent_where->{alias};
-    for (1 .. 10) {    #try up to 10 levels up
-      $parent_where->{id} = $id;
-      my $row =
-        $c->dbix->select($page->TABLE, [qw(id pid template)], $parent_where)->hash;
-      if ($row->{template}) {
-        $page->template($row->{template});
-        last;
-      }
-      $id = $row->{pid};
-    }
-
-  }
   my $default_language = $app->config('plugins')->{I18N}{default};
   my $page_c_where     = {
     page_id => $page->id,

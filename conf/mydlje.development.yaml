@@ -46,6 +46,10 @@ plugins:
   system_setup: 1
   helpers:
     textile: 1
+    markdown:
+      empty_element_suffix: '/>'
+      tab_width: 2
+      use_wikilinks: 1
   MYDLjE::Plugin::DBIx:
     db_driver: DBI:mysql
     db_dsn: ''

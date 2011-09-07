@@ -58,7 +58,6 @@ routes:
       action: page
       controller: site
       format: html
-      get_list_of_data_type: 0
 
   /:page_alias/:data_type/:alias:
     order: 111
@@ -72,7 +71,6 @@ routes:
       action: page
       controller: site
       format: html
-      get_list_of_data_type: 0
   /:ui_language/:page_alias/:data_type:
     order: 112
     #the regexes that must match so a variable is put into stash
@@ -84,7 +82,6 @@ routes:
       action: page
       controller: site
       format: html
-      get_list_of_data_type: 1
       
   /:page_alias/:data_type:
     order: 112
@@ -96,7 +93,6 @@ routes:
       action: page
       controller: site
       format: html
-      get_list_of_data_type: 1
   /:ui_language/:page_alias:
     #the regexes that must match so a variable is put into stash
     qrs:

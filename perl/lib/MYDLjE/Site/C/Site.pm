@@ -56,14 +56,13 @@ sub _prepare_content {
 
   #No alias, so get a list!
   #Load only specified data_type
-  my $order = {'-asc'=> 'sorting'};
+  my $order = {'-asc' => 'sorting'};
   if ($data_type) {
     $ct_where->{data_type} = $data_type;
-    my $order_by = $form->{order_by}||'tstamp';
-    $order = $form->{order} ? {'-asc'=> $order_by} : {'-desc'=> $order_by};
+    my $order_by = $form->{order_by} || 'tstamp';
+    $order = $form->{order} ? {'-asc' => $order_by} : {'-desc' => $order_by};
   }
-  my ($sql, @bind) =
-    $sql_abstract->select($ct->TABLE, '*', $ct_where, [$order]);
+  my ($sql, @bind) = $sql_abstract->select($ct->TABLE, '*', $ct_where, [$order]);
   $sql .= $c->sql_limit($form->{offset}, $form->{rows});
   my @rows = $c->dbix->query($sql, @bind)->hashes;
   $c->debug($sql);
@@ -166,8 +165,8 @@ sub _prepare_page {
   my $where                = {
     domain_id => $c->msession('domain_id'),
     published => 2,
-    start   => [{'=' => 0}, {'<' => $time}],
-    stop    => [{'=' => 0}, {'>' => $time}],
+    start     => [{'=' => 0}, {'<' => $time}],
+    stop      => [{'=' => 0}, {'>' => $time}],
     -and      => [\$read_permissions_sql]
   };
 

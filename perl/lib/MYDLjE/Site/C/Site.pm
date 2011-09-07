@@ -80,19 +80,12 @@ sub _prepare_content {
 
 #detects ui_language and c_language and returns them
 sub detect_and_set_languages {
-  my ($c) = @_;
-  my ($ui_language) =
-    ($c->stash('ui_language') || $c->req->param('ui_language') || $c->languages());
-  $c->stash(ui_language => $c->languages()) unless $c->stash('ui_language');
-  $c->session('ui_language', $ui_language) if $ui_language ne $c->languages();
-  my ($c_language) = ($c->req->param('c_language') || $c->session('c_language'));
-  $c_language ||= $ui_language;
+  my ($c)           = @_;
+  my ($ui_language) = $c->set_ui_language($c->stash('ui_language'));
+  my ($c_language)  = ($c->req->param('c_language') || $ui_language);
   $c->session('c_language', $c_language)
     if $c_language ne ($c->session('c_language') || '');
 
-  #if ($c_language ne $ui_language) {    #ui_language depends on c_language here
-  #  $ui_language = $c->languages($c_language)->languages;
-  #}
   return ($ui_language, $c_language);
 }
 

@@ -79,16 +79,7 @@ sub _session_start {
   }
 
   #Switch ui_language if language is supported.
-  my ($ui_language) = ($c->req->param('ui_language') || $c->session('ui_language'));
-  if ($ui_language) {
-    for (@{$app->config('languages')}) {
-      if ($ui_language eq $_) {
-        $c->languages($ui_language);
-        $c->session('ui_language', $ui_language);
-        last;
-      }
-    }
-  }
+  $c->set_ui_language($c->req->param('ui_language'));
   if ($DEBUG) {
 
     #$app->log->debug($c->dumper($c->session));

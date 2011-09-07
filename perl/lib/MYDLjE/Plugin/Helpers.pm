@@ -68,6 +68,27 @@ sub register {
       }
     );
   }    #end if ($config->{markdown})
+  $app->helper(
+    set_ui_language => sub {
+      my ($c, $ui_language) = @_;
+      if ($ui_language) {
+        for (@{$app->config('languages')}) {
+          if ($ui_language eq $_) {
+            $c->languages($ui_language);
+            $c->session('ui_language', $ui_language);
+            last;
+          }
+        }
+      }
+      elsif ($c->session('ui_language')) {
+        $c->languages($c->session('ui_language'));
+      }
+      else {
+        $c->session('ui_language', $c->languages);
+      }
+      return $c->languages;
+    }
+  );
 
   return;
 }    #end register
@@ -90,6 +111,18 @@ MYDLjE::Plugin::Helpers - Default Helpers
 =head2 textile
 
 =head2 markdown
+
+=head2 set_ui_language
+
+Sets the user interface language (labels and messages ) and puts it in session 
+if switched.
+
+Params: C<$ui_language>:
+
+    #last overwrites first
+    $c->req->param('ui_language')
+    #or
+    $c->stash('ui_language')
 
 =head1 SEE ALSO
 

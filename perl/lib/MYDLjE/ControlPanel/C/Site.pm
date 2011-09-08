@@ -27,8 +27,8 @@ sub domains {
 
     #fallback to the last domain for this user
     unless (defined $c->msession('domain_id')) {
-      $c->msession(domain_id => $domains->[-1]{id})
-        $c->msession(domain => $domains->[-1]);
+      $c->msession(domain_id => $domains->[-1]{id});
+      $c->msession(domain    => $domains->[-1]);
     }
   }
   return;

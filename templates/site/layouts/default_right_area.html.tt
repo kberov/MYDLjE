@@ -1,3 +1,7 @@
 <div id="main-right-area" class="fixed column">
-
+[%
+    TOP_RIGHT_BRICKS;
+    MIDDLE_RIGHT_BRICKS;
+    BOTTOM_RIGHT_BRICKS;
+%]
 </div><!-- end div id="main-right-area" -->

@@ -22,11 +22,14 @@ sub domains {
     my $domain = $c->req->headers->host;
 
     # "example.com" =~ /example.com/ and "www.example.com" =~ /example.com/ etc.
-    $c->msession(domain_id => (first { $domain =~ /$_->{domain}/x } @$domains)->{id});
+    $c->msession(domain => (first { $domain =~ /$_->{domain}/x } @$domains));
+    $c->msession(domain_id => $c->msession('domain')->{id});
 
     #fallback to the last domain for this user
-    $c->msession(domain_id => $domains->[-1]{id})
-      unless defined $c->msession('domain_id');
+    unless (defined $c->msession('domain_id')) {
+      $c->msession(domain_id => $domains->[-1]{id})
+        $c->msession(domain => $domains->[-1]);
+    }
   }
   return;
 }

@@ -1,3 +1,11 @@
+[%#
+    This file is the default TEMPLATE_WRAPPER for for this domain (localhost).
+    For new domains:
+    1. Create a directory named after DOMAIN.id. eg. "1". 
+    2. Copy the file in the domain specific directory,
+    rename it to DOMAIN.id. eg. "1.html.tt"
+    and modify the new file accordingly.
+%]
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="[% LANGUAGE %]">
   [% PROCESS 'layouts/default_head.html.tt' %]
@@ -14,9 +22,6 @@
           </div><!-- end div id="main-area" -->
           [% PROCESS 'layouts/default_right_area.html.tt'; %]
         </div><!-- end div id="main-columns" -->
-                <!-- start main header -->
-        [% PROCESS 'layouts/default_header.html.tt' %]
-        <!-- end main header -->
       </div><!-- end div id="main-container" -->
       <!-- start main footer -->
       [% PROCESS 'layouts/default_footer.html.tt' %]

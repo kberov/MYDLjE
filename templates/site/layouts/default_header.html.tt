@@ -1,3 +1,4 @@
 <header id="main-header">
+<nav>[% HEADER_BRICKS %]</nav>
 <!--todo: <nav>...</nav> -->
 </header>

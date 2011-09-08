@@ -1,14 +1,10 @@
-[% WRAPPER ${TEMPLATE_WRAPPER} %]
+[%   
+PROCESS "layouts/${DOMAIN.id}/pre_process.tt";
+WRAPPER ${TEMPLATE_WRAPPER} +%]
 <!-- start [%+ action %] -->
 [% 
     USE PAGE_CONTENT = PageContent();
     PAGE_CONTENT.render();
-    DUMP(c.session);
-    #DUMP(c.msession);
-    DUMP(PAGE.data);
-    c.dumper(c.stash.${'mojo.captures'});
-    c.req.param('ui_language');
 %]
-page.html.tt
 <!-- end [%+ action %] -->
-[% END %]
+[%+ END %]

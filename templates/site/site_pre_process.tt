@@ -1,13 +1,14 @@
 [%#
-    This file is for setting up variables, blocks, macros, etc which are available for
+    This file is for setting up variables, etc which are available for
     all templates used in the MYDLjE::Site application.
+    This means it is shared across all sites run with this MYDLjE instance.
 %][%
     app = c.app;
     MOJO_APP = app.env.MOJO_APP;
+    #the current domain
+    DOMAIN = c.msession('domain');
     #the current user
     USER = c.msession.user;
     JQ_UI_THEME = app.config('jq_ui_theme');
     LANGUAGE = c.languages();
-    DEFAULT TEMPLATE_WRAPPER = 'layouts/default.html.tt';
-    
 ~%]

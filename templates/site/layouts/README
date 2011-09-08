@@ -1,0 +1,5 @@
+In this directory we keep site layouts.
+Each domain has its own directory named after its id.
+After you create a new domain in "cpanel" application you have to 
+copy the folder "0" and its files and rename it to the new domain id.
+You also need to rename the file 0.html.tt to the new domain id.

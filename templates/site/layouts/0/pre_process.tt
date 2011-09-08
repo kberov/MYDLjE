@@ -1,0 +1,28 @@
+[%#
+    This file is used to setup 
+    variables specific for this domain (localhost) only.
+    For new domains:
+    1. Create a directory named after DOMAIN.id. eg. "1". 
+    2. Copy the file in the domain specific directory
+    and modify the new file accordingly.
+%]
+[%
+    DEFAULT TEMPLATE_WRAPPER = 'layouts/'_ DOMAIN.id _'/' _ DOMAIN.id _'.html.tt';
+
+    #Define variables in which content will be put 
+    #and later displayed on various places in the layout.
+    #Try to invent meaningfull names to ease maintenance later.
+    
+    HEADER_BRICKS = menu_languages();
+    
+    TOP_LEFT_BRICKS ='<div>put TOP_LEFT_BRICKS here</div>';
+    MIDDLE_LEFT_BRICKS ='<div>put MIDDLE_LEFT_BRICKS here</div>';
+    BOTTOM_LEFT_BRICKS ='<div>put BOTTOM_LEFT_BRICKS here</div>';
+    
+    TOP_RIGHT_BRICKS ='<div>put TOP_RIGHT_BRICKS here</div>';
+    MIDDLE_RIGHT_BRICKS ='<div>put MIDDLE_RIGHT_BRICKS here</div>';
+    BOTTOM_RIGHT_BRICKS ='<div>put BOTTOM_RIGHT_BRICKS here</div>';
+    
+    FOOTER_BRICKS ='<div>put FOOTER_BRICKS here</div>';
+%]
+

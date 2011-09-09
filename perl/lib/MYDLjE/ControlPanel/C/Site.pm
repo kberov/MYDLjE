@@ -314,10 +314,8 @@ sub _validate_page {
   }
   $v->field('page.alias')->regexp($page->FIELDS_VALIDATION->{alias}{regexp})
     ->message('Please enter valid page alias!');
-
-  #$c->debug($c->dumper($c->stash('domains'), $form->{'page.domain_id'}));
-  $v->field('page.domain_id')
-    ->in(map { exists $_->{id} ? $_->{id} : 0 } @{$c->stash('domains')})
+  my @ids = map { $_->{id} } @{$c->stash('domains')};
+  $v->field('page.domain_id')->in(\@ids)
     ->message('Please use one of the availabe domains or first add a new domain!');
 
   # if domain_id of an existing page is switched, set pid=0

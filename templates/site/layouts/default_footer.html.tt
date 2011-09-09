@@ -1,5 +1,5 @@
 <footer id="main-footer">
-[% FOOTER_BRICKS %]
+[% BOXES.FOOTER_BRICKS %]
 <a href="https://github.com/kberov/MYDLjE#readme"
     target="_blanc" title="This site is built with MYDLjE"><img 
     src="pub/css/img/built_with_mydlje.png" width="213" height="53" alt="MYDLjE" /></a> 

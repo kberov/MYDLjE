@@ -9,20 +9,26 @@
 [%
     DEFAULT TEMPLATE_WRAPPER = 'layouts/'_ DOMAIN.id _'/' _ DOMAIN.id _'.html.tt';
 
-    #Define variables in which content will be put 
-    #and later displayed on various places in the layout.
-    #Try to invent meaningfull names to ease maintenance later.
-    
-    HEADER_BRICKS = menu_languages();
-    
-    TOP_LEFT_BRICKS ='<div>put TOP_LEFT_BRICKS here</div>';
-    MIDDLE_LEFT_BRICKS ='<div>put MIDDLE_LEFT_BRICKS here</div>';
-    BOTTOM_LEFT_BRICKS ='<div>put BOTTOM_LEFT_BRICKS here</div>';
-    
-    TOP_RIGHT_BRICKS ='<div>put TOP_RIGHT_BRICKS here</div>';
-    MIDDLE_RIGHT_BRICKS ='<div>put MIDDLE_RIGHT_BRICKS here</div>';
-    BOTTOM_RIGHT_BRICKS ='<div>put BOTTOM_RIGHT_BRICKS here</div>';
-    
-    FOOTER_BRICKS ='<div>put FOOTER_BRICKS here</div>';
+# 1. Define "BOXES" (keys) to which the output from "bricks" will be assigned as values
+# depending on bricks property "box". The property must match exactly 
+# one of the defined here box-variables.
+
+# 2. Copy and paste each "box" in the desired place for the output to be displayed.
+# This should be either ${DOMAIN.id}.html.tt or some of the PROCESS-ed files in the layout.
+# Try to invent meaningfull names to ease maintenance later.
+
+    BOXES = {
+      HEADER_BRICKS => menu_languages(),
+      
+      TOP_LEFT_BRICKS => '<div>put TOP_LEFT_BRICKS here</div>',
+      MIDDLE_LEFT_BRICKS => '<div>put MIDDLE_LEFT_BRICKS here</div>',
+      BOTTOM_LEFT_BRICKS => '<div>put BOTTOM_LEFT_BRICKS here</div>',
+      
+      TOP_RIGHT_BRICKS => '<div>put TOP_RIGHT_BRICKS here</div>',
+      MIDDLE_RIGHT_BRICKS => '<div>put MIDDLE_RIGHT_BRICKS here</div>',
+      BOTTOM_RIGHT_BRICKS => '<div>put BOTTOM_RIGHT_BRICKS here</div>',
+      
+      FOOTER_BRICKS ='<div>put FOOTER_BRICKS here</div>'
+    };
 %]
 

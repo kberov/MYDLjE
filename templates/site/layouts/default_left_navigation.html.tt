@@ -1,7 +1,7 @@
 <div id="main-left-navigation" class="fixed column">
 [%    
-    TOP_LEFT_BRICKS;
-    MIDDLE_LEFT_BRICKS;
-    BOTTOM_LEFT_BRICKS;
+    BOXES.TOP_LEFT_BRICKS;
+    BOXES.MIDDLE_LEFT_BRICKS;
+    BOXES.BOTTOM_LEFT_BRICKS;
 %]
 </div><!-- end div id="main-left-navigation" -->

@@ -89,6 +89,8 @@ sub register {
       return $c->languages;
     }
   );
+  require Mojo::JSON;
+  $app->helper(json => sub { Mojo::JSON->new; });
 
   return;
 }    #end register
@@ -123,6 +125,11 @@ Params: C<$ui_language>:
     $c->req->param('ui_language')
     #or
     $c->stash('ui_language')
+    
+=head2 json
+
+Returns a L<Mojo::JSON> instance.
+
 
 =head1 SEE ALSO
 

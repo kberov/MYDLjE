@@ -167,7 +167,7 @@ ul.items {
 ul.items a {display: inline-block;}
 
 ul.items li.page, ul.items li.domain, ul.items li.article,
-ul.items li.brick {                                                  
+ul.items li.brick,.ui-menu-item {                                                  
   list-style-type: none;
   margin: 0;
   padding-right: 0.5ex;
@@ -256,4 +256,4 @@ img.type_icon {
 .level_5 {
   padding-left: 40px;
 }
-
+a {text-decoration: none;}

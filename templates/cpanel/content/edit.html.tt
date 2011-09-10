@@ -25,18 +25,25 @@
   [% legend %]<span class="legend_icon"><span class="ui-icon" 
   style="background-image: url(pub/css/icons/[% data_type _'_'_ (id?'edit':'add')%].png) "></span>
   </span></legend>
-<div class="unit on-2 columns">
+<div class="unit on-3 columns">
   <div class="column">
       [% text_field('title') %]
   </div>
   <div class="column">
     [% text_field('alias'); %]
   </div>
+  <div class="column">
+      [%  text_simple_autocomplete_field('box',{data=> box_data}); %]
+  </div>
+
 </div>
 <div class="unit on-2 columns">
-    <div class="column">[%   select_field('data_type', 
-    {readonly=>1, selected => data_type, options => data_type_options} ); %]</div>
-    <div class="column">[% select_field('data_format', {options => data_format_options} ); %]</div>
+  <div class="column">[%   select_field('data_type', 
+    {readonly=>1, selected => data_type, options => data_type_options} ); %]
+  </div>
+  <div class="column">
+    [% select_field('data_format', {options => data_format_options} ); %]
+  </div>
 </div>
 <div class="unit on-2 columns">
   <div class="column">

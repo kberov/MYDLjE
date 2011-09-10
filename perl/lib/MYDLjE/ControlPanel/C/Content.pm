@@ -79,6 +79,19 @@ sub edit {
   $c->stash('current_page_id', $content->page_id || 0);
   $c->stash(page_id_options => $c->set_page_pid_options($user));
   $c->stash(pid_options     => $c->set_pid_options($user));
+  my $uid = $c->msession->user->id;
+  $c->stash(
+    box_data => $c->json->encode(
+      [ $c->dbix->query(
+          'SELECT DISTINCT(box) FROM '
+            . $content->TABLE
+            . ' WHERE page_id IN(SELECT id FROM pages WHERE domain_id=?) AND '
+            . $c->sql('read_permissions_sql'),
+          $c->msession('domain_id'), $uid, $uid, $uid
+          )->flat
+      ]
+    )
+  );
 
   if ($c->req->method eq 'POST') {
     $c->_save_content($user);

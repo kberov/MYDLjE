@@ -60,6 +60,11 @@ login_required_routes:
     to:
       controller: auth
       action: logout
+  /home:
+    order: 11
+    via:
+      - get
+    to: home#home
   /:controller/:action/:id:
     order: 111
     to: 

@@ -3,6 +3,7 @@ use MYDLjE::Base 'MYDLjE::Site::C';
 use List::Util qw(first);
 use MYDLjE::ControlPanel::C::Site;
 use MYDLjE::M::Content::Page;
+use Mojo::ByteStream qw(b);
 sub _domains { goto &MYDLjE::ControlPanel::C::Site::domains; }
 
 sub page {
@@ -113,7 +114,7 @@ sub _get_page_404 {
 #for this domain.
 sub _find_and_set_page_template {
   my ($c, $page, $where) = @_;
-  return if Mojo::ByteStream->new($page->template)->trim->to_string;
+  return if b->new($page->template)->trim->to_string;
   my $pid = $page->pid;
 
   #shallow copy $where to change and reuse most of it
@@ -198,7 +199,6 @@ sub _prepare_page {
     PAGE        => $page,
     PAGE_C      => $page_c,
     C_LANGUAGE  => $c_language,
-
   );
   my %render_options = ();
   if (not $c->stash('format')) {
@@ -216,7 +216,8 @@ __END__
 
 =head1 NAME
 
-MYDLjE::Site::C::Site - Controller class for displaying site stuff
+MYDLjE::Site::C::Site - Controller class for displaying site pages 
+and other defined octions.
 
 =head1 DESCRIPTION
 
@@ -229,7 +230,69 @@ articles, news...
 
 Fetches a page and its content from database (pages) and renders it.
 
+=head1 METHODS
 
+This controller defines some methods which are called internally in L</page>
+ and are not available as separate actions.
+
+=head2 _domains
+
+This is a direct call (with L<goto>) to L<MYDLjE::ControlPanel::C::Site/domains> 
+to detect the domain in which the L</page> method is called. 
+This way we know from which domain to retreive the requested page.
+
+=head2 _find_and_set_page_template
+
+Finds a page template up in the inheritance path and
+ fallbacks to the default page template
+ for the current domain if a template is not found.
+ Called in L</_prepare_page> after a page is retreived from the database.
+
+=head2 _get_page
+
+Retreives a L<page|MYDLjE::M::Page> from the database depending on the value in 
+C<$c-E<gt>stash('page_alias')> and returns it. 
+Fallbacks to the page with C<page_type "default"> 
+if C<$c-E<gt>stash('page_alias')> is empty. Called in L</_prepare_page>
+
+=head2 _get_page_404
+
+Retreives a page with C<page_type "404"> and returns it. 
+Such page B<I<must>> be defined for the current domain by the site administrator.
+
+=head2 _prepare_content
+
+Retreives content from the database and puts it in the stash to be displayed by
+L<MYDLjE::Template::PageContent>. 
+The content is an array of instances of various L<MYDLjE::M::Content> subclasses.
+All of them have their L<page_id|MYDLjE::M::Content/page_id> attribute equal 
+to the current C<$page-E<gt>id>. The content elements are 
+filtered depending on their read L<permissions|MYDLjE::M::Content/permissions>,
+L<start|MYDLjE::M::Content/start>, L<stop|MYDLjE::M::Content/stop>, 
+L<deleted|MYDLjE::M::Content/deleted> and 
+L<language|MYDLjE::M::Content/language> attributes.
+The language is determined by C<$c-E<gt>stash('C_LANGUAGE')>. 
+All L<data_type|MYDLjE::M::Content/data_type>s are retreived except C<page> 
+which is considered as page properties and is retreived in L</_prepare_page>.
+
+=head2 _prepare_page
+
+Retreives a page (C<$page>) and its properties (C<$page_c>) from the databse 
+depending on various stash variables, defined by the current route 
+and fills in the stash with the retreived data.
+
+The following stash variables are defined for display in the current domain 
+layout:
+
+  $c->stash(
+    TITLE       => $page_c->title,
+    DESCRIPTION => $page_c->description,
+    KEYWORDS    => $page_c->keywords,
+    BODY        => $page_c->body,
+    PAGE        => $page,
+    PAGE_C      => $page_c,
+    C_LANGUAGE  => $c_language, #content language
+  );
 
 =head1 SEE ALSO
 

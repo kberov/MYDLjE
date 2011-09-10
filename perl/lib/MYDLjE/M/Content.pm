@@ -409,11 +409,11 @@ Represents the group_id to which this content belongs. By default this is the gr
 
 =head2 id
 
-Auto-populated upon first L</save> and upon select. Do not set it unless you are sure!
+Auto-populated upon first L</save>. Do not set it unless you are sure!
 
-=head2 invisible
+=head2 page_id
 
-Boolean (0/1).
+C<page.id> to which this content belongs. Default: 0 
 
 
 =head2 keywords

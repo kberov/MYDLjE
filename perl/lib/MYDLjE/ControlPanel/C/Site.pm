@@ -433,6 +433,14 @@ This is the controller implementing actions to manage domains, pages, templates 
 
 Lists domains managed by this MYDLjE installation.
 
+When called for the first time detects the current C<$ENV{HTTP_HOST}> 
+and finds a domain in table domains that matches to it. 
+If such a domain is not found, fallbacks to C<localhost>. 
+This way a "one domain" L<MYDLjE> installation works out of the box.
+
+This action is called as a private method in L<MYDLjE::Site::C::Site/page> 
+to detect the current domain from which pages should be served.
+
 =head2 edit_domain
 
     ADD URL: http://example.com/cpanel/site/edit_domain

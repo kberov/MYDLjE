@@ -27,6 +27,14 @@ MYDLjE::Template::PageContent - A front-end Content renderer
 
 =head2 render
 
+Renders all content which is found in C<CONTENT> STASH variable.
+ C<CONTENT> is an array of content elements which are retreived from database and 
+ have box property with value C<MAIN_AREA>. C<CONTENT> is constructed in 
+ L<MYDLjE::Site::C::Site/_prepare_content>.
+ 
+ TO BE IMPLEMENTED...
+
+ 
 =head1 SEE ALSO
 
 L<MYDLjE::Template>, L<MYDLjE::PageTree>

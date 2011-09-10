@@ -10,6 +10,8 @@ use MYDLjE::Base 'MYDLjE::C';
 __END__
 
 
+=encoding utf8
+
 =head1 NAME
 
 MYDLjE::Site::C - The L<site> controller class
@@ -20,12 +22,12 @@ MYDLjE::Site::C - The L<site> controller class
 
 =head1 ATTRIBUTES
 
-L<MYDLjE::Site::C> inherits most attributes from L<MYDLjE::C> 
+MYDLjE::Site::C inherits most attributes from L<MYDLjE::C> 
 and implements/overrides the following ones.
 
 =head1 SEE ALSO
 
-L<MYDLjE::Guides>, L<MYDLjE::C>, L<MYDLjE::ControlPanel::C>
+L<MYDLjE::Guides>, L<MYDLjE::Site::C::Site>, L<MYDLjE::C>, L<MYDLjE::ControlPanel::C>
 
 =head1 AUTHOR AND COPYRIGHT
 

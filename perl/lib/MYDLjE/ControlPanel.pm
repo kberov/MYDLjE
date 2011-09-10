@@ -41,13 +41,16 @@ sub startup {
   $app->add_types();
 
   #Hooks
-  $app->hook(before_dispatch => sub{
-    my $c   = shift;
-    MYDLjE::before_dispatch($c);
-    #Switch ui_language if language is supported.
-    $c->set_ui_language($c->req->param('ui_language'));
-  });
-  $app->hook(after_dispatch  => \&MYDLjE::after_dispatch);
+  $app->hook(
+    before_dispatch => sub {
+      my $c = shift;
+      MYDLjE::before_dispatch($c);
+
+      #Switch ui_language if language is supported.
+      $c->set_ui_language($c->req->param('ui_language'));
+    }
+  );
+  $app->hook(after_dispatch => \&MYDLjE::after_dispatch);
 
   return;
 }

@@ -66,7 +66,8 @@ sub _prepare_content {
   my ($sql, @bind) = $sql_abstract->select($ct->TABLE, '*', $ct_where, [$order]);
   $sql .= $c->sql_limit($form->{offset}, $form->{rows});
   my @rows = $c->dbix->query($sql, @bind)->hashes;
-  $c->debug($sql);
+
+  #$c->debug("$data_type",$sql);
   my @CONTENT;
   foreach my $row (@rows) {
     my $module = first { $_ =~ /$row->{data_type}$/xi } @$modules;
@@ -114,7 +115,7 @@ sub _get_page_404 {
 #for this domain.
 sub _find_and_set_page_template {
   my ($c, $page, $where) = @_;
-  return if b->new($page->template)->trim->to_string;
+  return if b($page->template)->trim->to_string;
   my $pid = $page->pid;
 
   #shallow copy $where to change and reuse most of it

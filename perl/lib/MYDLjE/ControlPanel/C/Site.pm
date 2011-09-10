@@ -25,7 +25,7 @@ sub domains {
     $c->msession(domain => (first { $domain =~ /$_->{domain}/x } @$domains));
 
     #fallback to the last domain for this user
-    if ( not defined $c->msession('domain')) {
+    if (not defined $c->msession('domain')) {
       $c->msession(domain_id => $domains->[-1]{id});
       $c->msession(domain    => $domains->[-1]);
     }

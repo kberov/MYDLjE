@@ -11,6 +11,7 @@ templates_root: templates/site
 #types:
 #  html: 'application/xhtml+xml; charset=utf-8'
 plugins:
+  PODRenderer: 0
   alloy_renderer:
     syntax: TT
     template_options:

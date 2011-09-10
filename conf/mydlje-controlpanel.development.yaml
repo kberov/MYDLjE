@@ -10,6 +10,7 @@ templates_root: templates/cpanel
 types:
   html: 'application/xhtml+xml; charset=utf-8'
 plugins:
+  PODRenderer: 0
   alloy_renderer:
     syntax: TT
     template_options:
@@ -53,20 +54,21 @@ routes:
 #almost all routes in the cpanel app require authentication
 login_required_routes:
   /logout:
+    order: 11
     via:
       - get
     to:
       controller: auth
       action: logout
-  /:controller/:action:
-    order: 11
-    to: 'home#home'
   /:controller/:action/:id:
     order: 111
     to: 
       controller: content
       action: pages
       id: '0'
+  /:controller/:action:
+    order: 112
+    to: 'home#home'
 
 #We describe here the items in main_left_navigation.html.tt
 #All plugins must/should provide their items if they want to be present in this menu.

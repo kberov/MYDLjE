@@ -78,8 +78,6 @@ sub _session_start {
     $c->session('id',         Mojo::Util::md5_sum(rand($time) . rand($time) . $time));
   }
 
-  #Switch ui_language if language is supported.
-  $c->set_ui_language($c->req->param('ui_language'));
   if ($DEBUG) {
 
     #$app->log->debug($c->dumper($c->session));

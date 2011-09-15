@@ -1,4 +1,4 @@
-package Mojolicious::Command::Cgi;
+package Mojolicious::Command::cgi;
 use Mojo::Base 'Mojo::Command';
 
 use Getopt::Long 'GetOptions';
@@ -28,7 +28,7 @@ __END__
 
 =head1 NAME
 
-Mojolicious::Command::Cgi - CGI Command
+Mojolicious::Command::cgi - CGI Command
 
 =head1 SYNOPSIS
 
@@ -39,11 +39,11 @@ Mojolicious::Command::Cgi - CGI Command
 
 =head1 DESCRIPTION
 
-L<Mojolicious::Command::Cgi> is a command interface to L<Mojo::Server::CGI>.
+L<Mojolicious::Command::cgi> is a command interface to L<Mojo::Server::CGI>.
 
 =head1 ATTRIBUTES
 
-L<Mojolicious::Command::Cgi> inherits all attributes from L<Mojo::Command>
+L<Mojolicious::Command::cgi> inherits all attributes from L<Mojo::Command>
 and implements the following new ones.
 
 =head2 C<description>
@@ -62,7 +62,7 @@ Usage information for this command, used for the help screen.
 
 =head1 METHODS
 
-L<Mojolicious::Command::Cgi> inherits all methods from L<Mojo::Command> and
+L<Mojolicious::Command::cgi> inherits all methods from L<Mojo::Command> and
 implements the following new ones.
 
 =head2 C<run>

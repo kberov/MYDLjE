@@ -1,12 +1,11 @@
 package Mojolicious::Plugin::PODRenderer;
 use Mojo::Base 'Mojolicious::Plugin';
 
-use File::Basename 'dirname';
-use File::Spec;
 use IO::File;
 use Mojo::Asset::File;
 use Mojo::ByteStream 'b';
 use Mojo::DOM;
+use Mojo::Home;
 use Mojo::Util 'url_escape';
 
 # Core module since Perl 5.9.3, so it might not always be present
@@ -21,18 +20,11 @@ use Pod::Simple::Search;
 # Paths
 our @PATHS = map { $_, "$_/pods" } @INC;
 
-# Template directory
-my $T = File::Spec->catdir(dirname(__FILE__), '..', 'templates');
-
-# Mojobar template
-our $MOJOBAR =
-  Mojo::Asset::File->new(path => File::Spec->catfile($T, 'mojobar.html.ep'))
-  ->slurp;
-
-# Perldoc template
-our $PERLDOC =
-  Mojo::Asset::File->new(path => File::Spec->catfile($T, 'perldoc.html.ep'))
-  ->slurp;
+# Bundled files
+my $H = Mojo::Home->new;
+$H->parse($H->parse($H->mojo_lib_dir)->rel_dir('Mojolicious/templates'));
+our $MOJOBAR = $H->slurp_rel_file('mojobar.html.ep');
+our $PERLDOC = $H->slurp_rel_file('perldoc.html.ep');
 
 # "This is my first visit to the Galaxy of Terror and I'd like it to be a
 #  pleasant one."
@@ -124,7 +116,7 @@ sub register {
 
       # Try to find a title
       my $title = 'Perldoc';
-      $dom->find('h1 + p')->until(sub { $title = shift->text });
+      $dom->find('h1 + p')->first(sub { $title = shift->text });
 
       # Combine everything to a proper response
       $self->content_for(mojobar => $self->include(inline => $MOJOBAR));

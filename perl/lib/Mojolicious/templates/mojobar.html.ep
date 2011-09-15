@@ -19,12 +19,10 @@
       -moz-box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.6);
       -webkit-box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.6);
       box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.6);
-      color: #eee;
       height: 60px;
       overflow: hidden;
       position: absolute;
       text-align: right;
-      text-shadow: 0;
       vertical-align: middle;
       width: 100%;
       z-index: 1000;
@@ -43,14 +41,18 @@
     }
     #mojobar-links a {
       color: #ccc;
-      font: 1.1em Georgia, Times, serif;
+      font: 1em 'Helvetica Neue', 'Helvetica', sans-serif;
+      font-weight: 300;
       margin-left: 0.5em;
       padding-bottom: 1em;
       padding-top: 1em;
       text-decoration: none;
-      text-shadow: 0px -1px 0px #555;
+      -webkit-transition: all 200ms ease-in-out;
+      -moz-transition: all 200ms ease-in-out;
+      -o-transition: all 200ms ease-in-out;
+      transition: all 200ms ease-in-out;
     }
-    #mojobar-links a:hover { color: #fff; }
+    #mojobar-links a:hover { color: #fff }
   % end
 % end
 <div id="mojobar">
@@ -61,6 +63,7 @@
   </div>
   <div id="mojobar-links">
     %= link_to Documentation => 'http://mojolicio.us/perldoc'
+    %= link_to Screencasts => 'http://mojocasts.com'
     %= link_to Wiki => 'https://github.com/kraih/mojo/wiki'
     %= link_to GitHub => 'https://github.com/kraih/mojo'
     %= link_to CPAN => 'http://metacpan.org/release/Mojolicious/'

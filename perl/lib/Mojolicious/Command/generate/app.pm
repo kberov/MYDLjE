@@ -1,4 +1,4 @@
-package Mojolicious::Command::Generate::App;
+package Mojolicious::Command::generate::app;
 use Mojo::Base 'Mojo::Command';
 
 has description => <<'EOF';
@@ -43,9 +43,6 @@ EOF
   $self->render_to_rel_file('static', "$name/public/index.html");
 
   # Layout and Templates
-  $self->renderer->line_start('%%');
-  $self->renderer->tag_start('<%%');
-  $self->renderer->tag_end('%%>');
   $self->render_to_rel_file('layout',
     "$name/templates/layouts/default.html.ep");
   $self->render_to_rel_file('welcome',
@@ -66,7 +63,7 @@ use File::Spec;
 use lib join '/', File::Spec->splitdir(dirname(__FILE__)), 'lib';
 use lib join '/', File::Spec->splitdir(dirname(__FILE__)), '..', 'lib';
 
-# Check if Mojo is installed
+# Check if Mojolicious is installed
 eval 'use Mojolicious::Commands';
 die <<EOF if $@;
 It looks like you don't have the Mojolicious Framework installed.
@@ -141,18 +138,18 @@ $t->get_ok('/welcome')->status_is(200)->content_like(qr/Mojolicious/i);
 
 @@ layout
 <!doctype html><html>
-  <head><title><%= title %></title></head>
-  <body><%= content %></body>
+  <head><title><%%= title %></title></head>
+  <body><%%= content %></body>
 </html>
 
 @@ welcome
-% layout 'default';
-% title 'Welcome';
-<h2><%= $message %></h2>
+%% layout 'default';
+%% title 'Welcome';
+<h2><%%= $message %></h2>
 This page was generated from the template
 "templates/example/welcome.html.ep" and the layout
 "templates/layouts/default.html.ep",
-<a href="<%== url_for %>">click here</a>
+<a href="<%%== url_for %>">click here</a>
 to reload the page or
 <a href="/index.html">here</a>
 to move forward to a static page.
@@ -160,22 +157,22 @@ to move forward to a static page.
 __END__
 =head1 NAME
 
-Mojolicious::Command::Generate::App - App Generator Command
+Mojolicious::Command::generate::app - App Generator Command
 
 =head1 SYNOPSIS
 
-  use Mojolicious::Command::Generate::App;
+  use Mojolicious::Command::generate::app;
 
-  my $app = Mojolicious::Command::Generate::App->new;
+  my $app = Mojolicious::Command::generate::app->new;
   $app->run(@ARGV);
 
 =head1 DESCRIPTION
 
-L<Mojolicious::Command::Generate::App> is an application generator.
+L<Mojolicious::Command::generate::app> is an application generator.
 
 =head1 ATTRIBUTES
 
-L<Mojolicious::Command::Generate::App> inherits all attributes from
+L<Mojolicious::Command::generate::app> inherits all attributes from
 L<Mojo::Command> and implements the following new ones.
 
 =head2 C<description>
@@ -194,7 +191,7 @@ Usage information for this command, used for the help screen.
 
 =head1 METHODS
 
-L<Mojolicious::Command::Generate::App> inherits all methods from
+L<Mojolicious::Command::generate::app> inherits all methods from
 L<Mojo::Command> and implements the following new ones.
 
 =head2 C<run>

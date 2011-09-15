@@ -1,4 +1,4 @@
-package Mojolicious::Command::Generate;
+package Mojolicious::Command::generate;
 use Mojo::Base 'Mojolicious::Commands';
 
 # "Ah, nothing like a warm fire and a SuperSoaker of fine cognac."
@@ -15,7 +15,7 @@ usage: $0 generate GENERATOR [OPTIONS]
 These generators are currently available:
 EOF
 has namespaces =>
-  sub { [qw/Mojolicious::Command::Generate Mojo::Command::Generate/] };
+  sub { [qw/Mojolicious::Command::generate Mojo::Command::generate/] };
 has usage => <<"EOF";
 usage: $0 generate GENERATOR [OPTIONS]
 EOF
@@ -25,22 +25,22 @@ __END__
 
 =head1 NAME
 
-Mojolicious::Command::Generate - Generator Command
+Mojolicious::Command::generate - Generator Command
 
 =head1 SYNOPSIS
 
-  use Mojolicious::Command::Generate;
+  use Mojolicious::Command::generate;
 
-  my $generator = Mojolicious::Command::Generate->new;
+  my $generator = Mojolicious::Command::generate->new;
   $generator->run(@ARGV);
 
 =head1 DESCRIPTION
 
-L<Mojolicious::Command::Generate> lists available generators.
+L<Mojolicious::Command::generate> lists available generators.
 
 =head1 ATTRIBUTES
 
-L<Mojolicious::Command::Generate> inherits all attributes from
+L<Mojolicious::Command::generate> inherits all attributes from
 L<Mojolicious::Commands> and implements the following new ones.
 
 =head2 C<description>
@@ -67,14 +67,14 @@ Short usage message shown before listing available generator commands.
 =head2 C<namespaces>
 
   my $namespaces = $generator->namespaces;
-  $generator     = $generator->namespaces(['Mojo::Command::Generate']);
+  $generator     = $generator->namespaces(['Mojo::Command::generate']);
 
 Namespaces to search for available generator commands, defaults to
-L<Mojo::Command::Generate> and L<Mojolicious::Command::Generate>.
+L<Mojolicious::Command::generate> and L<Mojo::Command::generate>.
 
 =head1 METHODS
 
-L<Mojolicious::Command::Generate> inherits all methods from
+L<Mojolicious::Command::generate> inherits all methods from
 L<Mojolicious::Commands>.
 
 =head1 SEE ALSO

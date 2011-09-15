@@ -1,4 +1,4 @@
-package Mojolicious::Command::Generate::LiteApp;
+package Mojolicious::Command::generate::lite_app;
 use Mojo::Base 'Mojo::Command';
 
 has description => <<'EOF';
@@ -13,9 +13,6 @@ EOF
 sub run {
   my ($self, $name) = @_;
   $name ||= 'myapp.pl';
-  $self->renderer->line_start('%%');
-  $self->renderer->tag_start('<%%');
-  $self->renderer->tag_end('%%>');
   $self->render_to_rel_file('liteapp', $name);
   $self->chmod_file($name, 0744);
 }
@@ -24,7 +21,7 @@ sub run {
 __DATA__
 
 @@ liteapp
-%% my $class = shift;
+% my $class = shift;
 #!/usr/bin/env perl
 use Mojolicious::Lite;
 
@@ -37,38 +34,38 @@ get '/welcome' => sub {
 };
 
 app->start;
-<%%%%>__DATA__
+<% %>__DATA__
 
-<%%%%>@@ index.html.ep
-% layout 'default';
-% title 'Welcome';
+<% %>@@ index.html.ep
+%% layout 'default';
+%% title 'Welcome';
 Welcome to Mojolicious!
 
-<%%%%>@@ layouts/default.html.ep
+<% %>@@ layouts/default.html.ep
 <!doctype html><html>
-  <head><title><%= title %></title></head>
-  <body><%= content %></body>
+  <head><title><%%= title %></title></head>
+  <body><%%= content %></body>
 </html>
 
 __END__
 =head1 NAME
 
-Mojolicious::Command::Generate::LiteApp - Lite App Generator Command
+Mojolicious::Command::generate::lite_app - Lite App Generator Command
 
 =head1 SYNOPSIS
 
-  use Mojolicious::Command::Generate::LiteApp;
+  use Mojolicious::Command::generate::lite_app;
 
-  my $app = Mojolicious::Command::Generate::LiteApp->new;
+  my $app = Mojolicious::Command::generate::lite_app->new;
   $app->run(@ARGV);
 
 =head1 DESCRIPTION
 
-L<Mojolicious::Command::Generate::LiteApp> is a application generator.
+L<Mojolicious::Command::generate::lite_app> is a application generator.
 
 =head1 ATTRIBUTES
 
-L<Mojolicious::Command::Generate::LiteApp> inherits all attributes from
+L<Mojolicious::Command::generate::lite_app> inherits all attributes from
 L<Mojo::Command> and implements the following new ones.
 
 =head2 C<description>
@@ -87,7 +84,7 @@ Usage information for this command, used for the help screen.
 
 =head1 METHODS
 
-L<Mojolicious::Command::Generate::LiteApp> inherits all methods from
+L<Mojolicious::Command::generate::lite_app> inherits all methods from
 L<Mojo::Command> and implements the following new ones.
 
 =head2 C<run>

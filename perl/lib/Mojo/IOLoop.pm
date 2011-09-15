@@ -33,6 +33,9 @@ has server_class => 'Mojo::IOLoop::Server';
 has stream_class => 'Mojo::IOLoop::Stream';
 has timeout      => '0.025';
 
+# Ignore PIPE signal
+$SIG{PIPE} = 'IGNORE';
+
 # Singleton
 our $LOOP;
 
@@ -50,9 +53,6 @@ sub new {
 
   # Start from scratch
   else { $self = $class->SUPER::new(@_) }
-
-  # Ignore PIPE signal
-  $SIG{PIPE} = 'IGNORE';
 
   return $self;
 }

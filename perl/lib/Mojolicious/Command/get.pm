@@ -1,4 +1,4 @@
-package Mojolicious::Command::Get;
+package Mojolicious::Command::get;
 use Mojo::Base 'Mojo::Command';
 
 use Getopt::Long 'GetOptions';
@@ -27,10 +27,10 @@ usage: $0 get [OPTIONS] URL [SELECTOR] [COMMANDS]
 
 These options are available:
   --charset <charset>     Charset of HTML5/XML content, defaults to auto
-                          detection or UTF-8.
+                          detection or "UTF-8".
   --content <content>     Content to send with request.
   --header <name:value>   Additional HTTP header.
-  --method <method>       HTTP method to use.
+  --method <method>       HTTP method to use, defaults to "GET".
   --redirect              Follow up to 5 redirects.
   --verbose               Print verbose debug information to STDERR.
 EOF
@@ -139,7 +139,7 @@ sub run {
 
   # Error
   my ($message, $code) = $tx->error;
-  utf8::encode $url if utf8::is_utf8 $url;
+  utf8::encode $url;
   warn qq/Problem loading URL "$url". ($message)\n/ if $message && !$code;
 
   # Charset
@@ -200,22 +200,22 @@ __END__
 
 =head1 NAME
 
-Mojolicious::Command::Get - Get Command
+Mojolicious::Command::get - Get Command
 
 =head1 SYNOPSIS
 
-  use Mojolicious::Command::Get;
+  use Mojolicious::Command::get;
 
-  my $get = Mojolicious::Command::Get->new;
+  my $get = Mojolicious::Command::get->new;
   $get->run(@ARGV);
 
 =head1 DESCRIPTION
 
-L<Mojolicious::Command::Get> is a command interface to L<Mojo::UserAgent>.
+L<Mojolicious::Command::get> is a command interface to L<Mojo::UserAgent>.
 
 =head1 ATTRIBUTES
 
-L<Mojolicious::Command::Get> inherits all attributes from L<Mojo::Command>
+L<Mojolicious::Command::get> inherits all attributes from L<Mojo::Command>
 and implements the following new ones.
 
 =head2 C<description>
@@ -234,7 +234,7 @@ Usage information for this command, used for the help screen.
 
 =head1 METHODS
 
-L<Mojolicious::Command::Get> inherits all methods from L<Mojo::Command> and
+L<Mojolicious::Command::get> inherits all methods from L<Mojo::Command> and
 implements the following new ones.
 
 =head2 C<run>

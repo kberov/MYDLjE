@@ -1,44 +1,29 @@
 package Mojolicious::Controller;
 use Mojo::Base -base;
 
-use Mojo::Asset::File;
 use Mojo::ByteStream;
 use Mojo::Cookie::Response;
 use Mojo::Exception;
+use Mojo::Home;
 use Mojo::Transaction::HTTP;
 use Mojo::URL;
 use Mojo::Util;
 
 require Carp;
-require File::Basename;
-require File::Spec;
 
 # "Scalpel... blood bucket... priest."
 has [qw/app match/];
 has tx => sub { Mojo::Transaction::HTTP->new };
 
-# Template directory
-my $T = File::Spec->catdir(File::Basename::dirname(__FILE__), 'templates');
-
-# Exception template
-our $EXCEPTION =
-  Mojo::Asset::File->new(path => File::Spec->catfile($T, 'exception.html.ep'))
-  ->slurp;
-
-# Exception template (development)
+# Bundled files
+my $H = Mojo::Home->new;
+$H->parse($H->parse($H->mojo_lib_dir)->rel_dir('Mojolicious/templates'));
+our $EXCEPTION = $H->slurp_rel_file('exception.html.ep');
 our $DEVELOPMENT_EXCEPTION =
-  Mojo::Asset::File->new(
-  path => File::Spec->catfile($T, 'exception.development.html.ep'))->slurp;
-
-# Not found template
-our $NOT_FOUND =
-  Mojo::Asset::File->new(path => File::Spec->catfile($T, 'not_found.html.ep'))
-  ->slurp;
-
-# Not found template (development)
+  $H->slurp_rel_file('exception.development.html.ep');
+our $NOT_FOUND = $H->slurp_rel_file('not_found.html.ep');
 our $DEVELOPMENT_NOT_FOUND =
-  Mojo::Asset::File->new(
-  path => File::Spec->catfile($T, 'not_found.development.html.ep'))->slurp;
+  $H->slurp_rel_file('not_found.development.html.ep');
 
 # Reserved stash values
 my @RESERVED = (
@@ -308,7 +293,8 @@ sub render_data { shift->render(data => shift, @_) }
 sub render_exception {
   my ($self, $e) = @_;
   $e = Mojo::Exception->new($e);
-  $self->app->log->error($e);
+  my $app = $self->app;
+  $app->log->error($e);
 
   # Recursion
   return if $self->stash->{'mojo.exception'};
@@ -322,33 +308,21 @@ sub render_exception {
     $snapshot->{$key} = $value;
   }
 
-  # Mode specific template
-  my $mode    = $self->app->mode;
+  # Render with fallbacks
+  my $mode    = $app->mode;
   my $options = {
     template         => "exception.$mode",
-    format           => 'html',
+    format           => $stash->{format} || 'html',
     handler          => undef,
     status           => 500,
     snapshot         => $snapshot,
     exception        => $e,
     'mojo.exception' => 1
   };
-  unless ($self->render($options)) {
-
-    # Template
-    $options->{template} = 'exception';
-    unless ($self->render($options)) {
-
-      # Inline template
-      delete $stash->{layout};
-      delete $stash->{extends};
-      delete $options->{template};
-      $options->{inline} =
-        $mode eq 'development' ? $DEVELOPMENT_EXCEPTION : $EXCEPTION;
-      $options->{handler} = 'ep';
-      $self->render($options);
-    }
-  }
+  my $inline = $mode eq 'development' ? $DEVELOPMENT_EXCEPTION : $EXCEPTION;
+  return if $self->_render_fallbacks($options, 'exception', $inline);
+  $options->{format} = 'html';
+  $self->_render_fallbacks($options, 'exception', $inline);
 }
 
 # DEPRECATED in Smiling Face With Sunglasses!
@@ -389,31 +363,19 @@ sub render_not_found {
     ? $self->url_for('/perldoc')
     : 'http://mojolicio.us/perldoc';
 
-  # Mode specific template
+  # Render with fallbacks
   my $mode    = $self->app->mode;
   my $options = {
     template         => "not_found.$mode",
-    format           => 'html',
+    format           => $stash->{format} || 'html',
     status           => 404,
     guide            => $guide,
     'mojo.not_found' => 1
   };
-  unless ($self->render($options)) {
-
-    # Template
-    $options->{template} = 'not_found';
-    unless ($self->render($options)) {
-
-      # Inline template
-      delete $options->{layout};
-      delete $options->{extends};
-      delete $options->{template};
-      $options->{inline} =
-        $mode eq 'development' ? $DEVELOPMENT_NOT_FOUND : $NOT_FOUND;
-      $options->{handler} = 'ep';
-      $self->render($options);
-    }
-  }
+  my $inline = $mode eq 'development' ? $DEVELOPMENT_NOT_FOUND : $NOT_FOUND;
+  return if $self->_render_fallbacks($options, 'not_found', $inline);
+  $options->{format} = 'html';
+  $self->_render_fallbacks($options, 'not_found', $inline);
 }
 
 # "You called my thesis a fat sack of barf, and then you stole it?
@@ -486,7 +448,9 @@ sub respond_to {
   push @formats, @{$app->types->detect($self->req->headers->accept)};
   my $stash = $self->stash;
   unless (@formats) {
-    if (my $format = $stash->{format}) { push @formats, $format }
+    if (my $format = $stash->{format} || $self->req->param('format')) {
+      push @formats, $format;
+    }
     else { push @formats, $app->renderer->default_format }
   }
 
@@ -501,13 +465,12 @@ sub respond_to {
 
   # Fallback
   unless ($target) {
-    return unless $target = $args->{any};
+    return $self->rendered(204) unless $target = $args->{any};
     delete $stash->{format};
   }
 
   # Dispatch
   ref $target eq 'CODE' ? $target->($self) : $self->render($target);
-  return 1;
 }
 
 sub send_message {
@@ -705,6 +668,29 @@ sub write_chunk {
   return $self;
 }
 
+sub _render_fallbacks {
+  my ($self, $options, $template, $inline) = @_;
+
+  # Mode specific template
+  unless ($self->render($options)) {
+
+    # Template
+    $options->{template} = $template;
+    unless ($self->render($options)) {
+
+      # Inline template
+      my $stash = $self->stash;
+      return unless $stash->{format} eq 'html';
+      delete $stash->{layout};
+      delete $stash->{extends};
+      delete $options->{template};
+      $options->{inline}  = $inline;
+      $options->{handler} = 'ep';
+      return $self->render($options);
+    }
+  }
+}
+
 1;
 __END__
 
@@ -876,8 +862,8 @@ will not be encoded.
   $c->render_exception('Oops!');
   $c->render_exception(Mojo::Exception->new('Oops!'));
 
-Render the exception template C<exception.$mode.html.$handler> or
-C<exception.html.$handler> and set the response status code to C<500>.
+Render the exception template C<exception.$mode.$format.$handler> or
+C<exception.$format.$handler> and set the response status code to C<500>.
 
 =head2 C<render_json>
 
@@ -955,14 +941,15 @@ Usually refers to a L<Mojo::Message::Response> object.
 
 =head2 C<respond_to>
 
-  my $success = $c->respond_to(
+  $c->respond_to(
     json => sub {...},
     xml  => {text => 'hello!'},
     any  => sub {...}
   );
 
 Automatically select best possible representation for resource from C<Accept>
-request header and route C<format>.
+request header, C<format> stash value or C<format> GET/POST parameter,
+defaults to rendering an empty C<204> response.
 Note that this method is EXPERIMENTAL and might change without warning!
 
   $c->respond_to(
@@ -1028,7 +1015,7 @@ A L<Mojo::UserAgent> prepared for the current environment.
 
   # Non-blocking
   $c->ua->get('http://mojolicio.us' => sub {
-    my $tx = pop;
+    my ($self, $tx) = @_;
     $c->render_data($tx->res->body);
   });
 
@@ -1040,7 +1027,8 @@ A L<Mojo::UserAgent> prepared for the current environment.
   for my $url ('http://mojolicio.us', 'https://metacpan.org') {
     $t->begin;
     $c->ua->get($url => sub {
-      $t->end(pop->res->dom->html->head->title->text);
+      my ($self, $tx) = @_;
+      $t->end($tx->res->dom->html->head->title->text);
     });
   }
 

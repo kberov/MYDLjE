@@ -1,7 +1,7 @@
 package Mojo::Cookie::Request;
 use Mojo::Base 'Mojo::Cookie';
 
-use Mojo::Util 'unquote';
+use Mojo::Util 'quote';
 
 # "Lisa, would you like a donut?
 #  No thanks. Do you have any fruit?
@@ -11,13 +11,10 @@ sub parse {
 
   # Walk tree
   my @cookies;
-  my $version = 1;
+  my $version = 0;
   for my $knot ($self->_tokenize($string)) {
     for my $token (@{$knot}) {
       my ($name, $value) = @{$token};
-
-      # Value might be quoted
-      unquote $value if $value;
 
       # Path
       if ($name =~ /^\$Path$/i) { $cookies[-1]->path($value) }
@@ -29,7 +26,6 @@ sub parse {
       else {
         push @cookies, Mojo::Cookie::Request->new;
         $cookies[-1]->name($name);
-        unquote $value if $value;
         $value = '' unless defined $value;
         $cookies[-1]->value($value);
         $cookies[-1]->version($version);
@@ -49,20 +45,21 @@ sub prefix {
 sub to_string {
   my $self = shift;
 
-  # Render
   return '' unless $self->name;
   my $cookie = $self->name;
   my $value  = $self->value;
-  $cookie .= defined $value ? "=$value" : '=';
+  if (defined $value) {
+    quote $value if $value =~ /[,;"]/;
+    $cookie .= "=$value";
+  }
+  else { $cookie .= '=' }
   if (my $path = $self->path) { $cookie .= "; \$Path=$path" }
 
   return $cookie;
 }
 
 sub to_string_with_prefix {
-  my $self = shift;
-
-  # Render with prefix
+  my $self   = shift;
   my $prefix = $self->prefix;
   my $cookie = $self->to_string;
   return "$prefix; $cookie";
@@ -87,8 +84,7 @@ Mojo::Cookie::Request - HTTP 1.1 Request Cookie Container
 
 =head1 DESCRIPTION
 
-L<Mojo::Cookie::Request> is a container for HTTP 1.1 request cookies as
-described in RFC 2965.
+L<Mojo::Cookie::Request> is a container for HTTP 1.1 request cookies.
 
 =head1 ATTRIBUTES
 

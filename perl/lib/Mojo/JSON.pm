@@ -66,7 +66,7 @@ sub decode {
 
   # Wide characters
   $self->error('Wide character in input.') and return
-    unless utf8::downgrade($_, 1);
+    unless utf8::downgrade($string, 1);
 
   # Detect and decode unicode
   my $encoding = 'UTF-8';
@@ -346,7 +346,7 @@ sub _exception {
 
   # Context
   my $context = 'Malformed JSON: ' . shift;
-  if (m/\G\z/gc) { $context .= ' before end of data'; }
+  if (m/\G\z/gc) { $context .= ' before end of data' }
   else {
     my @lines = split /\n/, substr($_, 0, pos);
     $context .= ' at line ' . @lines . ', offset ' . length(pop @lines || '');

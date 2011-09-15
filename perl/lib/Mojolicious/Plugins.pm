@@ -34,22 +34,16 @@ sub load_plugin {
     $name = $new;
   }
 
-  # Module
-  if ($name =~ /^[A-Z]/ && $self->_load($name)) { return $name->new }
-
-  # Search plugin by name
-  else {
-
-    # Class
-    my $class = $name;
-    camelize $class if $class =~ /^[a-z]/;
-
-    # Try all namspaces
-    for my $namespace (@{$self->namespaces}) {
-      my $module = "${namespace}::$class";
-      return $module->new if $self->_load($module);
-    }
+  # Try all namspaces
+  my $class = $name;
+  camelize $class if $class =~ /^[a-z]/;
+  for my $namespace (@{$self->namespaces}) {
+    my $module = "${namespace}::$class";
+    return $module->new if $self->_load($module);
   }
+
+  # Full module name
+  return $name->new if $self->_load($name);
 
   # Not found
   die qq/Plugin "$name" missing, maybe you need to install it?\n/;
@@ -90,7 +84,7 @@ sub _load {
   }
 
   # Module is a plugin
-  return unless $module->can('new') && $module->can('register');
+  return unless $module->isa('Mojolicious::Plugin');
   return 1;
 }
 

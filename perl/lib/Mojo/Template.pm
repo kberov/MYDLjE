@@ -21,6 +21,7 @@ has expression_mark => '=';
 has line_start      => '%';
 has name            => 'template';
 has namespace       => 'Mojo::Template::SandBox';
+has replace_mark    => '%';
 has tag_start       => '<%';
 has tag_end         => '%>';
 has template        => '';
@@ -196,139 +197,83 @@ sub interpret {
 # "I am so smart! I am so smart! S-M-R-T! I mean S-M-A-R-T..."
 sub parse {
   my ($self, $tmpl) = @_;
-  $self->template($tmpl);
 
   # Clean start
+  $self->template($tmpl);
   delete $self->{tree};
 
-  # Tags
-  my $line_start    = quotemeta $self->line_start;
-  my $tag_start     = quotemeta $self->tag_start;
-  my $tag_end       = quotemeta $self->tag_end;
+  # Token
+  my $raw_start     = $self->line_start;
+  my $raw_tag_start = $self->tag_start;
+  my $raw_tag_end   = $self->tag_end;
+  my $raw_expr      = $self->expression_mark;
+  my $raw_trim      = $self->trim_mark;
+  my $raw_replace   = $self->replace_mark;
+  my $start         = quotemeta $raw_start;
+  my $tag_start     = quotemeta $raw_tag_start;
+  my $tag_end       = quotemeta $raw_tag_end;
   my $cmnt          = quotemeta $self->comment_mark;
   my $escp          = quotemeta $self->escape_mark;
-  my $expr          = quotemeta $self->expression_mark;
-  my $trim          = quotemeta $self->trim_mark;
-  my $capture_start = quotemeta $self->capture_start;
-  my $capture_end   = quotemeta $self->capture_end;
+  my $expr          = quotemeta $raw_expr;
+  my $trim          = quotemeta $raw_trim;
+  my $cpst          = quotemeta $self->capture_start;
+  my $cpen          = quotemeta $self->capture_end;
+  my $replace       = quotemeta $raw_replace;
 
-  # Mixed
-  my $mixed_re = qr/
+  # Token regex
+  my $token_re = qr/
     (
-    $tag_start$expr$escp\s*$capture_end   # Escaped expression (end)
+    $tag_start$replace             # Replace
     |
-    $tag_start$expr$escp                  # Escaped expression
+    $tag_start$expr$escp\s*$cpen   # Escaped expression (end)
     |
-    $tag_start$expr\s*$capture_end        # Expression (end)
+    $tag_start$expr$escp           # Escaped expression
     |
-    $tag_start$expr                       # Expression
+    $tag_start$expr\s*$cpen        # Expression (end)
     |
-    $tag_start$cmnt\s*$capture_end        # Comment (end)
+    $tag_start$expr                # Expression
     |
-    $tag_start$cmnt                       # Comment
+    $tag_start$cmnt\s*$cpen        # Comment (end)
     |
-    $tag_start\s*$capture_end             # Code (end)
+    $tag_start$cmnt                # Comment
     |
-    $tag_start                            # Code
+    $tag_start\s*$cpen             # Code (end)
     |
-    $capture_start\s*$trim$tag_end        # Trim end (start)
+    $tag_start                     # Code
     |
-    $trim$tag_end                         # Trim end
+    $cpst\s*$trim$tag_end          # Trim end (start)
     |
-    $capture_start\s*$tag_end             # End (start)
+    $trim$tag_end                  # Trim end
     |
-    $tag_end                              # End
+    $cpst\s*$tag_end               # End (start)
+    |
+    $tag_end                       # End
     )
   /x;
 
-  # Capture end regex
-  my $capture_end_re = qr/
-    ^(
-    $tag_start        # Start
-    )
-    (?:
-    $expr             # Expression
-    )?
-    (?:
-    $escp             # Escaped expression
-    )?
-    \s*$capture_end   # (end)
-  /x;
-
-  # Tag end regex
-  my $end_re = qr/
-    ^(
-    $capture_start\s*$trim$tag_end   # Trim end (start)
-    )|(
-    $capture_start\s*$tag_end        # End (start)
-    )|(
-    $trim$tag_end                    # Trim end
-    )|
-    $tag_end                         # End
-    $
-  /x;
-
-  # Perl line regex
-  my $line_re = qr/
-    ^
-    (\s*)
-    $line_start            # Line start
-    ($expr)?               # Expression
-    ($escp)?               # Escaped expression
-    (\s*$capture_end)?     # End
-    ([^\#\>]{1}.*?)?       # Code
-    ($capture_start\s*)?   # Start
-    $
-  /x;
-
-  # Tokenize
+  # Split lines
   my $state = 'text';
   my @capture_token;
   my $trimming = 0;
   for my $line (split /\n/, $tmpl) {
+    $trimming = 0 if $state eq 'text';
 
     # Perl line
-    if ($line =~ /$line_re/) {
-      my @token = ();
-
-      # Capture end
-      push @token, 'cpen', undef if $4;
-
-      # Capture start
-      push @token, 'cpst', undef if $6;
-
-      # Expression
-      if ($2) {
-        unshift @token, 'text', $1;
-        push @token, $3 ? 'escp' : 'expr', $5;
-
-        # Hint at end
-        push @token, 'text', '';
-
-        # Line ending
-        push @token, 'text', "\n";
-      }
-
-      # Code
-      else { push @token, 'code', $5 }
-
-      push @{$self->tree}, \@token;
-      next;
-    }
-
-    # Comment line, dummy token needed for line count
-    if ($line =~ /^\s*$line_start$cmnt(.+)?$/) {
-      next;
+    if ($state eq 'text' && $line !~ s/^(\s*)$start$replace/$1$raw_start/) {
+      $line =~ s/^(\s*)$start($expr)?// and $line =
+        $2
+        ? "$1$raw_tag_start$2$line $raw_tag_end"
+        : "$raw_tag_start$line $raw_trim$raw_tag_end";
     }
 
     # Escaped line ending
     if ($line =~ /(\\+)$/) {
       my $len = length $1;
 
-      # Newline escaped
+      # Newline
       if ($len == 1) { $line =~ s/\\$// }
 
-      # Backslash escaped
+      # Backslash
       if ($len >= 2) {
         $line =~ s/\\\\$/\\/;
         $line .= "\n";
@@ -338,56 +283,39 @@ sub parse {
     # Normal line ending
     else { $line .= "\n" }
 
-    # Mixed line
+    # Tokenize
     my @token;
-    for my $token (split /$mixed_re/, $line) {
-
-      # Done trimming
-      $trimming = 0 if $trimming && $state ne 'text';
+    for my $token (split /$token_re/, $line) {
 
       # Capture end
       @capture_token = ('cpen', undef)
-        if $token =~ s/$capture_end_re/$1/;
+        if $token =~ s/^($tag_start)(?:$expr)?(?:$escp)?\s*$cpen/$1/;
 
       # End
-      if ($state ne 'text' && $token =~ /$end_re/) {
+      if ($state ne 'text' && $token =~ /^(?:($cpst)\s*)?($trim)?$tag_end$/) {
+        $state = 'text';
 
         # Capture start
-        splice @token, -2, 0, 'cpst', undef if $1 || $2;
+        splice @token, -2, 0, 'cpst', undef if $1;
 
         # Trim previous text
-        if ($1 || $3) {
+        if ($2) {
           $trimming = 1;
-
-          # Trim current line
-          unless ($self->_trim_line(\@token, 4)) {
-
-            # Trim previous lines
-            for my $l (reverse @{$self->tree}) {
-              last if $self->_trim_line($l);
-            }
-          }
+          $self->_trim(\@token);
         }
 
         # Hint at end
         push @token, 'text', '';
-
-        # Back to business as usual
-        $state = 'text';
       }
 
       # Code
       elsif ($token =~ /^$tag_start$/) { $state = 'code' }
 
       # Expression
-      elsif ($token =~ /^$tag_start$expr$/) {
-        $state = 'expr';
-      }
+      elsif ($token =~ /^$tag_start$expr$/) { $state = 'expr' }
 
       # Expression that needs to be escaped
-      elsif ($token =~ /^$tag_start$expr$escp$/) {
-        $state = 'escp';
-      }
+      elsif ($token =~ /^$tag_start$expr$escp$/) { $state = 'escp' }
 
       # Comment
       elsif ($token =~ /^$tag_start$cmnt$/) { $state = 'cmnt' }
@@ -395,22 +323,17 @@ sub parse {
       # Value
       else {
 
-        # Trimming
-        if ($trimming) {
-          if ($token =~ s/^(\s+)//) {
+        # Replace
+        $token = $raw_tag_start if $token eq "$raw_tag_start$raw_replace";
 
-            # Convert whitespace text to line noise
-            push @token, 'code', $1;
-
-            # Done with trimming
-            $trimming = 0 if length $token;
-          }
+        # Convert whitespace text to line noise
+        if ($trimming && $token =~ s/^(\s+)//) {
+          push @token, 'code', $1;
+          $trimming = 0;
         }
 
         # Comments are ignored
         next if $state eq 'cmnt';
-
-        # Store value
         push @token, @capture_token, $state, $token;
         @capture_token = ();
       }
@@ -483,35 +406,28 @@ sub render_to_file {
   return $self->_write_file($path, $output);
 }
 
-sub _trim_line {
-  my ($self, $line, $offset) = @_;
+sub _trim {
+  my ($self, $line) = @_;
 
   # Walk line backwards
-  $offset ||= 2;
-  for (my $j = @$line - $offset; $j >= 0; $j -= 2) {
+  for (my $j = @$line - 4; $j >= 0; $j -= 2) {
 
     # Skip capture
     next if $line->[$j] eq 'cpst' || $line->[$j] eq 'cpen';
 
     # Only trim text
-    return 1 unless $line->[$j] eq 'text';
+    return unless $line->[$j] eq 'text';
 
-    # Trim
+    # Convert whitespace text to line noise
     my $value = $line->[$j + 1];
     if ($line->[$j + 1] =~ s/(\s+)$//) {
-
-      # Value
       $value = $line->[$j + 1];
-
-      # Convert whitespace text to line noise
       splice @$line, $j, 0, 'code', $1;
     }
 
     # Text left
-    return 1 if length $value;
+    return if length $value;
   }
-
-  return;
 }
 
 sub _write_file {
@@ -531,7 +447,7 @@ __END__
 
 =head1 NAME
 
-Mojo::Template - Perlish Templates!
+Mojo::Template - Perl-ish Templates!
 
 =head1 SYNOPSIS
 
@@ -567,31 +483,36 @@ projects.
 Like preprocessing a config file, generating text from heredocs and stuff
 like that.
 
-  <% Inline Perl %>
+  <% Perl code %>
   <%= Perl expression, replaced with result %>
   <%== Perl expression, replaced with XML escaped result %>
   <%# Comment, useful for debugging %>
-  % Perl line
-  %= Perl expression line, replaced with result
-  %== Perl expression line, replaced with XML escaped result
-  %# Comment line, useful for debugging
+  <%% Replaced with "<%", useful for generating templates %>
+  % Perl code line, treated as "<% line =%>"
+  %= Perl expression line, treated as "<%= line %>"
+  %== Perl expression line, treated as "<%== line %>"
+  %# Comment line, treated as "<%# line =%>"
+  %% Replaced with "%", useful for generating templates
 
-Automatic escaping behavior can be reversed with the C<auto_escape>
-attribute, this is the default in L<Mojolicious> C<.ep> templates for
-example.
+=head2 Automatic Escaping
+
+Escaping behavior can be reversed with the C<auto_escape> attribute, this is
+the default in L<Mojolicious> C<.ep> templates for example.
 
   <%= Perl expression, replaced with XML escaped result %>
   <%== Perl expression, replaced with result %>
-  %= Perl expression line, replaced with XML escaped result
-  %== Perl expression line, replaced with result
 
 L<Mojo::ByteStream> objects are always excluded from automatic escaping.
 
   <%= b('<div>excluded!</div>') %>
 
+=head2 Trimming
+
 Whitespace characters around tags can be trimmed with a special tag ending.
 
   <%= All whitespace characters around this expression will be trimmed =%>
+
+=head2 Blocks
 
 You can capture whole template blocks for reuse later with the C<begin> and
 C<end> keywords.
@@ -603,6 +524,8 @@ C<end> keywords.
   <%= $block->('Baerbel') %>
   <%= $block->('Wolfgang') %>
 
+=head2 Indentation
+
 Perl lines can also be indented freely.
 
   % my $block = begin
@@ -612,6 +535,8 @@ Perl lines can also be indented freely.
   %= $block->('Baerbel')
   %= $block->('Wolfgang')
 
+=head2 Arguments
+
 L<Mojo::Template> templates work just like Perl subs (actually they get
 compiled to a Perl sub internally).
 That means you can access arguments simply via C<@_>.
@@ -620,33 +545,26 @@ That means you can access arguments simply via C<@_>.
   % my $x = shift;
   test 123 <%= $foo %>
 
-Note that you can't escape L<Mojo::Template> tags, instead we just replace
-them if necessary.
+=head2 More Escaping
 
-  my $mt = Mojo::Template->new;
-  $mt->line_start('@@');
-  $mt->tag_start('[@@');
-  $mt->tag_end('@@]');
-  $mt->expression_mark('&');
-  $mt->escape_mark('&');
-  my $output = $mt->render(<<'EOF', 23);
-  @@ my $i = shift;
-  <% no code just text [@@&& $i @@]
-  EOF
+You can use escaped tags and lines to generate templates.
 
-There is only one case that we can escape with a backslash, and that's a
-newline at the end of a template line.
+  %% my $number = <%= 20 + 3 %>;
+  The number is <%%= $number %>
+
+A newline can be escaped with a backslash.
 
   This is <%= 23 * 3 %> a\
   single line
 
-If for some strange reason you absolutely need a backslash in front of a
-newline you can escape the backslash with another backslash.
+And a backslash in front of a newline can be escaped with another backslash.
 
   % use Data::Dumper;
   This will\\
   result <%=  Dumper {foo => 'bar'} %>\\
   in multiple lines
+
+=head2 Exceptions
 
 Templates get compiled to Perl code internally, this can make debugging a bit
 tricky.
@@ -659,6 +577,8 @@ to error messages with context.
   4: % my $i = 2; xx
   5: %= $i * 2
   6: </body>
+
+=head2 Caching
 
 L<Mojo::Template> does not support caching by itself, but you can easily
 build a wrapper around it.
@@ -786,6 +706,15 @@ Namespace used to compile templates, defaults to C<Mojo::Template::SandBox>.
   $mt      = $mt->prepend('my $self = shift;');
 
 Prepend Perl code to compiled template.
+
+=head2 C<replace_mark>
+
+  my $replace_mark = $mt->replace_mark;
+  $mt              = $mt->replace_mark('%');
+
+Character used for escaping the start of a tag or line, defaults to C<%>.
+
+  <%% my $foo = 23; %>
 
 =head2 C<tag_start>
 

@@ -1,4 +1,4 @@
-package Mojolicious::Command::Eval;
+package Mojolicious::Command::eval;
 use Mojo::Base 'Mojo::Command';
 
 use Getopt::Long 'GetOptions';
@@ -47,23 +47,23 @@ __END__
 
 =head1 NAME
 
-Mojolicious::Command::Eval - Eval Command
+Mojolicious::Command::eval - Eval Command
 
 =head1 SYNOPSIS
 
-  use Mojolicious::Command::Eval;
+  use Mojolicious::Command::eval;
 
-  my $eval = Mojolicious::Command::Eval->new;
+  my $eval = Mojolicious::Command::eval->new;
   $eval->run;
 
 =head1 DESCRIPTION
 
-L<Mojolicious::Command::Eval> runs code against applications.
+L<Mojolicious::Command::eval> runs code against applications.
 Note that this module is EXPERIMENTAL and might change without warning!
 
 =head1 ATTRIBUTES
 
-L<Mojolicious::Command::Eval> inherits all attributes from L<Mojo::Command>
+L<Mojolicious::Command::eval> inherits all attributes from L<Mojo::Command>
 and implements the following new ones.
 
 =head2 C<description>
@@ -82,7 +82,7 @@ Usage information for this command, used for the help screen.
 
 =head1 METHODS
 
-L<Mojolicious::Command::Eval> inherits all methods from L<Mojo::Command> and
+L<Mojolicious::Command::eval> inherits all methods from L<Mojo::Command> and
 implements the following new ones.
 
 =head2 C<run>

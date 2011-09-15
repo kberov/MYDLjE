@@ -1,4 +1,4 @@
-package Mojolicious::Command::Inflate;
+package Mojolicious::Command::inflate;
 use Mojo::Base 'Mojo::Command';
 
 use Getopt::Long 'GetOptions';
@@ -13,22 +13,20 @@ usage: $0 inflate [OPTIONS]
 These options are available:
   --class <class>      Class to inflate.
   --public <path>      Path prefix for generated static files, defaults to
-                       public.
+                       "public".
   --templates <path>   Path prefix for generated template files, defaults to
-                       templates.
+                       "templates".
 EOF
 
 # "Come on stem cells! Work your astounding scientific nonsense!"
 sub run {
   my $self = shift;
 
-  # Class
+  # Options
+  local @ARGV = @_;
   my $class     = 'main';
   my $public    = 'public';
   my $templates = 'templates';
-
-  # Options
-  local @ARGV = @_;
   GetOptions(
     'class=s'     => sub { $class     = $_[1] },
     'public=s'    => sub { $public    = $_[1] },
@@ -45,7 +43,7 @@ sub run {
     my $prefix  = $file =~ /\.\w+\.\w+$/ ? $templates : $public;
     my $path    = $self->rel_file("$prefix/$file");
     my $content = $all->{$file};
-    utf8::encode $content if utf8::is_utf8 $content;
+    utf8::encode $content;
     $self->write_file($path, $content);
   }
 }
@@ -55,23 +53,23 @@ __END__
 
 =head1 NAME
 
-Mojolicious::Command::Inflate - Inflate Command
+Mojolicious::Command::inflate - inflate Command
 
 =head1 SYNOPSIS
 
-  use Mojolicious::Command::Inflate;
+  use Mojolicious::Command::inflate;
 
-  my $inflate = Mojolicious::Command::Inflate->new;
+  my $inflate = Mojolicious::Command::inflate->new;
   $inflate->run(@ARGV);
 
 =head1 DESCRIPTION
 
-L<Mojolicious::Command::Inflate> turns all your embedded templates into real
+L<Mojolicious::Command::inflate> turns all your embedded templates into real
 ones.
 
 =head1 ATTRIBUTES
 
-L<Mojolicious::Command::Inflate> inherits all attributes from
+L<Mojolicious::Command::inflate> inherits all attributes from
 L<Mojo::Command> and implements the following new ones.
 
 =head2 C<description>
@@ -90,7 +88,7 @@ Usage information for this command, used for the help screen.
 
 =head1 METHODS
 
-L<Mojolicious::Command::Inflate> inherits all methods from L<Mojo::Command>
+L<Mojolicious::Command::inflate> inherits all methods from L<Mojo::Command>
 and implements the following new ones.
 
 =head2 C<run>

@@ -1,4 +1,4 @@
-package Mojolicious::Command::Generate::Plugin;
+package Mojolicious::Command::generate::plugin;
 use Mojo::Base 'Mojo::Command';
 
 use Mojo::Util 'camelize';
@@ -48,13 +48,13 @@ sub register {
 }
 
 1;
-<%%>__END__
+<% %>__END__
 
-<%%>=head1 NAME
+<% %>=head1 NAME
 
 <%= $class %> - Mojolicious Plugin
 
-<%%>=head1 SYNOPSIS
+<% %>=head1 SYNOPSIS
 
   # Mojolicious
   $self->plugin('<%= $name %>');
@@ -62,26 +62,26 @@ sub register {
   # Mojolicious::Lite
   plugin '<%= $name %>';
 
-<%%>=head1 DESCRIPTION
+<% %>=head1 DESCRIPTION
 
 L<<%= $class %>> is a L<Mojolicious> plugin.
 
-<%%>=head1 METHODS
+<% %>=head1 METHODS
 
 L<<%= $class %>> inherits all methods from
 L<Mojolicious::Plugin> and implements the following new ones.
 
-<%%>=head2 C<register>
+<% %>=head2 C<register>
 
   $plugin->register;
 
 Register plugin in L<Mojolicious> application.
 
-<%%>=head1 SEE ALSO
+<% %>=head1 SEE ALSO
 
 L<Mojolicious>, L<Mojolicious::Guides>, L<http://mojolicio.us>.
 
-<%%>=cut
+<% %>=cut
 
 @@ test
 % my $name = shift;
@@ -116,30 +116,30 @@ WriteMakefile(
   NAME         => '<%= $class %>',
   VERSION_FROM => 'lib/<%= $path %>',
   AUTHOR       => 'A Good Programmer <nospam@cpan.org>',
-  PREREQ_PM    => {'Mojolicious' => '1.80'},
+  PREREQ_PM    => {'Mojolicious' => '1.90'},
   test         => {TESTS => 't/*.t'}
 );
 
 __END__
 =head1 NAME
 
-Mojolicious::Command::Generate::Plugin - Plugin Generator Command
+Mojolicious::Command::generate::plugin - Plugin Generator Command
 
 =head1 SYNOPSIS
 
-  use Mojolicious::Command::Generate::Plugin;
+  use Mojolicious::Command::generate::plugin;
 
-  my $plugin = Mojolicious::Command::Generate::Plugin->new;
+  my $plugin = Mojolicious::Command::generate::plugin->new;
   $plugin->run(@ARGV);
 
 =head1 DESCRIPTION
 
-L<Mojolicious::Command::Generate::Plugin> is a plugin generator.
+L<Mojolicious::Command::generate::plugin> is a plugin generator.
 Note that this module is EXPERIMENTAL and might change without warning!
 
 =head1 ATTRIBUTES
 
-L<Mojolicious::Command::Generate::Plugin> inherits all attributes from
+L<Mojolicious::Command::generate::plugin> inherits all attributes from
 L<Mojo::Command> and implements the following new ones.
 
 =head2 C<description>
@@ -158,7 +158,7 @@ Usage information for this command, used for the help screen.
 
 =head1 METHODS
 
-L<Mojolicious::Command::Generate::Plugin> inherits all methods from
+L<Mojolicious::Command::generate::plugin> inherits all methods from
 L<Mojo::Command> and implements the following new ones.
 
 =head2 C<run>

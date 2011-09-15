@@ -233,6 +233,9 @@ sub register {
     }
   );
 
+  # Add "t" helper
+  $app->helper(t => sub { shift; $self->_tag(@_) });
+
   # Add "tag" helper
   $app->helper(tag => sub { shift; $self->_tag(@_) });
 
@@ -304,7 +307,8 @@ sub _tag {
 
   # Callback
   my $cb = defined $_[-1] && ref($_[-1]) eq 'CODE' ? pop @_ : undef;
-  pop if @_ % 2;
+  my $content = pop if @_ % 2;
+  xml_escape $content if defined $content;
 
   # Tag
   my $tag = "<$name";
@@ -319,9 +323,9 @@ sub _tag {
   }
 
   # Block
-  if ($cb) {
+  if ($cb || defined $content) {
     $tag .= '>';
-    $tag .= $cb->();
+    $tag .= $cb ? $cb->() : $content;
     $tag .= "<\/$name>";
   }
 
@@ -582,17 +586,28 @@ Generate submit input element.
   <input type="submit" value="Ok" />
   <input id="foo" type="submit" value="Ok!" />
 
+=head2 C<t>
+
+  <%=t div => 'some & content' %>
+
+Alias for C<tag>.
+Note that this helper is EXPERIMENTAL and might change without warning!
+
+  <div>some &amp; content</div>
+
 =head2 C<tag>
 
   <%= tag 'div' %>
   <%= tag 'div', id => 'foo' %>
-  <%= tag div => begin %>Content<% end %>
+  <%= tag div => 'some & content' %>
+  <%= tag div => begin %>some & content<% end %>
 
 HTML5 tag generator.
 
   <div />
   <div id="foo" />
-  <div>Content</div>
+  <div>some &amp; content</div>
+  <div>some & content</div>
 
 Very useful for reuse in more specific tag helpers.
 

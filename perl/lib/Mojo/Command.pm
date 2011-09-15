@@ -20,8 +20,8 @@ has description => 'No description.';
 has message     => <<"EOF";
 usage: $0 COMMAND [OPTIONS]
 
-Tip: CGI, FastCGI and PSGI environments can be automatically detected very
-     often and work without commands.
+Tip: CGI and PSGI environments can be automatically detected very often and
+     work without commands.
 
 These commands are currently available:
 EOF
@@ -32,6 +32,8 @@ has usage      => "usage: $0\n";
 
 # Cache
 my $CACHE = {};
+
+sub app { Mojo::Server->new->app }
 
 sub chmod_file {
   my ($self, $path, $mod) = @_;
@@ -49,6 +51,7 @@ sub chmod_rel_file {
 sub class_to_file {
   my ($self, $class) = @_;
   $class =~ s/:://g;
+  $class =~ s/([A-Z])([A-Z]*)/$1.lc($2)/gex;
   decamelize $class;
   return $class;
 }
@@ -91,14 +94,8 @@ sub detect {
   return 'cgi'
     if defined $ENV{PATH_INFO} || defined $ENV{GATEWAY_INTERFACE};
 
-  # No further detection if we have a guess
-  return $guess if $guess;
-
-  # FastCGI (detect absence of WINDIR for Windows and USER for UNIX)
-  return 'fastcgi' if !defined $ENV{WINDIR} && !defined $ENV{USER};
-
   # Nothing
-  return;
+  return $guess;
 }
 
 sub get_all_data {
@@ -119,7 +116,7 @@ sub get_all_data {
   $content =~ s/\n__END__\r?\n.*$/\n/s;
 
   # Split
-  my @data = split /^@@\s+(.+?)\s*\r?\n/m, $content;
+  my @data = split /^@@\s*(.+?)\s*\r?\n/m, $content;
   shift @data;
 
   # Find data
@@ -186,7 +183,7 @@ sub run {
   my ($self, $name, @args) = @_;
 
   # Application loader
-  return Mojo::Server->new->app if defined $ENV{MOJO_APP_LOADER};
+  return $self->app if defined $ENV{MOJO_APP_LOADER};
 
   # Try to detect environment
   $name = $self->detect($name) unless $ENV{MOJO_NO_DETECT};
@@ -202,28 +199,12 @@ sub run {
     # Try all namespaces
     my $module;
     for my $namespace (@{$self->namespaces}) {
+      last if $module = _command("${namespace}::$name");
 
-      # Generate module
-      my $camelized = $name;
-      camelize $camelized;
-      my $try = "$namespace\::$camelized";
-
-      # Load
-      if (my $e = Mojo::Loader->load($try)) {
-
-        # Module missing
-        next unless ref $e;
-
-        # Real error
-        die $e;
-      }
-
-      # Module is a command
-      next unless $try->can('new') && $try->can('run');
-
-      # Found
-      $module = $try;
-      last;
+      # DEPRECATED in Smiling Face With Sunglasses!
+      my $class = $name;
+      camelize $class;
+      last if $module = _command("${namespace}::$class");
     }
 
     # Command missing
@@ -236,21 +217,14 @@ sub run {
   }
 
   # Test
-  return $self if $ENV{HARNESS_ACTIVE};
+  return 1 if $ENV{HARNESS_ACTIVE};
 
   # Try all namespaces
   my $commands = [];
   my $seen     = {};
   for my $namespace (@{$self->namespaces}) {
-
-    # Search
     for my $module (@{Mojo::Loader->search($namespace)}) {
-
-      # Load
-      if (my $e = Mojo::Loader->load($module)) { die $e }
-
-      # Seen
-      my $command = $module;
+      next unless my $command = _command($module);
       $command =~ s/^$namespace\:://;
       push @$commands, [$command => $module]
         unless $seen->{$command};
@@ -265,13 +239,8 @@ sub run {
   my $list = [];
   my $len  = 0;
   foreach my $command (@$commands) {
-
-    # Generate name
     my $name = $command->[0];
-    decamelize $name;
-
-    # Add to list
-    my $l = length $name;
+    my $l    = length $name;
     $len = $l if $l > $len;
     push @$list, [$name, $command->[1]->new->description];
   }
@@ -284,6 +253,7 @@ sub run {
     print "  $name$padding   $description";
   }
   print $self->hint;
+  return 1;
 }
 
 sub start {
@@ -320,6 +290,18 @@ sub write_rel_file {
   $self->write_file($self->rel_file($path), $data);
 }
 
+sub _command {
+  my $module = shift;
+
+  if (my $e = Mojo::Loader->load($module)) {
+    return unless ref $e;
+    die $e;
+  }
+  return unless $module->isa('Mojo::Command');
+
+  return $module;
+}
+
 1;
 __END__
 
@@ -329,8 +311,8 @@ Mojo::Command - Command Base Class
 
 =head1 SYNOPSIS
 
-  # Camel case command name
-  package Mojo::Command::Mycommand;
+  # Lower case command name
+  package Mojolicious::Command::mycommand;
 
   # Subclass
   use Mojo::Base 'Mojo::Command';
@@ -420,6 +402,13 @@ Usage information for command, used for the help screen.
 L<Mojo::Command> inherits all methods from L<Mojo::Base> and implements the
 following new ones.
 
+=head2 C<app>
+
+  my $app = $command->app;
+
+Currently active application, defaults to a L<Mojo::HelloWorld> object.
+Note that this method is EXPERIMENTAL and might change without warning!
+
 =head2 C<chmod_file>
 
   $command = $command->chmod_file('/foo/bar.txt', 0644);
@@ -438,7 +427,10 @@ Portably change mode of a relative file.
 
 Convert a class name to a file.
 
-  FooBar -> foo_bar
+  Foo::Bar -> foo_bar
+  FOO::Bar -> foobar
+  FooBar   -> foo_bar
+  FOOBar   -> foobar
 
 =head2 C<class_to_path>
 

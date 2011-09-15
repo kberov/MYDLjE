@@ -8,33 +8,31 @@
         color: inherit;
         text-decoration: none;
       }
-      a img { border: 0; }
+      a img { border: 0 }
       body {
         background-color: #f5f6f8;
         color: #333;
-        font: 0.9em Verdana, sans-serif;
         margin: 0;
         text-align: center;
-        text-shadow: #ddd 0 1px 0;
       }
       h1 {
-        font: 1.5em Georgia, Times, serif;
+        font: 1.5em 'Helvetica Neue', 'Helvetica', sans-serif;
+        font-weight: 300;
         margin-bottom: 1em;
         margin-top: 1em;
-        text-shadow: #666 0 1px 0;
       }
       #footer {
         background-color: #caecf6;
         padding-top: 20em;
         width: 100%;
       }
-      #footer a img { margin-top: 20em; }
+      #footer a img { margin-top: 20em }
       #documentation {
         background-color: #ecf1da;
         padding-bottom: 20em;
         padding-top: 20em;
       }
-      #documentation h1 { margin-bottom: 3em; }
+      #documentation h1 { margin-bottom: 3em }
       #header {
         margin-bottom: 20em;
         margin-top: 15em;
@@ -62,6 +60,7 @@
         padding: 0.5em;
         padding-left: 1em;
         text-align: left;
+        text-shadow: #333 0 1px 0;
         width: 500px;
       }
       #suggestion {
@@ -69,7 +68,6 @@
         color: #eee;
         padding-bottom: 20em;
         padding-top: 20em;
-        text-shadow: #333 0 1px 0;
       }
     % end
   </head>

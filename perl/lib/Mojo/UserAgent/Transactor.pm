@@ -11,8 +11,6 @@ use Mojo::Transaction::WebSocket;
 use Mojo::URL;
 use Mojo::Util qw/encode url_escape/;
 
-# "I cheated the wrong way!
-#  I wrote the Lisa name and gave the Ralph answers!"
 sub form {
   my $self = shift;
   my $url  = shift;
@@ -187,27 +185,31 @@ sub proxy_connect {
 sub redirect {
   my ($self, $old) = @_;
 
-  # Code
+  # Commonly used codes
   my $res = $old->res;
-  return unless $res->is_status_class('300');
-  return if $res->code == 305;
-
-  # Location
-  return unless my $location = $res->headers->location;
-  $location = Mojo::URL->new($location);
+  my $code = $res->code || 0;
+  return unless $code == 301 || $code == 302 || $code == 303 || $code == 307;
 
   # Fix broken location without authority and/or scheme
+  return unless my $location = $res->headers->location;
+  $location = Mojo::URL->new($location);
   my $req = $old->req;
   my $url = $req->url;
   $location->authority($url->authority) unless $location->authority;
   $location->scheme($url->scheme)       unless $location->scheme;
 
-  # Method
+  # Clone request if necessary
+  my $new    = Mojo::Transaction::HTTP->new;
   my $method = $req->method;
-  $method = 'GET' unless $method =~ /^GET|HEAD$/i;
-
-  # New transaction
-  my $new = Mojo::Transaction::HTTP->new;
+  if ($code == 301 || $code == 307) {
+    return unless $req = $req->clone;
+    $new->req($req);
+    my $headers = $req->headers;
+    $headers->remove('Host');
+    $headers->remove('Cookie');
+    $headers->remove('Referer');
+  }
+  else { $method = 'GET' unless $method =~ /^GET|HEAD$/i }
   $new->req->method($method)->url($location);
   $new->previous($old);
 
@@ -345,22 +347,22 @@ Actual peer for transaction.
 
   my $tx = $t->proxy_connect($old);
 
-Build L<Mojo::Transaction::HTTP> proxy connect request for transaction.
+Build L<Mojo::Transaction::HTTP> proxy connect request for transaction if
+possible.
 
 =head2 C<redirect>
 
   my $tx = $t->redirect($old);
 
-Build L<Mojo::Transaction::HTTP> followup request for redirect response.
+Build L<Mojo::Transaction::HTTP> followup request for C<301>, C<302>, C<303>
+or C<307> redirect response if possible.
 
 =head2 C<tx>
 
-  my $tx = $t->tx(GET => 'mojolicio.us');
+  my $tx = $t->tx(GET  => 'mojolicio.us');
   my $tx = $t->tx(POST => 'http://mojolicio.us');
-  my $tx = $t->tx(GET => 'http://kraih.com' => {Accept => '*/*'});
-  my $tx = $t->tx(
-    POST => 'http://kraih.com' => {{Accept => '*/*'} => 'Hi!'
-  );
+  my $tx = $t->tx(GET  => 'http://kraih.com' => {Accept => '*/*'});
+  my $tx = $t->tx(POST => 'http://kraih.com' => {Accept => '*/*'} => 'Hi!');
 
 Versatile general purpose L<Mojo::Transaction::HTTP> builder for requests.
 

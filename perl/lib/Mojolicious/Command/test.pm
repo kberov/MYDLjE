@@ -1,4 +1,4 @@
-package Mojolicious::Command::Test;
+package Mojolicious::Command::test;
 use Mojo::Base 'Mojo::Command';
 
 use Cwd;
@@ -54,7 +54,7 @@ sub run {
   }
 
   # Run tests
-  runtests(@tests);
+  runtests(sort @tests);
 }
 
 1;
@@ -62,22 +62,22 @@ __END__
 
 =head1 NAME
 
-Mojolicious::Command::Test - Test Command
+Mojolicious::Command::test - Test Command
 
 =head1 SYNOPSIS
 
-  use Mojolicious::Command::Test;
+  use Mojolicious::Command::test;
 
-  my $test = Mojolicious::Command::Test->new;
+  my $test = Mojolicious::Command::test->new;
   $test->run(@ARGV);
 
 =head1 DESCRIPTION
 
-L<Mojolicious::Command::Test> is a test script.
+L<Mojolicious::Command::test> is a test script.
 
 =head1 ATTRIBUTES
 
-L<Mojolicious::Command::Test> inherits all attributes from L<Mojo::Command>
+L<Mojolicious::Command::test> inherits all attributes from L<Mojo::Command>
 and implements the following new ones.
 
 =head2 C<description>
@@ -96,7 +96,7 @@ Usage information for this command, used for the help screen.
 
 =head1 METHODS
 
-L<Mojolicious::Command::Test> inherits all methods from L<Mojo::Command> and
+L<Mojolicious::Command::test> inherits all methods from L<Mojo::Command> and
 implements the following new ones.
 
 =head2 C<run>

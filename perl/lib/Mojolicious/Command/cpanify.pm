@@ -1,4 +1,4 @@
-package Mojolicious::Command::Cpanify;
+package Mojolicious::Command::cpanify;
 use Mojo::Base 'Mojo::Command';
 
 use File::Basename 'basename';
@@ -63,23 +63,23 @@ __END__
 
 =head1 NAME
 
-Mojolicious::Command::Cpanify - Cpanify Command
+Mojolicious::Command::cpanify - Cpanify Command
 
 =head1 SYNOPSIS
 
-  use Mojolicious::Command::Cpanify;
+  use Mojolicious::Command::cpanify;
 
-  my $cpanify = Mojolicious::Command::Cpanify->new;
+  my $cpanify = Mojolicious::Command::cpanify->new;
   $cpanify->run(@ARGV);
 
 =head1 DESCRIPTION
 
-L<Mojolicious::Command::Cpanify> is a CPAN uploader.
+L<Mojolicious::Command::cpanify> is a CPAN uploader.
 Note that this module is EXPERIMENTAL and might change without warning!
 
 =head1 ATTRIBUTES
 
-L<Mojolicious::Command::Cpanify> inherits all attributes from
+L<Mojolicious::Command::cpanify> inherits all attributes from
 L<Mojo::Command> and implements the following new ones.
 
 =head2 C<description>
@@ -98,7 +98,7 @@ Usage information for this command, used for the help screen.
 
 =head1 METHODS
 
-L<Mojolicious::Command::Cpanify> inherits all methods from L<Mojo::Command>
+L<Mojolicious::Command::cpanify> inherits all methods from L<Mojo::Command>
 and implements the following new ones.
 
 =head2 C<run>

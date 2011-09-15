@@ -28,6 +28,11 @@ You should definitely take a look!
 
 =over 2
 
+=item L<Mojolicious::Guides::Growing>
+
+Starting a L<Mojolicious::Lite> prototype from scratch and growing it into a
+well structured L<Mojolicious> application.
+
 =item L<Mojolicious::Guides::Routing>
 
 Simple and fun introduction to the L<Mojolicious> router.
@@ -35,11 +40,6 @@ Simple and fun introduction to the L<Mojolicious> router.
 =item L<Mojolicious::Guides::Rendering>
 
 Generating content with the L<Mojolicious> renderer.
-
-=item L<Mojolicious::Guides::Growing>
-
-Starting a L<Mojolicious::Lite> prototype from scratch and growing it into a
-well structured L<Mojolicious> application.
 
 =item L<Mojolicious::Guides::Cookbook>
 
@@ -92,13 +92,13 @@ Full featured UNIX optimized preforking non-blocking I/O HTTP 1.1 and
 WebSocket server with support for zero downtime software upgrades
 (hot deployment).
 
-=item L<Mojo::Server::CGI>, L<Mojo::Server::FastCGI>, L<Mojo::Server::PSGI>
+=item L<Mojo::Server::CGI>, L<Mojo::Server::PSGI>
 
-Transparent CGI, FastCGI and PSGI support out of the box.
+Transparent CGI and PSGI support out of the box.
 
 =item L<Mojo::Template>
 
-Very perlish and minimalistic template system.
+Very Perl-ish and minimalistic template system.
 
 =item L<Mojo::ByteStream>
 

@@ -1,4 +1,4 @@
-package Mojolicious::Command::Routes;
+package Mojolicious::Command::routes;
 use Mojo::Base 'Mojo::Command';
 
 use Mojo::Server;
@@ -15,7 +15,7 @@ sub run {
   my $self = shift;
 
   # Check if application has routes
-  my $app = Mojo::Server->new->app;
+  my $app = $self->app;
   die "Application has no routes.\n" unless $app->can('routes');
 
   # Walk and draw
@@ -102,22 +102,22 @@ __END__
 
 =head1 NAME
 
-Mojolicious::Command::Routes - Routes Command
+Mojolicious::Command::routes - Routes Command
 
 =head1 SYNOPSIS
 
-  use Mojolicious::Command::Routes;
+  use Mojolicious::Command::routes;
 
-  my $routes = Mojolicious::Command::Routes->new;
+  my $routes = Mojolicious::Command::routes->new;
   $routes->run(@ARGV);
 
 =head1 DESCRIPTION
 
-L<Mojolicious::Command::Routes> prints all your application routes.
+L<Mojolicious::Command::routes> prints all your application routes.
 
 =head1 ATTRIBUTES
 
-L<Mojolicious::Command::Routes> inherits all attributes from L<Mojo::Command>
+L<Mojolicious::Command::routes> inherits all attributes from L<Mojo::Command>
 and implements the following new ones.
 
 =head2 C<description>
@@ -136,7 +136,7 @@ Usage information for this command, used for the help screen.
 
 =head1 METHODS
 
-L<Mojolicious::Command::Routes> inherits all methods from L<Mojo::Command>
+L<Mojolicious::Command::routes> inherits all methods from L<Mojo::Command>
 and implements the following new ones.
 
 =head2 C<run>

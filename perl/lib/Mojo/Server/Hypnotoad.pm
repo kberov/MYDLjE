@@ -25,8 +25,8 @@ sub DESTROY {
   return unless $self->{done};
 
   # Manager
-  return unless my $file = $self->{config}->{pid_file};
-  unlink $file if -w $file;
+  if (my $file = $self->{config}->{pid_file})  { unlink $file if -w $file }
+  if (my $file = $self->{config}->{lock_file}) { unlink $file if -w $file }
 }
 
 # "Marge? Since I'm not talking to Lisa,
@@ -149,7 +149,8 @@ sub _config {
   $c->{heartbeat_timeout}  ||= 5;
   $c->{lock_file}
     ||= File::Spec->catfile($ENV{MOJO_TMPDIR} || File::Spec->tmpdir,
-    "hypnotoad.$$.lock");
+    'hypnotoad.lock');
+  $c->{lock_file} .= ".$$";
   $c->{pid_file}
     ||= File::Spec->catfile(dirname($ENV{HYPNOTOAD_APP}), 'hypnotoad.pid');
   $c->{upgrade_timeout} ||= 30;
@@ -573,6 +574,7 @@ dropped, defaults to C<15>.
   listen => ['http://*:80']
 
 List of one or more locations to listen on, defaults to C<http://*:8080>.
+See also L<Mojo::Server::Daemon/"listen"> for more examples.
 
 =head2 C<lock_file>
 

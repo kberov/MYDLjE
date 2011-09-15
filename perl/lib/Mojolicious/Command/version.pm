@@ -1,4 +1,4 @@
-package Mojolicious::Command::Version;
+package Mojolicious::Command::version;
 use Mojo::Base 'Mojo::Command';
 
 use Mojo::IOLoop::Server;
@@ -71,22 +71,22 @@ __END__
 
 =head1 NAME
 
-Mojolicious::Command::Version - Version Command
+Mojolicious::Command::version - Version Command
 
 =head1 SYNOPSIS
 
-  use Mojolicious::Command::Version;
+  use Mojolicious::Command::version;
 
-  my $v = Mojolicious::Command::Version->new;
+  my $v = Mojolicious::Command::version->new;
   $v->run(@ARGV);
 
 =head1 DESCRIPTION
 
-L<Mojolicious::Command::Version> shows versions of installed modules.
+L<Mojolicious::Command::version> shows versions of installed modules.
 
 =head1 ATTRIBUTES
 
-L<Mojolicious::Command::Version> inherits all attributes from
+L<Mojolicious::Command::version> inherits all attributes from
 L<Mojo::Command> and implements the following new ones.
 
 =head2 C<description>
@@ -105,7 +105,7 @@ Usage information for this command, used for the help screen.
 
 =head1 METHODS
 
-L<Mojolicious::Command::Version> inherits all methods from L<Mojo::Command>
+L<Mojolicious::Command::version> inherits all methods from L<Mojo::Command>
 and implements the following new ones.
 
 =head2 C<run>

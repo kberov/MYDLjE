@@ -1,4 +1,4 @@
-package Mojolicious::Command::Generate::Hypnotoad;
+package Mojolicious::Command::generate::hypnotoad;
 use Mojo::Base 'Mojo::Command';
 
 has description => <<'EOF';
@@ -29,23 +29,23 @@ __DATA__
 __END__
 =head1 NAME
 
-Mojolicious::Command::Generate::Hypnotoad - Hypnotoad Generator Command
+Mojolicious::Command::generate::hypnotoad - Hypnotoad Generator Command
 
 =head1 SYNOPSIS
 
-  use Mojolicious::Command::Generate::Hypnotoad;
+  use Mojolicious::Command::generate::hypnotoad;
 
-  my $hypnotoad = Mojolicious::Command::Generate::Hypnotoad->new;
+  my $hypnotoad = Mojolicious::Command::generate::hypnotoad->new;
   $hypnotoad->run(@ARGV);
 
 =head1 DESCRIPTION
 
-L<Mojolicious::Command::Generate::Hypnotoad> is a C<hypnotoad.conf>
+L<Mojolicious::Command::generate::hypnotoad> is a C<hypnotoad.conf>
 generator.
 
 =head1 ATTRIBUTES
 
-L<Mojolicious::Command::Generate::Hypnotoad> inherits all attributes from
+L<Mojolicious::Command::generate::hypnotoad> inherits all attributes from
 L<Mojo::Command> and implements the following new ones.
 
 =head2 C<description>
@@ -64,7 +64,7 @@ Usage information for this command, used for the help screen.
 
 =head1 METHODS
 
-L<Mojolicious::Command::Generate::Hypnotoad> inherits all methods from
+L<Mojolicious::Command::generate::hypnotoad> inherits all methods from
 L<Mojo::Command> and implements the following new ones.
 
 =head2 C<run>

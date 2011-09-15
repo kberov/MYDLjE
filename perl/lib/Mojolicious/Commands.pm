@@ -12,7 +12,7 @@ These options are available for all commands:
     --home <path>   Path to your applications home directory, defaults to
                     the value of MOJO_HOME or auto detection.
     --mode <name>   Run mode of your application, defaults to the value of
-                    MOJO_MODE or development.
+                    MOJO_MODE or "development".
 
 See '$0 help COMMAND' for more information on a specific command.
 EOF
@@ -84,13 +84,6 @@ Start application with standalone HTTP 1.1 server backend.
   $ script/myapp eval 'print app->home'
 
 Run code against application.
-
-=head2 C<fastcgi>
-
-  $ mojo fastcgi
-  $ script/myapp fastcgi
-
-Start application with FastCGI backend.
 
 =head2 C<generate>
 
@@ -186,8 +179,8 @@ Short hint shown after listing available commands.
   my $namespaces = $commands->namespaces;
   $commands      = $commands->namespaces(['Mojolicious::Commands']);
 
-Namespaces to search for available commands, defaults to L<Mojo::Command> and
-L<Mojolicious::Command>.
+Namespaces to search for available commands, defaults to
+L<Mojolicious::Command> and L<Mojo::Command>.
 
 =head1 METHODS
 

@@ -2,53 +2,51 @@ package Mojo::ByteStream;
 use Mojo::Base -base;
 use overload '""' => sub { shift->to_string }, fallback => 1;
 
+use Mojo::Collection;
 use Mojo::Util;
 
 sub import {
   my $class = shift;
   return unless @_ > 0;
-
-  # Alternative constructor
   no strict 'refs';
   no warnings 'redefine';
   my $caller = caller;
-  *{"${caller}::b"} = sub { bless {bytestream => join('', @_)}, $class };
+  *{"${caller}::b"} = sub { $class->new(@_) };
 }
 
 # "Do we have any food that wasn't brutally slaughtered?
 #  Well, I think the veal died of loneliness."
 sub new {
-  my $self = shift->SUPER::new();
-  $self->{bytestream} = join '', @_;
-  return $self;
+  my $class = shift;
+  bless \(my $dummy = join '', @_), ref $class || $class;
 }
 
 sub b64_decode {
   my $self = shift;
-  $self->{bytestream} = Mojo::Util::b64_decode($self->{bytestream});
+  $$self = Mojo::Util::b64_decode($$self);
   return $self;
 }
 
 sub b64_encode {
   my $self = shift;
-  $self->{bytestream} = Mojo::Util::b64_encode($self->{bytestream}, @_);
+  $$self = Mojo::Util::b64_encode($$self, @_);
   return $self;
 }
 
 sub camelize {
   my $self = shift;
-  Mojo::Util::camelize $self->{bytestream};
+  Mojo::Util::camelize $$self;
   return $self;
 }
 
 sub clone {
   my $self = shift;
-  return $self->new($self->{bytestream});
+  return $self->new($$self);
 }
 
 sub decamelize {
   my $self = shift;
-  Mojo::Util::decamelize $self->{bytestream};
+  Mojo::Util::decamelize $$self;
   return $self;
 }
 
@@ -59,61 +57,61 @@ sub decamelize {
 #  Number 3: 'It was like that when I got here.'"
 sub decode {
   my $self = shift;
-  Mojo::Util::decode shift || 'UTF-8', $self->{bytestream};
+  Mojo::Util::decode shift || 'UTF-8', $$self;
   return $self;
 }
 
 sub encode {
   my $self = shift;
-  Mojo::Util::encode shift || 'UTF-8', $self->{bytestream};
+  Mojo::Util::encode shift || 'UTF-8', $$self;
   return $self;
 }
 
 sub hmac_md5_sum {
   my $self = shift;
-  $self->{bytestream} = Mojo::Util::hmac_md5_sum $self->{bytestream}, @_;
+  $$self = Mojo::Util::hmac_md5_sum $$self, @_;
   return $self;
 }
 
 sub hmac_sha1_sum {
   my $self = shift;
-  $self->{bytestream} = Mojo::Util::hmac_sha1_sum $self->{bytestream}, @_;
+  $$self = Mojo::Util::hmac_sha1_sum $$self, @_;
   return $self;
 }
 
 sub html_escape {
   my $self = shift;
-  Mojo::Util::html_escape $self->{bytestream};
+  Mojo::Util::html_escape $$self;
   return $self;
 }
 
 sub html_unescape {
   my $self = shift;
-  Mojo::Util::html_unescape $self->{bytestream};
+  Mojo::Util::html_unescape $$self;
   return $self;
 }
 
 sub md5_bytes {
   my $self = shift;
-  $self->{bytestream} = Mojo::Util::md5_bytes $self->{bytestream};
+  $$self = Mojo::Util::md5_bytes $$self;
   return $self;
 }
 
 sub md5_sum {
   my $self = shift;
-  $self->{bytestream} = Mojo::Util::md5_sum $self->{bytestream};
+  $$self = Mojo::Util::md5_sum $$self;
   return $self;
 }
 
 sub punycode_decode {
   my $self = shift;
-  Mojo::Util::punycode_decode $self->{bytestream};
+  Mojo::Util::punycode_decode $$self;
   return $self;
 }
 
 sub punycode_encode {
   my $self = shift;
-  Mojo::Util::punycode_encode $self->{bytestream};
+  Mojo::Util::punycode_encode $$self;
   return $self;
 }
 
@@ -122,77 +120,81 @@ sub punycode_encode {
 #  nutrients they have that might be extracted for our personal use."
 sub qp_decode {
   my $self = shift;
-  Mojo::Util::qp_decode $self->{bytestream};
+  Mojo::Util::qp_decode $$self;
   return $self;
 }
 
 sub qp_encode {
   my $self = shift;
-  Mojo::Util::qp_encode $self->{bytestream};
+  Mojo::Util::qp_encode $$self;
   return $self;
 }
 
 sub quote {
   my $self = shift;
-  Mojo::Util::quote $self->{bytestream};
+  Mojo::Util::quote $$self;
   return $self;
 }
 
 sub say {
   my ($self, $handle) = @_;
   $handle ||= \*STDOUT;
-  utf8::encode $self->{bytestream} if utf8::is_utf8 $self->{bytestream};
-  print $handle $self->{bytestream}, "\n";
+  print $handle "$$self\n";
 }
 
 sub secure_compare {
   my ($self, $check) = @_;
-  return Mojo::Util::secure_compare $self->{bytestream}, $check;
+  return Mojo::Util::secure_compare $$self, $check;
 }
 
 sub sha1_bytes {
   my $self = shift;
-  $self->{bytestream} = Mojo::Util::sha1_bytes $self->{bytestream};
+  $$self = Mojo::Util::sha1_bytes $$self;
   return $self;
 }
 
 sub sha1_sum {
   my $self = shift;
-  $self->{bytestream} = Mojo::Util::sha1_sum $self->{bytestream};
+  $$self = Mojo::Util::sha1_sum $$self;
   return $self;
 }
 
-sub size { length shift->{bytestream} }
+sub size { length ${shift()} }
 
-sub to_string { shift->{bytestream} }
+sub split {
+  my ($self, $pattern) = @_;
+  Mojo::Collection->new(map { $self->new($_) } split $pattern, $$self);
+}
+
+sub to_string { ${shift()} }
 
 sub trim {
   my $self = shift;
-  Mojo::Util::trim $self->{bytestream}, @_;
+  Mojo::Util::trim $$self, @_;
   return $self;
 }
 
 sub unquote {
   my $self = shift;
-  Mojo::Util::unquote $self->{bytestream}, @_;
+  Mojo::Util::unquote $$self, @_;
   return $self;
 }
 
 sub url_escape {
   my $self = shift;
-  Mojo::Util::url_escape $self->{bytestream}, @_;
+  Mojo::Util::url_escape $$self, @_;
   return $self;
 }
 
 sub url_unescape {
   my $self = shift;
-  Mojo::Util::url_unescape $self->{bytestream};
+  Mojo::Util::url_unescape $$self;
   return $self;
 }
 
 sub xml_escape {
   my $self = shift;
-  Mojo::Util::xml_escape $self->{bytestream};
+  Mojo::Util::xml_escape $$self;
   return $self;
 }
 
@@ -205,47 +207,17 @@ Mojo::ByteStream - ByteStream
 
 =head1 SYNOPSIS
 
+  # Manipulate bytestreams
   use Mojo::ByteStream;
+  my $stream = Mojo::ByteStream->new('foo_bar_baz');
+  print $stream->camelize;
 
-  my $stream = Mojo::ByteStream->new('foobarbaz');
-
-  $stream->camelize;
-  $stream->decamelize;
-  $stream->b64_encode;
-  $stream->b64_decode;
-  $stream->encode('UTF-8');
-  $stream->decode('UTF-8');
-  $stream->hmac_md5_sum('secret');
-  $stream->hmac_sha1_sum('secret');
-  $stream->html_escape;
-  $stream->html_unescape;
-  $stream->md5_bytes;
-  $stream->md5_sum;
-  $stream->qp_encode;
-  $stream->qp_decode;
-  $stream->quote;
-  $stream->sha1_bytes;
-  $stream->sha1_sum;
-  $stream->trim;
-  $stream->unquote;
-  $stream->url_escape;
-  $stream->url_unescape;
-  $stream->xml_escape;
-  $stream->punycode_encode;
-  $stream->punycode_decode;
-
-  my $size = $stream->size;
-
-  my $stream2 = $stream->clone;
-  print $stream2->to_string;
-  $stream2->say;
-
-  # Chained
+  # Chain methods
   my $stream = Mojo::ByteStream->new('foo bar baz')->quote;
   $stream = $stream->unquote->encode('UTF-8')->b64_encode;
   print "$stream";
 
-  # Alternative constructor
+  # Use the alternative constructor
   use Mojo::ByteStream 'b';
   my $stream = b('foobarbaz')->html_escape;
 
@@ -261,7 +233,7 @@ the following new ones.
 
 =head2 C<new>
 
-  my $stream = Mojo::ByteStream->new($string);
+  my $stream = Mojo::ByteStream->new('test123');
 
 Construct a new L<Mojo::ByteStream> object.
 
@@ -419,6 +391,15 @@ Note that Perl 5.10 or L<Digest::SHA> are required for C<SHA1> support.
   my $size = $stream->size;
 
 Size of bytestream.
+
+=head2 C<split>
+
+  my $collection = $stream->split(',');
+
+Turn bytestream into L<Mojo::Collection>.
+Note that this method is EXPERIMENTAL and might change without warning!
+
+  $stream->split(',')->map(sub { $_->quote })->join("\n")->say;
 
 =head2 C<to_string>
 

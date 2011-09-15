@@ -80,6 +80,7 @@ sub parse {
 
   # Parse
   url_unescape $path;
+  utf8::decode $path;
   my @parts;
   for my $part (split '/', $path) {
 
@@ -109,6 +110,7 @@ sub to_string {
   my @path;
   for my $part (@{$self->parts}) {
     my $escaped = $part;
+    utf8::encode $escaped;
     url_escape $escaped, "$Mojo::URL::UNRESERVED$Mojo::URL::SUBDELIM\:\@";
     push @path, $escaped;
   }
@@ -199,7 +201,7 @@ Parse path.
 
   my $string = $path->to_abs_string;
 
-Turn path into absolute string.
+Turn path into an absolute string.
 Note that this method is EXPERIMENTAL and might change without warning!
 
 =head2 C<to_string>

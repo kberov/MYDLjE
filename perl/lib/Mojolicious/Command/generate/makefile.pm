@@ -1,4 +1,4 @@
-package Mojolicious::Command::Generate::Makefile;
+package Mojolicious::Command::generate::makefile;
 use Mojo::Base 'Mojo::Command';
 
 has description => <<'EOF';
@@ -36,29 +36,29 @@ WriteMakefile(
   VERSION_FROM => 'lib/<%= $path %>',
   AUTHOR       => 'A Good Programmer <nospam@cpan.org>',
   EXE_FILES    => ['script/<%= $name %>'],
-  PREREQ_PM    => {'Mojolicious' => '1.80'},
+  PREREQ_PM    => {'Mojolicious' => '1.90'},
   test         => {TESTS => 't/*.t'}
 );
 
 __END__
 =head1 NAME
 
-Mojolicious::Command::Generate::Makefile - Makefile Generator Command
+Mojolicious::Command::generate::makefile - Makefile Generator Command
 
 =head1 SYNOPSIS
 
-  use Mojolicious::Command::Generate::Makefile;
+  use Mojolicious::Command::generate::makefile;
 
-  my $makefile = Mojolicious::Command::Generate::Makefile->new;
+  my $makefile = Mojolicious::Command::generate::makefile->new;
   $makefile->run(@ARGV);
 
 =head1 DESCRIPTION
 
-L<Mojolicious::Command::Generate::Makefile> is a makefile generator.
+L<Mojolicious::Command::generate::makefile> is a makefile generator.
 
 =head1 ATTRIBUTES
 
-L<Mojolicious::Command::Generate::Makefile> inherits all attributes from
+L<Mojolicious::Command::generate::makefile> inherits all attributes from
 L<Mojo::Command> and implements the following new ones.
 
 =head2 C<description>
@@ -77,7 +77,7 @@ Usage information for this command, used for the help screen.
 
 =head1 METHODS
 
-L<Mojolicious::Command::Generate::Makefile> inherits all methods from
+L<Mojolicious::Command::generate::makefile> inherits all methods from
 L<Mojo::Command> and implements the following new ones.
 
 =head2 C<run>

@@ -299,14 +299,12 @@ push @EXPORT_OK, qw/punycode_encode qp_decode qp_encode quote/;
 push @EXPORT_OK, qw/secure_compare sha1_bytes sha1_sum trim unquote/;
 push @EXPORT_OK, qw/url_escape url_unescape xml_escape/;
 
-sub b64_decode { $_[0] = MIME::Base64::decode_base64($_[0]); }
+sub b64_decode { $_[0] = MIME::Base64::decode_base64($_[0]) }
 
-sub b64_encode {
-  utf8::encode $_[0] if utf8::is_utf8 $_[0];
-  $_[0] = MIME::Base64::encode_base64($_[0], $_[1]);
-}
+sub b64_encode { $_[0] = MIME::Base64::encode_base64($_[0], $_[1]) }
 
 sub camelize {
+  return if $_[0] =~ /^[A-Z]/;
 
   # Module parts
   my @parts;
@@ -322,7 +320,7 @@ sub camelize {
 }
 
 sub decamelize {
-  return if $_[0] !~ /^[A-Z\:]+/;
+  return if $_[0] !~ /^[A-Z]/;
 
   # Module parts
   my @parts;
@@ -387,7 +385,7 @@ sub html_escape {
   my $escaped = '';
   for (1 .. length $_[0]) {
 
-    # Escape
+    # Escape entities
     my $char = substr $_[0], 0, 1, '';
     my $num = unpack 'U', $char;
     my $named = $REVERSE_ENTITIES{$num};
@@ -418,17 +416,9 @@ sub html_unescape {
   /_unescape($1, $2)/gex;
 }
 
-sub md5_bytes {
-  my $data = shift;
-  utf8::encode $data if utf8::is_utf8 $data;
-  _md5($data);
-}
+sub md5_bytes { _md5(@_) }
 
-sub md5_sum {
-  my $data = shift;
-  utf8::encode $data if utf8::is_utf8 $data;
-  Digest::MD5::md5_hex($data);
-}
+sub md5_sum { Digest::MD5::md5_hex(@_) }
 
 sub punycode_decode {
   use integer;
@@ -556,10 +546,7 @@ sub punycode_encode {
 
 sub qp_decode { $_[0] = MIME::QuotedPrint::decode_qp($_[0]) }
 
-sub qp_encode {
-  utf8::encode $_[0] if utf8::is_utf8 $_[0];
-  $_[0] = MIME::QuotedPrint::encode_qp($_[0]);
-}
+sub qp_encode { $_[0] = MIME::QuotedPrint::encode_qp($_[0]) }
 
 sub quote {
 
@@ -576,20 +563,14 @@ sub secure_compare {
   return $r == 0 ? 1 : undef;
 }
 
-sub sha1_bytes {
-  my $data = shift;
-  utf8::encode $data if utf8::is_utf8 $data;
-  _sha1($data);
-}
+sub sha1_bytes { _sha1(@_) }
 
 sub sha1_sum {
   die <<'EOF' unless SHA1;
 Module "Digest::SHA" not present in this version of Perl.
 Please install it manually or upgrade Perl to at least version 5.10.
 EOF
-  my $data = shift;
-  utf8::encode $data if utf8::is_utf8 $data;
-  Digest::SHA::sha1_hex($data);
+  Digest::SHA::sha1_hex(@_);
 }
 
 sub trim {
@@ -619,11 +600,11 @@ sub url_escape {
   my $pattern = $_[1] || 'A-Za-z0-9\-\.\_\~';
 
   # Escape
-  utf8::encode $_[0] if utf8::is_utf8 $_[0];
   return unless $_[0] =~ /[^$pattern]/;
   $_[0] =~ s/([^$pattern])/sprintf('%%%02X',ord($1))/ge;
 }
 
+# "I've gone back in time to when dinosaurs weren't just confined to zoos."
 sub url_unescape {
   return if index($_[0], '%') == -1;
   $_[0] =~ s/%([0-9A-Fa-f]{2})/chr(hex($1))/ge;

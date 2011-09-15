@@ -82,7 +82,6 @@ sub need_proxy {
   return 1;
 }
 
-# "'What are you lookin at?' - the innocent words of a drunken child."
 sub post {
   my $self = shift;
   $self->start($self->build_tx('POST', @_));
@@ -368,7 +367,6 @@ sub _loop {
   return $self->{nb} ? Mojo::IOLoop->singleton : $self->ioloop;
 }
 
-# "Hey, Weener Boy... where do you think you're going?"
 sub _proxy_connect {
   my ($self, $old, $cb) = @_;
 
@@ -502,7 +500,6 @@ sub _test_server {
   return $self->{server};
 }
 
-# "Once the government approves something, it's no longer immoral!"
 sub _upgrade {
   my ($self, $id) = @_;
 
@@ -594,7 +591,10 @@ Mojo::UserAgent - Non-Blocking I/O HTTP 1.1 And WebSocket User Agent
   my $t = Mojo::IOLoop->trigger;
   for my $url ('mojolicio.us', 'cpan.org') {
     $t->begin;
-    $ua->get($url => sub { $t->end(pop->res->dom->at('title')->text) });
+    $ua->get($url => sub {
+      my ($self, $tx) = @_;
+      $t->end($tx->res->dom->at('title')->text);
+    });
   }
   my @titles = $t->start;
 
@@ -603,7 +603,7 @@ Mojo::UserAgent - Non-Blocking I/O HTTP 1.1 And WebSocket User Agent
 
   # WebSocket request
   $ua->websocket('ws://websockets.org:8787' => sub {
-    my $tx = pop;
+    my ($self, $tx) = @_;
     $tx->on_finish(sub { Mojo::IOLoop->stop });
     $tx->on_message(sub {
       my ($tx, $message) = @_;
@@ -796,7 +796,8 @@ L<Mojo::UserAgent::Transactor/"tx"> (except for the method).
 You can also append a callback to perform requests non-blocking.
 
   $ua->delete('http://kraih.com' => sub {
-    print pop->res->body;
+    my ($self, $tx) = @_;
+    print $tx->res->body;
     Mojo::IOLoop->stop;
   });
   Mojo::IOLoop->start;
@@ -818,7 +819,8 @@ L<Mojo::UserAgent::Transactor/"tx"> (except for the method).
 You can also append a callback to perform requests non-blocking.
 
   $ua->get('http://kraih.com' => sub {
-    print pop->res->body;
+    my ($self, $tx) = @_;
+    print $tx->res->body;
     Mojo::IOLoop->stop;
   });
   Mojo::IOLoop->start;
@@ -833,7 +835,8 @@ L<Mojo::UserAgent::Transactor/"tx"> (except for the method).
 You can also append a callback to perform requests non-blocking.
 
   $ua->head('http://kraih.com' => sub {
-    print pop->res->body;
+    my ($self, $tx) = @_;
+    print $tx->res->body;
     Mojo::IOLoop->stop;
   });
   Mojo::IOLoop->start;
@@ -855,7 +858,8 @@ L<Mojo::UserAgent::Transactor/"tx"> (except for the method).
 You can also append a callback to perform requests non-blocking.
 
   $ua->post('http://kraih.com' => sub {
-    print pop->res->body;
+    my ($self, $tx) = @_;
+    print $tx->res->body;
     Mojo::IOLoop->stop;
   });
   Mojo::IOLoop->start;
@@ -870,7 +874,8 @@ L<Mojo::UserAgent::Transactor/"form">.
 You can also append a callback to perform requests non-blocking.
 
   $ua->post_form('http://kraih.com' => {q => 'test'} => sub {
-    print pop->res->body;
+    my ($self, $tx) = @_;
+    print $tx->res->body;
     Mojo::IOLoop->stop;
   });
   Mojo::IOLoop->start;
@@ -885,7 +890,8 @@ L<Mojo::UserAgent::Transactor/"tx"> (except for the method).
 You can also append a callback to perform requests non-blocking.
 
   $ua->put('http://kraih.com' => sub {
-    print pop->res->body;
+    my ($self, $tx) = @_;
+    print $tx->res->body;
     Mojo::IOLoop->stop;
   });
   Mojo::IOLoop->start;
@@ -898,7 +904,8 @@ Process blocking transaction.
 You can also append a callback to perform transactions non-blocking.
 
   $ua->start($tx => sub {
-    print pop->res->body;
+    my ($self, $tx) = @_;
+    print $tx->res->body;
     Mojo::IOLoop->stop;
   });
   Mojo::IOLoop->start;
@@ -921,7 +928,7 @@ Open a non-blocking WebSocket connection with transparent handshake, takes
 the exact same arguments as L<Mojo::UserAgent::Transactor/"websocket">.
 
   $ua->websocket('ws://localhost:3000/echo' => sub {
-    my $tx = pop;
+    my ($self, $tx) = @_;
     $tx->on_finish(sub  { Mojo::IOLoop->stop });
     $tx->on_message(sub {
       my ($tx, $message) = @_;

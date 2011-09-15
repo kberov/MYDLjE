@@ -142,7 +142,6 @@ sub _find_and_set_page_template {
   }
 
   $page->template($row->{template});
-  $c->debug("found template in $row->{alias}:" . $row->{template});
   return;
 }
 

@@ -36,8 +36,8 @@ plugins:
         PageTree: MYDLjE::Template::PageTree
         PageContent: MYDLjE::Template::PageContent
 
-      POST_CHOMP: '~'
-      PRE_CHOMP: '~'
+      POST_CHOMP: +
+      PRE_CHOMP: +
       SEMICOLONS: 0
       SHOW_UNDEFINED_INTERP: 0
 
@@ -177,3 +177,5 @@ routes:
   /:controller/:action/:id:
     order: 1002
     to: ~
+
+

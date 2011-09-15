@@ -1,13 +1,24 @@
 package MYDLjE::Template::PageContent;
 use MYDLjE::Base 'MYDLjE::Template';
 use utf8;
+use Mojo::ByteStream qw(b);
 
-require Mojo::Util;
 
 sub render {
-  my $self = shift;
+  my $self     = shift;
+  my $PAGE     = $self->get('PAGE');
+  my $template = $PAGE->template;
+
+  Mojo::Util::html_unescape( $template);
+  Mojo::Util::decode('UTF-8', $template);    # or die $self->context->error;
+
+  $self->c->debug($template);
+  my $out = '';
+  my $ok = eval { $out .= $self->process(\$template) or die $self->context->error };
+  unless ($ok) { $out .= "Page (" . $PAGE->alias . ") template ERROR$@"; }
   return
-      'Hello World from '
+      $out
+    . 'Hello World from '
     . __PACKAGE__
     . ' Called with page "'
     . $self->get('TITLE') . '"';

@@ -210,10 +210,12 @@ sub edit_page {
     %$form,
   };
 
+
   #$c->debug($c->dumper($form));
   $c->stash(form => $form);
 
   if ($c->req->method eq 'POST') {
+    Mojo::Util::html_escape($form->{'page.template'});
     $c->_save_page($page, $content, $user);
   }
 

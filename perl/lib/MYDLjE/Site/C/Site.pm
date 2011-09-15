@@ -127,7 +127,6 @@ sub _find_and_set_page_template {
     $row =
       $c->dbix->select($page->TABLE, [qw(id pid alias template)], $parent_where)->hash;
     if ($row->{template}) {
-      $page->template($row->{template});
       last;
     }
     last if $pid == 0;
@@ -135,13 +134,14 @@ sub _find_and_set_page_template {
 
     $pid = $row->{pid};
   }
-  if (not $page->template) {
+  if (not $row->{template}) {
     delete $parent_where->{id};
     $parent_where->{page_type} = 'default';
     $row =
       $c->dbix->select($page->TABLE, [qw(id pid alias template)], $parent_where)->hash;
-    $page->template($row->{template});
   }
+
+  $page->template($row->{template});
   $c->debug("found template in $row->{alias}:" . $row->{template});
   return;
 }

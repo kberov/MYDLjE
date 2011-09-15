@@ -5,25 +5,69 @@ use Mojo::ByteStream qw(b);
 
 
 sub render {
-  my $self     = shift;
-  my $PAGE     = $self->get('PAGE');
-  my $template = $PAGE->template;
-
-  Mojo::Util::html_unescape( $template);
-  Mojo::Util::decode('UTF-8', $template);    # or die $self->context->error;
-
-  $self->c->debug($template);
-  my $out = '';
-  my $ok = eval { $out .= $self->process(\$template) or die $self->context->error };
-  unless ($ok) { $out .= "Page (" . $PAGE->alias . ") template ERROR$@"; }
-  return
-      $out
-    . 'Hello World from '
-    . __PACKAGE__
-    . ' Called with page "'
-    . $self->get('TITLE') . '"';
+  my $self = shift;
+  my $PAGE = $self->get('PAGE');
+  my $out  = $self->render_page_template($PAGE);
+  if (!$out) {
+    $out = $self->render_page_content();
+  }
+  $out = $self->render_content($out, $self->get('CONTENT'));
+  $self->render_bricks_to_blocks();
+  return $out;
 }
 
+sub render_page_template {
+  my ($self, $PAGE) = @_;
+  my $template = $PAGE->template || return '';
+  Mojo::Util::html_unescape $template;
+  my $out = '';
+  my $ok =
+    eval { $out .= $self->process(\$template) or Carp::croak $self->context->error };
+  unless ($ok) {
+    $out
+      .= "Page ("
+      . $PAGE->alias
+      . ") template ERROR:"
+      . "<span style=\"color:red\">$@</span>";
+  }
+  return $out;
+}
+
+sub render_page_content {
+  my ($self) = @_;
+  my $c      = $self->c;
+  my $out    = $c->tag(
+    'h1',
+    class => "title",
+    lang  => $self->get('PAGE_C')->language,
+    $self->get('TITLE')
+  );
+  $c->debug($self->get('BODY'));
+  $out .= $c->tag(
+    'div',
+    class => "unit body",
+    lang  => $self->get('PAGE_C')->language,
+    sub { $self->html_paragraphs($self->get('BODY')) }
+  );
+  return $out;
+}
+
+sub html_paragraphs {
+  my $self = shift;
+  return
+      qq|<p class="c body">$/|
+    . join(qq|$/</p>$/$/<p class="c body">$/|, split(/(?:\r?\n){2,}/x, shift))
+    . "</p>$/";
+}
+
+sub render_content {
+  my ($self, $out, $CONTENT) = @_;
+
+  #TODO: Render each data_type depending on its own data_format
+  return $out;
+}
+
+sub render_bricks_to_blocks { }
 1;
 
 __END__

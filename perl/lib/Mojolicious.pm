@@ -12,6 +12,7 @@ use Mojolicious::Static;
 use Mojolicious::Types;
 use Scalar::Util 'weaken';
 
+# "Robots don't have any emotions, and sometimes that makes me very sad."
 has controller_class => 'Mojolicious::Controller';
 has mode             => sub { ($ENV{MOJO_MODE} || 'development') };
 has on_process       => sub {
@@ -34,7 +35,7 @@ has static   => sub { Mojolicious::Static->new };
 has types    => sub { Mojolicious::Types->new };
 
 our $CODENAME = 'Smiling Face With Sunglasses';
-our $VERSION  = '1.74';
+our $VERSION  = '1.98';
 
 # "These old doomsday devices are dangerously unstable.
 #  I'll rest easier not knowing where they are."
@@ -92,14 +93,14 @@ sub new {
     if -w $home->rel_file('log');
 
   # Load default plugins
-  $self->plugin('callback_condition');
-  $self->plugin('header_condition');
-  $self->plugin('default_helpers');
-  $self->plugin('tag_helpers');
-  $self->plugin('epl_renderer');
-  $self->plugin('ep_renderer');
-  $self->plugin('request_timer');
-  $self->plugin('powered_by');
+  $self->plugin('CallbackCondition');
+  $self->plugin('HeaderCondition');
+  $self->plugin('DefaultHelpers');
+  $self->plugin('TagHelpers');
+  $self->plugin('EPLRenderer');
+  $self->plugin('EPRenderer');
+  $self->plugin('RequestTimer');
+  $self->plugin('PoweredBy');
 
   # Reduced log output outside of development mode
   $self->log->level('info') unless $mode eq 'development';
@@ -240,115 +241,27 @@ Mojolicious - Duct Tape For The Web!
 
 =head1 SYNOPSIS
 
-  # Mojolicious application
+  # Application
   package MyApp;
   use Mojo::Base 'Mojolicious';
 
+  # Route
   sub startup {
     my $self = shift;
-
-    # Routes
-    my $r = $self->routes;
-
-    # Default route
-    $r->route('/:controller/:action/:id')->to('foo#welcome');
+    $self->routes->get('/hello')->to('foo#hello');
   }
 
-  # Mojolicious controller
+  # Controller
   package MyApp::Foo;
   use Mojo::Base 'Mojolicious::Controller';
 
-  # Say hello
-  sub welcome {
+  # Action
+  sub hello {
     my $self = shift;
-    $self->render_text('Hi there!');
+    $self->render_text('Hello World!');
   }
 
-  # Say goodbye from a template (foo/bye.html.ep)
-  sub bye { shift->render }
-
 =head1 DESCRIPTION
-
-Back in the early days of the web, many people learned Perl because of a
-wonderful Perl library called L<CGI>.
-It was simple enough to get started without knowing much about the language
-and powerful enough to keep you going, learning by doing was much fun.
-While most of the techniques used are outdated now, the idea behind it is not.
-L<Mojolicious> is a new attempt at implementing this idea using state of the
-art technology.
-
-=head2 Features
-
-=over 2
-
-=item *
-
-An amazing MVC web framework supporting a simplified single file mode through
-L<Mojolicious::Lite>.
-
-=over 2
-
-Powerful out of the box with RESTful routes, plugins, Perl-ish templates,
-session management, signed cookies, testing framework, static file server,
-I18N, first class unicode support and much more for you to discover.
-
-=back
-
-=item *
-
-Very clean, portable and Object Oriented pure Perl API without any hidden
-magic and no requirements besides Perl 5.8.7 (although 5.12+ is recommended).
-
-=item *
-
-Full stack HTTP 1.1 and WebSocket client/server implementation with IPv6,
-TLS, Bonjour, IDNA, Comet (long polling), chunking and multipart support.
-
-=item *
-
-Built-in non-blocking I/O web server supporting libev and hot deployment,
-perfect for embedding.
-
-=item *
-
-Automatic CGI, FastCGI and L<PSGI> detection.
-
-=item *
-
-JSON and HTML5/XML parser with CSS3 selector support.
-
-=item *
-
-Fresh code based upon years of experience developing L<Catalyst>.
-
-=back
-
-=head2 Installation
-
-All you need is a oneliner, it takes less than a minute.
-
-  $ sudo sh -c "curl -L cpanmin.us | perl - Mojolicious"
-
-=head2 Getting Started
-
-These three lines are a whole web application.
-
-  use Mojolicious::Lite;
-
-  get '/' => {text => 'Hello World!'};
-
-  app->start;
-
-To run this example with the built-in development web server just put the
-code into a file and start it with C<morbo>.
-
-  $ morbo hello.pl
-  Server available at http://127.0.0.1:3000.
-
-  $ curl http://127.0.0.1:3000/
-  Hello World!
-
-=head2 Duct Tape For The HTML5 Web
 
 Web development for humans, making hard things possible and everything fun.
 
@@ -395,8 +308,6 @@ Web development for humans, making hard things possible and everything fun.
   <%= link_to clock => begin %>
     The time is <%= $now->hms %>.
   <% end %>
-
-=head2 Growing
 
 Single file prototypes can easily grow into well-structured applications.
 A controller collects several actions together.
@@ -492,26 +403,6 @@ workflow.
 
 Take a look at our excellent documentation in L<Mojolicious::Guides>!
 
-=head1 ARCHITECTURE
-
-Loosely coupled building blocks, use what you like and just ignore the rest.
-
-  .---------------------------------------------------------------.
-  |                                                               |
-  |                .----------------------------------------------'
-  |                | .--------------------------------------------.
-  |   Application  | |              Mojolicious::Lite             |
-  |                | '--------------------------------------------'
-  |                | .--------------------------------------------.
-  |                | |                 Mojolicious                |
-  '----------------' '--------------------------------------------'
-  .---------------------------------------------------------------.
-  |                             Mojo                              |
-  '---------------------------------------------------------------'
-  .-------. .-----------. .--------. .------------. .-------------.
-  |  CGI  | |  FastCGI  | |  PSGI  | |  HTTP 1.1  | |  WebSocket  |
-  '-------' '-----------' '--------' '------------' '-------------'
-
 =head1 ATTRIBUTES
 
 L<Mojolicious> inherits all attributes from L<Mojo> and implements the
@@ -533,7 +424,7 @@ L<Mojolicious::Controller>.
 The operating mode for your application, defaults to the value of the
 C<MOJO_MODE> environment variable or C<development>.
 You can also add per mode logic to your application by defining methods named
-C<$mode_mode> in the application class, which will be called right before
+C<${mode}_mode> in the application class, which will be called right before
 C<startup>.
 
   sub development_mode {
@@ -571,7 +462,7 @@ the sledgehammer in your toolbox.
 
 The plugin loader, defaults to a L<Mojolicious::Plugins> object.
 You can usually leave this alone, see L<Mojolicious::Plugin> if you want to
-write a plugin.
+write a plugin or the C<plugin> method below if you want to load a plugin.
 
 =head2 C<renderer>
 
@@ -580,8 +471,8 @@ write a plugin.
 
 Used in your application to render content, defaults to a
 L<Mojolicious::Renderer> object.
-The two main renderer plugins L<Mojolicious::Plugin::EpRenderer> and
-L<Mojolicious::Plugin::EplRenderer> contain more specific information.
+The two main renderer plugins L<Mojolicious::Plugin::EPRenderer> and
+L<Mojolicious::Plugin::EPLRenderer> contain more information.
 
 =head2 C<routes>
 
@@ -616,6 +507,8 @@ the log file reminding you to change your passphrase.
 
 Simple signed cookie based sessions, defaults to a L<Mojolicious::Sessions>
 object.
+You can usually leave this alone, see L<Mojolicious::Controller/"session">
+for more information about working with session data.
 
 =head2 C<static>
 
@@ -766,14 +659,17 @@ Useful for all kinds of postprocessing tasks.
 
 =head2 C<plugin>
 
-  $app->plugin('something');
-  $app->plugin('something', foo => 23);
-  $app->plugin('something', {foo => 23});
-  $app->plugin('Foo::Bar');
-  $app->plugin('Foo::Bar', foo => 23);
-  $app->plugin('Foo::Bar', {foo => 23});
+  $app->plugin('some_thing');
+  $app->plugin('some_thing', foo => 23);
+  $app->plugin('some_thing', {foo => 23});
+  $app->plugin('SomeThing');
+  $app->plugin('SomeThing', foo => 23);
+  $app->plugin('SomeThing', {foo => 23});
+  $app->plugin('MyApp::Plugin::SomeThing');
+  $app->plugin('MyApp::Plugin::SomeThing', foo => 23);
+  $app->plugin('MyApp::Plugin::SomeThing', {foo => 23});
 
-Load a plugin.
+Load a plugin with L<Mojolicious::Plugins/"register_plugin">.
 
 The following plugins are included in the L<Mojolicious> distribution as
 examples.
@@ -796,11 +692,11 @@ Perl-ish configuration files.
 
 General purpose helper collection.
 
-=item L<Mojolicious::Plugin::EplRenderer>
+=item L<Mojolicious::Plugin::EPLRenderer>
 
 Renderer for plain embedded Perl templates.
 
-=item L<Mojolicious::Plugin::EpRenderer>
+=item L<Mojolicious::Plugin::EPRenderer>
 
 Renderer for more sophisiticated embedded Perl templates.
 
@@ -808,11 +704,11 @@ Renderer for more sophisiticated embedded Perl templates.
 
 Route condition for all kinds of headers.
 
-=item L<Mojolicious::Plugin::I18n>
+=item L<Mojolicious::Plugin::I18N>
 
 Internationalization helpers.
 
-=item L<Mojolicious::Plugin::JsonConfig>
+=item L<Mojolicious::Plugin::JSONConfig>
 
 JSON configuration files.
 
@@ -820,7 +716,7 @@ JSON configuration files.
 
 Mount whole L<Mojolicious> applications.
 
-=item L<Mojolicious::Plugin::PodRenderer>
+=item L<Mojolicious::Plugin::PODRenderer>
 
 Renderer for POD files and documentation browser.
 
@@ -900,7 +796,7 @@ L<http://creativecommons.org/licenses/by-sa/3.0>.
 
 =head2 jQuery
 
-  Version 1.6.2
+  Version 1.6.3
 
 jQuery is a fast and concise JavaScript Library that simplifies HTML document
 traversing, event handling, animating, and Ajax interactions for rapid web
@@ -944,16 +840,6 @@ that have been used in the past.
 =head1 AUTHOR
 
 Sebastian Riedel, C<sri@cpan.org>.
-
-=head1 CORE DEVELOPERS EMERITUS
-
-Retired members of the core team, we thank you dearly for your service.
-
-=over 2
-
-Viacheslav Tykhanovskyi, C<vti@cpan.org>.
-
-=back
 
 =head1 CREDITS
 
@@ -1133,7 +1019,11 @@ Ulrich Kautz
 
 Uwe Voelker
 
+Viacheslav Tykhanovskyi
+
 Victor Engmark
+
+Viliam Pucik
 
 Yaroslav Korshak
 

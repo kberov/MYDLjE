@@ -184,12 +184,18 @@ sub _prepare_page {
       [\$read_permissions_sql, \"language IN( '$ui_language','$default_language')"],
   };
   my $page_c = MYDLjE::M::Content::Page->new;
-  my @rows = $c->dbix->select($page_c->TABLE, $page_c->COLUMNS, $page_c_where)->hashes;
+  my @rows =
+    $c->dbix->select($page_c->TABLE, $page_c->COLUMNS,
+    {%$page_c_where, %{$page_c->WHERE}})->hashes;
 
   #$c->debug($c->dumper(@rows));
   #fallback to default language
-  $page_c->data($rows[0])
-    unless ($page_c->data($rows[1])->{id} and ($page_c->language eq $ui_language));
+  if ($page_c->data($rows[1])->{id} and ($page_c->language eq $ui_language)) {
+    $page_c->data($rows[1]);
+  }
+  else {
+    $page_c->data($rows[0]);
+  }
 
   $c->stash(
     TITLE       => $page_c->title,

@@ -155,6 +155,8 @@ sub _validate_content {
     $c->l('Please use one of the availabe languages or first add a new language!'));
   $form->{'permissions'} ||= $content->permissions;
   $v->field('permissions')->regexp($content->FIELDS_VALIDATION->{permissions}{regexp});
+  Mojo::Util::html_escape($form->{'body'});
+
   my $ok = $c->validate($v, $form);
   $c->stash(form => {%$form, %{$v->values}});
 

@@ -215,7 +215,6 @@ sub edit_page {
   $c->stash(form => $form);
 
   if ($c->req->method eq 'POST') {
-    Mojo::Util::html_escape($form->{'page.template'});
     $c->_save_page($page, $content, $user);
   }
 
@@ -338,6 +337,8 @@ sub _validate_page {
   $form->{'page.permissions'} ||= $page->permissions;
   $v->field('page.permissions')
     ->regexp($page->FIELDS_VALIDATION->{permissions}{regexp});
+  Mojo::Util::html_escape($form->{'page.template'});
+  Mojo::Util::html_escape($form->{'content.body'});
   my $ok = $c->validate($v, $form);
   $form = {%$form, %{$v->values}};
   return $ok;

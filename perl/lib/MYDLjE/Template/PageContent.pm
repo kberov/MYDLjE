@@ -7,28 +7,35 @@ use Mojo::ByteStream qw(b);
 sub render {
   my $self = shift;
   my $PAGE = $self->get('PAGE');
-  my $out  = $self->render_page_template($PAGE);
+  my $out  = $self->render_page_template($PAGE, $PAGE->template);
   if (!$out) {
     $out = $self->render_page_content();
   }
-  $out = $self->render_content($out, $self->get('CONTENT'));
-  $self->render_bricks_to_blocks();
+
+  $out .= $self->render_content($out, $self->get('CONTENT'));
+  $self->render_bricks_to_boxes($PAGE);
   return $out;
 }
 
 sub render_page_template {
-  my ($self, $PAGE) = @_;
-  my $template = $PAGE->template || return '';
+  my ($self, $RECORD, $template) = @_;
+  $template || return '';
   Mojo::Util::html_unescape $template;
   my $out = '';
   my $ok =
-    eval { $out .= $self->process(\$template) or Carp::croak $self->context->error };
+
+    #SELF: Reference to the record from within its template
+    eval {
+    $out .= $self->process(\$template, {SELF => $RECORD})
+      or Carp::croak $self->context->error;
+    };
   unless ($ok) {
     $out
-      .= "Page ("
-      . $PAGE->alias
+      .= $RECORD->TABLE . ' id:'
+      . $RECORD->id . ', ('
+      . $RECORD->alias
       . ") template ERROR:"
-      . "<span style=\"color:red\">$@</span>";
+      . "<span class=\"error\">$@</span>";
   }
   return $out;
 }
@@ -42,7 +49,8 @@ sub render_page_content {
     lang  => $self->get('PAGE_C')->language,
     $self->get('TITLE')
   );
-  $c->debug($self->get('BODY'));
+
+  #$c->debug($self->get('BODY'));
   $out .= $c->tag(
     'div',
     class => "unit body",
@@ -62,12 +70,67 @@ sub html_paragraphs {
 
 sub render_content {
   my ($self, $out, $CONTENT) = @_;
+  return '' unless $CONTENT;
+  foreach my $C ($CONTENT) {
+    my $render_data_format = 'render_' . $C->data_format;
+    $out .= $self->$render_data_format($C);
+  }
 
   #TODO: Render each data_type depending on its own data_format
   return $out;
 }
 
-sub render_bricks_to_blocks { }
+#rendering soubroutines for each data format
+sub render_text { goto &html_paragraphs }
+
+sub render_textile {
+  my ($self, $RECORD) = @_;
+  my $body = $RECORD->body;
+  Mojo::Util::html_unescape $body;
+  return $self->c->textile($body);
+}
+
+sub render_markdown {
+  my ($self, $RECORD) = @_;
+  my $body = $RECORD->body;
+  Mojo::Util::html_unescape $body;
+  return $self->c->markdown($body);
+}
+
+sub render_html {
+  my ($self, $RECORD) = @_;
+  return Mojo::Util::html_unescape $RECORD->body;
+}
+
+sub render_template {
+  my ($self, $RECORD, $template) = @_;
+  return $self->render_page_template($RECORD, $RECORD->body);
+}
+
+sub render_bricks_to_boxes {
+  my ($self, $PAGE) = @_;
+  my $BOXES       = $self->get('BOXES');
+  my $BOXES_NAMES = [keys %$BOXES];
+  my $c           = $self->c;
+  my $uid         = $self->USER->id;
+  my $time        = time;
+  my $sql =
+      $c->sql('bricks_for_page')
+    . " AND ( start = 0 OR start < $time )"
+    . " AND ( stop = 0 OR stop > $time )"
+    . ' AND box IN(\''
+    . join(q|','|, @$BOXES_NAMES)
+    . '\') AND '
+    . $c->sql('read_permissions_sql')
+    . ' ORDER BY _id, c.sorting '
+    . $c->sql_limit(0, 100);
+  my $BRICKS =
+    $self->dbix->query($sql, $PAGE->id, $self->get('C_LANGUAGE'), $uid, $uid, $uid);
+
+  #$c->debug($sql)
+
+  return;
+}
 1;
 
 __END__

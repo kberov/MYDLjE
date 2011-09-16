@@ -71,6 +71,21 @@
   )
 -- ]]></query>
 
+-- Gets all bricks for a page to be build.
+-- Does a recursive query by page.pid up the page-tree.
+-- In Oracle since version 11g2 you can use the "WITH" clause 
+-- as in PostgreSQL "WITH RECURSIVE".
+-- http://www.postgresql.org/docs/8.4/static/queries-with.html
+-- http://vadimtropashko.wordpress.com/2008/11/18/finally/
+-- <query name="bricks_for_page" params="page_id"><![CDATA[
+    SELECT @start_id as _id, c.*,
+        (SELECT @start_id := p.pid FROM pages p WHERE p.id=_id) as _page_id
+    FROM content c, (SELECT @start_id :=?) as start
+    WHERE c.language=?
+    AND data_type='brick' AND deleted=0
+-- ]]></query>
+
+
 --TODO: Think how to not always pass current user_id
 -- May be by using stored functions like the one below
 -- or by replacing/interpolating the safe otherwise parameters right into the query.

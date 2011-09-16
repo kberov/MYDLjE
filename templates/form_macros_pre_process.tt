@@ -174,7 +174,7 @@ form ||= c.req.params.to_hash;
     <div class="elastic column " id="[% name_and_id _ '_field_column' %]"><div class="container field">
       <textarea id="[% params.id || name_and_id %]" name="[% name_and_id %]" class="textarea" 
         style="height:[% params.height||'100px' %];width:100%;" >
-        [% params.value %]</textarea>
+        [%~ params.value %]</textarea>
     </div></div>
     <div class="column span-2">
       <div class="ui-state-default container help">

@@ -7,17 +7,26 @@
     and modify the new file accordingly.
 %]
 [%
-    DEFAULT PAGE_LAYOUT = 'layouts/'_ DOMAIN.id _'/' _ DOMAIN.id _'.html.tt';
-
+# Settings for the current layout. 
+# These settings can be overwritten per request by every page from within its template.
+# The page template is PROCESSed in the template plugin 
+#  MYDLjE::Template::PageContent in render_page_template().
+  DEFAULT SETTINGS = {
+    #By default the bricks content are co...
+    #DO_NOT_OVERWRITE_BRICKS => 0,
+    PAGE_LAYOUT => 'layouts/'_ DOMAIN.id _'/' _ DOMAIN.id _'.html.tt'  
+  };
 # 1. Define "BOXES" (keys) to which the output from "bricks" will be assigned as values
 # depending on bricks property "box". The property must match exactly 
 # one of the defined here box-variables.
 
-# 2. Copy and paste each "box" in the desired place for the output to be displayed.
+# 2. BOXES can be filled in with BRICKS content by the current page template or any 
+# content element with page_id equal to the current PAGE.id.
+# Copy and paste each "box" in the desired place for the output to be displayed.
 # This should be either ${DOMAIN.id}.html.tt or some of the PROCESS-ed files in the layout.
 # Try to invent meaningfull names to ease maintenance later.
 
-    BOXES = {
+    DEFAULT BOXES = {
       HEADER_BRICKS => menu_languages(),
       
       TOP_LEFT_BRICKS => '<div>put TOP_LEFT_BRICKS here</div>',
@@ -30,5 +39,6 @@
       
       FOOTER_BRICKS ='<div>put FOOTER_BRICKS here</div>'
     };
+
 %]
 

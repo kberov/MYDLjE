@@ -1,6 +1,6 @@
 [%   
 PROCESS "layouts/${DOMAIN.id}/pre_process.tt";
-WRAPPER ${PAGE_LAYOUT} +%]
+WRAPPER ${SETTINGS.PAGE_LAYOUT} +%]
 <!-- start [%+ action %] -->
 [% 
     USE PAGE_CONTENT = PageContent();

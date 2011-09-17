@@ -20,6 +20,6 @@ echo "perlcritic done --------------------"
 
 #Faster Tests
 export HARNESS_OPTIONS=j5
-prove -v $MYDLjE_HOME/perl/t
+prove $MYDLjE_HOME/perl/t
 
 #run this file before each commit as a hook maybe

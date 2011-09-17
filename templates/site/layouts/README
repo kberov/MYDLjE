@@ -3,3 +3,33 @@ Each domain has its own directory named after its id.
 After you create a new domain in "cpanel" application you have to 
 copy the folder "0" and its files and rename it to the new domain id.
 You also need to rename the file 0.html.tt to the new domain id.
+You can also create themes using the same simple thechnique.
+For example you can have the theme "my_theme" by doing the following:
+
+1. Create folder MYDLjE/templates/site/layouts/my_theme
+
+2. Copy in it the files from MYDLjE/templates/site/layouts/0 and modify them accordingly.
+Example new content for MYDLjE/templates/site/layouts/my_theme/pre_process.tt
+DEFAULT SETTINGS = {
+    #By default the bricks content are co...
+    #DO_NOT_OVERWRITE_BRICKS => 0,
+    PAGE_LAYOUT => 'layouts/my_theme/my_theme.html.tt'
+  };
+Modify MYDLjE/templates/site/layouts/my_theme/my_theme.html.tt as you wish.
+Eg. process other files or do a big fat template... whatever.
+you can use the default_*.html files as starting point but it is all up to you.
+The only required files are:
+MYDLjE/templates/site/layouts/my_theme/pre_process.tt
+MYDLjE/templates/site/layouts/my_theme/my_theme.html.tt
+
+3. If you need to switch to another layout only for some pages,
+define SETTINGS.PAGE_LAYOUT in your page template using the cpanel user interface.
+
+For example in page "shop":
+[% 
+this_page_layout = 'page_id'_ SELF.id _'_theme';
+SETTINGS.PAGE_LAYOUT= 'layouts/'_ this_page_layout _'/'_ this_page_layout _'.html.tt';
+#OTHER TT code here
+%]
+SETTINGS.PAGE_LAYOUT  is used as WRAPPER in MYDLjE/templates/site/site/page.html.tt
+

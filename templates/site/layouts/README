@@ -9,11 +9,12 @@ For example you can implement the theme "my_theme" by doing the following:
 
 1. Create folder $MOJO_HOME/templates/site/layouts/my_theme
 
-2. Copy in it the files from $MOJO_HOME/templates/site/layouts/0 and modify them accordingly.
+2. Copy in it the files from $MOJO_HOME/templates/site/layouts/0 (without pre_process.tt)
+ and modify them as you wish.
 Example new content for $MOJO_HOME/templates/site/layouts/0/pre_process.tt
 [%
 DEFAULT SETTINGS = {
-    PAGE_LAYOUT => 'layouts/my_theme/my_theme.html.tt'
+    PAGE_LAYOUT => 'layouts/my_theme/0.html.tt'
   };
 #rest of the code here...
 %]
@@ -31,9 +32,12 @@ define SETTINGS.PAGE_LAYOUT in your page template using the cpanel user interfac
 
 For example in the template for page "shop":
 [% 
-this_page_layout = 'page_id'_ SELF.id _'_theme';
+this_page_layout = 'page_id'_ SELF.id _'_theme';#SELF is the current PAGE object
 SETTINGS.PAGE_LAYOUT= 'layouts/'_ this_page_layout _'/'_ this_page_layout _'.html.tt';
 #OTHER TT code here
 %]
 SETTINGS.PAGE_LAYOUT  is used as WRAPPER in $MOJO_HOME/templates/site/site/page.html.tt
+
+Imagine how simple and powerful the above technique is, 
+especially if you have some experience with Template Toolkit!
 

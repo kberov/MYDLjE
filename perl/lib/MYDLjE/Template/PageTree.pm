@@ -51,7 +51,10 @@ sub _get_pages {
   my $sql = <<"SQL";
   SELECT id, user_id, group_id, pid, alias, page_type, permissions, c.title, c.description
   FROM pages p,
-  (SELECT title,description, page_id from content WHERE language=?) as c 
+  (
+    SELECT co.title,co.description, co.page_id 
+    FROM content co WHERE co.language=? AND co.data_type='page' 
+  ) as c 
   WHERE p.pid=? AND p.domain_id=? and p.id !=0 
   AND p.id=c.page_id 
 SQL

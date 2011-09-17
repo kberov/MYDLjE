@@ -10,11 +10,12 @@ For example you can have the theme "my_theme" by doing the following:
 
 2. Copy in it the files from MYDLjE/templates/site/layouts/0 and modify them accordingly.
 Example new content for MYDLjE/templates/site/layouts/my_theme/pre_process.tt
+[%
 DEFAULT SETTINGS = {
-    #By default the bricks content are co...
-    #DO_NOT_OVERWRITE_BRICKS => 0,
     PAGE_LAYOUT => 'layouts/my_theme/my_theme.html.tt'
   };
+#rest of the code here...
+%]
 Modify MYDLjE/templates/site/layouts/my_theme/my_theme.html.tt as you wish.
 Eg. process other files or do a big fat template... whatever.
 you can use the default_*.html files as starting point but it is all up to you.

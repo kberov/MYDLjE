@@ -1,4 +1,8 @@
-[%   
+[%#Order of code execution:
+  #1.PROCESS...
+  #2. USE PAGE_CONTENT...
+  #3. WRAPPER...
+%][%
 PROCESS "layouts/${DOMAIN.id}/pre_process.tt";
 WRAPPER ${SETTINGS.PAGE_LAYOUT} +%]
 <!-- start [%+ action %] -->
@@ -7,4 +11,5 @@ WRAPPER ${SETTINGS.PAGE_LAYOUT} +%]
     PAGE_CONTENT.render();
 %]
 <!-- end [%+ action %] -->
-[%+ END %]
+[%+ END +%]
+

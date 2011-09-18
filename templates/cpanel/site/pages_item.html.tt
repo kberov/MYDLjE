@@ -1,0 +1,48 @@
+<!-- start pages_item -->
+<li id="id_[% p.id %]" class="ui-state-default page level_[% depth +%] pid_[% p.pid %]">
+  <div class="columns">
+    <div class="fixed column">
+    <div class="container [%+ p.page_type %]" title="[% p.description %]">
+        [% p.alias _' ('_ p.title _') '%]
+        </div>
+    </div>
+    <div class="elastic column">
+      <div class="container buttons">
+        [% IF USER.can_write(p); %]
+        <span class="legend_icon"><a 
+          href="[% c.url_for('/site/edit_page' ).query('page.pid' => p.id)%]"
+          title="[% c.l('New [_1] here', c.l('Page') ) %]"
+          id="add_page_button_[% p.id %]" class="add_page">
+          <span class="ui-icon" 
+          style="background-image: url(pub/css/icons/layout_add.png) "></span></a>
+        </span>
+        <span class="legend_icon"><a 
+          href="[% c.url_for('/site/edit_page/' _ p.id )%]"
+          title="[% c.l('Edit [_1]', c.l('Page') ) %]"
+          id="edit_page_button_[% p.id %]" class="edit_page">
+          <span class="ui-icon" 
+          style="background-image: url(pub/css/icons/layout_edit.png) "></span></a>
+        </span>
+        <span class="legend_icon"><a 
+          href="[% c.url_for('/site/delete_page/' _ p.id )%]"
+          title="[% c.l('Delete [_1]', c.l('Page') ) %]"
+          id="delete_page_button_[% p.id %]" class="delete_page">
+          <span class="ui-icon" 
+          style="background-image: url(pub/css/icons/layout_delete.png) "></span>
+            <div class="modal_message" style="display:none;">
+              <p class="ui-button-text">
+                  [% c.l('delete_page_confirm_message', p.alias ) %]
+              </p>
+            </div>
+          </a>
+        </span>
+        [% END %]
+      </div><!-- end div class="container buttons" -->
+    </div>
+  </div>
+</li>
+[% IF  subpages_html%]
+[% subpages_html  %]
+[%END %]
+<!-- end pages_item -->
+

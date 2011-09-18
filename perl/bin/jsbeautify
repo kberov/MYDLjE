@@ -1,0 +1,1 @@
+jsbeautify --overwrite -s 2  pub/js/system_setup.js

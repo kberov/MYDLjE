@@ -1,0 +1,5 @@
+<div class="container" style=" border:1px solid red;padding:2px;">
+template.name: <b style="color:red">[% template.name %]</b> 
+<br/> 
+component.name: <b style="color:red">[% component.name %]</b> not found!
+</div>

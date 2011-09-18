@@ -1,0 +1,43 @@
+#!/usr/bin/env perl
+
+# Copyright (C) 2008-2010, Sebastian Riedel.
+# Copyright (C) 2011, Krasi Berov.
+
+use strict;
+use warnings;
+use File::Basename 'dirname';
+use Cwd;
+BEGIN{
+  $ENV{MOJO_MODE} ||='development';
+  #$ENV{MOJO_MODE}='production';
+  $ENV{MOJO_HOME} = Cwd::abs_path(dirname(__FILE__));
+}
+
+use lib ( "$ENV{MOJO_HOME}/perl/lib", "$ENV{MOJO_HOME}/perl/site/lib");
+
+
+# Check if Mojo is installed
+eval 'use Mojolicious::Commands';
+die <<EOF if $@;
+It looks like you don't have the Mojo Framework installed.
+Please visit http://mojolicious.org for detailed installation instructions.
+
+EOF
+
+
+# Application
+$ENV{MOJO_APP} = 'MYDLjE::Site';
+
+Mojolicious::Commands->start;
+
+__END__
+
+=head1 NAME
+
+site - The MYDLjE front-end application
+
+=head1 SEE ALSO
+
+L<MYDLjE>, L<Mojolicious>, L<Mojolicious::Guides>.
+
+=cut

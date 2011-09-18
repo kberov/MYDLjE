@@ -1,0 +1,286 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>MYDLjE - Web-presence rewritten</title>
+<meta content="text/html; charset=utf-8" http-equiv="content-type" />
+<link href="mailto:support@ActiveState.com" rev="made" />
+<link href="pub/css/ui-lightness/jquery-ui-current.custom.css" rel="stylesheet" type="text/css" />
+    <link href="pub/css/readme.css" rel="stylesheet" type="text/css" /></head>
+
+<body style="background-color: white"><div class="ui-widget ui-widget-content ui-corner-all ">
+    <h1 class="ui-dialog-titlebar ui-widget-header ui-corner-all" id="title">MYDLjE - Web-presence rewritten</h1><div class="inner">
+
+
+<!-- INDEX BEGIN -->
+<div name="index">
+
+
+<ul>
+
+	
+	<li><a href="#version">VERSION</a></li>
+	<li><a href="#description">DESCRIPTION</a></li>
+	<li><a href="#applications">APPLICATIONS</a></li>
+	<ul>
+
+		<li><a href="#control_panel__cpanel_">CONTROL PANEL (cpanel)</a></li>
+		<li><a href="#mydlje__mydlje_">MYDLjE (mydlje)</a></li>
+		<li><a href="#site__site_">SITE (site)</a></li>
+	</ul>
+
+	<li><a href="#minimal_requirements">MINIMAL REQUIREMENTS</a></li>
+	<li><a href="#installation">INSTALLATION</a></li>
+	<li><a href="#roadmap">ROADMAP</a></li>
+	<li><a href="#licenses_and_copyright">LICENSES and COPYRIGHT</a></li>
+	<li><a href="#credits">CREDITS</a></li>
+	<li><a href="#setup">SETUP</a></li>
+</ul>
+
+
+</div>
+<!-- INDEX END -->
+
+<p>
+</p>
+
+
+<p>
+</p>
+
+<h1 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="version">VERSION</a></h1>
+<p>01.09.18b3</p>
+<p>
+</p>
+
+<h1 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="description">DESCRIPTION</a></h1>
+<p><strong>NOTE: This is a work in progress. Help is wellcome.</strong></p>
+<p>MYDLjE (pronounced [maidalji]/[майдължи]) is a lightweight
+ Web-Applications and Content Management Framework. It is a collection of
+ Perl, JavaScript, CSS and HTML5 code to make a General Purpose Platform for
+ building Web-Applications. We build on top of several <em>&quot;State Of the Art&quot;</em>
+ open-source software projects to make a powerful platform for starting
+ business online.</p>
+<p>The framework name is an acronym. It stands for: <strong>Mojolicious, YAML, DBI*,
+ Locale::Maketext, jQuery, Elastic CSS</strong> which are the main building blocks.
+ <strong>Template::Alloy</strong> is chosen as view system. <strong>SILK &amp; FLAG ICONS</strong> are used
+ too.</p>
+<p>
+</p>
+
+<h1 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="applications">APPLICATIONS</a></h1>
+<p>MYDLjE comes with three bundled web-applications around and on top of which
+ you (the developer) can build even more powerful domain specific
+ applications. The applications are based on Mojolicious, so if you (the
+ developer) know how it works, please feel at home! The applications are
+ intended to be easy to use (intuitive) for the average computer-literate
+ user, so the admin is not needed all the time :).</p>
+<p>
+</p>
+<h2 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="control_panel__cpanel_">CONTROL PANEL (cpanel)</a></h2>
+<p>This application is for managing your online presence. You (the business
+ owner) access and manage your users, customers, domains, pages, content,
+ applications etc. Only trusted people (back-end users) should be allowed to
+ use it.</p>
+<p>
+</p>
+<h2 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="mydlje__mydlje_">MYDLjE (mydlje)</a></h2>
+<p>This is a bare-bones application. It is used as the base for the other two
+ applications and for setting up the system for the first time when you (the
+ administrator) deploy it.</p>
+<p>
+</p>
+<h2 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="site__site_">SITE (site)</a></h2>
+<p>This is your front-end application intended for the public. Build a site or
+ a custom application to be used by your community and/or customers. Build
+ whatever you want on top of and around it or call me to build it for you.</p>
+<p>
+</p>
+
+<h1 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="minimal_requirements">MINIMAL REQUIREMENTS</a></h1>
+<ul>
+<li><strong><a class="item" name="perl_5_8_8_or_next_perl_5_10_1_or_next_is_highly_recommended">Perl 5.8.8 or next; Perl 5.10.1 or next is highly recommended;</a></strong>
+
+</li>
+<li><strong><a class="item" name="mod_cgi">Apache2 with mod_cgi (standard) or (better/faster)
+ mod_fcgi/mod_fastcgi;</a></strong>
+
+</li>
+<li><strong><a class="item" name="mysql_5_0_server_provided_by_almost_every_shared_hosting">MySQL &gt;=5.0 server, provided by almost every shared hosting;</a></strong>
+
+</li>
+<li><strong><a class="item" name="dbi_dbd_mysql_time_piece_and_gd_perl_modules"><code>DBI</code>, <code>DBD::mysql</code>, <code>Time::Piece</code> and <code>GD</code> Perl Modules.</a></strong>
+
+</li>
+</ul>
+<p>Almost all (even the cheapest) hosting providers meet the system
+ requirements. To make sure, send the above-mentioned list to your
+ (potential) hosting provider and ask them if they meet the requirements
+ below. The setup screen also checks for the requirements. The system runs
+ under mod_cgi by default, but can be switched in seconds to run under
+ mod_fastcgi (or mod_fcgi) if available. See the <em>.htaccess</em> file in the
+ project root directory.</p>
+<p>
+</p>
+
+<h1 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="installation">INSTALLATION</a></h1>
+<ol>
+<li><strong><a class="item" name="unpack_the_bundle_in_a_directory_visible_by_apache">Unpack the bundle in a directory visible by Apache.</a></strong>
+
+</li>
+<li><strong><a class="item" name="tool">Create a database using the example found in
+ <em>conf/mysql.schema.sql</em> or use the tool (PHPMyAdmin) provided by your
+ hosting provider</a></strong>
+
+</li>
+<li><strong><a class="item" name="use_your_browser_to_access_index_xhtml_or_setup_via_commandline_see_setup">Use your browser to access <strong>index.xhtml</strong> or setup via commandline -
+ see <a href="#setup">SETUP</a>.</a></strong>
+
+</li>
+<li><strong><a class="item" name="check_the_system_and_troubleshoot_if_needed_look_at_the_apache_error_log_and_log_development_log">Check the system and troubleshoot :) if needed. Look at the apache
+ error-log and log/development.log.</a></strong>
+
+</li>
+<li><strong><a class="item" name="fill_in_the_system_configuration_form_you_are_ready_to_go">Fill in the &quot;System Configuration&quot; form. You are ready to go.</a></strong>
+
+</li>
+<li><strong><a class="item" name="enjoy_your_new_site_and_start_building_your_presence">Enjoy your new site and start building your presence.</a></strong>
+
+</li>
+</ol>
+<p>
+</p>
+
+<h1 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="roadmap">ROADMAP</a></h1>
+<p>Below is the list of things to do. This is a general list, so look at
+ <a href="https://github.com/kberov/MYDLjE/issues">https://github.com/kberov/MYDLjE/issues</a> for the specific tasks. It is
+ possible to work on several issues at the same time so feel your self
+ invited to help. Write me a message and we can define together a specific
+ enough task.</p>
+<ul>
+<li><strong><a class="item" name="well">Implement the base system. Bundle required libraries and write
+ enough tests to be sure the things work together well (done).</a></strong>
+
+</li>
+<li><strong><a class="item" name="install">Implement the MYDLjE initial setup/install (done).</a></strong>
+
+</li>
+<li><strong><a class="item" name="application">Implement the &quot;Control Panel&quot; application (in progress):</a></strong>
+
+<ul>
+<li><strong><a class="item" name="controllers">Implement the Domains Management controllers (done);</a></strong>
+
+</li>
+<li><strong>Implement the Pages Management controllers (done);</strong>
+
+</li>
+<li><strong>Implement the Content Management controllers (mostly done);</strong>
+
+</li>
+<li><strong>Implement Applications/Plugins Management controllers (later);</strong>
+
+</li>
+<li><strong><a class="item" name="controller">Implement the Configuration Management controller (later);</a></strong>
+
+</li>
+<li><strong>Implement the Users/Groups Management controllers (later);</strong>
+
+</li>
+</ul>
+</li>
+<li><strong><a class="item" name="implement_the_site_application">Implement the &quot;Site&quot; application:</a></strong>
+
+<ul>
+<li><strong><a class="item" name="implement_the_base_site_application">Implement the base &quot;Site&quot; application;</a></strong>
+
+</li>
+<li><strong><a class="item" name="plugin">Implement the &quot;Registration&quot; Site plugin (later);</a></strong>
+
+</li>
+<li><strong>Implement the &quot;Login&quot; Site plugin(with Oauth2 and/or OpenID)
+ (later);</strong>
+
+</li>
+<li><strong>Implement the &quot;Profile&quot; Site plugin (later);</strong>
+
+</li>
+<li><strong>Implement the &quot;Q&amp;A&quot; Site plugin (later);</strong>
+
+</li>
+</ul>
+</li>
+</ul>
+<p>
+</p>
+
+<h1 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="licenses_and_copyright">LICENSES and COPYRIGHT</a></h1>
+<p>This is a package of libraries written by many authors. Krasimir Berov
+ bundled them together and wrote the domain specific parts to form something
+ that works as one. The code written by K. Berov is licenced under the
+ LGPLv3. The other works are licenced under various Open Source Licences that
+ allow redistribution and modifications. See:
+ <a href="http://www.perlfoundation.org/artistic_license_2_0,">http://www.perlfoundation.org/artistic_license_2_0,</a>
+ <a href="http://www.gnu.org/licenses/lgpl-3.0.txt">http://www.gnu.org/licenses/lgpl-3.0.txt</a></p>
+<p>How to understand: <a href="http://www.perlfoundation.org/artistic_2_0_notes">http://www.perlfoundation.org/artistic_2_0_notes</a></p>
+<p>Copyright (C) 2008-2011, Krasimir Berov</p>
+<p>
+</p>
+
+<h1 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="credits">CREDITS</a></h1>
+<p>I wish to thank to all who made something that I use to make MYDLjE works.
+ If you think your name should be listed here, please notify me.</p>
+<ul>
+<li><strong><a class="item" name="larry_wall_conceived_perl_http_www_perl_org_thank_you">Larry Wall conceived Perl - <a href="http://www.perl.org/.">http://www.perl.org/.</a> Thank You!</a></strong>
+
+</li>
+<li><strong><a class="item" name="sebastian_riedel_makes_mojolicious_http_mojolicio_us_perldoc_mojolicious_thank_you">Sebastian Riedel makes Mojolicious -
+ <a href="http://mojolicio.us/perldoc?Mojolicious">http://mojolicio.us/perldoc?Mojolicious</a> . Thank You!</a></strong>
+
+</li>
+<li><strong><a class="item" name="yaml_thanks_to_oren_ben_kiki_clark_evans_ingy_d_t_net_http_yaml_org_thank_you_all">YAML thanks to Oren Ben-Kiki, Clark Evans, Ingy döt Net -
+ <a href="http://yaml.org/.">http://yaml.org/.</a> Thank you all!</a></strong>
+
+</li>
+<li><strong><a class="item" name="adam_kennedy_makes_yaml_tiny_http_search_cpan_org_dist_yaml_tiny_thank_you">Adam Kennedy makes YAML::Tiny -
+ <a href="http://search.cpan.org/dist/YAML-Tiny/.">http://search.cpan.org/dist/YAML-Tiny/.</a> Thank you!</a></strong>
+
+</li>
+<li><strong><a class="item" name="paul_seamons_makes_template_alloy_http_search_cpan_org_dist_template_alloy_thank_you">Paul Seamons makes Template::Alloy -
+ <a href="http://search.cpan.org/dist/Template-Alloy/.">http://search.cpan.org/dist/Template-Alloy/.</a> Thank You!</a></strong>
+
+</li>
+<li><strong><a class="item" name="john_resig_conceived_jquery_http_jquery_org_thank_you">John Resig conceived jQuery - <a href="http://jquery.org/.">http://jquery.org/.</a> Thank You!</a></strong>
+
+</li>
+<li><strong><a class="item" name="jquery_user_interface_team_makes_jquery_ui_http_jqueryui_com_about_thank_you">jQuery User Interface Team makes jQuery UI -
+ <a href="http://jqueryui.com/about">http://jqueryui.com/about</a> . Thank You!</a></strong>
+
+</li>
+<li><strong><a class="item" name="sean_m_burke_conceived_locale_maketext_http_search_cpan_org_dist_locale_maketext_thank_you">Sean M. Burke conceived Locale::Maketext -
+ <a href="http://search.cpan.org/dist/Locale-Maketext/.">http://search.cpan.org/dist/Locale-Maketext/.</a> Thank You!</a></strong>
+
+</li>
+<li><strong><a class="item" name="mark_james_made_silk_flag_icons_http_www_famfamfam_com_lab_icons_silk_thank_you">Mark James made SILK &amp; FLAG ICONS -
+ <a href="http://www.famfamfam.com/lab/icons/silk/.">http://www.famfamfam.com/lab/icons/silk/.</a> Thank You!</a></strong>
+
+</li>
+<li><strong><a class="item" name="fernando_trasvia_conceived_elastic_css_http_elasticss_com_suggestions_thank_you">Fernando Trasvia conceived Elastic CSS -
+ <a href="http://elasticss.com/suggestions/.">http://elasticss.com/suggestions/.</a> Thank You!</a></strong>
+
+</li>
+</ul>
+<p>
+</p>
+
+<h1 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="setup">SETUP</a></h1>
+<p>Create an empty database. See conf/mysql.schema.sql for an example.</p>
+To setup your system <a href="index.xhtml">go to index.xhtml</a>. Make sure
+ the file is accessed trough HTTP(S) and not directly trough some file
+ system. Follow the steps and you should be fine.<p>Many programmers prefer using a terminal. To set up the system this way,
+ open a terminal and go to the MYDLjE root directory:</p>
+<p>$ ./mydlje help system_setup</p>
+<p>-----------------------</p>
+
+</div></div></body>
+
+</html>

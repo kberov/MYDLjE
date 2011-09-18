@@ -1,0 +1,42 @@
+[% 
+WRAPPER ${TEMPLATE_WRAPPER};
+#we have an editable value '0'
+IF id eq '0' || id > 0;
+  legend = c.l('Edit [_1]', c.l('Domain') );
+  form_action = c.url_for('/site/edit_domain/' _ id );
+ELSE;
+  legend = c.l('New [_1]', c.l('Domain') );
+  form_action = c.url_for('/site/edit_domain');
+END;
+%]
+<!-- start [% action %] -->
+<div id="[% action %]-area" class="container ui-corner-all ui-widget-content">
+<form id="[% action %]_form" 
+    action="[% form_action %]"
+    method="POST">
+<fieldset class="ui-widget-content ui-corner-all">
+  <legend class="ui-widget-header ui-corner-all">
+  [% legend %]<span class="legend_icon"><span class="ui-icon" 
+        style="background-image: url(pub/css/icons/world_edit.png) "></span>
+  </span></legend>
+  [%+ 
+     text_field('domain', {label => c.l('Domain')}); 
+     text_field('name', {label => c.l('title'),help=>'title_help'});
+     text_field('description');
+     permissions_field('permissions');
+     select_field('published', {options => published_options});
+     button_set();
+   +%]
+</fieldset>
+</form>
+[%# DUMP(validator_errors) %]
+<script  type="text/javascript">//<![CDATA[
+$(window).load(function() {
+  $('a[href$="domains"]').addClass('ui-state-active');
+  
+});
+//]]>
+</script>
+</div><!-- end div id="[% action %]-area" -->
+<!-- end [%+ action +%] -->
+[% END %]

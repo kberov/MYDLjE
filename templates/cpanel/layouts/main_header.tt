@@ -1,0 +1,25 @@
+      <div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix" id="main-header">
+        <div class="columns">
+          <div class="fixed column">
+            <span class="ui-dialog-title" id="title-main-header">
+            <a href="[% c.url_for('/home') %]" title="[% MOJO_APP_AT_SITE %]">
+              <img src="pub/css/img/logo3.png" width="22" height="22" alt="[% MOJO_APP_AT_SITE %]" />
+            </a>[% USER_AT_MOJO_APP_AT_SITE %]</span>
+            <!-- TA generates this -->
+          </div>
+          <div class="elastic column">
+            <div class="container" id="main-top-right-menu">[% menu_languages() %] 
+            <span class="main_help_icon ui-corner-all ui-state-active" style="display: inline-block; cursor: pointer;" title="[% c.l('Help') %]">
+            <a href="[% app.config('mydlje_url') %]/perldoc/MYDLjE/Guides" target="_blank"><span class="ui-icon ui-icon-help"></span></a>
+            </span>
+            [% UNLESS c.msession.guest %]
+            <a class=" ui-corner-all ui-state-active" title="[% c.l('Logout') %]"
+               style="display: inline-block; cursor: pointer;"
+            href="[% c.url_for('/logout') %]">
+              <span class="ui-icon ui-icon-power"></span>
+            </a>
+            [% END %]
+            </div>
+          </div>
+        </div>
+      </div>

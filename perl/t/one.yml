@@ -1,0 +1,6 @@
+---
+somekey: some value
+another: 
+    deeper: value
+    anothermore: yeah
+

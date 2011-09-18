@@ -1,0 +1,69 @@
+.unit {
+}
+
+#setup,.inner {
+margin: auto;
+
+}
+.inner {
+  padding: 0em 1ex 1em 1em ;
+  background: url("img/logo3.png") no-repeat scroll;
+  background-position:97% 5px;
+  color:#366636;
+  width:60%;
+}
+#system_check_div .ui-widget {margin-top:1em;padding:0.5em}
+#setup ul.oks li {
+  color:green;
+  list-style:none;
+}
+.ui-widget p {margin: 1ex;}
+#setup table th { 
+  padding: 1ex;
+  text-align:left;
+}
+#setup table tbody td {
+  padding-left: 2em;
+}
+
+#setup form {
+width: 500px;
+margin: auto;
+}
+
+#setup form fieldset {margin:1em;}
+#setup form label{display:block}
+#setup form label, #setup form .field {
+  padding: 1ex;
+}
+#setup form hr {
+margin: 1ex;
+}
+#setup form input {
+  width: 250px;
+}
+#setup form legend {padding: 0.5ex;margin: 0.5ex;}
+#setup form .help {
+font-weight: normal;
+display:none;
+padding: 1ex; padding-top: 0px;
+font-style: italic;
+
+}
+.get_help {
+  margin-left: 1ex;
+}
+#setup form .buttons {
+  text-align: right;
+}
+#hello_success {
+  font-size: 105%;
+  font-style: oblique;
+}
+/*make some elemnts unselctable*/
+.unselectable,.ui-accordion-header,
+label,th,legend {
+   -moz-user-select: none;
+   -khtml-user-select: none;
+   user-select: none;
+}

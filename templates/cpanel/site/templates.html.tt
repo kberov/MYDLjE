@@ -1,0 +1,38 @@
+[% WRAPPER ${TEMPLATE_WRAPPER} %]
+<div id="[% action %]-area" class="container ui-corner-all ui-widget-content">
+<form id="[% action %]_form" method="POST">
+<fieldset class="ui-widget-content ui-corner-all">
+        <legend class="ui-widget-header ui-corner-all">[% c.l('Templates') %]
+            <span  class="legend_icon"><a href="[% c.url_for('/site/edit_template')%]"
+           title="[% c.l('New [_1]', c.l('Template') ) %]"
+           id="new_template_button"
+           class="new_template">
+             <span class="ui-icon" 
+             style="background-image: url(pub/css/icons/layout_code_add.png) "></span></a></span>
+        </legend>
+        
+        <div id="message" style="display:[%c.flash('message')?'block':'none'%]">
+            [% c.flash('message') %]
+        </div>
+
+</fieldset>
+</form>
+<script  type="text/javascript">//<![CDATA[
+$(window).load(function() {
+$('#[% action %]_form button[type="submit"]').button({
+    icons: {
+      primary: 'ui-icon-check'
+    },
+    text:false
+  });
+  enhance_delete_buttons('delete_template');
+  
+});
+//]]>
+</script>
+[%# DUMP(c.msession.sessiondata); %]
+
+</div><!-- end div id="[% action %]-area" -->
+<!-- end [%+ action +%] -->
+[% END %]
+

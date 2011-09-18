@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="[% LANGUAGE %]">
+[% PROCESS 'layouts/head.tt' %]
+  <body class="ui-widget-content" style="border:0px;height:100%">
+    <noscript><p>This page requires JavaScript.</p></noscript>
+        <!-- content start -->
+        [% content %]
+        <!-- content end -->
+    <!-- end div class="unit layout" -->
+  </body>
+</html>

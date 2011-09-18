@@ -1,0 +1,46 @@
+[% WRAPPER ${TEMPLATE_WRAPPER} ;
+#we do NOT have an editable value id='0'
+IF id;
+  legend = c.l('Edit [_1]', c.l('template') );
+  form_action = c.url_for('/site/edit_template/' _ id );
+ELSE;
+  legend = c.l('New [_1]', c.l('template') );
+  form_action = c.url_for('/site/edit_template');
+END;
+%]
+
+<!-- start [% action %] -->
+<div id="[% action %]-area" class="container ui-corner-all ui-widget-content">
+<form id="[% action %]_form" 
+    action="[% form_action %]"
+    method="POST">
+<fieldset class="ui-widget-content ui-corner-all">
+  <legend class="ui-widget-header ui-corner-all">
+  [% legend %]<span class="legend_icon"><span class="ui-icon" 
+  style="background-image: url(pub/css/icons/layout_code_[%id?'edit':'add'%].png) "></span>
+  </span></legend>
+
+  [%+ 
+  +%]
+  
+  
+  
+  
+  
+</fieldset>
+</form>
+[%# DUMP(form) %]
+<script  type="text/javascript">//<![CDATA[
+$(window).load(function() {
+  $('a[href$="templates"]').addClass('ui-state-active');
+  $('.button_close').click(function(){
+      location.href = "[% c.url_for('/site/templates') %]";
+      return false;
+  });
+  
+});
+//]]>
+</script>
+</div><!-- end div id="[% action %]-area" -->
+<!-- end [%+ action +%] -->
+[% END %]

@@ -1,0 +1,7 @@
+<div id="main-right-area" class="fixed column">
+[%
+    BOXES.TOP_RIGHT_BRICKS;
+    BOXES.MIDDLE_RIGHT_BRICKS;
+    BOXES.BOTTOM_RIGHT_BRICKS;
+%]
+</div><!-- end div id="main-right-area" -->

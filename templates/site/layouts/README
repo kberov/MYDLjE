@@ -1,0 +1,43 @@
+In this directory we keep site layouts.
+Each domain has its own directory named after its id.
+After you create a new domain in "cpanel" application you have to 
+copy the folder "0" and its files and rename it to the new domain id.
+You also need to rename the file 0.html.tt to the new domain id.
+
+You can also create themes using the same simple technique.
+For example you can implement the theme "my_theme" by doing the following:
+
+1. Create folder $MOJO_HOME/templates/site/layouts/my_theme
+
+2. Copy in it the files from $MOJO_HOME/templates/site/layouts/0 (without pre_process.tt)
+ and modify them as you wish.
+Example new content for $MOJO_HOME/templates/site/layouts/0/pre_process.tt
+[%
+DEFAULT SETTINGS = {
+    PAGE_LAYOUT => 'layouts/my_theme/0.html.tt'
+  };
+#rest of the code here...
+%]
+The "PAGE_LAYOUT" key in the SETTINGS hash defines 
+a new default wrapper for page.html.tt
+Modify $MOJO_HOME/templates/site/layouts/my_theme/my_theme.html.tt as you wish.
+E.g. process other files or do a big fat template... whatever.
+You can use the default_*.html files as starting point but it is all up to you.
+The only required files are:
+$MOJO_HOME/templates/site/layouts/0/pre_process.tt
+$MOJO_HOME/templates/site/layouts/my_theme/my_theme.html.tt
+
+3. If you need to switch to another layout only for some pages,
+define SETTINGS.PAGE_LAYOUT in your page template using the cpanel user interface.
+
+For example in the template for the imagianry page "shop":
+[% 
+this_page_layout = 'page_id'_ SELF.id _'_theme';#SELF is the current PAGE object
+SETTINGS.PAGE_LAYOUT= 'layouts/'_ this_page_layout _'/'_ this_page_layout _'.html.tt';
+#OTHER TT code here
+%]
+SETTINGS.PAGE_LAYOUT  is used as WRAPPER in $MOJO_HOME/templates/site/site/page.html.tt
+
+Imagine how simple and powerful the above technique is, 
+especially if you have some experience with Template Toolkit!
+

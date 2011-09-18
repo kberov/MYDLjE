@@ -1,0 +1,61 @@
+=encoding utf8
+
+=head1 NAME
+
+MYDLjE::Guides::Design - make beautiful layouts and templates.
+
+=head1 DESCRIPTION
+
+MYDLjE comes with Elastic CSS framework and the jQuery UI framework bundled. 
+Ofcourse they need jQuery which comes with L<Mojolicious>.
+Nothing is added or removed, so everything you know so far applies.
+
+Elastic CSS is used for the layout and jQuery UI is used for 
+beauty and form enhacements.
+
+=head1 jQuery UI Themes
+
+You can easily switch themes by just changing the configuration value in 
+C<$ENV{MOJO_HOME}/conf/local.mydlje.development.yaml>. On production site modify 
+C<$ENV{MOJO_HOME}/conf/local.mydlje.production.yaml> respectively.
+
+The default is:
+
+    jq_ui_theme: humanity
+
+Change "humanity" to one of the themes which comes with the distribution: I<redmond, smoothness or ui-lightness>. You can add a new theme too by downloading or rolling your own from I<jqueryui.com>. To switch the theme only in the front-end (site) application, change the value in 
+
+C<$ENV{MOJO_HOME}/conf/local.mydlje-site.development.yaml>. If the file does not exists, create it.
+
+=head1 LAYOUTS
+
+MYDLjE uses a L<Template::Toolkit> implementation called L<Template::Alloy>. 
+So if you are familiar with L<Template SYNTAX|Template::Manual::Syntax> 
+you are ready to start building beautiful layouts for your sites.
+Check also L<Template::Alloy::TT> for specifics.
+
+Each domain in a MYDLjE powered cluster of sites can have its own layout. 
+See C<$ENV{MOJO_HOME}/templates/site/layouts/0> for an example layout and 
+C<$ENV{MOJO_HOME}/templates/site/layouts/README> for how to make a MYDLjE 
+theme that can be shared between several sites in the same MYDLjE instance 
+(cluster of domains).
+
+=head1 SEE ALSO
+
+L<http://docs.jquery.com/Main_Page>, 
+L<http://elasticss.com/documentation/>, L<http://jqueryui.com/demos/> 
+L<MYDLjE::Guides>, L<MYDLjE::Guides::Devs>, L<MYDLjE::Guides::Admins>
+
+=head1 AUTHOR AND COPYRIGHT
+
+(c) 2011 Красимир Беров L<k.berov@gmail.com>
+
+MYDLjE code is licensed under LGPLv3.
+
+
+=begin html
+
+<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-nc-sa/3.0/80x15.png" /></a><br /><span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">MYDLjE::Guides</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="https://github.com/kberov/MYDLjE" property="cc:attributionName" rel="cc:attributionURL">Красимир Беров</a> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License</a>.<br />Based on a work at <a xmlns:dct="http://purl.org/dc/terms/" href="https://github.com/kberov/MYDLjE/blob/master/perl/lib/MYDLjE/Guides.pod" rel="dct:source">github.com</a>.
+
+=end html
+

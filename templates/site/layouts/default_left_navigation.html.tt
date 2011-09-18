@@ -1,0 +1,7 @@
+<div id="main-left-navigation" class="fixed column">
+[%    
+    BOXES.TOP_LEFT_BRICKS;
+    BOXES.MIDDLE_LEFT_BRICKS;
+    BOXES.BOTTOM_LEFT_BRICKS;
+%]
+</div><!-- end div id="main-left-navigation" -->

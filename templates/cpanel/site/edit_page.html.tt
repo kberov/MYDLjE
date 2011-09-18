@@ -1,0 +1,109 @@
+[% 
+WRAPPER ${TEMPLATE_WRAPPER};
+#we do NOT have an editable value id='0'
+IF id;
+  legend = c.l('Edit [_1]', c.l('page') );
+  form_action = c.url_for('/site/edit_page/' _ id );
+ELSE;
+  legend = c.l('New [_1]', c.l('page') );
+  form_action = c.url_for('/site/edit_page');
+END;
+
+PROCESS 'site/page_options.tt';
+
+%]
+
+<!-- start [% action %] -->
+<div id="[% action %]-area" class="container ui-corner-all ui-widget-content">
+<form id="[% action %]_form" 
+    action="[% form_action %]"
+    method="POST">
+<fieldset class="ui-widget-content ui-corner-all">
+  <legend class="ui-widget-header ui-corner-all">
+  [% legend %]<span class="legend_icon"><span class="ui-icon" 
+  style="background-image: url(pub/css/icons/layout_[%id?'edit':'add'%].png) "></span>
+  </span></legend>
+  [%#
+  pid sorting template cache expiry user_id group_id tstamp start stop published hidden deleted changed_by
+%]
+  [%+ 
+  +%]
+<div class="unit on-2 columns">
+  <div class="column">
+      [% text_field('content.title') %]
+    </div>
+    <div class="column">
+      [% select_field('content.language', {options => language_options} ); %]
+    </div>
+</div>
+<div class="unit on-2 columns">
+    <div class="column">
+      [% text_field('page.alias'); %]
+    </div>
+    <div class="column">
+      [% select_field('page.domain_id', {label => c.l('Domain'), 
+       options => domains_options, help =>'domain_help',selected=>c.msession('domain_id')} ); %]
+    </div>
+</div>
+<div class="unit on-2 columns">
+    <div class="column">
+      [%
+      selected_page_type = (!id && page_pid_options.size() ==1) ? 'root' : form.${'page.page_type'}; 
+      select_field('page.page_type', {options => page_type_options
+      selected => selected_page_type
+      } ); %]
+    </div>
+    <div class="column">
+      [% select_field('page.pid',{options =>page_pid_options});%]
+    </div>
+</div>
+<div class="unit on-2 columns">
+    <div class="column">
+      [% text_field('content.description');%]
+    </div>
+    <div class="column">
+      [% permissions_field('page.permissions'); %]
+    </div>
+</div>
+<div class="unit on-3 columns">
+  <div class="column">
+    [%  select_field('page.published',{options => published_options}); %]
+  </div>
+  <div class="column">
+    [% checkbox_field('page.hidden'); %]
+  </div>
+  <div class="column">
+    [% text_field('page.sorting'); %]
+  </div>
+</div>
+<div class="unit on-2 columns">
+  <div class="column">
+    [% checkbox_field('page.cache'); %]
+  </div>
+  <div class="column">
+    [% text_field('page.expiry'); %]
+  </div>
+</div>
+    
+    [% 
+    textarea('page.template');
+    textarea('content.body', { help => c.l('body_help', c.l('data_format') ) } );
+    button_set() %]
+</fieldset>
+</form>
+[%# DUMP(form) %]
+<script  type="text/javascript">//<![CDATA[
+$(window).load(function() {
+  prepend_type_icons('option');
+  $('a[href$="pages"]').addClass('ui-state-active');
+  $('.button_close').click(function(){
+      location.href = "[% c.url_for('/site/pages') %]";
+      return false;
+  });
+  
+});
+//]]>
+</script>
+</div><!-- end div id="[% action %]-area" -->
+<!-- end [%+ action +%] -->
+[% END %]

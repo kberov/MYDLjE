@@ -1,0 +1,60 @@
+
+=encoding utf8
+
+=head1 MYDLjE Guides
+
+Here is the place to start, no matter if you are a developer, designer, administrator
+ or editor.
+
+=head1 ADMINISTRATORS
+
+The L<MYDLjE::Guides::Admins> guide is for those who build and manage one 
+or several sites based on MYDLjE.
+It is expected that you have general knowledge on how the I<World Wide Web> works and are familiar with notions like Apache, HTTP, FTP, XML, XHTML. Some knowledge of Perl and JavaScript is useful but not mandatory.
+
+Thanks for using MYDLjE!
+
+=head1 DEVELOPERS
+
+The L<MYDLjE::Guides::Devs> guide is for those who want to build their own
+applications on top of MYDLjE and contribute to the project by 
+implementing features and fixing bugs. Please read it before you contribute.
+
+Thanks for joining!
+
+=head1 DESIGNERS
+
+The L<MYDLjE::Guides::Design> guide is intended for XHTML/CSS savvy people who want to use
+the bundled Elastic CSS framework and jQuery UI(L<http://jqueryui.com/>).
+Well, for now it is enough to look at the templates files and read the docs on 
+L<http://elasticss.com/documentation/>. There are also very good screencasts.
+
+
+
+
+=head1 EDITORS
+
+Editors are those who just write and publish content on the web. In MYDLjE we do not have 
+a WYSIWYG (What You See Is What You Get ) editor interface. This is in purpose.
+These tools rarely do things right and often hinder full control on the content.
+Instead we leave the content to the editor (human). We just help by adding some buttons for
+ quick formatting  and snippets generation on top of textareas. This is made using the L<MarkItUp|http://markitup.jaysalvat.com/home/> editor.
+
+=head1 SEE ALSO
+
+L<MYDLjE> L<MYDLjE::Guides::Devs>, L<MYDLjE::Guides::Admins>, 
+L<MYDLjE::Guides::Design>
+
+=head1 AUTHOR AND COPYRIGHT
+
+(c) 2011 Красимир Беров L<k.berov@gmail.com>
+
+MYDLjE code is licensed under LGPLv3.
+
+
+=begin html
+
+<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-nc-sa/3.0/80x15.png" /></a><br /><span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">MYDLjE::Guides</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="https://github.com/kberov/MYDLjE" property="cc:attributionName" rel="cc:attributionURL">Красимир Беров</a> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License</a>.<br />Based on a work at <a xmlns:dct="http://purl.org/dc/terms/" href="https://github.com/kberov/MYDLjE/blob/master/perl/lib/MYDLjE/Guides.pod" rel="dct:source">github.com</a>.
+
+=end html
+

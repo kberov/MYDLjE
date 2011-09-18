@@ -1,0 +1,104 @@
+[% WRAPPER ${TEMPLATE_WRAPPER};
+  PROCESS 'site/page_options.tt';
+  PROCESS 'content/content_options.tt';
+  data_type_options.unshift({ label =>'All types', value => ''});
+  language_options.unshift({ label => 'All languages', value => '' });
+  order_options =[
+  {label => 'DESC', value =>0  },
+  {label => 'ASC', value => 1 }
+  ];
+%]
+<!-- start [%+ action %] -->
+<div id="[% action %]-area" class="container ui-corner-all ui-widget-content">
+<form id="list_content_form" action="[% c.url_for('/content/list') %]" class="tree_form"
+    method="POST">
+<fieldset class="ui-widget-content ui-corner-all">
+        <legend class="ui-widget-header ui-corner-all">[% c.l('list_' _ action) %]
+            <span  class="legend_icon"><a href="[% 
+              c.url_for('/content/edit/0').query('data_type' =>data_type?data_type:'note' ) %]"
+              title="[% c.l('New [_1]', c.l(data_type) ) %]"
+              id="new_[% data_type %]_button"
+              class="new_page">
+             <span class="ui-icon" 
+             style="background-image: url(pub/css/icons/add.png) "></span></a></span>
+        </legend>
+        
+        <div id="message" style="display:[%c.flash('message')?'block':'none'%]">
+            [% c.flash('message') %]
+        </div>
+        <div class="ui-widget-header ui-corner-all">
+          <div class="on-2 columns">
+            <div class="elastic column">
+              <div class="on-3 columns">
+                <div class="elastic column">
+                  [% select_field('page.domain_id', {label => c.l('Domains'), 
+       options => domains_options, help =>'domain_help',selected=>c.msession('domain_id')} ); %]
+                </div>
+
+                <div class="elastic column">
+                  [% select_field('page_id', {label => c.l('Pages'), 
+       options => page_id_options, help =>'page_type_help',selected=>c.msession('page_id')} ); %]
+                </div>
+
+                <div class="elastic column">
+                  [% select_field('language', {options => language_options} ); %]
+                </div>
+
+                <div class="elastic column">
+                  [% select_field('data_type', {selected => form.data_type, options => data_type_options} ); %]
+                </div>
+
+                <div class="elastic column">
+                  [% select_field('order_by', {options => order_by_options} ); %]
+                </div>
+
+                <div class="elastic column">
+                  [% select_field('order', {options => order_options} ); %]
+                </div>
+              </div><!-- end div class="on-3 columns" -->
+            </div><!-- end div class="column" -->
+
+            <div class="fixed column" style="width:40px;">
+              <button id="set_domain_env" type="submit" name="set_domain_env" value="set">set</button>
+            </div>
+          </div><!-- end div class="on-2 columns" -->
+        </div><!-- end div class="ui-widget-header ui-corner-all" -->
+  <ul id="list_data" class="items">
+  [%  FOREACH row IN list_data %]
+  <li class="[% row.data_type +%] ui-state-default"><div class="columns">
+    <div class="fixed column">
+        <div class="container">
+        <img src="pub/css/icons/[% row.data_type %].png" class="type_icon"
+        alt="brick" title="[% c.l('brick') %]"/>
+        [% row.title.substr(0,50) +%]:
+        [%+ c.l('in_box', row.box || 'MAIN_AREA') %]
+        </div>
+    </div>
+    <div class="elastic column">
+        <div class="container buttons">
+        <a href="[% c.url_for('/content/edit/' _ row.id ).query('data_type' => row.data_type ) %]"
+         title="[% c.l('Edit [_1]', row.data_type ) %]"
+         id="[%'edit_' _ row.id _ row.data_type %]"
+         class="edit_content"><span class="ui-icon"></span></a>
+         <a href="[% c.url_for('/content/delete/' _ row.id ).query('data_type' => row.data_type ) %]"
+         title="[% c.l('Delete [_1]', data_type ) %]"
+         id="[%'delete_' _ row.data_type _ row.id %]"
+         class="delete_content"><span class="ui-icon"></span></a>
+        </div>
+    </div>
+  </div></li>
+  [% END %]
+  </ul>
+</fieldset>
+</form>
+<script  type="text/javascript">//<![CDATA[
+$(window).load(function() {
+  enhance_tree_form();
+  enhance_delete_buttons('delete_content');
+});
+//]]>
+</script>
+</div><!-- end div id="[% action %]-area" -->
+<!-- end [%+ action %] -->
+[% END %]
+

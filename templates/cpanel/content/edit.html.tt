@@ -1,0 +1,118 @@
+[% WRAPPER ${TEMPLATE_WRAPPER} ;
+  PROCESS 'content/content_options.tt';
+  language_options = [];
+  FOR option IN app.config('languages');
+    language_options.push({label => option, value => option }); 
+  END;
+
+  #we do NOT have an editable value id='0'
+  IF id;
+    legend = c.l('Edit [_1]', c.l(data_type) );
+    form_action = c.url_for('/content/edit/' _ id );
+  ELSE;
+    legend = c.l('New [_1]', c.l(data_type) );
+    form_action = c.url_for('/content/edit');
+  END;
+
+%]
+<!-- start [% action %] -->
+<div id="[% action %]-area" class="container ui-corner-all ui-widget-content">
+<form id="[% action %]_form" 
+    action="[% form_action %]"
+    method="POST">
+<fieldset class="ui-widget-content ui-corner-all">
+  <legend class="ui-widget-header ui-corner-all">
+  [% legend %]<span class="legend_icon"><span class="ui-icon" 
+  style="background-image: url(pub/css/icons/[% data_type _'_'_ (id?'edit':'add')%].png) "></span>
+  </span></legend>
+<div class="unit on-3 columns">
+  <div class="column">
+      [% text_field('title') %]
+  </div>
+  <div class="column">
+    [% text_field('alias'); %]
+  </div>
+  <div class="column">
+      [%  text_simple_autocomplete_field('box',{data=> box_data}); %]
+  </div>
+
+</div>
+<div class="unit on-2 columns">
+  <div class="column">[%   select_field('data_type', 
+    {readonly=>1, selected => data_type, options => data_type_options} ); %]
+  </div>
+  <div class="column">
+    [% select_field('data_format', {options => data_format_options} ); %]
+  </div>
+</div>
+<div class="unit on-2 columns">
+  <div class="column">
+    [% select_field('language', {options => language_options} ); %]
+  </div>
+  <div class="column">
+    [% text_field('keywords'); %]
+  </div>
+</div>
+  
+[% 
+text_field('description');
+textarea('body'); 
+%]
+        
+<div class="unit on-5 columns">
+  <div class="column">
+      [% text_field('sorting'); %]
+  </div>
+  <div class="column">
+      [% checkbox_field('featured'); %]
+  </div>
+  <div class="column">
+      [% checkbox_field('protected'); %]
+  </div>
+  <div class="column">
+      [% checkbox_field('deleted'); %]
+  </div>
+  <div class="column">
+      [% checkbox_field('bad'); %]
+  </div>
+</div>
+<div class="unit on-3 columns">
+  <div class="column">
+    [% permissions_field('permissions'); %]
+  </div>
+  <div class="column">
+      [%
+      select_field('page_id',{options =>page_id_options});
+      hidden_field('pid');
+      %]
+  </div>
+  <div class="column">
+      [%  
+      hidden_field('pid');
+      select_field('pid',{options =>pid_options});
+      %]
+  </div>
+  <!--  -->
+</div>
+[% button_set() %]   
+</fieldset>
+</form>
+[%# DUMP(form) %]
+<script  type="text/javascript">//<![CDATA[
+$(window).load(function() {
+  prepend_type_icons('option');
+  $('.button_close').click(function(){
+      location.href = "[% c.url_for('/content/[% data_type %]s') %]";
+      return false;
+  });
+  /*
+    
+  //$('a[href$="content\\/[% data_type %]s"]').addClass('ui-state-active');
+  
+  */
+});
+//]]>
+</script>
+</div><!-- end div id="[% action %]-area" -->
+<!-- end [%+ action +%] -->
+[% END %]

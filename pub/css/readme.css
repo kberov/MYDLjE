@@ -1,0 +1,35 @@
+body {
+    font-family:sans-serif;
+    font-size:95%;
+}
+hr {display:none}
+
+h1,h2,h3 {color:#135;}
+.ui-widget-content {
+    min-width:760px;
+    width:90%;
+    max-width:960px;
+    margin:auto;
+}
+.inner {
+  padding: 0 1ex 0 1em ;
+  background: url("img/logo3.png") no-repeat scroll;
+  background-position:97% 0%;
+}
+#title {
+  padding: 1ex 1ex 1ex 1ex;
+  font-size:14pt;
+  border:0px;
+  margin-top:0;
+  border-bottom:1px solid #FCEFA1;
+}
+h1 {font-size:17pt;}
+h2 {
+  font-size:15pt;
+  padding-left:1em;
+}
+h2:first-letter {
+  font-size:17pt;
+  font-style:italic;
+  margin-right:0.5ex;
+}

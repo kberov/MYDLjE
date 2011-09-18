@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <meta name="generator" content="tidy_indexhtml - HTML Tidy for Linux (vers 25 March 2009), see www.w3.org" />
+    <title>MYDLjE - Web-presence rewritten</title>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <link href="pub/css/ui-lightness/jquery-ui-current.custom.css" rel="stylesheet" charset="utf-8" type="text/css" />
+    <link href="pub/css/elastic.css" rel="stylesheet" type="text/css" charset="utf-8" />
+    <link href="pub/css/mydlje.css" rel="stylesheet" type="text/css" charset="utf-8" />
+    <script src="pub/js/jquery-current.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="pub/css/elastic.js" type="text/javascript" charset="utf-8"></script>
+    <script src="pub/js/jquery-ui-current.custom.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="pub/js/system_setup.js" type="text/javascript" charset="utf-8"></script>
+  </head>
+  <body>
+    <noscript>This page requires JavaScript.</noscript>
+    <div class="unit">
+      <div class="container">
+        <div class="columns inner ui-widget-content ui-corner-all">
+          <div id="setup">
+            <h1>SETUP MYDLjE</h1>
+            <p id="hello_success">Hello! Thank you for choosing MYDLjE! Click on titles bellow to check and configure
+            the system. 
+            <br />We wish you success and fun!</p>
+            <h2 id="system_check_h2">
+              <a name="system_check">1. System Check</a>
+            </h2>
+            <div id="system_check_div">
+              <h3>Checking if the applications are working...</h3>
+              <div class="ui-widget executable_oks" style="display:none">
+                <div class="ui-state-active ui-corner-all ui-priority-secondary">
+                  <p>
+                    <b>Operational applications:</b>
+                    <ul class="oks"></ul>
+                  </p>
+                </div>
+              </div>
+              <div class="ui-widget executable_noks" style="display:none">
+                <div class="ui-state-error ui-corner-all">
+                  <p>
+                    <b>Not operational applications:</b>
+                    <ul class="noks"></ul>
+                  </p>
+                </div>
+              </div>
+              <div class="ui-widget wrench" style="display:none;">
+                <div class="ui-state-highlight ui-corner-all ui-priority-primary">
+                  <p>
+                    <span class="ui-icon ui-icon-wrench" style="float: left; margin-right: .3em;"></span>
+                    <b>Possible solution:</b>
+                    <ul class="wrench"></ul>
+                  </p>
+                </div>
+              </div>
+              <h3>Checking if directories are readable/writable...</h3>
+              <div class="ui-widget check_readables" style="display:none">
+                <div class="ui-state-active ui-corner-all">
+                  <p>
+                    <b>Readable:</b>
+                    <ul class="oks"></ul>
+                  </p>
+                </div>
+              </div>
+              <div class="ui-widget check_writables" style="display:none">
+                <div class="ui-state-active ui-corner-all">
+                  <p>
+                    <b>Writable:</b>
+                    <ul class="oks"></ul>
+                  </p>
+                </div>
+              </div>
+              <div class="ui-widget check_rw_wrench" style="display:none">
+                <div class="ui-state-highlight ui-corner-all ui-priority-primary">
+                  <p>
+                    <span class="ui-icon ui-icon-wrench" style="float: left; margin-right: .3em;"></span>
+                    <b>Solution:</b>
+                    <ol class="wrench"></ol>
+                  </p>
+                </div>
+              </div>
+              <!-- This div should never be displayed but who knows -->
+              <div class="ui-widget check_rw noks" style="display:none">
+                <div class="ui-state-error ui-corner-all">
+                  <p>
+                    <span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
+                    <b>Error:</b>
+                    <ul class="noks"></ul>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <h2 id="check_modules_h2">
+              <a name="check_modules">2. Required Modules</a>
+            </h2>
+            <div id="check_modules">
+              <h3>Checking if all required Perl modules are installed...</h3>
+              <div class="ui-widget check_modules" style="display:none">
+                <div class="ui-state-active ui-corner-all">
+                  <p>
+                    <b>Modules:</b>
+                    <ul class="oks"></ul>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <!-- system_setup start -->
+            <h2>
+              <a name="system_setup">3. System Setup</a>
+            </h2>
+            <div>
+              <div class="ui-widget system_setup_oks" style="display:none">
+                <div class="ui-state-active ui-corner-all ui-priority-primary">
+                  <span class="ui-icon ui-icon-info" style="float: left; margin: .3em;"></span>
+                  <h3>System is operational</h3>
+                  <p style="color:green">This page will be not visible any more. The "System Setup" plugin is disabled for security reasons.</p>
+                  <p style="color:green">Now log in to the administration application 
+                  <a href="cpanel">cpanel</a>  
+                  <br />and start building your site! And do not forget to have fun!</p>
+                </div>
+              </div>
+              <form id="system_setup" action="mydlje/system_config" method="post"
+              class="ui-widget ui-corner-all ui-state-active">
+                <fieldset class="ui-widget-content ui-corner-all">
+                  <legend class="ui-widget-header ui-corner-all">System Configuration</legend>
+                  <div class="unit on-2 columns">
+                    <div class="fixed column" style="width:150px">
+                      <label id="site_name_label">Site Name</label>
+                    </div>
+                    <div class="column">
+                      <div class="container field">
+                        <input type="text" name="site_name" />
+                      </div>
+                    </div>
+                    <div class="column span-2">
+                      <div class="container help">The name of your site. It will be appended by default to each page
+                      title.</div>
+                    </div>
+                    <div class="fixed column" style="width:150px">
+                      <label id="secret_label">Secret</label>
+                    </div>
+                    <div class="column">
+                      <div class="container field">
+                        <input type="text" name="secret" />
+                      </div>
+                    </div>
+                    <div class="column span-2">
+                      <div class="container help">Thanks to Mojolicious, sessions in MYDLjE pretty much just work out
+                      of the box and there is no setup required, but we suggest using a more secure 
+                      <code>secret</code>passphrase. This passphrase is used by the internal algorithm to make signed
+                      cookies secure and can be changed at any time to invalidate all existing sessions.</div>
+                    </div>
+                    <div class="column span-2" id="db_connect">
+                      <hr />
+                    </div>
+                    <div class="fixed column" style="width:150px">
+                      <label id="db_driver_label">Database Driver</label>
+                    </div>
+                    <div class="column">
+                      <div class="container field">
+                        <select name="db_driver">
+                          <option value="DBI:mysql">MySQL</option>
+                          <!-- TODO: help is wellcome :) -->
+                          <option value="DBI:SQLite" disabled="disabled">SQLite</option>
+                          <option value="DBI:Pg" disabled="disabled">PostgreSQL</option>
+                          <option value="DBI:Oracle" disabled="disabled">Oracle</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="column span-2">
+                      <div class="container help">Perl module used to connect to the underlying database. Currently
+                      only 
+                      <code>DBD::mysql</code>(MySQL) is tested and supported, but your applications should work
+                      unmodified with other drivers like 
+                      <code>DBD::SQLite</code>(SQLite), 
+                      <code>DBD::Pg</code>(PostgreSQL), 
+                      <code>DBD::Oracle</code>(Oracle) too. In these cases you should create the database tables your
+                      self. Use 
+                      <code>conf/mysql.schema.sql</code>and convert it to the corresponding SQL sysntax.</div>
+                    </div>
+                    <div class="fixed column" style="width:150px">
+                      <label id="db_host_label">Database host</label>
+                    </div>
+                    <div class="column">
+                      <div class="container field">
+                        <input type="text" name="db_host" />
+                      </div>
+                    </div>
+                    <div class="column span-2">
+                      <div class="container help">Usually 
+                      <code>localhost</code>. It will be used by the databse driver to connect to the selected host
+                      where the database server is running.</div>
+                    </div>
+                    <div class="fixed column" style="width:150px">
+                      <label id="db_name_label">Database Name</label>
+                    </div>
+                    <div class="column">
+                      <div class="container field">
+                        <input type="text" name="db_name" />
+                      </div>
+                    </div>
+                    <div class="column span-2">
+                      <div class="container help">The name of the database to which MYDLjE will connect. There are
+                      usually more than one database on a database server. Most probably your hosting provider gave you
+                      access to some Control Panel like CPanel where you can create databases. See also the beginning
+                      of 
+                      <code>conf/mysql.schema.sql</code>for an example SQL script.</div>
+                    </div>
+                    <div class="fixed column" style="width:150px">
+                      <label id="db_user_label">Database User</label>
+                    </div>
+                    <div class="column">
+                      <div class="container field">
+                        <input type="text" name="db_user" />
+                      </div>
+                    </div>
+                    <div class="column span-2">
+                      <div class="container help">A database user used by MYDLjE with enough privileges to operate on
+                      the database tables. See also the beginning of 
+                      <code>conf/mysql.schema.sql</code>for an example SQL script.</div>
+                    </div>
+                    <div class="fixed column" style="width:150px">
+                      <label id="db_password_label">Database Password</label>
+                    </div>
+                    <div class="column">
+                      <div class="container field">
+                        <input type="text" name="db_password" />
+                      </div>
+                    </div>
+                    <div class="column span-2">
+                      <div class="container help">Well, the password for the Database User.</div>
+                    </div>
+                    <div class="column span-2">
+                      <hr />
+                    </div>
+                    <div class="fixed column" style="width:150px">
+                      <label id="admin_user_label">Admin User</label>
+                    </div>
+                    <div class="column">
+                      <div class="container field">
+                        <input type="text" name="admin_user" />
+                      </div>
+                    </div>
+                    <div class="column span-2">
+                      <div class="container help">The user which you will use to login in the 
+                      <code>cpanel</code>application and administer the system.</div>
+                    </div>
+                    <div class="fixed column" style="width:150px">
+                      <label id="admin_email_label">Admin Email</label>
+                    </div>
+                    <div class="column">
+                      <div class="container field">
+                        <input type="email" name="admin_email" />
+                      </div>
+                    </div>
+                    <div class="column span-2">
+                      <div class="container help">The email to which system notifications or errors will be sent.</div>
+                    </div>
+                    <div class="fixed column" style="width:150px">
+                      <label id="admin_password_label">Admin Password</label>
+                    </div>
+                    <div class="column">
+                      <div class="container field">
+                        <input type="text" name="admin_password" />
+                      </div>
+                    </div>
+                    <div class="column span-2">
+                      <div class="container help">Password for the Admin User.</div>
+                    </div>
+                    <div class="column span-2">
+                      <div class="container buttons">
+                        <button type="reset">Reset!</button>
+                        <button type="submit">Save!</button>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- end div class="unit on-2 columns" -->
+                </fieldset>
+              </form>
+            </div>
+            <!-- system_setup end -->
+            <h2 id="perl_info_h2">
+              <a name="perl_info">Perl Info</a>
+            </h2>
+            <div>
+              <table id="perl_info_table" class="ui-widget ui-state-active ui-corner-all" style="padding:5px;">
+                <caption>System Info</caption>
+                <thead>
+                  <tr>
+                    <th colspan="2"></th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+              <table id="perl_inc_hash" class="ui-widget ui-state-active ui-corner-all" style="padding:5px;">
+                <caption>Loaded Libraries (@INC,%INC)</caption>
+                <thead>
+                  <tr>
+                    <th>The array @INC contains the list of places that the do EXPR , require, or use constructs look
+                    for their library files... 
+                    <br />The hash 
+                    <code>%INC</code>contains entries for each filename included via the do, require, or use operators.
+                    ...</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+              <table id="perl_env_hash" class="ui-widget ui-state-active ui-corner-all" style="padding:5px;">
+                <caption>Environment Variables (%ENV)</caption>
+                <thead>
+                  <tr>
+                    <th colspan="2">The hash %ENV contains your current environment. Setting a value in ENV changes the
+                    environment for any child processes you subsequently fork() off...</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

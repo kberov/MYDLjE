@@ -1,0 +1,78 @@
+[% WRAPPER ${TEMPLATE_WRAPPER} %]
+<!-- start [% action %] -->
+<div id="[% action %]-area" class="container ui-corner-all ui-widget-content">
+<form id="[% action %]_form" class="tree_form">
+<fieldset class="ui-widget-content ui-corner-all">
+        <legend class="ui-widget-header ui-corner-all">[% c.l('Domains') %]
+            <span  class="legend_icon"><a href="[% c.url_for('/site/edit_domain')%]"
+           title="[% c.l('New [_1]', c.l('Domain') ) %]"
+           id="new_domain_button"
+           class="new domain">
+             <span class="ui-icon" 
+             style="background-image: url(pub/css/icons/world_add.png) "></span></a></span>
+        </legend>
+<ul class="items">
+[% FOREACH d IN domains;
+    state = 'ui-state-disabled';
+    IF d.published == 1;
+      state = 'ui-state-default';
+    ELSIF d.published == 2;
+      state = 'ui-state-active';
+    END;
+%]
+<li class="domain [%+ state %]">
+        <div class="columns">
+            <div class="fixed column"><div class="container">[% d.domain %]</div></div>
+            <div class="elastic column">
+                <div class="container buttons">
+           <span  class="legend_icon"><a 
+           href="[% c.url_for('/site/edit_page?page.domain_id=' _ d.id )%]"
+           title="[% c.l('New [_1]', c.l('Page') ) %]"
+           id="edit_page_button_[%d.id%]"
+           class="edit_page">
+             <span class="ui-icon" 
+             style="background-image: url(pub/css/icons/page_add.png) "></span></a>
+           </span>
+           <span  class="legend_icon"><a 
+           href="[% c.url_for('/site/edit_domain/' _ d.id )%]"
+           title="[% c.l('Edit [_1]', c.l('Domain') ) %]"
+           id="edit_domain_button"
+           class="edit_domain">
+             <span class="ui-icon" 
+             style="background-image: url(pub/css/icons/world_edit.png) "></span></a></span>
+             [% IF d.id != 0 
+             #TODO: allow "delete" for users from group "admin" only
+             %]
+           <span  class="legend_icon"><a 
+           href="[% c.url_for('/site/delete_domain/' _ d.id )%]"
+           title="[% c.l('Delete [_1]', d.domain ) %]"
+           id="delete_domain_button_[%d.id%]"
+           class="delete_domain">
+             <span class="ui-icon" 
+             style="background-image: url(pub/css/icons/world_delete.png) "></span>
+             <div class="modal_message" style="display:none;">
+                <p class="ui-button-text">
+                    [% c.l('delete_domain_confirm_message', d.domain ) %]
+                </p>
+             </div>
+             </a>
+           </span>
+             [% END %]
+             </div>
+            </div>
+        </div>
+    </li>
+[% END %]
+</ul>
+</fieldset>
+</form>
+</div><!-- end div id="[% action %]-area" -->
+<script  type="text/javascript">//<![CDATA[
+$(document).ready(function() {
+  enhance_delete_buttons('delete_domain');
+});
+
+//]]>
+</script>
+<!-- end [%+ action +%] -->
+[% END %]

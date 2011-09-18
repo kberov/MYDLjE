@@ -1,0 +1,273 @@
+=encoding utf8
+
+=head1 NAME
+
+MYDLjE::Guides::Devs - know how to contribute code to MYDLjE
+
+=head1 INTRO
+
+
+MYDLjE is a suite of three L<Mojolicious>-based applications that 
+share code with each other and work together well. 
+So I<everything> you know so far about L<Mojolicious> applies. 
+As template system we use L<Template::Alloy::TT> because it is faster 
+and lighter than Template Toolkit itself and has very convenient 
+L<TT3|http://tt3.template-toolkit.org/> features. 
+Browse the source to see  what Perl modules are bundled with the distribution.
+These are only pure-Perl Modules to ensure an easy cross-platform installation.
+
+If you are not sure what We are talking about, go to L<Mojolicious::Guides> 
+and then come back.
+
+You are back? Great! Now we can get to the point.
+
+=head1 FILES STRUCTURE
+
+
+  $ENV{MOJO_HOME}
+      |-- conf
+      |-- cpanel*
+      |-- favicon.ico
+      |-- index.xhtml
+      |-- LGPLv3.0.txt
+      |-- log
+      |-- mydlje*
+      |-- perl
+      |   |-- bin
+      |   |-- lib
+      |   |-- site
+      |   `-- t
+      |-- pub
+      |   |-- css
+      |   |-- dtd
+      |   |-- home
+      |   `-- js
+      |-- README.html
+      |-- README.pod
+      |-- site*
+      |-- templates
+      |   |-- cpanel
+      |   `-- layouts
+      `-- tmp
+
+L<MOJO_HOME|Mojolicious::Guides::Cheatsheet/MOJO_HOME> is the root directory for your L<MYDLjE>-based system. It is auto-discovered when an application starts. 
+The three applications C<cpanel>, C<mydlje> and C<site> reside in C<MOJO_HOME>. 
+This is possible thanks to the L<Mojolicious> flexibility.
+
+In the C<conf> directory are the configuration files. They are in YAML format. By default L<YAML::Tiny> is used for parsing, but if you have L<YAML> installed it will be used instead.
+See L<YAML::Any> for details.  See L<MYDLjE::Config> for details on how it works. 
+
+In C<conf> you will also find C<mysql.schema.sql>, C<mysql.data.sql> and C<mysql.queries.sql>.
+The first is used to initialize the database(create tables add constraints) during L<MYDLjE> installation. The second is parsed and statements in it are executed just after the first. The last file contains commonly used queries and part of queries (C<WHERE> clauses). 
+You can add your own queries there.
+
+Note that these C<*.sql> files are well-formed and valid xml files. It turned out to be very convenient to use L<Mojo::DOM> to parse them and in the same time keep most text editors syntax highliting happy.
+
+  -- <query name="write_permissions_sql" params="user_id,user_id"><![CDATA[
+    
+    (
+      (user_id = ? AND permissions LIKE '_rw%')
+      OR ( group_id IN (SELECT group_id FROM user_group WHERE user_id= ?) 
+        AND permissions LIKE '____rw%')
+    )
+  
+  -- ]]></query>
+
+The C<log> folder is for the log files. Note that some early warnings or errors may be logged to the Apache log. 
+    #Example:
+    cd ~/opt/public_dev/MYDLjE/; tail -n200 -f log/development.log
+
+In C<perl/bin> we keep utility commandline scripts. Everything from Mojo scripts folder is also there. In L<perl/lib> are all the Perl Modules that come bundled with L<MYDLjE>. C<perl/site/bin> and C<perl/site/lib> are intended for your custom, aplication specific code. These folders will not be ever touched if you upgrade MYDLjE.
+
+=head1 PERL MODULES
+
+=head1 XHTML
+
+MYDLjE sends to the browser 100% well formed XML output.
+
+=head1 JavaScript
+
+TODO...
+
+
+=head1 APPLICATIONS
+
+As you already know from the L<README>, there are three applications that compose the 
+MYDLjE Application and Content Management Framework. These are
+L<MYDLjE>, L<MYDLjE::ControlPanel> and L<MYDLjE::Site>. 
+C<cpanel>, C<mydlje> and C<site> are simply startup scripts.
+
+=head2 MYDLjE
+
+TODO...
+
+See API documentation for L<MYDLjE>!
+
+=head2 MYDLjE::ControlPanel
+
+TODO...
+
+See API documentation for L<MYDLjE::ControlPanel>!
+
+=head2 MYDLjE::Site
+
+MYDLjE::Site works the same way as MYDLjE::ControlPanel does.
+
+Its main purpose is to display pages and content 
+stored in the databse by L<MYDLjE::ControlPanel>.
+Here is how a page gets displayed in the browser 
+after a user clicks on some link.
+
+=head3 Page request flow
+
+TODO: implement it
+
+=over
+
+The user is restored from L<msession|MYDLjE::C/msession>
+or a new msession is instantiated and an L<MYDLjE::M::User> instance is put in it.
+
+MYDLjE::Site differenitiates  between content language and user interface language. 
+A user could browse English content while having messages in Bulgarian.
+Current content language is restored from C<$c-E<gt>session('c_language')> or 
+C<$c-E<gt>req-E<gt>param('c_language')> is used. 
+C<$c-E<gt>req-E<gt>param('c_language')> takes precedence if both are defined. 
+If none of them is available, language is detected from the browser and 
+is used if supported by the system. Finally the system fallbacks to the 
+default language defined in mydlje-site configuration 
+file (eg. mydlje-site.development.yaml) or its parent configuration 
+(mydlje.development.yaml). 
+
+The language switching and detection for the messages works the same way 
+but C<$c-E<gt>session('ui_language')> or 
+C<$c-E<gt>req-E<gt>param('ui_language')> is used.
+
+The current domain is detected from C<$ENV{HTTP_HOST}> 
+(C<$c-E<gt>req-E<gt>headers-E<gt>host>).
+
+The page is retreived from table C<pages> by alias and page properties are 
+retreived from table C<content> by data_type (C<page>) and 
+page_id (C<$page-E<gt>page_id>). 
+The passed alias is taken from C<$c-E<gt>stash('page_alias')>. 
+It is put there by Mojolicious. 
+
+If the page has its own template it will be used to render the page. 
+Otherwise the table is searched recursively for a parent page (C<pid>) 
+with defined template.
+If no parent page with template is found the C<default> page 
+(usually named "home") template is used.
+The page template specifies the template wrapper (C<TEMPLATE_WRAPPER>), 
+which is the layout for the page to be used. Defaults to 
+C<site/layouts/default.html.tt>.
+
+The page content is retreived from table C<content> by C<page_id> and C<language>.
+
+The the content with C<data_type> "brick" is retreived recursively 
+from curent and then parent and C<default> pages like the C<page> template.
+
+C<permissions> field is used to filter the page and its content.
+C<published> and other fields are taken into account too 
+(see the L<MYDLjE::Site::C::Site> and mysql.queries.sql source).
+
+After all needed data is retreived it is put in the stash 
+(C<$c-E<gt>stash()>) and the page is rendered. 
+
+In the template further processing is made by L<MYDLjE::Template::PageContent>.
+
+=back
+
+See API documentation for L<MYDLjE::Site>!
+
+=head1 PLUGINS
+
+=head2 MYDLjE/Mojolicious Plugins
+
+=head2 Template Plugins
+
+MYDLjE implements a L<base|MYDLjE::Template> L<Template::Plugin> 
+class from which you can inherit
+to write your own plugins intended for embedding in templates 
+of a MYDLjE based Site. It does not inherit from L<Template::Plugin> but 
+follow the API and recomendations specified 
+by L<Andy Wardley|https://metacpan.org/author/ABW>.
+
+At the time of writing there are two L<MYDLjE::Template> plugis that you can
+use as reference implementations for your own plugins 
+or just inherit from then to build some more specific plugin.
+
+These are: L<MYDLjE::Template::PageContent> 
+(used in C<$ENV{MOJO_HOME}/templates/site/site/page.html.tt>),
+L<MYDLjE::Template::PageTree> 
+(used in C<$ENV{MOJO_HOME}/templates/cpanel/site/pages.html.tt>) 
+
+=head1 Your own MYDLjE and Mojolicious Applications
+
+
+You can write your own custom applications which do not use MYDLjE code at all, 
+but are based on Mojolicious only. In it's turn Mojolicious allows you to 
+use only what you want from it. 
+You can also write front-end applications similar to L<site> and use the MYDLjE 
+framework, database etc. You can also write embedded "applications" 
+which run in the site application or even embedded in a L<site> page. 
+How you will approach depends completely on you. 
+
+As you see we use the term "application" pretty deliberatly 
+and we mean by it I<something which is logically complete>.
+The imaginary I<shop> application may be implemented as a controller class 
+(MYDLjE::Site::C::Shop) with its own actions. 
+A I<forum> application may be represented by a page record in which a 
+L<MYDLjE::Template> plugin is called and its all business logic happens there 
+(in one page of your site).
+
+Finally... this is Perl. However some recommended approaches are described below.
+
+=head2 MYDLjE application
+
+TODO....
+
+=head2 MYDLjE::Site application
+
+TODO....
+
+=head2 Application embedded into MYDLjE::Site::C::Site->page
+
+TODO....
+
+=head1 SCALABILITY
+
+
+=head2 Tests
+
+Tests, Perltidy and PerlCritc are run by 
+C<$ENV{MOJO_HOME}/perl/bin/diagnostics>.
+
+=head2 Perl Best Practices
+
+To enforce a common perl style we use L<perlcritic>.
+The configuration file is C<$ENV{MOJO_HOME}/.perlcriticrc>
+
+=head2 Qunit
+
+TODO: add Qunit
+L<http://docs.jquery.com/Qunit>
+
+
+
+=head1 SEE ALSO
+
+L<MYDLjE::Guides>, L<MYDLjE::Guides::Admins>, 
+L<MYDLjE::Guides::Design>
+
+=head1 AUTHOR AND COPYRIGHT
+
+(c) 2011 Красимир Беров L<k.berov@gmail.com>
+
+MYDLjE code is licensed under LGPLv3.
+
+
+=begin html
+
+<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-nc-sa/3.0/80x15.png" /></a><br /><span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">MYDLjE::Guides</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="https://github.com/kberov/MYDLjE" property="cc:attributionName" rel="cc:attributionURL">Красимир Беров</a> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License</a>.<br />Based on a work at <a xmlns:dct="http://purl.org/dc/terms/" href="https://github.com/kberov/MYDLjE/blob/master/perl/lib/MYDLjE/Guides.pod" rel="dct:source">github.com</a>.
+
+=end html
+

@@ -1,0 +1,70 @@
+[%#
+Here is implemented the functionality to show menu-items with links
+to modules and plugins. The modules workarea is in the elastic right
+column while this column is fixed.
+
+This column is visibile only by a logged in user.
+TODO: Further, depending on user permissions some menu-items will be visible for certain users while others - will not.
+
+%]
+[%
+menu_data = app.config('main_left_navigation');
+
+#DUMP(menu_data);
+%]
+<script type="text/javascript">//<![CDATA[
+$(window).load(function() {
+    var context = '#main-left-navigation #accordion ul li';
+  //menuitems
+  $('a',context).hover(
+    function () {
+      $(this).addClass("ui-state-hover ui-corner-all");
+    },
+    function () {
+      $(this).removeClass("ui-state-hover ui-corner-all");
+    }
+  );
+  $('a[href$="[% action %]"]',context).addClass("ui-state-active");
+
+  // Accordion
+  $('#accordion').accordion({
+    header: 'h4',
+    //animated: 'bounceslide',
+    //collapsible: true,
+    //active: true,
+    //icons: { 'header': 'ui-icon-plus', 'headerSelected': 'ui-icon-minus' },
+    //event: 'mouseover',
+    autoHeight: false,
+    navigation: true,
+    //clearStyle: true
+  });
+
+  
+});
+//]]>
+</script>
+
+<div class="fixed column" style="width:220px;">
+  <div id="main-left-navigation" class="container">
+  <div id="accordion"><!-- Accordion -->
+ 
+[% FOREACH section IN menu_data %]
+  <h4>[% c.l(section.header).xml %]</h4>
+  <div>
+    <ul id="[% section.header.lower().replace('\W','_') %]">
+    [% FOREACH item IN section.items%]
+      <li style="list-style-image: url(pub/css/icons/[% item.icon %])">
+        [% c.link_to(c.l(item.title),item.route) %]
+      </li>
+    [% END %]
+    </ul>
+  </div>
+[% END %]
+    </div><!-- end #accordion -->
+  </div> <!-- end div id="main-left-navigation" -->
+</div>
+
+
+
+
+

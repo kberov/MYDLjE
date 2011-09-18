@@ -1,0 +1,259 @@
+html,body {
+height:100%;
+margin:0;
+padding:0;
+}
+
+.layout {
+position:relative;
+min-width:780px;
+width:100%;
+height:99.9%;
+min-height:350px;
+margin:auto;
+}
+
+#main-container {
+position:relative;
+height:100%;
+padding:2px;
+}
+
+#main-header {
+margin-bottom:1ex;
+padding:3px;
+}
+
+#title-main-header a {
+float:left;
+}
+
+#login_form {
+  width:500px;
+  margin:5em auto;
+}
+#edit_domain_form {
+  width: 80%;
+  margin:1em auto;
+}
+
+fieldset {
+margin:.3ex;
+}
+
+legend {
+margin:.5ex;
+padding:.5ex;
+}
+
+.legend_icon {
+  margin-left:.5ex;
+  display: inline-block;
+  cursor: pointer;
+}
+
+form label {
+  display:block;
+  width: 110px;
+}
+
+form label, form .field, form .buttons {
+padding:5px;
+}
+form .column .ui-state-error{
+  margin: 1ex 1ex 0 1ex;
+}
+
+.help {
+  display: none;
+  margin: 1ex;
+  margin-top: 0px;
+}
+.help p {
+  margin:0.5ex;
+  font-style: italic;
+  font-size: small;
+  font-weight: normal !important;
+}
+.help a {
+  text-decoration: underline !important;
+}
+
+#menu_languages .active {
+border:1px outset silver;
+}
+
+#main-left-navigation {
+margin-right:1ex;
+padding:.3ex;
+}
+
+#main-left-navigation #accordion h4 {
+font-weight:700;
+padding-left:2em;
+}
+
+#main-left-navigation #accordion ul li {
+list-style-type:none;
+height:1.5em;
+margin:0;
+}
+
+#main-left-navigation #accordion .ui-accordion-content {
+padding:0;
+}
+
+#main-left-navigation #accordion ul {
+margin:1ex 1ex 1ex 2em;
+padding:0 1em;
+}
+
+#main-left-navigation #accordion a {
+font-weight: bold;
+text-decoration: none;
+display: block;
+padding:.2ex .2ex .2ex 1ex;
+}
+
+#main-working-area h3 {
+margin:2px;
+padding:1ex;
+}
+
+#main-working-area #edit-form-dialog {
+width:90%;
+height:90%;
+}
+
+#edit-form-dialog #edit-form-dialog-iframe {
+position:relative;
+width:100%;
+height:90%;
+border:none;
+margin:0;
+padding:0;
+}
+
+form .column .field textarea {
+width:99%!important;
+}
+
+form#edit_content_form input#sorting {             
+width:50px;
+}
+
+
+#edit_content_form #description_field_column {
+max-width:400px;
+}
+
+#main-top-right-menu,form .buttons {
+text-align:right;
+}
+
+form .field input, #description_field_column input {
+width:99%;
+}
+
+#lipsum {padding:1em;}
+#home {overflow: auto;height:100%;position:relative;}
+.ui-widget-header{margin-bottom: 1ex;}
+/* classes for listing */
+
+ul.items {
+  margin: 0;
+  margin-left: 0ex;
+}
+ul.items a {display: inline-block;}
+
+ul.items li.page, ul.items li.domain, ul.items li.article,
+ul.items li.brick,.ui-menu-item {                                                  
+  list-style-type: none;
+  margin: 0;
+  padding-right: 0.5ex;
+  border-top: none;
+}
+ul.items li.page:first-child, ul.items li.domain:first-child {
+border-top: 1px solid ;
+}
+#main-working-area ul.items li.ui-state-disabled {
+border-width: inherit;
+}
+
+ul.items li div.buttons {
+  text-align: right;
+}
+ul.items li .container {
+  padding: 0.2ex;
+}
+ul.items li .fixed {
+  width:70ex;
+}
+
+ul.items li.article div.buttons a.edit_content span.ui-icon {
+  background-image: url(icons/article_edit.png) ;
+}
+ul.items li.page div.buttons a.edit_content span.ui-icon {
+  background-image: url(icons/page_edit.png) ;
+}
+ul.items li.note div.buttons a.edit_content span.ui-icon {
+  background-image: url(icons/note_edit.png) ;
+}
+ul.items li.brick div.buttons a.edit_content span.ui-icon {
+  background-image: url(icons/brick_edit.png) ;
+}
+ul.items li.page div.buttons a.delete_content span.ui-icon {
+  background-image: url(icons/page_delete.png) ;
+}
+ul.items li.article div.buttons a.delete_content span.ui-icon {
+  background-image: url(icons/article_delete.png) ;
+}
+ul.items li.note div.buttons a.delete_content span.ui-icon {
+  background-image: url(icons/note_delete.png) ;
+}
+ul.items li.brick div.buttons a.delete_content span.ui-icon {
+  background-image: url(icons/brick_delete.png) ;
+}
+
+table.permissions {
+  border-collapse:inherit;
+}
+table.permissions th,table.permissions td {
+  text-align: left;
+  padding:3px;
+}
+
+.tree_form .ui-widget-content {
+  padding:1ex;
+}
+.ui-widget input, label, .ui-widget select, 
+.ui-widget option, .ui-widget textarea, .ui-widget button, 
+#main-left-navigation #accordion a,
+.ui-state-default,.ui-state-hover,.ui-state-highlight,
+.ui-priority-secondary,.ui-state-disabled
+.ui-widget .ui-widget,.ui-widget {
+  font-size:small
+}
+
+img.type_icon {
+  margin-right: 5px;
+}
+.level_1 {
+  padding-left: 8px;
+}
+.level_2 {
+  padding-left: 16px;
+}
+
+.level_3 {
+  padding-left: 24px;
+}
+.level_4 {
+  padding-left: 32px;
+}
+
+
+.level_5 {
+  padding-left: 40px;
+}
+a {text-decoration: none;}

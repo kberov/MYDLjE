@@ -16,7 +16,8 @@ Thanks for using MYDLjE!
 
 =head1 DEVELOPERS
 
-The L<MYDLjE::Guides::Devs> guide is for those who want to contribute to the project by 
+The L<MYDLjE::Guides::Devs> guide is for those who want to build their own
+applications on top of MYDLjE and contribute to the project by 
 implementing features and fixing bugs. Please read it before you contribute.
 
 Thanks for joining!

@@ -182,7 +182,7 @@ shared by the L<cpanel> and L<site> applications.
 You can make your own applications which inherit L<MYDLjE> or 
 L<MYDLjE::ControlPanel> and L<MYDLjE::Site> depending on your needs.
 And of course you can inherit directly from L<Mojolicious> and use only 
-the bundled files and other perl modules for you own applications
+the bundled files and other perl modules for you own applications.
 
 
 =head1 ATTRIBUTES
@@ -214,17 +214,20 @@ order of preference is used.
 
 =head2 startup
 
-This method initializes the application. It is called in 
-L<MYDLjE::ControlPanel/startup> and L<MYDLjE::Site/startup>, then specific 
-for these applications startups are done. 
+This method initializes the application L<mydlje>. See also
+L<MYDLjE::ControlPanel/startup> and L<MYDLjE::Site/startup>. 
 
 We load the following plugins using L<load_plugins>
 so they are available for use in  L<mydlje>, L<cpanel> and L<site>.
 
+  system_setup #Enablend only before the system is setup
+  helpers #MYDLjE specific helpers
   charset
   validator
-  pod_renderer
-  ...others to be listed
+  PODRenderer
+  I18N
+  MYDLjE::Plugin::DBIx
+  powered_by #MYDLjE (Mojolicious (Perl))
 
 Application charset is set to 'UTF-8'.
 

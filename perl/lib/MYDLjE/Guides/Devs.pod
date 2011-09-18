@@ -6,9 +6,16 @@ MYDLjE::Guides::Devs - know how to contribute code to MYDLjE
 
 =head1 INTRO
 
-MYDLjE is simply a bundle of three L<Mojolicious> applications that 
-share a lot of code and work together well. 
-So I<everything> you know so far about L<Mojolicious> applies.
+
+MYDLjE is a suite of three L<Mojolicious>-based applications that 
+share code with each other and work together well. 
+So I<everything> you know so far about L<Mojolicious> applies. 
+As template system we use L<Template::Alloy::TT> because it is faster 
+and lighter than Template Toolkit itself and has very convenient 
+L<TT3|http://tt3.template-toolkit.org/> features. 
+Browse the source to see  what Perl modules are bundled with the distribution.
+These are only pure-Perl Modules to ensure an easy cross-platform installation.
+
 If you are not sure what We are talking about, go to L<Mojolicious::Guides> 
 and then come back.
 
@@ -176,6 +183,22 @@ See API documentation for L<MYDLjE::Site>!
 =head2 MYDLjE/Mojolicious Plugins
 
 =head2 Template Plugins
+
+MYDLjE implements a L<base|MYDLjE::Template> L<Template::Plugin> 
+class from which you can inherit
+to write your own plugins intended for embedding in templates 
+of a MYDLjE based Site. It does not inherit from L<Template::Plugin> but 
+follow the API and recomendations specified 
+by L<Andy Wardley|https://metacpan.org/author/ABW>.
+
+At the time of writing there are two L<MYDLjE::Template> plugis that you can
+use as reference implementations for your own plugins 
+or just inherit from then to build some more specific plugin.
+
+These are: L<MYDLjE::Template::PageContent> 
+(used in C<$ENV{MOJO_HOME}/templates/site/site/page.html.tt>),
+L<MYDLjE::Template::PageTree> 
+(used in C<$ENV{MOJO_HOME}/templates/cpanel/site/pages.html.tt>) 
 
 =head1 Your own MYDLjE and Mojolicious Applications
 

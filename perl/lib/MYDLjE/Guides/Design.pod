@@ -10,7 +10,8 @@ MYDLjE comes with Elastic CSS framework and the jQuery UI framework bundled.
 Ofcourse they need jQuery which comes with L<Mojolicious>.
 Nothing is added or removed, so everything you know so far applies.
 
-Elastic CSS is used for the layout and jQuery UI is used for beauty and form enhacements.
+Elastic CSS is used for the layout and jQuery UI is used for 
+beauty and form enhacements.
 
 =head1 jQuery UI Themes
 
@@ -26,6 +27,18 @@ Change "humanity" to one of the themes which comes with the distribution: I<redm
 
 C<$ENV{MOJO_HOME}/conf/local.mydlje-site.development.yaml>. If the file does not exists, create it.
 
+=head1 LAYOUTS
+
+MYDLjE uses a L<Template::Toolkit> implementation called L<Template::Alloy>. 
+So if you are familiar with L<Template SYNTAX|Template::Manual::Syntax> 
+you are ready to start building beautiful layouts for your sites.
+Check also L<Template::Alloy::TT> for specifics.
+
+Each domain in a MYDLjE powered cluster of sites can have its own layout. 
+See C<$ENV{MOJO_HOME}/templates/site/layouts/0> for an example layout and 
+C<$ENV{MOJO_HOME}/templates/site/layouts/README> for how to make a MYDLjE 
+theme that can be shared between several sites in the same MYDLjE instance 
+(cluster of domains).
 
 =head1 SEE ALSO
 

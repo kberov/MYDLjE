@@ -3,6 +3,10 @@
 
 =head1 MYDLjE - Web-presence rewritten
 
+=head1 VERSION 
+
+01.09.18b3
+
 =head1 DESCRIPTION
 
 B<NOTE: This is a work in progress. Help is wellcome.>

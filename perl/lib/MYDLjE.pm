@@ -4,7 +4,7 @@ use MYDLjE::Config;
 use MYDLjE::C;
 require Mojo::Util;
 
-our $VERSION = '0.3';
+our $VERSION = '01.09.18b0';
 
 has controller_class => 'MYDLjE::C';
 has env              => sub {
@@ -265,6 +265,19 @@ Example plugins configuration:
     validator: 1
     #disabled
     pod_renderer: 0
+
+=head1 VERSION 
+
+01.09.18b3
+
+The version represents a date in format YY.mm.dd 
+with attached abbreviation for the release quality.
+The year part is the year of the release -10 years. 
+It also shows roughly the MYDLjE age. MYDLjE first commit on GitHub was on January 24, 2011.
+
+The letter means: a -alpha, b - beta, s - stable.
+The numbers after the letter will mean an iteration/milestone number 
+of implementing features fixing bugs, etc.
 
 
 =head1 SEE ALSO

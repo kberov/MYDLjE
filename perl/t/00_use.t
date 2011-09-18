@@ -12,7 +12,7 @@ BEGIN {
 }
 use lib ("$ENV{MOJO_HOME}/perl/lib", "$ENV{MOJO_HOME}/perl/site/lib");
 
-use Test::More tests => 17;
+use Test::More tests => 26;
 
 use_ok('MYDLjE::Base');
 use_ok('MYDLjE');
@@ -20,7 +20,14 @@ use_ok('MYDLjE::ControlPanel');
 use_ok('MYDLjE::Site');
 use_ok('MYDLjE::C');
 use_ok('MYDLjE::ControlPanel::C');
+use_ok('MYDLjE::ControlPanel::C::Accounts');
+use_ok('MYDLjE::ControlPanel::C::Auth');
+use_ok('MYDLjE::ControlPanel::C::Content');
+use_ok('MYDLjE::ControlPanel::C::Home');
+use_ok('MYDLjE::ControlPanel::C::Site');
+use_ok('MYDLjE::ControlPanel::C::System');
 use_ok('MYDLjE::Site::C');
+use_ok('MYDLjE::Site::C::Site');
 use_ok('MYDLjE::M');
 use_ok('MYDLjE::M::Domain');
 use_ok('MYDLjE::M::Session');
@@ -31,3 +38,5 @@ use_ok('MYDLjE::M::Content::Article');
 use_ok('MYDLjE::M::Content::Chapter');
 use_ok('MYDLjE::M::Content::Answer');
 use_ok('MYDLjE::M::Content::Page');
+use_ok('MYDLjE::Template::PageTree');
+use_ok('MYDLjE::Template::PageContent');

@@ -14,6 +14,12 @@ sub page {
   #Construct the page
   $c->_prepare_page($user);
   $c->_prepare_content($user);
+
+  my %render_options = ();
+  if (not $c->stash('format')) {
+    $render_options{format} = 'html';
+  }
+  $c->render(%render_options);
   return;
 
 }
@@ -27,11 +33,11 @@ sub _prepare_content {
   my $uid                  = $user->id;
   my $read_permissions_sql = [$c->sql('read_permissions_sql'), $uid, $uid, $uid];
   my $ct_where             = {
-    page_id => $c->stash('PAGE')->id,
-    start   => [{'=' => 0}, {'<' => $time}],
-    stop    => [{'=' => 0}, {'>' => $time}],
-    deleted => 0,
-    data_type => {'!=' => 'page'},
+    page_id   => $c->stash('PAGE')->id,
+    start     => [{'=' => 0}, {'<' => $time}],
+    stop      => [{'=' => 0}, {'>' => $time}],
+    deleted   => 0,
+    data_type => [-and => {'!=' => 'page'}, {'!=' => 'brick'}],
     language  => $c->stash('C_LANGUAGE'),
     '-and'    => [\$read_permissions_sql],
   };
@@ -67,15 +73,14 @@ sub _prepare_content {
   $sql .= $c->sql_limit($form->{offset}, $form->{rows});
   my @rows = $c->dbix->query($sql, @bind)->hashes;
 
-  #$c->debug("$data_type",$sql);
   my @CONTENT;
   foreach my $row (@rows) {
     my $module = first { $_ =~ /$row->{data_type}$/xi } @$modules;
     my $e = Mojo::Loader->load($module);
     Mojo::Exception->throw($e) if $e;
-    push @CONTENT, $module->new->data($row);
+    push @CONTENT, $module->new($row);
   }
-  $c->stash(CONTENT => [@CONTENT]);
+  $c->stash(MAIN_AREA_CONTENT => \@CONTENT);
   return;
 }
 
@@ -150,8 +155,6 @@ sub _find_and_set_page_template {
 sub _prepare_page {
   my ($c, $user) = @_;
   my $app = $c->app;
-
-  #$c->debug('stash:', $c->dumper($c->stash));
   my $time = time;
   my ($ui_language, $c_language) = $c->detect_and_set_languages();
   my $uid                  = $user->id;
@@ -206,11 +209,6 @@ sub _prepare_page {
     PAGE_C      => $page_c,
     C_LANGUAGE  => $c_language,
   );
-  my %render_options = ();
-  if (not $c->stash('format')) {
-    $render_options{format} = 'html';
-  }
-  $c->render(%render_options);
   return;
 }
 

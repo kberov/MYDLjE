@@ -78,8 +78,15 @@
 -- http://www.postgresql.org/docs/8.4/static/queries-with.html
 -- http://vadimtropashko.wordpress.com/2008/11/18/finally/
 -- <query name="bricks_for_page" params="page_id"><![CDATA[
-    SELECT @start_id as _id, c.*,
-        (SELECT @start_id := p.pid FROM pages p WHERE p.id=_id) as _page_id
+    SELECT @start_id as _id,
+        (
+            SELECT @start_id := p.pid 
+            FROM pages p 
+            WHERE p.id=_id
+            AND p.published=2
+            -- ETC..
+        ) 
+        AS parent_page_id, c.*
     FROM content c, (SELECT @start_id :=?) as start
     WHERE c.language=?
     AND data_type='brick' AND deleted=0

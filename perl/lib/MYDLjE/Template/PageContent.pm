@@ -7,28 +7,39 @@ use Mojo::ByteStream qw(b);
 sub render {
   my $self = shift;
   my $PAGE = $self->get('PAGE');
-  my $out  = $self->render_page_template($PAGE, $PAGE->template);
+  my $out  = $self->render_template($PAGE, $PAGE->template);
   if (!$out) {
     $out = $self->render_page_content();
   }
 
-  $out .= $self->render_content($out, $self->get('CONTENT'));
+  $out .= $self->render_content($self->get('MAIN_AREA_CONTENT'));
   $self->render_bricks_to_boxes($PAGE);
   return $out;
 }
 
-sub render_page_template {
+sub render_template {
   my ($self, $RECORD, $template) = @_;
+  if (not $template) {
+
+    #content or page
+    if ($RECORD->can('body')) {
+      $template = $RECORD->body;
+      $RECORD->body('-');
+    }
+    else {
+      $template = $RECORD->template;
+      $RECORD->template('-');
+    }
+  }
   $template || return '';
   Mojo::Util::html_unescape $template;
   my $out = '';
-  my $ok =
 
-    #SELF: Reference to the record from within its template
-    eval {
+  #SELF: Reference to the record from within its template
+  my $ok = eval {
     $out .= $self->process(\$template, {SELF => $RECORD})
       or Carp::croak $self->context->error;
-    };
+  };
   unless ($ok) {
     $out
       .= $RECORD->TABLE . ' id:'
@@ -37,24 +48,31 @@ sub render_page_template {
       . ") template ERROR:"
       . "<span class=\"error\">$@</span>";
   }
+
   return $out;
 }
 
 sub render_page_content {
-  my ($self) = @_;
-  my $c      = $self->c;
-  my $out    = $c->tag(
+  my ($self)    = @_;
+  my $c         = $self->c;
+  my $PAGE_C    = $self->get('PAGE_C');
+  my $language  = $PAGE_C->language;
+  my $css_class = $PAGE_C->data_type . ' ' . $PAGE_C->data_format;
+  my $id        = $PAGE_C->TABLE . '_' . $PAGE_C->id;
+  my $out       = $c->tag(
     'h1',
-    class => "title",
-    lang  => $self->get('PAGE_C')->language,
+    id    => 'title_' . $id,
+    class => "container title " . $css_class,
+    lang  => $language,
     $self->get('TITLE')
   );
 
   #$c->debug($self->get('BODY'));
   $out .= $c->tag(
     'div',
-    class => "unit body",
-    lang  => $self->get('PAGE_C')->language,
+    id    => 'body_' . $id,
+    class => "container body " . $css_class,
+    lang  => $language,
     sub { $self->html_paragraphs($self->get('BODY')) }
   );
   return $out;
@@ -69,19 +87,33 @@ sub html_paragraphs {
 }
 
 sub render_content {
-  my ($self, $out, $CONTENT) = @_;
-  return '' unless $CONTENT;
-  foreach my $C ($CONTENT) {
-    my $render_data_format = 'render_' . $C->data_format;
-    $out .= $self->$render_data_format($C);
-  }
+  my ($self, $CONTENT) = @_;
+  my $out = '';
+  return '' unless ($CONTENT and ref($CONTENT) eq 'ARRAY');
+  my $wrap  = $self->get('SETTINGS')->{WRAP_MAIN_AREA_CONTENT};
+  my $table = MYDLjE::M::Content->TABLE;
 
-  #TODO: Render each data_type depending on its own data_format
+  foreach my $C (@$CONTENT) {
+    my $render = 'render_' . $C->data_format;
+    if ($wrap) {
+      my $css_class = $C->data_type . ' ' . $C->data_format;
+      $out .= $self->c->tag(
+        'div',
+        id    => $table . '_' . $C->id,
+        class => "container body $css_class",
+        lang  => $C->language,
+        sub { $self->$render($C) }
+      );
+    }
+    else {
+      $out .= $self->$render($C);
+    }
+  }
   return $out;
 }
 
 #rendering soubroutines for each data format
-sub render_text { goto &html_paragraphs }
+sub render_text { return shift->html_paragraphs(shift->body) }
 
 sub render_textile {
   my ($self, $RECORD) = @_;
@@ -99,12 +131,9 @@ sub render_markdown {
 
 sub render_html {
   my ($self, $RECORD) = @_;
-  return Mojo::Util::html_unescape $RECORD->body;
-}
-
-sub render_template {
-  my ($self, $RECORD, $template) = @_;
-  return $self->render_page_template($RECORD, $RECORD->body);
+  my $body = $RECORD->body;
+  Mojo::Util::html_unescape $body;
+  return $body;
 }
 
 sub render_bricks_to_boxes {
@@ -124,11 +153,43 @@ sub render_bricks_to_boxes {
     . $c->sql('read_permissions_sql')
     . ' ORDER BY _id, c.sorting '
     . $c->sql_limit(0, 100);
+
+  #$c->debug($sql);
   my $BRICKS =
-    $self->dbix->query($sql, $PAGE->id, $self->get('C_LANGUAGE'), $uid, $uid, $uid);
+    $self->dbix->query($sql, $PAGE->id, $self->get('C_LANGUAGE'), $uid, $uid, $uid)
+    ->hashes;
+  return '' unless ($BRICKS and ref($BRICKS) eq 'ARRAY');
+  require MYDLjE::M::Content::Brick;
+  my $filled_boxes = {};
+  my $wrap         = $self->get('SETTINGS')->{WRAP_BRICKS};
+  foreach my $row (@$BRICKS) {
+    my $brick          = MYDLjE::M::Content::Brick->new($row);
+    my $box            = $brick->box;
+    my $box_filled_key = $box . '_FILLED';
 
-  #$c->debug($sql)
+    #Is this box filled in? Yes. Then put there nothing more.
+    $filled_boxes->{$box_filled_key} = $self->get($box_filled_key);
+    next if $filled_boxes->{$box_filled_key};
+    my $render = 'render_' . $brick->data_format;
+    my $table  = MYDLjE::M::Content::Brick->TABLE;
+    if ($wrap) {
+      my $language  = $brick->language;
+      my $css_class = $brick->data_type . ' ' . $brick->data_format;
+      $BOXES->{$box} .= $self->c->tag(
+        'div',
+        id    => $table . '_' . $brick->id,
+        class => "container body " . $css_class,
+        lang  => $language,
+        sub { $self->$render($brick) }
+      );
+    }
+    else {
+      $BOXES->{$box} .= $self->$render($brick);
+    }
 
+    #Is this box filled in? Yes. Then put there nothing more.
+    $filled_boxes->{$box_filled_key} = $self->get($box_filled_key);
+  }
   return;
 }
 1;
@@ -139,23 +200,129 @@ __END__
 
 =head1 NAME
 
-MYDLjE::Template::PageContent - A front-end Content renderer
+MYDLjE::Template::PageContent - A front-end page-content renderer
+
+=head1 SYNOPSIS
+
+    [% 
+    #In $ENV{MOJO_HOME}/templates/site/site/page.html.tt
+    #but can be used in other templates made by the site developer
+    USE PAGE_CONTENT = PageContent();
+    PAGE_CONTENT.render();
+    %]
+
+=head1 DESCRIPTION
+
+This core L<MYDLjE::Template> plugin renders all content attached to 
+the currently displayed page. These are records in table C<content> with 
+C<page_id> attribute equal to the currently rendered page. 
+This is actually the I<defacto view> for L<MYDLjE::Site::C::Site> controller.
 
 =head1 METHODS
 
 =head2 render
 
-Renders all content which is found in C<CONTENT> STASH variable.
- C<CONTENT> is an array of content elements which are retreived from database and 
- have box property with value C<MAIN_AREA>. C<CONTENT> is constructed in 
- L<MYDLjE::Site::C::Site/_prepare_content>.
- 
- TO BE IMPLEMENTED...
+Renders all page content. 
 
- 
+  [% 
+    USE PAGE_CONTENT = PageContent();
+    PAGE_CONTENT.render();
+  %]
+
+=head2 render_bricks_to_boxes
+
+Renders all content elements with C<data_type> attribute C<brick> 
+(L<MYDLjE::M::Content::Brick>) and disposes them in C<BOXES>,
+defined in the current layout. 
+Wrapps the bricks with a div tag if C<SETTINGS.WRAP_BRICKS> is set to true.
+Called in L<MYDLjE::Template::PageContent/render> after L</render_content>.
+Can be callled separately in a site template.
+
+Params: $page - a L<MYDLjE::M:Page> instance
+
+  $self->render_bricks_to_boxes($PAGE);
+
+=head2 render_content
+
+Renders all content elements with C<data_type> attribute other  than C<brick>
+and  C<page> and disposes them in the special C<content> variable, 
+placed in the current layout. 
+Content elements are retreived from stash variable C<MAIN_AREA_CONTENT> and 
+ have C<box> attribute with value C<MAIN_AREA||''>. 
+ C<MAIN_AREA_CONTENT> is constructed in 
+ L<MYDLjE::Site::C::Site/_prepare_content>. 
+ Called in L</render> afterrendering page template (L</render_template>) 
+ and L</render_page_content>. 
+
+Params: C<\@CONTENT> - an array reference of MYDLjE::M::Content::* instances
+
+  $out .= $self->render_content($self->get('MAIN_AREA_CONTENT'));
+
+=head2 render_page_content
+
+Renders  content with C<data_type=page> for the current page.
+Called in L</render> only if no content from the page template is produced.
+
+  #in $self->render()
+  my $out  = $self->render_template($PAGE, $PAGE->template);
+  if (!$out) {
+    $out = $self->render_page_content();
+  }
+
+=head1 DATA_FORMAT METHODS (renderers)
+
+Below are described the methods which are used to render each content 
+instance depending on its L<data_format|MYDLjE::M::Content/data_format> attribute. 
+
+=head2 render_html
+
+Just returns the C<$RECORD-E<gt>body> after unescaping the HTML.
+All content is html-escaped before being stored. 
+
+Params: C<$RECODRD> - a C<MYDLjE::M::Content::*> instance 
+
+=head2 render_markdown 
+
+Processes the C<$RECORD-E<gt>body> via the helper L<markdown|MYDLjE::Plugin::Helpers/markdown> 
+and returns it after unescaping the HTML.
+
+Params: C<$RECODRD> - a C<MYDLjE::M::Content::*> instance 
+
+=head2 render_textile 
+
+Processes the C<$RECORD-E<gt>body> via the helper L<textile|MYDLjE::Plugin::Helpers/textile> 
+and returns it after unescaping the HTML.
+
+Params: C<$RECODRD> - a C<MYDLjE::M::Content::*> instance 
+
+=head2 render_text
+
+Splits the text in new lines, wraps them with C<p> html tags and returns 
+the result after unescaping the HTML.
+
+Params: C<$RECODRD> - a C<MYDLjE::M::Content::*> instance 
+
+=head2 render_template
+
+Depending on the passed record uses C<$self-E<gt>process> to process 
+the C<template> or C<body> attribute and returns the result.
+Adds to the stash a C<SELF> variable which is reference to the object it self.
+It can be used in the processed template. 
+This is the most powerful renderer. 
+
+Params: C<$RECORD> - a C<MYDLjE::M::Content::*> or C<MYDLjE::M::Page> instance, 
+$template - optional template code to be used instead of its own template.
+
+  #render a page object using some template
+  my $out  = $self->render_template($PAGE, $template_code);
+  #render a brick using its own "template" attribute
+  my $out  = $self->render_template($brick);
+
 =head1 SEE ALSO
 
-L<MYDLjE::Template>, L<MYDLjE::PageTree>
+L<MYDLjE::Site::C::Site>, 
+L<MYDLjE::M::Content>, 
+L<MYDLjE::Template>, L<MYDLjE::Template::PageTree>
 
 
 =head1 AUTHOR AND COPYRIGHT

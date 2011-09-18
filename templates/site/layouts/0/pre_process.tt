@@ -10,10 +10,10 @@
 # Settings for the current layout. 
 # These settings can be overwritten per request by every page from within its template.
 # The page template is PROCESSed in the template plugin 
-#  MYDLjE::Template::PageContent in render_page_template().
+#  MYDLjE::Template::PageContent.
   DEFAULT SETTINGS = {
-    #By default the bricks content are co...
-    #DO_NOT_OVERWRITE_BRICKS => 0,
+    WRAP_MAIN_AREA_CONTENT =>1,
+    WRAP_BRICKS =>1,
     PAGE_LAYOUT => 'layouts/'_ DOMAIN.id _'/' _ DOMAIN.id _'.html.tt'  
   };
 # 1. Define "BOXES" (keys) to which the output from "bricks" will be assigned as values
@@ -29,16 +29,19 @@
     DEFAULT BOXES = {
       HEADER_BRICKS => menu_languages(),
       
-      TOP_LEFT_BRICKS => '<div>put TOP_LEFT_BRICKS here</div>',
-      MIDDLE_LEFT_BRICKS => '<div>put MIDDLE_LEFT_BRICKS here</div>',
-      BOTTOM_LEFT_BRICKS => '<div>put BOTTOM_LEFT_BRICKS here</div>',
+      TOP_LEFT_BRICKS => '',
+      MIDDLE_LEFT_BRICKS => '',
+      BOTTOM_LEFT_BRICKS => '',
       
-      TOP_RIGHT_BRICKS => '<div>put TOP_RIGHT_BRICKS here</div>',
-      MIDDLE_RIGHT_BRICKS => '<div>put MIDDLE_RIGHT_BRICKS here</div>',
-      BOTTOM_RIGHT_BRICKS => '<div>put BOTTOM_RIGHT_BRICKS here</div>',
+      TOP_RIGHT_BRICKS => '',
+      MIDDLE_RIGHT_BRICKS => '',
+      BOTTOM_RIGHT_BRICKS => '',
       
-      FOOTER_BRICKS ='<div>put FOOTER_BRICKS here</div>'
+      FOOTER_BRICKS =''
     };
-
+    
+    #No content will be appended to BOXES.HEADER_BRICKS
+    #See MYDLjE::Template::PageContent->render_bricks_to_boxes()
+    HEADER_BRICKS_FILLED = 1;
 %]
 

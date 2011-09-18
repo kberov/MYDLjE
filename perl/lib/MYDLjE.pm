@@ -4,7 +4,7 @@ use MYDLjE::Config;
 use MYDLjE::C;
 require Mojo::Util;
 
-our $VERSION = '01.09.18b0';
+our $VERSION = '01.09.18b3';
 
 has controller_class => 'MYDLjE::C';
 has env              => sub {

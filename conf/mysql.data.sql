@@ -33,7 +33,7 @@ INSERT INTO `domains` (`id`, `domain`, `name`, `description`, `user_id`, `group_
 -- <query name="pages"><![CDATA[
 
 INSERT INTO `pages` (`id`, `pid`, `domain_id`, `alias`, `page_type`, `sorting`, `template`, `cache`, `expiry`, `permissions`, `user_id`, `group_id`, `tstamp`, `start`, `stop`, `published`, `hidden`, `deleted`, `changed_by`) VALUES
-(0, 0, 0, 'system_page-do_not_use_or_delete', '', 1, NULL, 0, 300, 'drwx------', 1, 1, 1, 1, 1, 0, 1, 1, 1);
+(0, 0, 0, 'system_page-do_not_use_or_delete', '', 1, NULL, 0, 300, 'drwx------', 1, 1, 1, 1, 1, 2, 1, 1, 1);
 
 -- ]]></quey>
 

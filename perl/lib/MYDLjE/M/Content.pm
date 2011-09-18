@@ -62,7 +62,7 @@ has FIELDS_VALIDATION => sub {
     },
     data_format => {
       required    => 1,
-      constraints => [{regexp => qr/(textile|text|html|markdown|template)/x},]
+      constraints => [{regexp => qr/^(textile|text|html|markdown|template)$/x},]
     },
     language => {
 
@@ -368,14 +368,15 @@ Used to report a content element as inappropriate/bad.
 =head2 body
 
 Represents the main content (body) of the content element. 
-The value will be interpreted depending on the L</data_format> attribute when displayed in a browser.
+The value will be interpreted depending on the L</data_format> attribute 
+when displayed in a browser. See L<MYDLjE::Template::PageContent>.
 
 
 =head2 data_format
 
 At the time of writing the following data formats are accepted/recognized:
 
-    qr/(textile|text|html|markdown,template)/x
+    qr/^(textile|text|html|markdown|template)$/x
 
 =head2 data_type
 

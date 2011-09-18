@@ -196,7 +196,7 @@ Used to set the order of the pages under the same L</pid>
 =head2 template
 
 TT/TA code to display this page. Default template for pages in the site is used 
-if this field is empty.
+if this field is empty. See L<MYDLjE::Template::PageContent>.
 
 =head2 cache
 

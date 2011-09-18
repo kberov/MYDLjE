@@ -279,7 +279,6 @@ The letter means: a -alpha, b - beta, s - stable.
 The numbers after the letter will mean an iteration/milestone number 
 of implementing features fixing bugs, etc.
 
-
 =head1 SEE ALSO
 
 L<MYDLjE::Guides>, L<MYDLjE::ControlPanel>, 

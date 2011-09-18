@@ -68,8 +68,10 @@
   <li class="[% row.data_type +%] ui-state-default"><div class="columns">
     <div class="fixed column">
         <div class="container">
-        <img src="pub/css/icons/[% row.data_type %].png" class="type_icon" />
-        [% row.title.substr(0,50)%]
+        <img src="pub/css/icons/[% row.data_type %].png" class="type_icon"
+        alt="brick" title="[% c.l('brick') %]"/>
+        [% row.title.substr(0,50) +%]:
+        [%+ c.l('in_box', row.box || 'MAIN_AREA') %]
         </div>
     </div>
     <div class="elastic column">

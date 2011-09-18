@@ -120,7 +120,9 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
     'Are you sure you want to delete page "[_1]"? This will delete recursively child pages and content too! All will be lost forever!',
   box_help =>
     'Each page in MYDLjE consists of "Boxes". Start typing the name of the box in which you want this element to appear. By default all content elements will be put in the "MAIN_AREA" box.'
-    . ' Boxes are defined in "layouts/${DOMAIN.id}/pre_process.tt".'
+    . ' Boxes are defined in "layouts/${DOMAIN.id}/pre_process.tt".',
+  in_box => 'in box "[_1]"',
+
 );
 
 1;

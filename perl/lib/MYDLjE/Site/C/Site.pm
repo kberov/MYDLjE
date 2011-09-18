@@ -154,7 +154,7 @@ sub _find_and_set_page_template {
 #and puts them into stash.
 sub _prepare_page {
   my ($c, $user) = @_;
-  my $app = $c->app;
+  my $app  = $c->app;
   my $time = time;
   my ($ui_language, $c_language) = $c->detect_and_set_languages();
   my $uid                  = $user->id;

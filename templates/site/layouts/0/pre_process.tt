@@ -7,7 +7,7 @@
     and modify the new file accordingly.
 %]
 [%
-# Settings for the current layout. 
+# Settings and variables for the current domain layout. 
 # These settings can be overwritten per request by every page from within its template.
 # The page template is PROCESSed in the template plugin 
 #  MYDLjE::Template::PageContent.

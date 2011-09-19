@@ -70,7 +70,7 @@ login_required_routes:
     to: 
       controller: content
       action: pages
-      id: '0'
+      #id: '0'
   /:controller/:action:
     order: 112
     to: 'home#home'

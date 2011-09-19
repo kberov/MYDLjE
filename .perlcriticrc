@@ -1,0 +1,53 @@
+severity  = harsh
+#only      = 1
+#force     = 1
+#verbose   = 11
+top       = 50
+#theme     = (pbp and security and bugs and maintenance and complexity and security)
+#include   = NamingConventions ClassHierarchies
+#exclude   = Variables  Modules::RequirePackage
+#criticism-fatal = 1
+#color     = 1
+#allow-unsafe = 0
+#pager     = less
+
+[Subroutines::RequireArgUnpacking]
+short_subroutine_statements = 3
+
+[TestingAndDebugging::RequireUseStrict]
+equivalent_modules = Mojo::Base MYDLjE::Base
+
+[TestingAndDebugging::RequireUseWarnings]
+equivalent_modules = Mojo::Base MYDLjE::Base
+
+#think of some strictier no strict
+[TestingAndDebugging::ProhibitNoStrict]
+allow = refs
+
+[TestingAndDebugging::ProhibitProlongedStrictureOverride]
+statements = 2
+[TestingAndDebugging::ProhibitNoWarnings]
+allow = once
+#allow_with_category_restriction = 1
+
+#Perl::Critic::Policy::Subroutines::RequireArgUnpacking - Always unpack @_ first.
+#todo
+[Subroutines::RequireArgUnpacking]
+allow_delegation_to = get_obj_args get_args MYDLjE::M::get_obj_args MYDLjE::M::get_args
+short_subroutine_statements = 2
+#
+[BuiltinFunctions::ProhibitStringyEval]
+allow_includes=1
+
+[Documentation::RequirePodSections]
+source   = book
+lib_sections    = NAME | SYNOPSIS | METHODS | CONFIG | BUGS AND LIMITATIONS | AUTHOR
+script_sections = NAME | USAGE | OPTIONS | AUTHOR
+
+[Variables::ProhibitPackageVars]
+add_packages = Carp
+[CodeLayout::ProhibitHardTabs]
+
+#Shorten allowed lenght of regexp for more readability.
+[RegularExpressions::ProhibitComplexRegexes]
+max_characters = 50

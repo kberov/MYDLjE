@@ -227,11 +227,13 @@ sub edit_page {
 sub get_form_language {
   my ($c, $language_field) = @_;
   if (!$language_field) {
-    $language_field = $c->app->config('plugins')->{I18N}{default};
+    $language_field = $c->msession('language_field_value');
+    $language_field ||= $c->app->config('plugins')->{I18N}{default};
   }
   else {
     $language_field = (first { $language_field eq $_ } @{$c->app->config('languages')});
   }
+  $c->msession(language_field_value => $language_field);
   return $language_field;
 }
 

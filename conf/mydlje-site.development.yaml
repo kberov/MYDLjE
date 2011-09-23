@@ -103,7 +103,7 @@ routes:
     to:
       action: page
       controller: site
-      page_alias: home
+      
       format: html
   /:ui_language:
     order: 112
@@ -112,7 +112,7 @@ routes:
     to:
       action: page
       controller: site
-      page_alias: home
+      
       format: html
   /:page_alias:
     #the regexes that must match so a variable is put into stash
@@ -122,14 +122,14 @@ routes:
     to:
       action: page
       controller: site
-      page_alias: home
+      
       format: html
   /:
     order: 115
     to:
       action: page
       controller: site
-      page_alias: home
+      
       format: html
 #routes for t/02_mydlje.t
   /hi:

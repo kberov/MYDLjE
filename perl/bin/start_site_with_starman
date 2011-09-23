@@ -1,0 +1,13 @@
+#!/bin/bash
+MYDLjE_HOME=$(readlink -f $(dirname $0)/../..)
+echo "\$MYDLjE_HOME is $MYDLjE_HOME"
+export PERL5LIB=$MYDLjE_HOME/perl/lib:$MYDLjE_HOME/perl/site/lib
+# This is an example of how to start the site application
+# with the Starman server (probably in a nginx environment).
+# Execute this file while being in the $MYDLjE_HOME directory.
+# This is the directory where you unpacked MYDLjE.
+# $MYDLjE_HOME is the common $MOJO_HOME for the three apps 
+# comprizing the mydlje project.
+# See what starman is at: http://search.cpan.org/dist/Starman/lib/Starman.pm
+starman -MTemplate::Alloy -MDBIx::Simple -MMojolicious\
+  --listen 127.0.0.1:8080 ./site 

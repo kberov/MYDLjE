@@ -9,7 +9,7 @@ sub render {
   my $PAGE = $self->get('PAGE');
   my $out  = $self->render_template($PAGE, $PAGE->template);
   my $c    = $self->c;
-  
+
   #$c->debug('Settings:' . $c->dumper($self->get('SETTINGS')));
   if (!$out) {
     $out = $self->render_page_content();
@@ -42,9 +42,7 @@ sub render_template {
   #$out .= $self->process(\$template, {SELF => $RECORD});
 
 #=pod
-  my $ok = eval {
-    $out .= $self->process(\$template, {SELF => $RECORD});
-  };
+  my $ok = eval { $out .= $self->process(\$template, {SELF => $RECORD}); };
   unless ($ok) {
     $out
       .= $RECORD->TABLE . ' id:'
@@ -53,6 +51,7 @@ sub render_template {
       . ") template ERROR:<br />"
       . "<span style=\"color:red\">$@</span>";
   }
+
 #=cut
 
   return $out;

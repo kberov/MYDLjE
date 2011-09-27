@@ -272,12 +272,14 @@ sub _save_page {
     $c->dbix->begin;
     $content->save($content_data);
     $page->data($page_data);
+    $page->changed_by($user->id);
     $page->modify_pid();
     $page->save();
     $c->dbix->commit;
   }
   else {
     $content->data($content_data);
+    $page_data->{changed_by} = ($user->id);
     $page = MYDLjE::M::Page->add(
       page_content => $content,
       %$page_data,

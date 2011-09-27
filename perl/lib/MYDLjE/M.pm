@@ -56,7 +56,7 @@ sub select {    ##no critic (Subroutines::ProhibitBuiltinHomonyms)
   }
   $where = {%$where, %{$self->WHERE}};
 
-  $self->data($self->dbix->select($self->TABLE, $self->COLUMNS, $where)->hash);
+  $self->{data} = $self->dbix->select($self->TABLE, $self->COLUMNS, $where)->hash;
   return $self;
 }
 
@@ -71,7 +71,7 @@ sub data {
           if $DEBUG;
         next;
       }
-      $self->{data}{$field} = $args->{$field};
+      $self->$field($args->{$field});
     }
   }
 

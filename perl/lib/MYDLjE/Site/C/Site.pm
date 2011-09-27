@@ -134,7 +134,7 @@ sub _find_and_set_page_template {
     if ($row->{template}) {
       last;
     }
-    last if $pid == 0;
+    last if !$row->{pid};
     $parent_where->{id} = $row->{pid};
 
     $pid = $row->{pid};

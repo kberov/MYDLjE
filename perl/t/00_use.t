@@ -12,7 +12,7 @@ BEGIN {
 }
 use lib ("$ENV{MOJO_HOME}/perl/lib", "$ENV{MOJO_HOME}/perl/site/lib");
 
-use Test::More tests => 26;
+use Test::More tests => 29;
 
 use_ok('MYDLjE::Base');
 use_ok('MYDLjE');
@@ -40,3 +40,7 @@ use_ok('MYDLjE::M::Content::Answer');
 use_ok('MYDLjE::M::Content::Page');
 use_ok('MYDLjE::Template::PageTree');
 use_ok('MYDLjE::Template::PageContent');
+use_ok('MYDLjE::I18N::en');
+use_ok('MYDLjE::I18N::bg');
+use_ok('MYDLjE::I18N::ru');
+

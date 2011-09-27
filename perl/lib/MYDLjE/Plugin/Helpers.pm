@@ -1,6 +1,6 @@
 package MYDLjE::Plugin::Helpers;
 use MYDLjE::Base 'Mojolicious::Plugin';
-
+use List::Util qw(first);
 
 sub register {
   my ($self, $app, $config) = @_;
@@ -84,7 +84,17 @@ sub register {
         $c->languages($c->session('ui_language'));
       }
       else {
-        $c->session('ui_language', $c->languages);
+
+        #use browser language if supported, default language otherwise.
+        my $ua_lang = $c->languages;
+        if (my $lang = first { $_ eq $ua_lang } @{$app->config('languages')}) {
+          $c->languages($lang);
+          $c->session('ui_language', $lang);
+        }
+        else {
+          $c->languages($app->config('plugins')->{I18N}{default});
+          $c->session('ui_language', $c->languages);
+        }
       }
       return $c->languages;
     }

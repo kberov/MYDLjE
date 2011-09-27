@@ -71,7 +71,7 @@ sub data {
           if $DEBUG;
         next;
       }
-      $self->$field($args->{$field});
+      $self->{data}{$field} = $args->{$field};
     }
   }
 
@@ -410,7 +410,10 @@ Instantiates an object from a saved in the database row by constructing and exec
   
 =head2 data
 
-Common getter/setter for all L</COLUMNS>.
+Common getter/setter for all L</COLUMNS>. 
+Does not validate the field when setting a value. 
+Use the field specific setter if you want to be sure the input is validated 
+before saving in database.
 
 In L</select>:
 

@@ -88,7 +88,7 @@
         ) 
         AS parent_page_id, c.*
     FROM content c, (SELECT @start_id :=?) as start
-    WHERE c.language=?
+    WHERE c.language=? AND page_id>0
     AND data_type='brick' AND deleted=0
 -- ]]></query>
 

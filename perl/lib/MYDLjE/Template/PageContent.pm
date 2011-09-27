@@ -8,6 +8,9 @@ sub render {
   my $self = shift;
   my $PAGE = $self->get('PAGE');
   my $out  = $self->render_template($PAGE, $PAGE->template);
+  my $c    = $self->c;
+  
+  #$c->debug('Settings:' . $c->dumper($self->get('SETTINGS')));
   if (!$out) {
     $out = $self->render_page_content();
   }
@@ -36,18 +39,21 @@ sub render_template {
   my $out = '';
 
   #SELF: Reference to the record from within its template
+  #$out .= $self->process(\$template, {SELF => $RECORD});
+
+#=pod
   my $ok = eval {
-    $out .= $self->process(\$template, {SELF => $RECORD})
-      or Carp::croak $self->context->error;
+    $out .= $self->process(\$template, {SELF => $RECORD});
   };
   unless ($ok) {
     $out
       .= $RECORD->TABLE . ' id:'
       . $RECORD->id . ', ('
       . $RECORD->alias
-      . ") template ERROR:"
-      . "<span class=\"error\">$@</span>";
+      . ") template ERROR:<br />"
+      . "<span style=\"color:red\">$@</span>";
   }
+#=cut
 
   return $out;
 }
@@ -147,6 +153,7 @@ sub render_bricks_to_boxes {
       $c->sql('bricks_for_page')
     . " AND ( start = 0 OR start < $time )"
     . " AND ( stop = 0 OR stop > $time )"
+    . $/
     . ' AND box IN(\''
     . join(q|','|, @$BOXES_NAMES)
     . '\') AND '
@@ -154,12 +161,16 @@ sub render_bricks_to_boxes {
     . ' ORDER BY _id, c.sorting '
     . $c->sql_limit(0, 100);
 
+  require MYDLjE::M::Content::Brick;
+  my $columns = join ',', @{MYDLjE::M::Content::Brick->COLUMNS};
+  $sql = "SELECT $columns FROM ($sql) as bricks";
+
   #$c->debug($sql);
   my $BRICKS =
     $self->dbix->query($sql, $PAGE->id, $self->get('C_LANGUAGE'), $uid, $uid, $uid)
     ->hashes;
-  return '' unless ($BRICKS and ref($BRICKS) eq 'ARRAY');
-  require MYDLjE::M::Content::Brick;
+
+  return '' unless (scalar @$BRICKS);
   my $filled_boxes = {};
   my $wrap         = $self->get('SETTINGS')->{WRAP_BRICKS};
   foreach my $row (@$BRICKS) {
@@ -191,6 +202,18 @@ sub render_bricks_to_boxes {
     $filled_boxes->{$box_filled_key} = $self->get($box_filled_key);
   }
   return;
+}
+
+#TODO: gets content according to the where clause and renrenders it.
+sub render_where {
+  my ($self, $WHERE) = @_;
+  my $c    = $self->c;
+  my $uid  = $self->USER->id;
+  my $time = time;
+  my $sql  = '';
+  my $out  = '';
+
+  return '';
 }
 1;
 

@@ -39,10 +39,10 @@ sub render_template {
   my $out = '';
 
   #SELF: Reference to the record from within its template
-  #$out .= $self->process(\$template, {SELF => $RECORD});
-
-#=pod
-  my $ok = eval { $out .= $self->process(\$template, {SELF => $RECORD}); };
+  my $ok = eval { 
+    $out .= $self->process(\$template, {SELF => $RECORD});
+    1; 
+  };
   unless ($ok) {
     $out
       .= $RECORD->TABLE . ' id:'
@@ -51,8 +51,6 @@ sub render_template {
       . ") template ERROR:<br />"
       . "<span style=\"color:red\">$@</span>";
   }
-
-#=cut
 
   return $out;
 }

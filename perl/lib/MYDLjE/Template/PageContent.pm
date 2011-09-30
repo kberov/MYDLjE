@@ -39,9 +39,9 @@ sub render_template {
   my $out = '';
 
   #SELF: Reference to the record from within its template
-  my $ok = eval { 
+  my $ok = eval {
     $out .= $self->process(\$template, {SELF => $RECORD});
-    1; 
+    1;
   };
   unless ($ok) {
     $out

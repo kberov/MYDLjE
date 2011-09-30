@@ -6,9 +6,9 @@
 
 site_name: MYDLjE
 templates_root: templates/cpanel
-#get MORE strict
-types:
-  html: 'application/xhtml+xml; charset=utf-8'
+#To get MORE strict uncomment
+#types:
+#  html: 'application/xhtml+xml; charset=utf-8'
 plugins:
   PODRenderer: 0
   alloy_renderer:

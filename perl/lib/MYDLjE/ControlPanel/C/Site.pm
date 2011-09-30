@@ -267,25 +267,31 @@ sub _save_page {
 #|| $c->dbix->select('content','alias',{alias=>$content->alias,data_type=>'page'})->fetch)
 
   #save
+  my $save_ok = 0;
   if ($c->stash('id')) {
     $content->page_id || $content->page_id($page->id);
-    $c->dbix->begin;
-    $content->save($content_data);
-    $page->data($page_data);
-    $page->changed_by($user->id);
-    $page->modify_pid();
-    $page->save();
-    $c->dbix->commit;
+    $save_ok = eval {
+      $c->dbix->begin;
+      $content->save($content_data);
+      $page->data($page_data);
+      $page->changed_by($user->id);
+      $page->modify_pid();
+      $page->save();
+      $c->dbix->commit;
+    } || $c->stash(save_error => $@);
+
   }
   else {
     $content->data($content_data);
     $page_data->{changed_by} = ($user->id);
-    $page = MYDLjE::M::Page->add(
-      page_content => $content,
-      %$page_data,
-      user_id  => $user->id,
-      group_id => $user->group_id
-    );
+    $save_ok = eval {
+      $page = MYDLjE::M::Page->add(
+        page_content => $content,
+        %$page_data,
+        user_id  => $user->id,
+        group_id => $user->group_id
+      );
+    } || $c->stash(save_error => $@);
     $c->stash(id               => $page->id);
     $c->stash(page_pid_options => $c->set_page_pid_options($user));
   }
@@ -326,7 +332,9 @@ sub _validate_page {
     ->message('Please use one of the availabe domains or first add a new domain!');
 
   # if domain_id of an existing page is switched, set pid=0
-  if (($form->{'page.domain_id'} ne $page->domain_id) && $page->id) {
+  if ($page->id
+    && ($form->{'page.domain_id'} != ($page->domain_id || $c->msession('domain_id'))))
+  {
     $form->{'page.pid'} = 0;
   }
   $v->field('page.page_type')->in($c->stash('page_types'));

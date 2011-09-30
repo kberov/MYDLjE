@@ -17,16 +17,13 @@ has COLUMNS => sub {
 my $id_regexp = {regexp => qr/^\d+$/x};
 
 has FIELDS_VALIDATION => sub {
-  my $self  = shift;
-  my %alias = $self->FIELD_DEF('alias32');
-  $alias{alias} = $alias{alias32};
-  delete $alias{alias32};
+  my $self = shift;
   return {
     ##no critic qw(ValuesAndExpressions::ProhibitCommaSeparatedStatements)
     $self->FIELD_DEF('id'),
     $self->FIELD_DEF('pid'),
     $self->FIELD_DEF('domain_id'),
-    %alias,
+    $self->FIELD_DEF('alias'),
     page_type => {
       required    => 1,
       constraints => [{in => ['regular', 'default', 'folder', '404']},]

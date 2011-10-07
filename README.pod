@@ -1,3 +1,4 @@
+=pod
 
 =encoding utf8
 
@@ -11,7 +12,7 @@
 
 B<NOTE: This is a work in progress. Help is wellcome.>
 
-MYDLjE (pronounced [maidalji]/[майдължи]) is a lightweight
+MYDLjE (pronounced [maidalji]/[майдълджи]) is a lightweight
  Web-Applications and Content Management Framework. It is a collection of
  Perl, JavaScript, CSS and HTML5 code to make a General Purpose Platform for
  building Web-Applications. We build on top of several I<"State Of the Art">
@@ -55,18 +56,38 @@ This is your front-end application intended for the public. Build a site or
 
 =over
 
-=item * Perl 5.8.8 or next; Perl 5.10.1 or next is highly recommended;
+=item * Perl 5.10.1 or next;
 
-=item * Apache2 with mod_cgi (standard) or (better/faster)
- mod_fcgi/mod_fastcgi;
+=item * Web Server (Choose your preferred combination!)
 
-=item * MySQL >=5.0 server, provided by almost every shared hosting;
+=over
 
-=item * C<DBI>, C<DBD::mysql>, C<Time::Piece> and C<GD> Perl Modules.
+=item * Apache2 with mod_cgi (standard) or (better/faster)mod_fcgi/mod_fastcgi;
+
+This is the most tested environment targeted by MYDLjE.  
+
+=item * nginx/0.8 or next with Starman;
+
+See example configurations in $MYDLjE_HOME/conf/nginx*.conf
+and application starters in $MYDLjE_HOME/perl/bin.
+
+=item * Any known Mojolicious deployment scheme.
+
+Any Mojolicious deployment scheme mentioned in the 
+ "Deployment" section on 
+ L<https://github.com/kraih/mojo/wiki>
+ should work since MYDLjE is a set of Mojolicious applications
+ that work together well.
 
 =back
 
-Almost all (even the cheapest) hosting providers meet the system
+=item * MySQL >=5.0 server, provided by almost every shared hosting;
+
+=item * C<DBI>, C<DBD::mysql>, and C<GD> Perl Modules.
+
+=back
+
+Almost all (even the cheapest) hosting providers meet the minimal system
  requirements. To make sure, send the above-mentioned list to your
  (potential) hosting provider and ask them if they meet the requirements
  below. The setup screen also checks for the requirements. The system runs
@@ -74,7 +95,7 @@ Almost all (even the cheapest) hosting providers meet the system
  mod_fastcgi (or mod_fcgi) if available. See the I<.htaccess> file in the
  project root directory.
 
-=head1 INSTALLATION
+=head1 INSTALLATION (Apache)
 
 =over
 
@@ -84,15 +105,21 @@ Almost all (even the cheapest) hosting providers meet the system
  I<conf/mysql.schema.sql> or use the tool (PHPMyAdmin) provided by your
  hosting provider
 
-=item 3 Use your browser to access B<index.xhtml> or setup via commandline -
+=item 3 Unix only: Make sure the files C<site>, C<mydlje> and C<cpanel> in 
+$MYDLjE_HOME are executable.
+
+=item 4 Make sure the server can wriite in forlders C<tmp>, C<log>,
+ C<conf> and C<pub/home> in $MYDLjE_HOME.
+
+=item 5 Use your browser to access B<index.xhtml> or setup via commandline -
  see L</SETUP>.
 
-=item 4 Check the system and troubleshoot :) if needed. Look at the apache
+=item 6 Check the system and troubleshoot :) if needed. Look at the apache
  error-log and log/development.log.
 
-=item 5 Fill in the "System Configuration" form. You are ready to go.
+=item 7 Fill in the "System Configuration" form. You are ready to go.
 
-=item 6 Enjoy your new site and start building your presence.
+=item 8 Enjoy your new site and start building your presence.
 
 =back
 
@@ -133,7 +160,7 @@ Below is the list of things to do. This is a general list, so look at
 
 =over
 
-=item * Implement the base "Site" application;
+=item * Implement the base "Site" application (done);
 
 =item * Implement the "Registration" Site plugin (later);
 
@@ -197,6 +224,9 @@ I wish to thank to all who made something that I use to make MYDLjE works.
 =item * Fernando Trasvia conceived Elastic CSS -
  http://elasticss.com/suggestions/. Thank You!
 
+=item * Alexander Nalivayko - for giving feedback and helping hand.
+ https://github.com/nal. Thank You!
+
 =back
 
 =head1 SETUP
@@ -214,6 +244,9 @@ To setup your system <a href="index.xhtml">go to index.xhtml</a>. Make sure
 Many programmers prefer using a terminal. To set up the system this way,
  open a terminal and go to the MYDLjE root directory:
 
-$ ./mydlje help system_setup
+  you@yourcomputer:/pat/to/MYDLjE$ ./mydlje help system_setup
 
 -----------------------
+
+=cut
+

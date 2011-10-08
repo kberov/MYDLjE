@@ -14,7 +14,6 @@ sub config {
 sub startup {
   my $app = shift;
   $CONFIG = MYDLjE::Config->singleton(log => $app->log);
-
   $app->static->root($app->home . $app->config('static_root'));
   $app->secret($app->config('secret'));
   $app->sessions->cookie_name($app->config('session_cookie_name'));
@@ -25,8 +24,10 @@ sub startup {
   # Routes
   my $r = $app->routes;
   $r->namespace($app->controller_class);
+  $r->route('/hi')->to(action => 'hi', controller => 'Site', id => 1);
+  $app->check_if_system_is_installed($CONFIG) || return;
   $app->load_routes($r);
-  return unless $app->config('installed');
+
   $app->renderer->root($app->home . '/' . $app->config('templates_root'))
     if $app->config('templates_root');
 

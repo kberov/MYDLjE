@@ -7,10 +7,11 @@ require Mojo::Util;
 our $VERSION = '01.09.18b3';
 
 has controller_class => 'MYDLjE::C';
-has env              => sub {
-  if   ($_[1]) { $ENV{$_[1]} }
-  else         { \%ENV }
-};
+
+sub env {
+  if   ($_[1]) { return $ENV{$_[1]} }
+  else         { return \%ENV }
+}
 our $DEBUG = ((!$ENV{MOJO_MODE} || $ENV{MOJO_MODE} =~ /^dev/x) ? 1 : 0);
 
 my $CONFIG;
@@ -36,6 +37,15 @@ sub startup {
   #Hooks
   $app->hook(before_dispatch => \&before_dispatch);
   $app->hook(after_dispatch  => \&after_dispatch);
+  $app->hook(
+    before_perldoc => sub {
+      my $c = shift;
+
+      #how rude!
+      #TODO: $c->stash->{'mojo.content'}{mojobar} = 'MYDLJE bar here';
+      return;
+    }
+  );
   return;
 }
 
@@ -83,6 +93,28 @@ sub _session_start {
     #$app->log->debug($c->dumper($c->session));
   }
   return;
+}
+
+sub check_if_system_is_installed {
+  my ($app, $config) = @_;
+  my $not_mydlje = ( $app->env('MOJO_APP') ne __PACKAGE__ );
+  unless ($app->config('installed') and $not_mydlje) {
+    my $message =
+        $/
+      . ('#' x 20)
+      . $/ . '#'
+      . $app->env('MOJO_APP')
+      . ' is not enabled. Set "installed: 1" in config file '
+      . $config->files->[-1]
+      . ' to make it start.'
+      . $/
+      . ('#' x 20)
+      . $/;
+    $app->log->error($message);
+    Carp::cluck($message);
+    return 0;
+  }
+  return 1;
 }
 
 #at the end of each response

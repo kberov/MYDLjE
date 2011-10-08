@@ -141,6 +141,7 @@ sub render_html {
 
 sub render_bricks_to_boxes {
   my ($self, $PAGE) = @_;
+  $PAGE ||= $self->get('PAGE');
   my $BOXES       = $self->get('BOXES');
   my $BOXES_NAMES = [keys %$BOXES];
   my $c           = $self->c;
@@ -168,16 +169,14 @@ sub render_bricks_to_boxes {
     ->hashes;
 
   return '' unless (scalar @$BRICKS);
-  my $filled_boxes = {};
-  my $wrap         = $self->get('SETTINGS')->{WRAP_BRICKS};
+  my $wrap = $self->get('SETTINGS')->{WRAP_BRICKS};
   foreach my $row (@$BRICKS) {
     my $brick          = MYDLjE::M::Content::Brick->new($row);
     my $box            = $brick->box;
     my $box_filled_key = $box . '_FILLED';
 
     #Is this box filled in? Yes. Then put there nothing more.
-    $filled_boxes->{$box_filled_key} = $self->get($box_filled_key);
-    next if $filled_boxes->{$box_filled_key};
+    next if $self->get($box_filled_key);
     my $render = 'render_' . $brick->data_format;
     my $table  = MYDLjE::M::Content::Brick->TABLE;
     if ($wrap) {
@@ -195,13 +194,14 @@ sub render_bricks_to_boxes {
       $BOXES->{$box} .= $self->$render($brick);
     }
 
-    #Is this box filled in? Yes. Then put there nothing more.
-    $filled_boxes->{$box_filled_key} = $self->get($box_filled_key);
+    #Mark the box as filled from within template to stop appending more bricks.
+    #Example:
+    #[% RIGHT_BOX_FILLED=1 %]
   }
   return;
 }
 
-#TODO: gets content according to the where clause and renrenders it.
+#TODO: gets content according to the where clause and renders it.
 sub render_where {
   my ($self, $WHERE) = @_;
   my $c    = $self->c;
@@ -227,6 +227,7 @@ MYDLjE::Template::PageContent - A front-end page-content renderer
     [% 
     #In $ENV{MOJO_HOME}/templates/site/site/page.html.tt
     #but can be used in other templates made by the site developer
+
     USE PAGE_CONTENT = PageContent();
     PAGE_CONTENT.render();
     %]
@@ -254,24 +255,24 @@ Renders all page content.
 Renders all content elements with C<data_type> attribute C<brick> 
 (L<MYDLjE::M::Content::Brick>) and disposes them in C<BOXES>,
 defined in the current layout. 
-Wrapps the bricks with a div tag if C<SETTINGS.WRAP_BRICKS> is set to true.
+Wraps the bricks with a div tag if C<SETTINGS.WRAP_BRICKS> is set to true.
 Called in L<MYDLjE::Template::PageContent/render> after L</render_content>.
 Can be callled separately in a site template.
 
-Params: $page - a L<MYDLjE::M:Page> instance
+Params: $page - a L<MYDLjE::M:Page> instance - Default: current page
 
   $self->render_bricks_to_boxes($PAGE);
 
 =head2 render_content
 
 Renders all content elements with C<data_type> attribute other  than C<brick>
-and  C<page> and disposes them in the special C<content> variable, 
+and  C<page>. They are put in the special C<content> variable, 
 placed in the current layout. 
 Content elements are retreived from stash variable C<MAIN_AREA_CONTENT> and 
  have C<box> attribute with value C<MAIN_AREA||''>. 
  C<MAIN_AREA_CONTENT> is constructed in 
  L<MYDLjE::Site::C::Site/_prepare_content>. 
- Called in L</render> afterrendering page template (L</render_template>) 
+ Called in L</render> after rendering page template (L</render_template>) 
  and L</render_page_content>. 
 
 Params: C<\@CONTENT> - an array reference of MYDLjE::M::Content::* instances

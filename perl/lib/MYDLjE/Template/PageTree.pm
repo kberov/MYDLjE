@@ -1,5 +1,5 @@
 package MYDLjE::Template::PageTree;
-use MYDLjE::Base 'MYDLjE::Template';
+use Mojo::Base 'MYDLjE::Template';
 use utf8;
 
 require Mojo::Util;

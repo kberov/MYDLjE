@@ -1,5 +1,5 @@
 package MYDLjE::M::Content::Brick;
-use MYDLjE::Base 'MYDLjE::M::Content';
+use Mojo::Base 'MYDLjE::M::Content';
 
 
 has WHERE => sub { {data_type => 'brick', deleted => 0} };

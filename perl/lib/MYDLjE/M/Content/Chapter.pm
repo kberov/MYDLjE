@@ -1,5 +1,5 @@
 package MYDLjE::M::Content::Chapter;
-use MYDLjE::Base 'MYDLjE::M::Content';
+use Mojo::Base 'MYDLjE::M::Content';
 
 has WHERE => sub { {data_type => 'chapter', deleted => 0} };
 

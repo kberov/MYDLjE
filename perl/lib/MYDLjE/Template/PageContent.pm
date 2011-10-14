@@ -1,5 +1,5 @@
 package MYDLjE::Template::PageContent;
-use MYDLjE::Base 'MYDLjE::Template';
+use Mojo::Base 'MYDLjE::Template';
 use utf8;
 use Mojo::ByteStream qw(b);
 

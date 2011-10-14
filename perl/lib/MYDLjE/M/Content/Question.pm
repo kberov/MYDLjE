@@ -1,5 +1,5 @@
 package MYDLjE::M::Content::Question;
-use MYDLjE::Base 'MYDLjE::M::Content';
+use Mojo::Base 'MYDLjE::M::Content';
 
 has WHERE => sub { {data_type => 'question', deleted => 0} };
 

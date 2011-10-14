@@ -1,5 +1,5 @@
 package MYDLjE::M::Content;
-use MYDLjE::Base 'MYDLjE::M';
+use Mojo::Base 'MYDLjE::M';
 require MYDLjE::Unidecode;
 require Time::HiRes;
 require I18N::LangTags::List;

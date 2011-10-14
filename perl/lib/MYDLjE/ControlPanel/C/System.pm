@@ -1,5 +1,5 @@
 package MYDLjE::ControlPanel::C::System;
-use MYDLjE::Base 'MYDLjE::ControlPanel::C';
+use Mojo::Base 'MYDLjE::ControlPanel::C';
 use Mojo::ByteStream qw(b);
 
 

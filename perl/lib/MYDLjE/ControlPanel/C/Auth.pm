@@ -1,5 +1,5 @@
 package MYDLjE::ControlPanel::C::Auth;
-use MYDLjE::Base 'MYDLjE::ControlPanel::C';
+use Mojo::Base 'MYDLjE::ControlPanel::C';
 require MYDLjE::M::User;
 
 sub logout {

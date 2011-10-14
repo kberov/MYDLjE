@@ -1,5 +1,5 @@
 package MYDLjE::M;
-use MYDLjE::Base -base;
+use Mojo::Base -base;
 use MojoX::Validator;
 use Carp();
 use MYDLjE::Regexp qw(%MRE);
@@ -280,7 +280,7 @@ And of course you can always overwrite all methods from this base class at will 
   #a table or view or whatever database object
 
   package MYDLjE::M::Content::Note;
-  use MYDLjE::Base 'MYDLjE::M::Content';
+  use Mojo::Base 'MYDLjE::M::Content';
 
   has TABLE => 'content';
   has COLUMNS => sub {

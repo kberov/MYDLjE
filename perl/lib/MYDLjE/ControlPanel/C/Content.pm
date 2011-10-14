@@ -1,5 +1,5 @@
 package MYDLjE::ControlPanel::C::Content;
-use MYDLjE::Base 'MYDLjE::ControlPanel::C';
+use Mojo::Base 'MYDLjE::ControlPanel::C';
 use Mojo::ByteStream qw(b);
 use MYDLjE::ControlPanel::C::Site;
 use MYDLjE::M::Content::Note;

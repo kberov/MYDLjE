@@ -1,7 +1,7 @@
 package MYDLjE::ControlPanel::C;
 
 #Base class for MYDLjE::ControlPanel controllers
-use MYDLjE::Base 'MYDLjE::C';
+use Mojo::Base 'MYDLjE::C';
 
 sub home {
   my $c = shift;

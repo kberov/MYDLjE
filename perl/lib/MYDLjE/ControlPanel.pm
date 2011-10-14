@@ -1,5 +1,5 @@
 package MYDLjE::ControlPanel;
-use MYDLjE::Base 'MYDLjE';
+use Mojo::Base 'MYDLjE';
 use MYDLjE::ControlPanel::C;
 
 has controller_class => 'MYDLjE::ControlPanel::C';

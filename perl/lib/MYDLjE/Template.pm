@@ -1,5 +1,5 @@
 package MYDLjE::Template;
-use MYDLjE::Base -base;
+use Mojo::Base -base;
 use utf8;
 our $VERSION = '0.03';
 require Mojo::Util;
@@ -157,7 +157,7 @@ Implementation of the mandatory C<error> method.
 =head1 SEE ALSO
 
 This module is practically the same as L<Template::Plugin> but uses
-MYDLjE::Base == Mojo::Base as base class.
+Mojo::Base == Mojo::Base as base class.
 L<http://search.cpan.org/dist/Template-Toolkit/lib/Template/Plugin.pm>
 
 L<MYDLjE::Guides>, L<MYDLjE::ControlPanel>, 

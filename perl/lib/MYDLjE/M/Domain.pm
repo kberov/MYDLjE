@@ -1,5 +1,5 @@
 package MYDLjE::M::Domain;
-use MYDLjE::Base 'MYDLjE::M';
+use Mojo::Base 'MYDLjE::M';
 use MYDLjE::M::Content;
 
 

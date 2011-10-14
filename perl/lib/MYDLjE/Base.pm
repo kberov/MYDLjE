@@ -8,7 +8,7 @@ __END__
 
 =encoding utf8
 
-=head1 MYDLjE::Base - base class - Mojo::Base
+=head1 MYDLjE::Base - DEPRECATED - use Mojo::Base instead
 
 =head1 SYNOPSIS
 

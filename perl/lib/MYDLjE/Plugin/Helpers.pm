@@ -1,5 +1,5 @@
 package MYDLjE::Plugin::Helpers;
-use MYDLjE::Base 'Mojolicious::Plugin';
+use Mojo::Base 'Mojolicious::Plugin';
 use List::Util qw(first);
 
 sub register {

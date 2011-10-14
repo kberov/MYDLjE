@@ -1,5 +1,5 @@
 package MYDLjE::ControlPanel::C::Home;
-use MYDLjE::Base 'MYDLjE::ControlPanel::C';
+use Mojo::Base 'MYDLjE::ControlPanel::C';
 
 
 sub home {

@@ -1,7 +1,7 @@
 package MYDLjE::C;
 
 #Base class for all controllers
-use MYDLjE::Base 'Mojolicious::Controller';
+use Mojo::Base 'Mojolicious::Controller';
 
 # Say hello.
 # This action is here only for test purposes.

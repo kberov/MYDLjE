@@ -1,5 +1,5 @@
 package MYDLjE::M::Page;
-use MYDLjE::Base 'MYDLjE::M';
+use Mojo::Base 'MYDLjE::M';
 use Mojo::Util qw();
 use MYDLjE::M::Content;
 

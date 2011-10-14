@@ -1,5 +1,5 @@
 package MYDLjE::Site::C::Site;
-use MYDLjE::Base 'MYDLjE::Site::C';
+use Mojo::Base 'MYDLjE::Site::C';
 use List::Util qw(first);
 use MYDLjE::ControlPanel::C::Site;
 use MYDLjE::M::Content::Page;

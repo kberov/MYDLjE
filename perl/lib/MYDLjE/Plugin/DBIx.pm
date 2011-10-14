@@ -1,5 +1,5 @@
 package MYDLjE::Plugin::DBIx;
-use MYDLjE::Base 'Mojolicious::Plugin';
+use Mojo::Base 'Mojolicious::Plugin';
 use DBI qw(:utils);
 use DBIx::Simple;
 use SQL::Abstract;

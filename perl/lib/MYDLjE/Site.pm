@@ -1,5 +1,5 @@
 package MYDLjE::Site;
-use MYDLjE::Base 'MYDLjE';
+use Mojo::Base 'MYDLjE';
 use MYDLjE::Site::C;
 
 has controller_class => 'MYDLjE::Site::C';

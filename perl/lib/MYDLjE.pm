@@ -1,5 +1,5 @@
 package MYDLjE;
-use MYDLjE::Base 'Mojolicious';
+use Mojo::Base 'Mojolicious';
 use MYDLjE::Config;
 use MYDLjE::C;
 require Mojo::Util;
@@ -97,7 +97,7 @@ sub _session_start {
 
 sub check_if_system_is_installed {
   my ($app, $config) = @_;
-  my $not_mydlje = ( $app->env('MOJO_APP') ne __PACKAGE__ );
+  my $not_mydlje = ($app->env('MOJO_APP') ne __PACKAGE__);
   unless ($app->config('installed') and $not_mydlje) {
     my $message =
         $/

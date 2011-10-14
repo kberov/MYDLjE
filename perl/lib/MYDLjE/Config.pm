@@ -1,7 +1,7 @@
 package MYDLjE::Config;
 
 #Model for configuration files
-use MYDLjE::Base -base;
+use Mojo::Base -base;
 use YAML::Any();
 use Hash::Merge::Simple;
 use Data::Dumper;
@@ -105,7 +105,7 @@ MYDLjE configuration files are in YAML format.
 
 =head1 ATTRIBUTES
 
-L<MYDLjE::Config> inherits all attributes from L<MYDLjE::Base> and implements/overrides the following ones.
+L<MYDLjE::Config> inherits all attributes from L<Mojo::Base> and implements/overrides the following ones.
 
 =head2 merger
 

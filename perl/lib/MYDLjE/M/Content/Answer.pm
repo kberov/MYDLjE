@@ -1,5 +1,5 @@
 package MYDLjE::M::Content::Answer;
-use MYDLjE::Base 'MYDLjE::M::Content';
+use Mojo::Base 'MYDLjE::M::Content';
 
 has COLUMNS => sub {
   [ qw(

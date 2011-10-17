@@ -1,5 +1,5 @@
 package Mojo::IOLoop::Trigger;
-use Mojo::Base 'Mojo::IOLoop::EventEmitter';
+use Mojo::Base 'Mojo::EventEmitter';
 
 use Mojo::IOLoop;
 
@@ -15,7 +15,7 @@ sub begin {
 sub end {
   my $self = shift;
   push @{$self->{args} ||= []}, @_;
-  $self->emit('done', @{$self->{args}}) if --$self->{counter} <= 0;
+  $self->emit_safe('done', @{$self->{args}}) if --$self->{counter} <= 0;
 }
 
 sub start {
@@ -30,7 +30,7 @@ __END__
 
 =head1 NAME
 
-Mojo::IOLoop::Trigger - IOLoop Trigger
+Mojo::IOLoop::Trigger - IOLoop trigger
 
 =head1 SYNOPSIS
 
@@ -38,11 +38,11 @@ Mojo::IOLoop::Trigger - IOLoop Trigger
 
   # Synchronize multiple events
   my $t = Mojo::IOLoop::Trigger->new;
-  $t->on(done => sub { print "BOOM!\n" });
+  $t->on(done => sub { say 'BOOM!' });
   for my $i (1 .. 10) {
     $t->begin;
     Mojo::IOLoop->timer($i => sub {
-      print 10 - $i, "\n";
+      say 10 - $i;
       $t->end;
     });
   }
@@ -61,6 +61,10 @@ L<Mojo::IOLoop::Trigger> can emit the following events.
 
 =head2 C<done>
 
+  $trigger->on(done => sub {
+    my $trigger = shift;
+  });
+
 Emitted once the active event counter reaches zero.
 
 =head1 ATTRIBUTES
@@ -76,8 +80,8 @@ Loop object to control, defaults to a L<Mojo::IOLoop> object.
 
 =head1 METHODS
 
-L<Mojo::IOLoop::Trigger> inherits all methods from
-L<Mojo::IOLoop::EventEmitter> and implements the following new ones.
+L<Mojo::IOLoop::Trigger> inherits all methods from L<Mojo::EventEmitter> and
+implements the following new ones.
 
 =head2 C<begin>
 

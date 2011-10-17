@@ -63,11 +63,8 @@ sub build {
     # New line
     push @lines, '';
     for (my $j = 0; $j < @{$line}; $j += 2) {
-      my $type  = $line->[$j];
-      my $value = $line->[$j + 1];
-
-      # Need to fix line ending
-      $value ||= '';
+      my $type    = $line->[$j];
+      my $value   = $line->[$j + 1] || '';
       my $newline = chomp $value;
 
       # Capture end
@@ -95,7 +92,7 @@ sub build {
       if ($type eq 'code' || $multi) { $lines[-1] .= "$value" }
 
       # Expression
-      if ($type eq 'expr' || $type eq 'escp') {
+      if ($type ~~ [qw/expr escp/]) {
 
         # Start
         unless ($multi) {
@@ -447,7 +444,7 @@ __END__
 
 =head1 NAME
 
-Mojo::Template - Perl-ish Templates!
+Mojo::Template - Perl-ish templates!
 
 =head1 SYNOPSIS
 
@@ -461,7 +458,7 @@ Mojo::Template - Perl-ish Templates!
     <body>Time: <%= localtime(time) %></body>
   </html>
   EOF
-  print $output;
+  say $output;
 
   # More complicated
   my $output = $mt->render(<<'EOF', 23, 'foo bar');
@@ -473,7 +470,7 @@ Mojo::Template - Perl-ish Templates!
   * some text <%= $i++ %>
   % }
   EOF
-  print $output;
+  say $output;
 
 =head1 DESCRIPTION
 
@@ -494,7 +491,7 @@ like that.
   %# Comment line, treated as "<%# line =%>"
   %% Replaced with "%", useful for generating templates
 
-=head2 Automatic Escaping
+=head2 Automatic escaping
 
 Escaping behavior can be reversed with the C<auto_escape> attribute, this is
 the default in L<Mojolicious> C<.ep> templates for example.
@@ -545,7 +542,7 @@ That means you can access arguments simply via C<@_>.
   % my $x = shift;
   test 123 <%= $foo %>
 
-=head2 More Escaping
+=head2 More escaping
 
 You can use escaped tags and lines to generate templates.
 

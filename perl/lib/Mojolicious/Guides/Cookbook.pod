@@ -5,14 +5,14 @@ Mojolicious::Guides::Cookbook - Cookbook
 
 =head1 OVERVIEW
 
-Cooking with L<Mojolicious>, recipes for every taste.
+This document cotains many fun recipes for cooking with L<Mojolicious>.
 
 =head1 DEPLOYMENT
 
 Getting L<Mojolicious> and L<Mojolicious::Lite> applications running on
 different platforms.
 
-=head2 Built-in Server
+=head2 Built-in server
 
 L<Mojolicious> contains a very portable HTTP 1.1 compliant web server.
 It is usually used during development but is solid and fast enough for small
@@ -152,7 +152,7 @@ can just point them at your application script because it will automatically
 act like one if it detects the presence of a C<PLACK_ENV> environment
 variable.
 
-=head2 Plack Middleware
+=head2 Plack middleware
 
 Wrapper scripts like C<myapp.fcgi> are a great way to separate deployment and
 application logic.
@@ -207,7 +207,7 @@ other scripts, with this little mock server you can just embed them.
   my $app = $server->load_app('./myapp.pl');
 
   # Access fully initialized application
-  print $app->static->root;
+  say $app->static->root;
 
 You can also use the built-in web server to embed L<Mojolicious> applications
 into alien environments like foreign event loops.
@@ -233,7 +233,7 @@ into alien environments like foreign event loops.
 
 When we say L<Mojolicious> is a web framework we actually mean it.
 
-=head2 Web Scraping
+=head2 Web scraping
 
 Scraping information from web sites has never been this much fun before.
 The built-in HTML5/XML parser L<Mojo::DOM> supports all CSS3 selectors that
@@ -244,17 +244,17 @@ make sense for a standalone parser.
   my $tx = $ua->get('mojolicio.us/perldoc');
 
   # Extract title
-  print 'Title: ', $tx->res->dom->at('head > title')->text, "\n";
+  say 'Title: ', $tx->res->dom->at('head > title')->text;
 
   # Extract headings
   $tx->res->dom('h1, h2, h3')->each(sub {
-    print 'Heading: ', shift->all_text, "\n";
+    say 'Heading: ', shift->all_text;
   });
 
 Especially for unit testing your L<Mojolicious> applications this can be a
 very powerful tool.
 
-=head2 JSON Web Services
+=head2 JSON web services
 
 Most web services these days are based on the JSON data-interchange format.
 That's why L<Mojolicious> comes with the possibly fastest pure-Perl
@@ -274,19 +274,19 @@ implementation L<Mojo::JSON> built right in.
     my $user = $tweet->{from_user};
 
     # Show both
-    my $result = "$text --$user\n\n";
+    my $result = "$text --$user";
     utf8::encode $result;
-    print $result;
+    say $result;
   }
 
-=head2 Basic Authentication
+=head2 Basic authentication
 
 You can just add username and password to the URL.
 
   my $ua = Mojo::UserAgent->new;
-  print $ua->get('https://sri:secret@mojolicio.us/hideout')->res->body;
+  say $ua->get('https://sri:secret@mojolicio.us/hideout')->res->body;
 
-=head2 Decorating Followup Requests
+=head2 Decorating followup requests
 
 L<Mojo::UserAgent> can automatically follow redirects, the C<on_start>
 callback allows you direct access to each transaction right after they have
@@ -296,32 +296,31 @@ been initialized and before a connection gets associated with them.
   my $ua = Mojo::UserAgent->new(max_redirects => 10);
 
   # Add a witty header to every request
-  $ua->on_start(sub {
+  $ua->on(start => sub {
     my ($self, $tx) = @_;
     $tx->req->headers->header('X-Bender' => 'Bite my shiny metal ass!');
-    print 'Request: ', $tx->req->url->clone->to_abs, "\n";
+    say 'Request: ', $tx->req->url->clone->to_abs;
   });
 
   # Request that will most likely get redirected
-  print 'Title: ',
-    $ua->get('google.com')->res->dom->at('head > title')->text, "\n";
+  say 'Title: ', $ua->get('google.com')->res->dom->at('head > title')->text;
 
 This even works for proxy C<CONNECT> requests.
 
-=head2 Streaming Response
+=head2 Streaming response
 
 Receiving a streaming response can be really tricky in most HTTP clients,
 L<Mojo::UserAgent> makes it actually easy.
 
   my $ua = Mojo::UserAgent->new;
   my $tx = $ua->build_tx(GET => 'http://mojolicio.us');
-  $tx->res->body(sub { print $_[1] });
+  $tx->res->body(sub { say $_[1] });
   $ua->start($tx);
 
 The C<body> callback will be called for every chunk of data that is received,
 even C<chunked> encoding will be handled transparently if necessary.
 
-=head2 Streaming Request
+=head2 Streaming request
 
 Sending a streaming request is almost just as easy.
 
@@ -340,9 +339,9 @@ Sending a streaming request is almost just as easy.
   $ua->start($tx);
 
 The drain callback passed to C<write> will be invoked whenever the entire
-previous chunk has been written to the kernel send buffer.
+previous chunk has actually been written.
 
-=head2 Large File Downloads
+=head2 Large file downloads
 
 When downloading large files with L<Mojo::UserAgent> you don't have to worry
 about memory usage at all, because it will automatically stream everything
@@ -360,7 +359,7 @@ environment variable.
   # Increase limit to 1GB
   $ENV{MOJO_MAX_MESSAGE_SIZE} = 1073741824;
 
-=head2 Large File Upload
+=head2 Large file upload
 
 Uploading a large file is even easier.
 
@@ -379,7 +378,7 @@ streamed directly from the file.
   $tx->req->content->asset($asset);
   $ua->start($tx);
 
-=head2 Non-Blocking
+=head2 Non-blocking
 
 L<Mojo::UserAgent> has been designed from the ground up to be non-blocking,
 the whole blocking API is just a simple convenience wrapper.
@@ -388,7 +387,7 @@ useful, because you can keep many parallel connections active at the same
 time.
 
   # FIFO queue
-  my @urls = qw/google.com/;
+  my @urls = ('google.com');
 
   # User agent following up to 5 redirects
   my $ua = Mojo::UserAgent->new(max_redirects => 5);
@@ -407,13 +406,13 @@ time.
       my ($self, $tx) = @_;
 
       # Extract URLs
-      print "[$id] $url\n";
+      say "[$id] $url";
       $tx->res->dom('a[href]')->each(sub {
         my $e = shift;
 
         # Build absolute URL
         my $url = Mojo::URL->new($e->{href})->to_abs($tx->req->url);
-        print " -> $url\n";
+        say " -> $url";
 
         # Enqueue
         push @urls, $url;
@@ -432,7 +431,7 @@ time.
 
 You can take full control of the L<Mojo::IOLoop> event loop.
 
-=head2 Parallel Blocking Requests
+=head2 Parallel blocking requests
 
 You can emulate blocking behavior by using a L<Mojo::IOLoop> trigger to
 synchronize multiple non-blocking requests.
@@ -446,7 +445,7 @@ synchronize multiple non-blocking requests.
 
 Just be aware that the resulting transactions will be in random order.
 
-=head2 Command Line
+=head2 Command line
 
 Don't you hate checking huge HTML files from the command line?
 Thanks to the C<mojo get> command that is about to change.
@@ -488,7 +487,7 @@ This can be an invaluable tool for testing your applications.
 
 Fun hacks you might not use very often but that might come in handy some day.
 
-=head2 Faster Tests
+=head2 Faster tests
 
 Don't you hate waiting for C<make test> to finally finish?
 In newer Perl versions you can set the C<HARNESS_OPTIONS> environment
@@ -500,7 +499,7 @@ variable to take advantage of multiple cpu cores and run tests parallel.
 The C<j5> allows 5 tests to run at the same time, which makes for example the
 L<Mojolicious> test suite finish 3 times as fast on a dual core laptop!
 
-=head2 Adding Commands To Mojolicious
+=head2 Adding commands to Mojolicious
 
 By now you've propably used many of the built-in commands described in
 L<Mojolicious::Commands>, but did you know that you can just add new ones and
@@ -515,7 +514,7 @@ that they will be picked up automatically by the command line interface?
     # Leak secret passphrase
     if ($whatever eq 'secret') {
       my $secret = $self->app->secret;
-      print qq/The secret of this application is "$secret".\n/;
+      say qq/The secret of this application is "$secret"./;
     }
   }
 
@@ -530,7 +529,7 @@ you can use or overload.
   $ ./myapp.pl spy secret
   The secret of this application is "secr3t".
 
-=head2 Running Code Against Your Application
+=head2 Running code against your application
 
 Ever thought about running a quick oneliner against your L<Mojolicious>
 application to test something?
@@ -538,13 +537,13 @@ Thanks to the C<eval> command you can do just that, the application instance
 itself can be accessed via C<app>.
 
   $ mojo generate lite_app
-  $ ./myapp.pl eval 'print app->static->root, "\n"'
+  $ ./myapp.pl eval 'say app->static->root'
 
 The C<verbose> option will automatically print the return value to C<STDOUT>.
 
   $ ./myapp.pl eval -v 'app->static->root'
 
-=head2 Making Your Application Installable
+=head2 Making your application installable
 
 Ever thought about releasing your L<Mojolicious> application to CPAN?
 It's actually much easier than you might think.
@@ -615,7 +614,7 @@ rendering kicks in even if no actual code gets executed by the router.
 The renderer just picks up the C<text> value from the stash and generates a
 response.
 
-=head2 Hello World Oneliner
+=head2 Hello World oneliner
 
 The C<Hello World> example above can get even a little bit shorter in an
 L<ojo> oneliner.
@@ -626,12 +625,6 @@ And you can use all the commands from L<Mojolicious::Commands>.
 
   perl -Mojo -e'a({text => "Hello World!"})->start' get -v /
 
-=head2 Keeping Mojolicious Up-To-Date
-
-This tasty oneliner will keep your L<Mojolicious> as fresh as possible.
-
-  $ sudo sh -c "curl -L cpanmin.us | perl - http://latest.mojolicio.us"
-
 =head2 jQuery (Content Distribution Network)
 
 These days L<Mojolicious> ships with a bundled version of jQuery, which you
@@ -640,14 +633,14 @@ time to time.
 
   <%= javascript
     'http://ajax.googleapis.com/ajax/libs/jquery/1.6/jquery.min.js' %>
-  <%= javascript begin %>
+  %= javascript begin
     if (typeof jQuery == 'undefined') {
       var e = document.createElement('script');
       e.src = '/js/jquery.js';
       e.type = 'text/javascript';
       document.getElementsByTagName("head")[0].appendChild(e);
     }
-  <% end %>
+  % end
 
 =head1 MORE
 

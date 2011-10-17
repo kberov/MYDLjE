@@ -1,5 +1,5 @@
 package Mojo::IOLoop::Client;
-use Mojo::Base 'Mojo::IOLoop::EventEmitter';
+use Mojo::Base 'Mojo::EventEmitter';
 
 use IO::Socket::INET;
 use Scalar::Util 'weaken';
@@ -13,7 +13,7 @@ use constant IPV6 => $ENV{MOJO_NO_IPV6}
 # TLS support requires IO::Socket::SSL
 use constant TLS => $ENV{MOJO_NO_TLS}
   ? 0
-  : eval 'use IO::Socket::SSL 1.43 "inet4"; 1';
+  : eval 'use IO::Socket::SSL 1.37 "inet4"; 1';
 use constant TLS_READ  => TLS ? IO::Socket::SSL::SSL_WANT_READ()  : 0;
 use constant TLS_WRITE => TLS ? IO::Socket::SSL::SSL_WANT_WRITE() : 0;
 
@@ -26,11 +26,7 @@ has resolver => sub {
 sub DESTROY {
   my $self = shift;
   return if $self->{connected};
-  return unless my $resolver = $self->{resolver};
-  return unless my $loop     = $resolver->ioloop;
-  return unless my $watcher  = $loop->iowatcher;
-  $watcher->cancel($self->{timer})  if $self->{timer};
-  $watcher->remove($self->{handle}) if $self->{handle};
+  $self->_cleanup;
 }
 
 sub connect {
@@ -53,6 +49,15 @@ sub connect {
   }
 }
 
+sub _cleanup {
+  my $self = shift;
+  return unless my $resolver = $self->{resolver};
+  return unless my $loop     = $resolver->ioloop;
+  return unless my $watcher  = $loop->iowatcher;
+  $watcher->cancel($self->{timer})  if $self->{timer};
+  $watcher->remove($self->{handle}) if $self->{handle};
+}
+
 sub _connect {
   my ($self, $args) = @_;
 
@@ -70,19 +75,17 @@ sub _connect {
     );
     $options{PeerAddr} =~ s/[\[\]]//g if $options{PeerAddr};
     my $class = IPV6 ? 'IO::Socket::IP' : 'IO::Socket::INET';
-    return $self->emit(error => "Couldn't connect.")
+    return $self->emit_safe(error => "Couldn't connect.")
       unless $handle = $class->new(%options);
 
     # Timer
     $self->{timer} =
       $watcher->timer($timeout,
-      sub { $self->emit(error => 'Connect timeout.') });
+      sub { $self->emit_safe(error => 'Connect timeout.') });
 
     # IPv6 needs an early start
     $handle->connect if IPV6;
   }
-
-  # Non-blocking
   $handle->blocking(0);
 
   # Disable Nagle's algorithm
@@ -93,31 +96,26 @@ sub _connect {
   if ($args->{tls}) {
 
     # No TLS support
-    return $self->emit(
-      error => 'IO::Socket::SSL 1.43 required for TLS support.')
+    return $self->emit_safe(
+      error => 'IO::Socket::SSL 1.37 required for TLS support.')
       unless TLS;
 
     # Upgrade
     my %options = (
       SSL_startHandshake => 0,
       SSL_error_trap     => sub {
-        my $handle  = delete $self->{handle};
-        my $watcher = $self->resolver->ioloop->iowatcher;
-        $watcher->remove($handle);
-        $watcher->cancel($self->{timer});
-        close $handle;
-        $self->emit(error => $_[1]);
+        $self->_cleanup;
+        close delete $self->{handle};
+        $self->emit_safe(error => $_[1]);
       },
       SSL_cert_file   => $args->{tls_cert},
       SSL_key_file    => $args->{tls_key},
       SSL_verify_mode => 0x00,
-      SSL_create_ctx_callback =>
-        sub { Net::SSLeay::CTX_sess_set_cache_size(shift, 128) },
-      Timeout => $timeout,
+      Timeout         => $timeout,
       %{$args->{tls_args} || {}}
     );
     $self->{tls} = 1;
-    return $self->emit(error => 'TLS upgrade failed.')
+    return $self->emit_safe(error => 'TLS upgrade failed.')
       unless $handle = IO::Socket::SSL->start_SSL($handle, %options);
   }
 
@@ -146,14 +144,13 @@ sub _connecting {
   }
 
   # Check for errors
-  return $self->emit(error => $! = $handle->sockopt(SO_ERROR))
+  return $self->emit_safe(error => $! = $handle->sockopt(SO_ERROR))
     unless $handle->connected;
 
   # Connected
   $self->{connected} = 1;
-  $watcher->cancel($self->{timer}) if $self->{timer};
-  $watcher->remove($handle);
-  $self->emit(connect => $handle);
+  $self->_cleanup;
+  $self->emit_safe(connect => $handle);
 }
 
 1;
@@ -161,7 +158,7 @@ __END__
 
 =head1 NAME
 
-Mojo::IOLoop::Client - IOLoop Socket Client
+Mojo::IOLoop::Client - IOLoop socket client
 
 =head1 SYNOPSIS
 
@@ -191,9 +188,17 @@ L<Mojo::IOLoop::Client> can emit the following events.
 
 =head2 C<connect>
 
+  $client->on(connect => sub {
+    my ($client, $handle) = @_;
+  });
+
 Emitted once the connection is established.
 
 =head2 C<error>
+
+  $client->on(error => sub {
+    my ($client, $error) = @_;
+  });
 
 Emitted if an error happens on the connection.
 
@@ -210,8 +215,8 @@ DNS stub resolver, usually a L<Mojo::IOLoop::Resolver> object.
 
 =head1 METHODS
 
-L<Mojo::IOLoop::Client> inherits all methods from
-L<Mojo::IOLoop::EventEmitter> and implements the following new ones.
+L<Mojo::IOLoop::Client> inherits all methods from L<Mojo::EventEmitter> and
+implements the following new ones.
 
 =head2 C<connect>
 

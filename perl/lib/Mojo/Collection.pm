@@ -66,6 +66,11 @@ sub shuffle {
 
 sub size { scalar @{$_[0]} }
 
+sub slice {
+  my $self = shift;
+  $self->new(@$self[@_]);
+}
+
 sub sort {
   my ($self, $cb) = @_;
   return $self->new(sort @$self) unless $cb;
@@ -86,7 +91,7 @@ Mojo::Collection - Collection
   my $collection = Mojo::Collection->new(qw/just works/);
   $collection->map(sub { ucfirst })->each(sub {
     my ($word, $count) = @_;
-    print "$count: $word\n";
+    say "$count: $word";
   });
 
   # Use the alternative constructor
@@ -118,7 +123,7 @@ Evaluate closure for each element in collection.
 
   $collection->each(sub {
     my ($e, $count) = @_;
-    print "$count: $e\n";
+    say "$count: $e";
   });
 
 =head2 C<first>
@@ -162,6 +167,12 @@ from the results.
   my $new = $collection->reverse;
 
 Create a new collection with all elements in reverse order.
+
+=head2 C<slice>
+
+  my $new = $collection->slice(4 .. 7);
+
+Create a new collection with all selected elements.
 
 =head2 C<shuffle>
 

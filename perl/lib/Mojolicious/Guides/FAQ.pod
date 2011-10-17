@@ -10,10 +10,10 @@ L<Mojolicious> together with the right answers.
 
 =head1 QUESTIONS
 
-=head2 How does Mojolicious compare to other Perl Web Frameworks?
+=head2 How does Mojolicious compare to other Perl web frameworks?
 
 The short answer is "it doesn't", because we interpret the words
-"Web Framework" much more literal than others.
+"web framework" much more literal than others.
 With the emergence of the C<Real-time Web> and new technologies such as
 C<WebSockets>, we are facing new challenges that go way beyond what commonly
 used modules like L<LWP> were designed for.
@@ -58,21 +58,6 @@ So, as long as you are not using anything marked experimental, untested or
 undocumented, you can always count on backwards compatibility, everything
 else would be considered a bug.
 
-=head2 Why is using Perl 5.8.x such a bad idea?
-
-The Perl 5.8 family has reached the end of its life a few years ago and is no
-longer getting updated by the community.
-It contains very serious flaws, especially around the regular expression
-engine, that will never get fixed and are likely put your applications at
-risk.
-While your operating system vendor might keep it compiling on their platform,
-they will not fix these issues.
-Therefore we highly recommend that you upgrade as soon as possible!
-
-While we have considered officially deprecating Perl 5.8.x support in
-L<Mojolicious> altogether, it would sadly be too much of a competitive
-disadvantage at this point in time.
-
 =head2 What does the error "Maximum message size exceeded." mean?
 
 To protect your applications from excessively large requests and responses,
@@ -113,8 +98,7 @@ right.
 Writing a test is usually the hardest part of fixing a bug, so the better
 your test case the faster it can be fixed. ;)
 
-Once that's done you can contact the developers via GitHub
-(L<https://github.com/kraih/mojo/issues>), mailing list
+Once that's done you can contact the developers via mailing list
 (L<http://groups.google.com/group/mojolicious>) or IRC
 (C<#mojo> on C<irc.perl.org>).
 

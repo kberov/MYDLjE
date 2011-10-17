@@ -1,5 +1,5 @@
 package Mojo::IOLoop::Server;
-use Mojo::Base 'Mojo::IOLoop::EventEmitter';
+use Mojo::Base 'Mojo::EventEmitter';
 
 use Carp 'croak';
 use File::Spec;
@@ -16,7 +16,7 @@ use constant IPV6 => $ENV{MOJO_NO_IPV6}
 # TLS support requires IO::Socket::SSL
 use constant TLS => $ENV{MOJO_NO_TLS}
   ? 0
-  : eval 'use IO::Socket::SSL 1.43 "inet4"; 1';
+  : eval 'use IO::Socket::SSL 1.37 "inet4"; 1';
 use constant TLS_READ  => TLS ? IO::Socket::SSL::SSL_WANT_READ()  : 0;
 use constant TLS_WRITE => TLS ? IO::Socket::SSL::SSL_WANT_WRITE() : 0;
 
@@ -66,6 +66,7 @@ AnqxHi90n/p912ynLg2SjBq+03GaECeGzC/QqKK2gtA=
 -----END RSA PRIVATE KEY-----
 EOF
 
+has accepts   => 10;
 has iowatcher => sub {
   require Mojo::IOLoop;
   Mojo::IOLoop->singleton->iowatcher;
@@ -107,7 +108,7 @@ sub listen {
   # New socket
   else {
     my %options = (
-      Listen    => $args->{backlog} || SOMAXCONN,
+      Listen => $args->{backlog} // SOMAXCONN,
       LocalAddr => $args->{address} || '0.0.0.0',
       LocalPort => $port,
       Proto     => 'tcp',
@@ -122,29 +123,27 @@ sub listen {
     $reuse = ",$reuse" if length $ENV{MOJO_REUSE};
     $ENV{MOJO_REUSE} .= "$reuse:$fd";
   }
+  $handle->blocking(0);
   $self->{handle} = $handle;
 
   # TLS
-  if ($args->{tls}) {
+  return unless $args->{tls};
+  croak "IO::Socket::SSL 1.37 required for TLS support" unless TLS;
 
-    # No TLS support
-    croak "IO::Socket::SSL 1.43 required for TLS support" unless TLS;
-
-    # Options
-    my %options = (
-      SSL_startHandshake => 0,
-      SSL_cert_file      => $args->{tls_cert} || $self->_cert_file,
-      SSL_key_file       => $args->{tls_key} || $self->_key_file,
-    );
-    %options = (
-      SSL_verify_callback => $args->{tls_verify},
-      SSL_ca_file         => -T $args->{tls_ca} ? $args->{tls_ca} : undef,
-      SSL_ca_path         => -d $args->{tls_ca} ? $args->{tls_ca} : undef,
-      SSL_verify_mode     => $args->{tls_ca} ? 0x03 : undef,
-      %options
-    ) if $args->{tls_ca};
-    $self->{tls} = {%options, %{$args->{tls_args} || {}}};
-  }
+  # Options
+  my %options = (
+    SSL_startHandshake => 0,
+    SSL_cert_file      => $args->{tls_cert} || $self->_cert_file,
+    SSL_key_file       => $args->{tls_key} || $self->_key_file,
+  );
+  %options = (
+    SSL_verify_callback => $args->{tls_verify},
+    SSL_ca_file         => -T $args->{tls_ca} ? $args->{tls_ca} : undef,
+    SSL_ca_path         => -d $args->{tls_ca} ? $args->{tls_ca} : undef,
+    SSL_verify_mode     => $args->{tls_ca} ? 0x03 : undef,
+    %options
+  ) if $args->{tls_ca};
+  $self->{tls} = {%options, %{$args->{tls_args} || {}}};
 }
 
 sub generate_port {
@@ -173,26 +172,24 @@ sub resume {
   my $self = shift;
   weaken $self;
   $self->iowatcher->add($self->{handle},
-    on_readable => sub { $self->_accept });
+    on_readable => sub { $self->_accept for 1 .. $self->accepts });
 }
 
 sub _accept {
   my $self = shift;
 
   # Accept
-  my $handle = $self->{handle}->accept;
-
-  # Non-blocking
+  return unless my $handle = $self->{handle}->accept;
   $handle->blocking(0);
 
   # Disable Nagle's algorithm
   setsockopt $handle, IPPROTO_TCP, TCP_NODELAY, 1;
 
   # Start TLS handshake
-  return $self->emit(accept => $handle) unless my $tls = $self->{tls};
+  return $self->emit_safe(accept => $handle) unless my $tls = $self->{tls};
   weaken $self;
   $tls->{SSL_error_trap} = sub {
-    my $handle = delete $self->{handles}->{$handle};
+    return unless my $handle = delete $self->{handles}->{shift()};
     $self->iowatcher->remove($handle);
     close $handle;
   };
@@ -248,7 +245,7 @@ sub _tls {
   if ($handle->accept_SSL) {
     $self->iowatcher->remove($handle);
     delete $self->{handles}->{$handle};
-    return $self->emit(accept => $handle);
+    return $self->emit_safe(accept => $handle);
   }
 
   # Switch between reading and writing
@@ -262,7 +259,7 @@ __END__
 
 =head1 NAME
 
-Mojo::IOLoop::Server - IOLoop Socket Server
+Mojo::IOLoop::Server - IOLoop socket server
 
 =head1 SYNOPSIS
 
@@ -292,11 +289,22 @@ L<Mojo::IOLoop::Server> can emit the following events.
 
 =head2 C<accept>
 
+  $server->on(accept => sub {
+    my ($server, $handle) = @_;
+  });
+
 Emitted for each accepted connection.
 
 =head1 ATTRIBUTES
 
 L<Mojo::IOLoop::Server> implements the following attributes.
+
+=head2 C<accepts>
+
+  my $accepts = $server->accepts;
+  $server     = $server->accepts(10);
+
+Number of connections to accept at once, defaults to C<10>.
 
 =head2 C<iowatcher>
 
@@ -308,8 +316,8 @@ L<Mojo::IOWatcher::EV> object.
 
 =head1 METHODS
 
-L<Mojo::IOLoop::Server> inherits all methods from
-L<Mojo::IOLoop::EventEmitter> and implements the following new ones.
+L<Mojo::IOLoop::Server> inherits all methods from L<Mojo::EventEmitter> and
+implements the following new ones.
 
 =head2 C<listen>
 

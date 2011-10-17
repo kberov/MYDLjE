@@ -153,14 +153,10 @@ sub header {
   my $name = shift;
 
   # Replace
-  if (@_) {
-    $self->remove($name);
-    return $self->add($name, @_);
-  }
-
-  return unless my $headers = $self->{headers}->{lc $name};
+  return $self->remove($name)->add($name, @_) if @_;
 
   # String
+  return unless my $headers = $self->{headers}->{lc $name};
   return join ', ', map { join ', ', @$_ } @$headers unless wantarray;
 
   # Array
@@ -181,14 +177,8 @@ sub leftovers { shift->{buffer} }
 sub location { scalar shift->header(Location => @_) }
 
 sub names {
-  my $self = shift;
-
-  # Normal case
   my @headers;
-  for my $name (keys %{$self->{headers}}) {
-    push @headers, $NORMALCASE_HEADERS{$name} || $name;
-  }
-
+  push @headers, $NORMALCASE_HEADERS{$_} || $_ for keys %{shift->{headers}};
   return \@headers;
 }
 
@@ -197,47 +187,35 @@ sub parse {
 
   # Parse headers with size limit
   $self->{state} = 'headers';
-  $self->{buffer} = '' unless defined $self->{buffer};
+  $self->{buffer} //= '';
   $self->{buffer} .= $chunk if defined $chunk;
-  my $headers = $self->{cache} || [];
+  my $headers = $self->{cache} ||= [];
   my $max = $self->max_line_size;
   while (defined(my $line = get_line $self->{buffer})) {
 
-    # Check line size
+    # Check line size limit
     if (length $line > $max) {
-
-      # Abort
       $self->{state} = 'done';
       $self->{limit} = 1;
       return $self;
     }
 
     # New header
-    if ($line =~ /^(\S+)\s*:\s*(.*)/) { push @$headers, $1, $2 }
+    if ($line =~ /^(\S+)\s*:\s*(.*)$/) { push @$headers, $1, $2 }
 
     # Multiline
     elsif (@$headers && $line =~ s/^\s+//) { $headers->[-1] .= " $line" }
 
     # Empty line
     else {
-
-      # Store headers
-      for (my $i = 0; $i < @$headers; $i += 2) {
-        $self->add($headers->[$i], $headers->[$i + 1]);
-      }
-
-      # Done
+      $self->add(splice @$headers, 0, 2) while @$headers;
       $self->{state} = 'done';
-      $self->{cache} = [];
       return $self;
     }
   }
-  $self->{cache} = $headers;
 
-  # Check line size
+  # Check line size limit
   if (length $self->{buffer} > $max) {
-
-    # Abort
     $self->{state} = 'done';
     $self->{limit} = 1;
   }
@@ -306,20 +284,15 @@ sub to_hash {
 sub to_string {
   my $self = shift;
 
-  # Prepare headers
+  # Format multiline values
   my @headers;
   for my $name (@{$self->names}) {
-
-    # Multiline value
-    for my $values ($self->header($name)) {
-      my $value = join "\x0d\x0a ", @$values;
-      push @headers, "$name: $value";
-    }
+    push @headers, "$name: " . join("\x0d\x0a ", @$_)
+      for $self->header($name);
   }
 
   # Format headers
-  my $headers = join "\x0d\x0a", @headers;
-  return length $headers ? $headers : undef;
+  return join "\x0d\x0a", @headers;
 }
 
 sub trailer           { scalar shift->header(Trailer             => @_) }
@@ -327,6 +300,7 @@ sub transfer_encoding { scalar shift->header('Transfer-Encoding' => @_) }
 sub upgrade           { scalar shift->header(Upgrade             => @_) }
 sub user_agent        { scalar shift->header('User-Agent'        => @_) }
 sub www_authenticate  { scalar shift->header('WWW-Authenticate'  => @_) }
+sub x_forwarded_for   { scalar shift->header('X-Forwarded-For'   => @_) }
 
 1;
 __END__
@@ -508,11 +482,11 @@ into a single one in scalar context.
 
   # Multiple headers with the same name
   for my $header ($headers->header('Set-Cookie')) {
-    print "Set-Cookie:\n";
+    say 'Set-Cookie:';
 
     # Each header contains an array of lines
-    for my line (@$header) {
-      print "line\n";
+    for my $line (@$header) {
+      say $line;
     }
   }
 
@@ -532,13 +506,13 @@ Shortcut for the C<If-Modified-Since> header.
 
 =head2 C<is_done>
 
-  my $done = $headers->is_done;
+  my $success = $headers->is_done;
 
 Check if header parser is done.
 
 =head2 C<is_limit_exceeded>
 
-  my $limit = $headers->is_limit_exceeded;
+  my $success = $headers->is_limit_exceeded;
 
 Check if a header has exceeded C<max_line_size>.
 Note that this method is EXPERIMENTAL and might change without warning!
@@ -641,7 +615,7 @@ Shortcut for the C<Sec-WebSocket-Protocol> header.
 =head2 C<sec_websocket_version>
 
   my $version = $headers->sec_websocket_version;
-  $headers    = $headers->sec_websocket_version(8);
+  $headers    = $headers->sec_websocket_version(13);
 
 Shortcut for the C<Sec-WebSocket-Version> header.
 
@@ -718,9 +692,16 @@ Shortcut for the C<User-Agent> header.
 =head2 C<www_authenticate>
 
   my $authenticate = $headers->www_authenticate;
-  $headers         = $headers->www_authenticate('Basic "realm"');
+  $headers         = $headers->www_authenticate('Basic realm="realm"');
 
 Shortcut for the C<WWW-Authenticate> header.
+
+=head2 C<x_forwarded_for>
+
+  my $x_forwarded_for = $headers->x_forwarded_for;
+  $headers            = $headers->x_forwarded_for('127.0.0.1');
+
+Shortcut for the C<X-Forwarded-For> header.
 
 =head1 SEE ALSO
 

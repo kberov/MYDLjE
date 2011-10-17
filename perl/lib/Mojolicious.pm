@@ -10,7 +10,7 @@ use Mojolicious::Routes;
 use Mojolicious::Sessions;
 use Mojolicious::Static;
 use Mojolicious::Types;
-use Scalar::Util 'weaken';
+use Scalar::Util qw/blessed weaken/;
 
 # "Robots don't have any emotions, and sometimes that makes me very sad."
 has controller_class => 'Mojolicious::Controller';
@@ -34,8 +34,8 @@ has sessions => sub { Mojolicious::Sessions->new };
 has static   => sub { Mojolicious::Static->new };
 has types    => sub { Mojolicious::Types->new };
 
-our $CODENAME = 'Smiling Face With Sunglasses';
-our $VERSION  = '1.98';
+our $CODENAME = 'Leaf Fluttering In Wind';
+our $VERSION  = '2.0';
 
 # "These old doomsday devices are dangerously unstable.
 #  I'll rest easier not knowing where they are."
@@ -44,6 +44,8 @@ sub AUTOLOAD {
 
   # Method
   my ($package, $method) = our $AUTOLOAD =~ /^([\w\:]+)\:\:(\w+)$/;
+  croak qq/Undefined subroutine &${package}::$method called/
+    unless blessed $self && $self->isa(__PACKAGE__);
 
   # Check for helper
   croak qq/Can't locate object method "$method" via package "$package"/
@@ -59,16 +61,6 @@ sub DESTROY { }
 #  For example, Amy: you're cute, so I baked you a pony."
 sub new {
   my $self = shift->SUPER::new(@_);
-
-  # Transaction builder
-  $self->on_transaction(
-    sub {
-      my $self = shift;
-      my $tx   = Mojo::Transaction::HTTP->new;
-      $self->plugins->run_hook(after_build_tx => ($tx, $self));
-      return $tx;
-    }
-  );
 
   # Root directories
   my $home = $self->home;
@@ -113,6 +105,13 @@ sub new {
   $self->startup(@_);
 
   return $self;
+}
+
+sub build_tx {
+  my $self = shift;
+  my $tx   = Mojo::Transaction::HTTP->new;
+  $self->plugins->run_hook(after_build_tx => $tx, $self);
+  return $tx;
 }
 
 # "Amy, technology isn't intrinsically good or evil. It's how it's used.
@@ -179,6 +178,7 @@ sub handler {
   my $c =
     $self->controller_class->new(app => $self, stash => $stash, tx => $tx);
   weaken $c->{app};
+  weaken $c->{tx};
   unless (eval { $self->on_process->($self, $c); 1 }) {
     $self->log->fatal("Processing request failed: $@");
     $tx->res->code(500);
@@ -237,7 +237,7 @@ __END__
 
 =head1 NAME
 
-Mojolicious - Duct Tape For The Web!
+Mojolicious - Real-time web framework
 
 =head1 SYNOPSIS
 
@@ -262,144 +262,6 @@ Mojolicious - Duct Tape For The Web!
   }
 
 =head1 DESCRIPTION
-
-Web development for humans, making hard things possible and everything fun.
-
-  use Mojolicious::Lite;
-
-  # Simple plain text response
-  get '/' => sub {
-    my $self = shift;
-    $self->render_text('Hello World!');
-  };
-
-  # Route associating the "/time" URL to template in DATA section
-  get '/time' => 'clock';
-
-  # RESTful web service sending JSON responses
-  get '/list/:offset' => sub {
-    my $self = shift;
-    $self->render_json({list => [0 .. $self->param('offset')]});
-  };
-
-  # Scrape and return information from remote sites
-  post '/title' => sub {
-    my $self = shift;
-    my $url  = $self->param('url') || 'http://mojolicio.us';
-    $self->render_text(
-      $self->ua->get($url)->res->dom->html->head->title->text);
-  };
-
-  # WebSocket echo service
-  websocket '/echo' => sub {
-    my $self = shift;
-    $self->on_message(sub {
-      my ($self, $message) = @_;
-      $self->send_message("echo: $message");
-    });
-  };
-
-  app->start;
-  __DATA__
-
-  @@ clock.html.ep
-  % use Time::Piece;
-  % my $now = localtime;
-  <%= link_to clock => begin %>
-    The time is <%= $now->hms %>.
-  <% end %>
-
-Single file prototypes can easily grow into well-structured applications.
-A controller collects several actions together.
-
-  package MyApp::Example;
-  use Mojo::Base 'Mojolicious::Controller';
-
-  # Plain text response
-  sub hello {
-    my $self = shift;
-    $self->render_text('Hello World!');
-  }
-
-  # Render external template "templates/example/clock.html.ep"
-  sub clock { }
-
-  # RESTful web service sending JSON responses
-  sub restful {
-    my $self = shift;
-    $self->render_json({list => [0 .. $self->param('offset')]});
-  }
-
-  # Scrape and return information from remote sites
-  sub title {
-    my $self = shift;
-    my $url  = $self->param('url') || 'http://mojolicio.us';
-    $self->render_text(
-      $self->ua->get($url)->res->dom->html->head->title->text);
-  }
-
-  1;
-
-While the application class is unique, you can have as many controllers as
-you like.
-
-  package MyApp::Realtime;
-  use Mojo::Base 'Mojolicious::Controller';
-
-  # WebSocket echo service
-  sub echo {
-    my $self = shift;
-    $self->on_message(sub {
-      my ($self, $message) = @_;
-      $self->send_message("echo: $message");
-    });
-  }
-
-  1;
-
-Larger applications benefit from the separation of actions and routes,
-especially when working in a team.
-
-  package MyApp;
-  use Mojo::Base 'Mojolicious';
-
-  # Runs once on application startup
-  sub startup {
-    my $self = shift;
-    my $r    = $self->routes;
-
-    # Create a route at "/example" for the "MyApp::Example" controller
-    my $example = $r->route('/example')->to('example#');
-
-    # Connect these HTTP GET routes to actions in the controller
-    # (paths are relative to the controller)
-    $example->get('/')->to('#hello');
-    $example->get('/time')->to('#clock');
-    $example->get('/list/:offset')->to('#restful');
-
-    # All common HTTP verbs are supported
-    $example->post('/title')->to('#title');
-
-    # ...and much, much more
-    # (including multiple, auto-discovered controllers)
-    $r->websocket('/echo')->to('realtime#echo');
-  }
-
-  1;
-
-Through all of these changes, your action code and templates can stay almost
-exactly the same.
-
-  % use Time::Piece;
-  % my $now = localtime;
-  <%= link_to clock => begin %>
-    The time is <%= $now->hms %>.
-  <% end %>
-
-Mojolicious has been designed from the ground up for a fun and unique
-workflow.
-
-=head2 Want To Know More?
 
 Take a look at our excellent documentation in L<Mojolicious::Guides>!
 
@@ -542,6 +404,13 @@ Will automatically detect your home directory and set up logging based on
 your current operating mode.
 Also sets up the renderer, static dispatcher and a default set of plugins.
 
+=head2 C<build_tx>
+
+  my $tx = $app->build_tx;
+
+Transaction builder, defaults to building a L<Mojo::Transaction::HTTP>
+object.
+
 =head2 C<defaults>
 
   my $defaults = $app->defaults;
@@ -583,7 +452,7 @@ and the application object, as well as a function in C<ep> templates.
   my $result = $self->add(2, 3);
 
   # Template
-  <%= add 2, 3 %>
+  %= add 2, 3
 
 =head2 C<hook>
 
@@ -759,6 +628,9 @@ In addition to the attributes and methods above you can also call helpers on
 instances of L<Mojolicious>.
 This includes all helpers from L<Mojolicious::Plugin::DefaultHelpers> and
 L<Mojolicious::Plugin::TagHelpers>.
+Note that application helpers are always called with a new
+C<controller_class> instance, so they can't depend on or change controller
+state, which includes request, response and stash.
 
   $app->log->debug($app->dumper({foo => 'bar'}));
 
@@ -822,6 +694,8 @@ L<http://www.apache.org/licenses/LICENSE-2.0>.
 
 Every major release of L<Mojolicious> has a code name, these are the ones
 that have been used in the past.
+
+2.0, C<Leaf Fluttering In Wind> (u1F343)
 
 1.4, C<Smiling Face With Sunglasses> (u1F60E)
 

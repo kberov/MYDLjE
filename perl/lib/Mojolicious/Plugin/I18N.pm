@@ -80,18 +80,18 @@ __END__
 
 =head1 NAME
 
-Mojolicious::Plugin::I18N - Internationalization Plugin
+Mojolicious::Plugin::I18N - Internationalization plugin
 
 =head1 SYNOPSIS
 
   # Mojolicious
   $self->plugin('I18N');
   % languages 'de';
-  <%=l 'hello' %>
+  %=l 'hello'
 
   # Mojolicious::Lite
   plugin I18N => {namespace => 'MyApp::I18N'};
-  <%=l 'hello' %>
+  %=l 'hello'
 
   # Lexicon
   package MyApp::I18N::de;
@@ -127,6 +127,8 @@ The default lexicon class will only be generated if it doesn't already exist.
 
 =head1 OPTIONS
 
+L<Mojolicious::Plugin::I18N> supports the following options.
+
 =head2 C<default>
 
   # Mojolicious::Lite
@@ -143,16 +145,18 @@ Lexicon namespace, defaults to the application class followed by C<::I18N>.
 
 =head1 HELPERS
 
+L<Mojolicious::Plugin::I18N> implements the following helpers.
+
 =head2 C<l>
 
-  <%=l 'hello' %>
+  %=l 'hello'
   $self->l('hello');
 
 Translate sentence.
 
 =head2 C<languages>
 
-  <% languages 'de'; %>
+  % languages 'de';
   $self->languages('de');
 
 Change languages.

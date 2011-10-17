@@ -2,10 +2,8 @@ package Mojo::Server::Daemon;
 use Mojo::Base 'Mojo::Server';
 
 use Carp 'croak';
-use File::Spec;
-use IO::File;
-use Mojo::Command;
 use Mojo::IOLoop;
+use POSIX;
 use Scalar::Util 'weaken';
 use Sys::Hostname;
 
@@ -81,29 +79,8 @@ sub run {
 
 sub setuidgid {
   my $self = shift;
-
-  # Group
-  if (my $group = $self->group) {
-    if (my $gid = (getgrnam($group))[2]) {
-
-      # Switch
-      undef $!;
-      $) = $gid;
-      croak qq/Can't switch to effective group "$group": $!/ if $!;
-    }
-  }
-
-  # User
-  if (my $user = $self->user) {
-    if (my $uid = (getpwnam($user))[2]) {
-
-      # Switch
-      undef $!;
-      $> = $uid;
-      croak qq/Can't switch to effective user "$user": $!/ if $!;
-    }
-  }
-
+  $self->_group;
+  $self->_user;
   return $self;
 }
 
@@ -111,7 +88,7 @@ sub _build_tx {
   my ($self, $id, $c) = @_;
 
   # Build transaction
-  my $tx = $self->on_transaction->($self);
+  my $tx = $self->build_tx;
   $tx->connection($id);
 
   # Identify
@@ -129,22 +106,18 @@ sub _build_tx {
   # TLS
   $tx->req->url->base->scheme('https') if $c->{tls};
 
-  # Handler callback
+  # Handle
   weaken $self;
-  $tx->on_request(
-    sub {
-      my $tx = shift;
-
-      # Handler
-      $self->on_request->($self, $tx);
-
-      # Resume callback
-      $tx->on_resume(sub { $self->_write($id) });
+  $tx->on(
+    request => sub {
+      my $tx = pop;
+      $self->emit(request => $tx);
+      $tx->on(resume => sub { $self->_write($id) });
     }
   );
 
-  # Upgrade callback
-  $tx->on_upgrade(sub { $self->_upgrade($id, @_) });
+  # Upgrade
+  $tx->on(upgrade => sub { $self->_upgrade($id, pop) });
 
   # New request on the connection
   $c->{requests} ||= 0;
@@ -199,15 +172,12 @@ sub _finish {
     # Successful upgrade
     if ($ws->res->code eq '101') {
 
-      # Make sure connection stays active
-      $tx->keep_alive(1);
-
       # Upgrade connection timeout
       $self->ioloop->connection_timeout($id, $self->websocket_timeout);
 
-      # Resume callback
+      # Resume
       weaken $self;
-      $ws->on_resume(sub { $self->_write($id) });
+      $ws->on(resume => sub { $self->_write($id) });
     }
 
     # Failed upgrade
@@ -230,6 +200,14 @@ sub _finish {
   }
 }
 
+sub _group {
+  my $self = shift;
+  return unless my $group = $self->group;
+  croak qq/Group "$group" does not exist/
+    unless defined(my $gid = (getgrnam($group))[2]);
+  POSIX::setgid($gid) or croak qq/Can't switch to group "$group": $!/;
+}
+
 sub _listen {
   my ($self, $listen) = @_;
   return unless $listen;
@@ -249,7 +227,7 @@ sub _listen {
   my $backlog = $self->backlog;
   $options->{backlog} = $backlog if $backlog;
 
-  # Callbacks
+  # Events
   weaken $self;
   $options->{on_accept} = sub {
     my ($loop, $id) = @_;
@@ -285,7 +263,7 @@ sub _listen {
   return if $self->silent;
   $self->app->log->info("Server listening ($listen)");
   $listen =~ s/^(https?\:\/\/)\*/${1}127.0.0.1/i;
-  print "Server available at $listen.\n";
+  say "Server available at $listen.";
 }
 
 sub _read {
@@ -304,25 +282,24 @@ sub _read {
   $tx->res->headers->connection('close')
     if ($c->{requests} || 0) >= $self->max_requests;
 
-  # Finish
+  # Finish or start writing
   if ($tx->is_done) { $self->_finish($id, $tx) }
-
-  # Writing
   elsif ($tx->is_writing) { $self->_write($id) }
 }
 
 sub _upgrade {
-  my ($self, $id, $tx) = @_;
-
-  # WebSocket
-  return unless $tx->req->headers->upgrade =~ /WebSocket/i;
-
-  # WebSocket handshake handler
+  my ($self, $id, $txref) = @_;
+  return unless $$txref->req->headers->upgrade =~ /WebSocket/i;
   my $c = $self->{connections}->{$id};
-  my $ws = $c->{websocket} = $self->on_websocket->($self, $tx);
+  $c->{websocket} = $$txref = $self->upgrade_tx($$txref);
+}
 
-  # Not resumable yet
-  $ws->on_resume(sub {1});
+sub _user {
+  my $self = shift;
+  return unless my $user = $self->user;
+  croak qq/User "$user" does not exist/
+    unless defined(my $uid = (getpwnam($self->user))[2]);
+  POSIX::setuid($uid) or croak qq/Can't switch to user "$user": $!/;
 }
 
 sub _write {
@@ -336,22 +313,13 @@ sub _write {
   # Get chunk
   my $chunk = $tx->server_write;
 
-  # Callback
+  # Write
   weaken $self;
   my $cb = sub { $self->_write($id) };
-
-  # Done
   if ($tx->is_done) {
     $self->_finish($id, $tx);
-
-    # No followup
     $cb = undef unless $c->{transaction} || $c->{websocket};
   }
-
-  # Not writing
-  elsif (!$tx->is_writing) { $cb = undef }
-
-  # Write
   $self->ioloop->write($id, $chunk, $cb);
   warn "> $chunk\n" if DEBUG;
 }
@@ -361,14 +329,15 @@ __END__
 
 =head1 NAME
 
-Mojo::Server::Daemon - Non-Blocking I/O HTTP 1.1 And WebSocket Server
+Mojo::Server::Daemon - Non-blocking I/O HTTP 1.1 and WebSocket server
 
 =head1 SYNOPSIS
 
   use Mojo::Server::Daemon;
 
   my $daemon = Mojo::Server::Daemon->new(listen => ['http://*:8080']);
-  $daemon->on_request(sub {
+  $daemon->unsubscribe_all('request');
+  $daemon->on(request => sub {
     my ($self, $tx) = @_;
 
     # Request
@@ -395,6 +364,10 @@ L<Net::Rendezvous::Publish> are supported transparently and used if
 installed.
 
 See L<Mojolicious::Guides::Cookbook> for deployment recipes.
+
+=head1 EVENTS
+
+L<Mojo::Server::Daemon> inherits all events from L<Mojo::Server>.
 
 =head1 ATTRIBUTES
 

@@ -70,11 +70,23 @@ sub clone {
   return $clone;
 }
 
-sub parse {
+sub contains {
   my ($self, $path) = @_;
 
+  my $parts = $self->new($path)->parts;
+  for my $part (@{$self->parts}) {
+    return 1 unless defined(my $try = shift @$parts);
+    return unless $part eq $try;
+  }
+
+  return @$parts ? undef : 1;
+}
+
+sub parse {
+  my ($self, $path) = @_;
+  $path //= '';
+
   # Leading and trailing slash
-  $path = '' unless defined $path;
   $path =~ /^\// ? $self->leading_slash(1)  : $self->leading_slash(undef);
   $path =~ /\/$/ ? $self->trailing_slash(1) : $self->trailing_slash(undef);
 
@@ -85,11 +97,7 @@ sub parse {
   for my $part (split '/', $path) {
 
     # Empty parts before the first are garbage
-    next unless length $part or scalar @parts;
-
-    # Empty parts behind the first are ok
-    $part = '' unless defined $part;
-
+    next unless length $part or @parts;
     push @parts, $part;
   }
   $self->parts(\@parts);
@@ -136,7 +144,7 @@ Mojo::Path - Path
 
   my $path = Mojo::Path->new('/foo/bar%3B/baz.html');
   shift @{$path->parts};
-  print "$path";
+  say $path;
 
 =head1 DESCRIPTION
 
@@ -190,6 +198,13 @@ Canonicalize path.
   my $clone = $path->clone;
 
 Clone path.
+
+=head2 C<contains>
+
+  my $success = $path->contains('/foo');
+
+Check if path contains given prefix.
+Note that this method is EXPERIMENTAL and might change without warning!
 
 =head2 C<parse>
 

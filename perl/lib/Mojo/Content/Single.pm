@@ -6,16 +6,16 @@ use Mojo::Asset::Memory;
 use Mojo::Content::MultiPart;
 
 has asset => sub { Mojo::Asset::Memory->new };
+has auto_upgrade => 1;
 
 sub body_contains {
-  my ($self, $chunk) = @_;
-  return 1 if $self->asset->contains($chunk) >= 0;
-  return 0;
+  return 1 if shift->asset->contains(shift) >= 0;
+  return;
 }
 
 sub body_size {
   my $self = shift;
-  return ($self->headers->content_length || 0) if $self->on_read;
+  return ($self->headers->content_length || 0) if $self->{dynamic};
   return $self->asset->size;
 }
 
@@ -30,7 +30,7 @@ sub get_body_chunk {
   my ($self, $offset) = @_;
 
   # Body generator
-  return $self->generate_body_chunk($offset) if $self->on_read;
+  return $self->generate_body_chunk($offset) if $self->{dynamic};
 
   # Normal content
   return $self->asset->get_chunk($offset);
@@ -43,40 +43,32 @@ sub parse {
   $self->SUPER::parse(@_);
 
   # Still parsing headers or using a custom body parser
-  return $self if ($self->{state} || '') eq 'headers' || $self->on_read;
+  return $self
+    if ($self->{state} || '') eq 'headers' || $self->has_subscribers('read');
 
   # Content needs to be upgraded to multipart
-  if ($self->is_multipart) {
+  if ($self->auto_upgrade && defined($self->boundary)) {
     return $self if $self->isa('Mojo::Content::MultiPart');
-
-    # Need to upgrade
     return Mojo::Content::MultiPart->new($self)->parse;
   }
 
-  # Don't waste memory
+  # Don't waste memory and upgrade to file based storage on demand
   my $asset = $self->asset;
-  if ($asset->isa('Mojo::Asset::Memory')) {
-
-    # Upgrade to file based storage on demand
-    if ($asset->size > ($ENV{MOJO_MAX_MEMORY_SIZE} || 262144)) {
-      $self->asset(Mojo::Asset::File->new->add_chunk($asset->slurp));
-    }
-  }
+  $self->asset($asset = Mojo::Asset::File->new->add_chunk($asset->slurp))
+    if $asset->isa('Mojo::Asset::Memory')
+      && $asset->size > ($ENV{MOJO_MAX_MEMORY_SIZE} || 262144);
 
   # Chunked body or relaxed content
   if ($self->is_chunked || $self->relaxed) {
-    $self->asset->add_chunk($self->{b2});
-    $self->{b2} = '';
+    $asset->add_chunk($self->{buffer});
+    $self->{buffer} = '';
   }
 
   # Normal body
   else {
-
-    # Slurp
-    my $len   = $self->headers->content_length || 0;
-    my $asset = $self->asset;
-    my $need  = $len - $asset->size;
-    $asset->add_chunk(substr $self->{b2}, 0, $need, '') if $need > 0;
+    my $len = $self->headers->content_length || 0;
+    my $need = $len - $asset->size;
+    $asset->add_chunk(substr $self->{buffer}, 0, $need, '') if $need > 0;
 
     # Done
     $self->{state} = 'done' if $len <= $self->progress;
@@ -90,7 +82,7 @@ __END__
 
 =head1 NAME
 
-Mojo::Content::Single - HTTP 1.1 Content Container
+Mojo::Content::Single - HTTP 1.1 content container
 
 =head1 SYNOPSIS
 
@@ -104,6 +96,10 @@ Mojo::Content::Single - HTTP 1.1 Content Container
 L<Mojo::Content::Single> is a container for HTTP 1.1 content as described in
 RFC 2616.
 
+=head1 EVENTS
+
+L<Mojo::Content::Single> inherits all events from L<Mojo::Content>.
+
 =head1 ATTRIBUTES
 
 L<Mojo::Content::Single> inherits all attributes from L<Mojo::Content> and
@@ -116,6 +112,15 @@ implements the following new ones.
 
 The actual content, defaults to a L<Mojo::Asset::Memory> object.
 
+=head2 C<auto_upgrade>
+
+  my $upgrade = $content->auto_upgrade;
+  $content    = $content->auto_upgrade(0);
+
+Try to detect multipart content and automatically upgrade to a
+L<Mojo::Content::MultiPart> object, defaults to C<1>.
+Note that this attribute is EXPERIMENTAL and might change without warning!
+
 =head1 METHODS
 
 L<Mojo::Content::Single> inherits all methods from L<Mojo::Content> and
@@ -123,7 +128,7 @@ implements the following new ones.
 
 =head2 C<body_contains>
 
-  my $found = $content->body_contains('1234567');
+  my $success = $content->body_contains('1234567');
 
 Check if content contains a specific string.
 

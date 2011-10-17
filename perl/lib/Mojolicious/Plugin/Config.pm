@@ -108,7 +108,7 @@ __END__
 
 =head1 NAME
 
-Mojolicious::Plugin::Config - Perl-ish Configuration Plugin
+Mojolicious::Plugin::Config - Perl-ish configuration plugin
 
 =head1 SYNOPSIS
 
@@ -142,6 +142,8 @@ ones like C<myapp.$mode.conf>.
 
 =head1 OPTIONS
 
+L<Mojolicious::Plugin::Config> supports the following options.
+
 =head2 C<default>
 
   # Mojolicious::Lite
@@ -174,10 +176,12 @@ Configuration stash key.
 
 =head1 HELPERS
 
+L<Mojolicious::Plugin::Config> implements the following helpers.
+
 =head2 C<config>
 
-  <%= config 'something' %>
-  <%= config->{something} %>
+  %= config 'something'
+  %= config->{something}
 
 Access config values.
 

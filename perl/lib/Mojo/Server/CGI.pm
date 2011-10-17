@@ -12,7 +12,7 @@ sub run {
   my $self = shift;
 
   # Environment
-  my $tx  = $self->on_transaction->($self);
+  my $tx  = $self->build_tx;
   my $req = $tx->req;
   $req->parse(\%ENV);
 
@@ -29,7 +29,7 @@ sub run {
   }
 
   # Handle
-  $self->on_request->($self, $tx);
+  $self->emit(request => $tx);
 
   # Response start line
   STDOUT->autoflush(1);
@@ -41,10 +41,7 @@ sub run {
       my $chunk = $res->get_start_line_chunk($offset);
 
       # No start line yet, try again
-      unless (defined $chunk) {
-        sleep 1;
-        next;
-      }
+      sleep 1 and next unless defined $chunk;
 
       # End of start line
       last unless length $chunk;
@@ -66,10 +63,7 @@ sub run {
     my $chunk = $res->get_header_chunk($offset);
 
     # No headers yet, try again
-    unless (defined $chunk) {
-      sleep 1;
-      next;
-    }
+    sleep 1 and next unless defined $chunk;
 
     # End of headers
     last unless length $chunk;
@@ -86,10 +80,7 @@ sub run {
     my $chunk = $res->get_body_chunk($offset);
 
     # No content yet, try again
-    unless (defined $chunk) {
-      sleep 1;
-      next;
-    }
+    sleep 1 and next unless defined $chunk;
 
     # End of content
     last unless length $chunk;
@@ -101,7 +92,7 @@ sub run {
   }
 
   # Finish transaction
-  $tx->on_finish->($tx);
+  $tx->server_close;
 
   return $res->code;
 }
@@ -111,14 +102,15 @@ __END__
 
 =head1 NAME
 
-Mojo::Server::CGI - CGI Server
+Mojo::Server::CGI - CGI server
 
 =head1 SYNOPSIS
 
   use Mojo::Server::CGI;
 
   my $cgi = Mojo::Server::CGI->new;
-  $cgi->on_request(sub {
+  $cgi->unsubscribe_all('request')
+  $cgi->on(request => sub {
     my ($self, $tx) = @_;
 
     # Request
@@ -140,6 +132,10 @@ Mojo::Server::CGI - CGI Server
 L<Mojo::Server::CGI> is a simple and portable implementation of RFC 3875.
 
 See L<Mojolicious::Guides::Cookbook> for deployment recipes.
+
+=head1 EVENTS
+
+L<Mojo::Server::CGI> inherits all events from L<Mojo::Server>.
 
 =head1 ATTRIBUTES
 

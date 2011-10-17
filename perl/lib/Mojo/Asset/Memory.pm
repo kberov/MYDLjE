@@ -60,7 +60,7 @@ __END__
 
 =head1 NAME
 
-Mojo::Asset::Memory - In-Memory Asset
+Mojo::Asset::Memory - In-memory asset
 
 =head1 SYNOPSIS
 
@@ -68,7 +68,7 @@ Mojo::Asset::Memory - In-Memory Asset
 
   my $asset = Mojo::Asset::Memory->new;
   $asset->add_chunk('foo bar baz');
-  print $asset->slurp;
+  say $asset->slurp;
 
 =head1 DESCRIPTION
 

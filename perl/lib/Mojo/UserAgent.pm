@@ -1,5 +1,5 @@
 package Mojo::UserAgent;
-use Mojo::Base -base;
+use Mojo::Base 'Mojo::EventEmitter';
 
 use Carp 'croak';
 use Mojo::CookieJar;
@@ -16,7 +16,7 @@ use constant DEBUG => $ENV{MOJO_USERAGENT_DEBUG} || 0;
 # "You can't let a single bad experience scare you away from drugs."
 has cert       => sub { $ENV{MOJO_CERT_FILE} };
 has cookie_jar => sub { Mojo::CookieJar->new };
-has [qw/http_proxy https_proxy no_proxy on_start/];
+has [qw/http_proxy https_proxy no_proxy/];
 has ioloop => sub { Mojo::IOLoop->new };
 has keep_alive_timeout => 15;
 has key                => sub { $ENV{MOJO_KEY_FILE} };
@@ -82,6 +82,15 @@ sub need_proxy {
   return 1;
 }
 
+# DEPRECATED in Smiling Face With Sunglasses!
+sub on_start {
+  warn <<EOF;
+Mojo::UserAgent->on_start is DEPRECATED in favor of using
+Mojo::UserAgent->on!!!
+EOF
+  shift->on(start => shift);
+}
+
 sub post {
   my $self = shift;
   $self->start($self->build_tx('POST', @_));
@@ -127,7 +136,6 @@ sub start {
   # Start loop
   my $loop = $self->ioloop;
   $loop->start;
-  $loop->one_tick(0);
 
   return $tx;
 }
@@ -216,11 +224,11 @@ sub _connect {
   my ($self, $tx, $cb) = @_;
 
   # Keep alive connection
-  weaken $self;
   my $loop = $self->_loop;
   my $id   = $tx->connection;
   my ($scheme, $host, $port) = $self->transactor->peer($tx);
   $id ||= $self->_cache("$scheme:$host:$port");
+  weaken $self;
   if ($id && !ref $id) {
     warn "KEEP ALIVE CONNECTION ($scheme:$host:$port)\n" if DEBUG;
     $self->{connections}->{$id} = {cb => $cb, transaction => $tx};
@@ -250,7 +258,7 @@ sub _connect {
     $self->{connections}->{$id} = {cb => $cb, transaction => $tx};
   }
 
-  # Callbacks
+  # Events
   $loop->on_close($id => sub { $self->_handle(pop, 1) });
   $loop->on_error($id => sub { $self->_error(@_) });
   $loop->on_read($id => sub { $self->_read(@_) });
@@ -332,16 +340,15 @@ sub _handle {
   my $c   = $self->{connections}->{$id};
   my $old = $c->{transaction};
   if ($old && $old->is_websocket) {
-    $old->client_close;
     $self->{processing} -= 1;
     delete $self->{connections}->{$id};
     $self->_drop($id, $close);
+    $old->client_close;
   }
 
   # Upgrade connection to WebSocket
   elsif ($old && (my $new = $self->_upgrade($id))) {
-
-    # Finish transaction and parse leftovers
+    $old->client_close;
     $self->_finish($new, $c->{cb});
     $new->client_read($old->res->leftovers);
   }
@@ -352,8 +359,9 @@ sub _handle {
     return unless $old;
     if (my $jar = $self->cookie_jar) { $jar->extract($old) }
     $self->{processing} -= 1;
+    $old->client_close;
 
-    # Redirect or callback
+    # Handle redirects
     $self->_finish($new || $old, $c->{cb}, $close)
       unless $self->_redirect($c, $old);
   }
@@ -465,10 +473,10 @@ sub _start {
   if (my $jar = $self->cookie_jar) { $jar->inject($tx) }
 
   # Connect
-  if (my $start = $self->on_start) { $self->$start($tx) }
+  $self->emit(start => $tx);
   return unless my $id = $self->_connect($tx, $cb);
   weaken $self;
-  $tx->on_resume(sub { $self->_write($id) });
+  $tx->on(resume => sub { $self->_write($id) });
   $self->{processing} ||= 0;
   $self->{processing} += 1;
 
@@ -520,7 +528,7 @@ sub _upgrade {
   $c->{transaction} = $new;
   $self->_loop->connection_timeout($id, $self->websocket_timeout);
   weaken $self;
-  $new->on_resume(sub { $self->_write($id) });
+  $new->on(resume => sub { $self->_write($id) });
 
   return $new;
 }
@@ -554,7 +562,7 @@ __END__
 
 =head1 NAME
 
-Mojo::UserAgent - Non-Blocking I/O HTTP 1.1 And WebSocket User Agent
+Mojo::UserAgent - Non-blocking I/O HTTP 1.1 and WebSocket user agent
 
 =head1 SYNOPSIS
 
@@ -562,26 +570,30 @@ Mojo::UserAgent - Non-Blocking I/O HTTP 1.1 And WebSocket User Agent
   my $ua = Mojo::UserAgent->new;
 
   # Say hello to the unicode snowman
-  print $ua->get('www.☃.net?hello=there')->res->body;
+  say $ua->get('www.☃.net?hello=there')->res->body;
 
   # Quick JSON API request with Basic authentication
-  print $ua->get('https://sri:s3cret@api.twitter.com/1/trends.json')
+  say $ua->get('https://sri:s3cret@api.twitter.com/1/trends.json')
     ->res->json->{trends}->[0]->{name};
 
   # Extract data from HTML and XML resources
-  print $ua->get('mojolicio.us')->res->dom->html->head->title->text;
+  say $ua->get('mojolicio.us')->res->dom->html->head->title->text;
 
   # Scrape the latest headlines from a news site
   $ua->max_redirects(5)->get('www.reddit.com/r/perl/')
-    ->res->dom('p.title > a.title')->each(sub { print $_->text, "\n" });
+    ->res->dom('p.title > a.title')->each(sub { say $_->text });
 
-  # Form post with exception handling
+  # Form POST with exception handling
   my $tx = $ua->post_form('search.cpan.org/search' => {q => 'mojo'});
-  if (my $res = $tx->success) { print $res->body }
+  if (my $res = $tx->success) { say $res->body }
   else {
     my ($message, $code) = $tx->error;
-    print "Error: $message";
+    say "Error: $message";
   }
+
+  # PUT request with content
+  my $tx = $ua->put(
+    'mojolicio.us' => {'Content-Type' => 'text/plain'} => 'Hello World!');
 
   # Grab the latest Mojolicious release :)
   $ua->max_redirects(5)->get('latest.mojolicio.us')
@@ -604,10 +616,10 @@ Mojo::UserAgent - Non-Blocking I/O HTTP 1.1 And WebSocket User Agent
   # WebSocket request
   $ua->websocket('ws://websockets.org:8787' => sub {
     my ($self, $tx) = @_;
-    $tx->on_finish(sub { Mojo::IOLoop->stop });
-    $tx->on_message(sub {
+    $tx->on(finish  => sub { Mojo::IOLoop->stop });
+    $tx->on(message => sub {
       my ($tx, $message) = @_;
-      print "$message\n";
+      say $message;
       $tx->finish;
     });
     $tx->send_message('hi there!');
@@ -621,6 +633,24 @@ user agent with C<IPv6>, C<TLS> and C<libev> support.
 
 Optional modules L<EV>, L<IO::Socket::IP> and L<IO::Socket::SSL> are
 supported transparently and used if installed.
+
+=head1 EVENTS
+
+L<Mojo::UserAgent> can emit the following events.
+
+=head2 C<start>
+
+  $ua->on(start => sub {
+    my ($ua, $tx) = @_;
+  });
+
+Emitted whenever a new transaction is about to start, this includes
+automatically prepared proxy C<CONNECT> requests and followed redirects.
+
+  $ua->on(start => sub {
+    my ($ua, $tx) = @_;
+    $tx->req->headers->header('X-Bender', 'Bite my shiny metal ass!');
+  });
 
 =head1 ATTRIBUTES
 
@@ -720,20 +750,6 @@ Value for C<User-Agent> request header, defaults to C<Mojolicious (Perl)>.
 Domains that don't require a proxy server to be used.
 Note that this attribute is EXPERIMENTAL and might change without warning!
 
-=head2 C<on_start>
-
-  my $cb = $ua->on_start;
-  $ua    = $ua->on_start(sub {...});
-
-Callback to be invoked whenever a new transaction is about to start, this
-includes automatically prepared proxy C<CONNECT> requests and followed
-redirects.
-
-  $ua->on_start(sub {
-    my ($ua, $tx) = @_;
-    $tx->req->headers->header('X-Bender', 'Bite my shiny metal ass!');
-  });
-
 =head2 C<transactor>
 
   my $t = $ua->transactor;
@@ -752,8 +768,8 @@ before being dropped, defaults to C<300>.
 
 =head1 METHODS
 
-L<Mojo::UserAgent> inherits all methods from L<Mojo::Base> and implements the
-following new ones.
+L<Mojo::UserAgent> inherits all methods from L<Mojo::EventEmitter> and
+implements the following new ones.
 
 =head2 C<app>
 
@@ -764,7 +780,7 @@ following new ones.
 Application relative URLs will be processed with, defaults to the value of
 the C<MOJO_APP> environment variable.
 
-  print $ua->app->secret;
+  say $ua->app->secret;
   $ua->app->log->level('fatal');
   $ua->app->defaults(testing => 'oh yea!');
 
@@ -797,7 +813,7 @@ You can also append a callback to perform requests non-blocking.
 
   $ua->delete('http://kraih.com' => sub {
     my ($self, $tx) = @_;
-    print $tx->res->body;
+    say $tx->res->body;
     Mojo::IOLoop->stop;
   });
   Mojo::IOLoop->start;
@@ -820,7 +836,7 @@ You can also append a callback to perform requests non-blocking.
 
   $ua->get('http://kraih.com' => sub {
     my ($self, $tx) = @_;
-    print $tx->res->body;
+    say $tx->res->body;
     Mojo::IOLoop->stop;
   });
   Mojo::IOLoop->start;
@@ -836,7 +852,7 @@ You can also append a callback to perform requests non-blocking.
 
   $ua->head('http://kraih.com' => sub {
     my ($self, $tx) = @_;
-    print $tx->res->body;
+    say $tx->res->body;
     Mojo::IOLoop->stop;
   });
   Mojo::IOLoop->start;
@@ -859,7 +875,7 @@ You can also append a callback to perform requests non-blocking.
 
   $ua->post('http://kraih.com' => sub {
     my ($self, $tx) = @_;
-    print $tx->res->body;
+    say $tx->res->body;
     Mojo::IOLoop->stop;
   });
   Mojo::IOLoop->start;
@@ -875,7 +891,7 @@ You can also append a callback to perform requests non-blocking.
 
   $ua->post_form('http://kraih.com' => {q => 'test'} => sub {
     my ($self, $tx) = @_;
-    print $tx->res->body;
+    say $tx->res->body;
     Mojo::IOLoop->stop;
   });
   Mojo::IOLoop->start;
@@ -891,7 +907,7 @@ You can also append a callback to perform requests non-blocking.
 
   $ua->put('http://kraih.com' => sub {
     my ($self, $tx) = @_;
-    print $tx->res->body;
+    say $tx->res->body;
     Mojo::IOLoop->stop;
   });
   Mojo::IOLoop->start;
@@ -905,7 +921,7 @@ You can also append a callback to perform transactions non-blocking.
 
   $ua->start($tx => sub {
     my ($self, $tx) = @_;
-    print $tx->res->body;
+    say $tx->res->body;
     Mojo::IOLoop->stop;
   });
   Mojo::IOLoop->start;
@@ -926,13 +942,14 @@ Note that this method is EXPERIMENTAL and might change without warning!
 
 Open a non-blocking WebSocket connection with transparent handshake, takes
 the exact same arguments as L<Mojo::UserAgent::Transactor/"websocket">.
+Note that this method is EXPERIMENTAL and might change without warning!
 
   $ua->websocket('ws://localhost:3000/echo' => sub {
     my ($self, $tx) = @_;
-    $tx->on_finish(sub  { Mojo::IOLoop->stop });
-    $tx->on_message(sub {
+    $tx->on(finish  => sub { Mojo::IOLoop->stop });
+    $tx->on(message => sub {
       my ($tx, $message) = @_;
-      print "$message\n";
+      say "$message\n";
     });
     $tx->send_message('Hi!');
   });

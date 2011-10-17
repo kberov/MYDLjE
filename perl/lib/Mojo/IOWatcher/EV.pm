@@ -1,38 +1,28 @@
 package Mojo::IOWatcher::EV;
 use Mojo::Base 'Mojo::IOWatcher';
 
-use EV;
+use EV 4.0;
 use Scalar::Util 'weaken';
 
-my $SINGLETON;
+my $EV;
 
-sub DESTROY { undef $SINGLETON }
+sub DESTROY { undef $EV }
 
 # We have to fall back to Mojo::IOWatcher, since EV is unique
-sub new { $SINGLETON++ ? Mojo::IOWatcher->new : shift->SUPER::new }
+sub new { $EV++ ? Mojo::IOWatcher->new : shift->SUPER::new }
 
 sub not_writing {
   my ($self, $handle) = @_;
 
   my $fd = fileno $handle;
   my $h  = $self->{handles}->{$fd};
-  my $w  = $h->{watcher};
-  if ($w) { $w->set($fd, EV::READ) if delete $h->{writing} }
+  if (my $w = $h->{watcher}) { $w->set($fd, EV::READ) }
   else {
     weaken $self;
     $h->{watcher} = EV::io($fd, EV::READ, sub { $self->_io($fd, @_) });
   }
 
   return $self;
-}
-
-# "Wow, Barney. You brought a whole beer keg.
-#  Yeah... where do I fill it up?"
-sub one_tick {
-  my ($self, $timeout) = @_;
-  my $w = EV::timer($timeout, 0, sub { EV::unloop(EV::BREAK_ONE) });
-  EV::loop;
-  undef $w;
 }
 
 sub recurring { shift->_timer(shift, 1, @_) }
@@ -43,6 +33,12 @@ sub remove {
   return $self;
 }
 
+# "Wow, Barney. You brought a whole beer keg.
+#  Yeah... where do I fill it up?"
+sub start {EV::run}
+
+sub stop { EV::break(EV::BREAK_ONE) }
+
 sub timer { shift->_timer(shift, 0, @_) }
 
 sub writing {
@@ -50,14 +46,12 @@ sub writing {
 
   my $fd = fileno $handle;
   my $h  = $self->{handles}->{$fd};
-  my $w  = $h->{watcher};
-  if ($w) { $w->set($fd, EV::WRITE | EV::READ) }
+  if (my $w = $h->{watcher}) { $w->set($fd, EV::WRITE | EV::READ) }
   else {
     weaken $self;
     $h->{watcher} =
       EV::io($fd, EV::WRITE | EV::READ, sub { $self->_io($fd, @_) });
   }
-  $h->{writing} = 1;
 
   return $self;
 }
@@ -99,7 +93,7 @@ __END__
 
 =head1 NAME
 
-Mojo::IOWatcher::EV - EV Non-Blocking I/O Watcher
+Mojo::IOWatcher::EV - EV non-blocking I/O watcher
 
 =head1 SYNOPSIS
 
@@ -128,12 +122,6 @@ Construct a new L<Mojo::IOWatcher::EV> object.
 
 Only watch handle for readable events.
 
-=head2 C<one_tick>
-
-  $watcher->one_tick('0.25');
-
-Run for exactly one tick and watch for I/O and timer events.
-
 =head2 C<recurring>
 
   my $id = $watcher->recurring(3 => sub {...});
@@ -146,6 +134,18 @@ amount of seconds.
   $watcher = $watcher->remove($handle);
 
 Remove handle.
+
+=head2 C<start>
+
+  $watcher->start;
+
+Start watching for I/O and timer events.
+
+=head2 C<stop>
+
+  $watcher->stop;
+
+Stop watching for I/O and timer events.
 
 =head2 C<timer>
 

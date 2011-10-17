@@ -22,7 +22,7 @@ __END__
 
 =head1 NAME
 
-Mojolicious::Plugin::PoweredBy - Powered By Plugin
+Mojolicious::Plugin::PoweredBy - Powered by plugin
 
 =head1 SYNOPSIS
 
@@ -42,6 +42,8 @@ This is a core plugin, that means it is always enabled and its code a good
 example for learning to build new plugins.
 
 =head1 OPTIONS
+
+L<Mojolicious::Plugin::PoweredBy> supports the following options.
 
 =head2 C<powered_by>
 

@@ -5,7 +5,7 @@ BEGIN {
   $MojoX::Renderer::Alloy::HTE::AUTHORITY = 'cpan:AJGB';
 }
 BEGIN {
-  $MojoX::Renderer::Alloy::HTE::VERSION = '1.110180';
+  $MojoX::Renderer::Alloy::HTE::VERSION = '1.112200';
 }
 #ABSTRACT: Template::Alloy's HTML::Template::Expr renderer
 
@@ -58,7 +58,7 @@ sub _render {
     }
     else {
         # inlined templates are not supported
-        if ( $r->get_inline_template($options, $tname) ) {
+        if ( $r->get_data_template($options, $tname) ) {
             $c->render_exception(
                 "Inlined templates are not supported"
             );
@@ -69,10 +69,7 @@ sub _render {
     }
 
     $alloy->param(
-        {
-            %{ $c->stash },
-            c => $c,
-        },
+        $self->_template_vars( $c )
     );
 
     eval {
@@ -101,7 +98,7 @@ MojoX::Renderer::Alloy::HTE - Template::Alloy's HTML::Template::Expr renderer
 
 =head1 VERSION
 
-version 1.110180
+version 1.112200
 
 =head1 SYNOPSIS
 
@@ -123,7 +120,7 @@ Mojolicious::Lite
 
 =head1 DESCRIPTION
 
-    <a href="<TMPL_VAR EXPR="c.url_for('about_us')">"Hello!</a>
+    <a href="<TMPL_VAR EXPR="h.url_for('about_us')">"Hello!</a>
 
     <TMPL_INCLUDE NAME="include.inc">
 

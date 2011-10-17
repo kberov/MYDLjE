@@ -83,8 +83,8 @@ sub run {
   # Start
   my $v;
   my $buffer = '';
-  $ua->on_start(
-    sub {
+  $ua->on(
+    start => sub {
       my $tx = pop;
 
       # Prepare request information
@@ -115,7 +115,7 @@ sub run {
       };
 
       # Progress
-      $tx->res->on_progress(sub { $cb->(shift) });
+      $tx->res->on(progress => sub { $cb->(shift) });
 
       # Stream content
       $tx->res->body(
@@ -154,7 +154,7 @@ sub run {
 sub _say {
   return unless length(my $value = shift);
   utf8::encode $value;
-  print "$value\n";
+  say $value;
 }
 
 sub _select {
@@ -200,7 +200,7 @@ __END__
 
 =head1 NAME
 
-Mojolicious::Command::get - Get Command
+Mojolicious::Command::get - Get command
 
 =head1 SYNOPSIS
 

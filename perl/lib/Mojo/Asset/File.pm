@@ -1,8 +1,6 @@
 package Mojo::Asset::File;
 use Mojo::Base 'Mojo::Asset';
 
-# We can't use File::Temp because there is no seek support in the version
-# shipped with Perl 5.8
 use Carp 'croak';
 use Errno;
 use Fcntl;
@@ -30,7 +28,7 @@ has handle => sub {
   my $fh;
   until (sysopen $fh, $name, O_CREAT | O_EXCL | O_RDWR) {
     croak qq/Can't open file "$name": $!/ if $file || $! != $!{EEXIST};
-    $name = "$base." . md5_sum(time . $$ . rand 999999999);
+    $name = "$base." . md5_sum(time . $$ . rand 9999999);
   }
   $file = $name;
   $self->path($file);
@@ -65,7 +63,7 @@ sub add_chunk {
   $self->handle->sysseek(0, SEEK_END);
 
   # Append to file
-  $chunk = '' unless defined $chunk;
+  $chunk //= '';
   $self->handle->syswrite($chunk, length $chunk);
 
   return $self;
@@ -76,7 +74,7 @@ sub contains {
 
   # Seek to start
   $self->handle->sysseek($self->start_range, SEEK_SET);
-  my $end = defined $self->end_range ? $self->end_range : $self->size;
+  my $end = $self->end_range // $self->size;
   my $window_size = length($pattern) * 2;
   $window_size = $end - $self->start_range
     if $window_size > $end - $self->start_range;
@@ -115,7 +113,7 @@ sub get_chunk {
   my $buffer;
 
   # Chunk size
-  my $size = $ENV{MOJO_CHUNK_SIZE} || 262144;
+  my $size = $ENV{MOJO_CHUNK_SIZE} || 131072;
 
   # Range support
   if (defined $end) {
@@ -176,7 +174,7 @@ __END__
 
 =head1 NAME
 
-Mojo::Asset::File - File Asset
+Mojo::Asset::File - File asset
 
 =head1 SYNOPSIS
 
@@ -184,10 +182,10 @@ Mojo::Asset::File - File Asset
 
   my $asset = Mojo::Asset::File->new;
   $asset->add_chunk('foo bar baz');
-  print $asset->slurp;
+  say $asset->slurp;
 
   my $asset = Mojo::Asset::File->new(path => '/foo/bar/baz.txt');
-  print $asset->slurp;
+  say $asset->slurp;
 
 =head1 DESCRIPTION
 

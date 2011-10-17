@@ -10,13 +10,7 @@ use Scalar::Util 'weaken';
 
 has home => sub { Mojo::Home->new };
 has log  => sub { Mojo::Log->new };
-has on_transaction => sub {
-  sub { Mojo::Transaction::HTTP->new }
-};
-has on_websocket => sub {
-  sub { Mojo::Transaction::WebSocket->new(handshake => pop) }
-};
-has ua => sub {
+has ua   => sub {
   my $self = shift;
 
   # Fresh user agent
@@ -41,15 +35,19 @@ sub new {
   return $self;
 }
 
+sub build_tx { Mojo::Transaction::HTTP->new }
+
 # "D’oh."
 sub handler { croak 'Method "handler" not implemented in subclass' }
+
+sub upgrade_tx { Mojo::Transaction::WebSocket->new(handshake => pop) }
 
 1;
 __END__
 
 =head1 NAME
 
-Mojo - The Duct Tape!
+Mojo - Duct tape for the HTML5 web!
 
 =head1 SYNOPSIS
 
@@ -75,7 +73,8 @@ Mojo - The Duct Tape!
 
 =head1 DESCRIPTION
 
-Mojo provides a flexible runtime environment for Perl web frameworks.
+Mojo provides a flexible runtime environment for Perl real-time web
+frameworks.
 It provides all the basic tools and helpers needed to write simple web
 applications and higher level web frameworks such as L<Mojolicious>.
 
@@ -104,22 +103,6 @@ The logging layer of your application, defaults to a L<Mojo::Log> object.
 
   $app->log->debug('It works!');
 
-=head2 C<on_transaction>
-
-  my $cb = $app->on_transaction;
-  $app   = $app->on_transaction(sub {...});
-
-Callback to be invoked when a new transaction is needed, defaults to building
-a L<Mojo::Transaction::HTTP> object.
-
-=head2 C<on_websocket>
-
-  my $cb = $app->on_websocket;
-  $app   = $app->on_websocket(sub {...});
-
-Callback to be invoked for WebSocket handshakes, defaults to building a
-L<Mojo::Transaction::WebSocket> object.
-
 =head2 C<ua>
 
   my $ua = $app->ua;
@@ -141,6 +124,13 @@ Construct a new L<Mojo> application.
 Will automatically detect your home directory and set up logging to
 C<log/mojo.log> if there's a C<log> directory.
 
+=head2 C<build_tx>
+
+  my $tx = $app->build_tx;
+
+Transaction builder, defaults to building a L<Mojo::Transaction::HTTP>
+object.
+
 =head2 C<handler>
 
   $tx = $app->handler($tx);
@@ -152,6 +142,13 @@ L<Mojo::Transaction::HTTP> or L<Mojo::Transaction::WebSocket> object.
   sub handler {
     my ($self, $tx) = @_;
   }
+
+=head2 C<upgrade_tx>
+
+  my $ws = $app->upgrade_tx(tx);
+
+Upgrade transaction, defaults to building a L<Mojo::Transaction::WebSocket>
+object.
 
 =head1 SEE ALSO
 

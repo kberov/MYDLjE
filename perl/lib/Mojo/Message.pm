@@ -1,5 +1,5 @@
 package Mojo::Message;
-use Mojo::Base -base;
+use Mojo::Base 'Mojo::EventEmitter';
 
 use Carp 'croak';
 use Mojo::Asset::Memory;
@@ -9,6 +9,7 @@ use Mojo::JSON;
 use Mojo::Parameters;
 use Mojo::Upload;
 use Mojo::Util qw/decode url_unescape/;
+use Scalar::Util 'weaken';
 
 use constant CHUNK_SIZE => $ENV{MOJO_CHUNK_SIZE} || 131072;
 
@@ -18,7 +19,6 @@ has dom_class        => 'Mojo::DOM';
 has json_class       => 'Mojo::JSON';
 has max_message_size => sub { $ENV{MOJO_MAX_MESSAGE_SIZE} || 5242880 };
 has version          => '1.1';
-has [qw/on_finish on_progress/];
 
 # "I'll keep it short and sweet. Family. Religion. Friendship.
 #  These are the three demons you must slay if you wish to succeed in
@@ -43,27 +43,20 @@ sub body {
   my $self = shift;
 
   # Downgrade multipart content
-  $self->content(Mojo::Content::Single->new)
-    if $self->content->isa('Mojo::Content::MultiPart');
+  $self->content(Mojo::Content::Single->new) if $self->content->is_multipart;
+  my $content = $self->content;
 
   # Get
-  my $content = $self->content;
-  return $content->on_read ? $content->on_read : $self->content->asset->slurp
-    unless @_;
-
-  # New content
-  my $new = shift;
-  $content->on_read(undef);
-  $content->asset(Mojo::Asset::Memory->new);
-  return $self unless defined $new;
+  return $content->asset->slurp unless defined(my $new = shift);
 
   # Callback
   if (ref $new eq 'CODE') {
-    $content->on_read(sub { shift and $self->$new(@_) });
+    weaken $self;
+    return $content->on(read => sub { $self->$new(pop) });
   }
 
   # Set text content
-  elsif (length $new) { $content->asset->add_chunk($new) }
+  else { $content->asset(Mojo::Asset::Memory->new->add_chunk($new)) }
 
   return $self;
 }
@@ -116,7 +109,7 @@ sub build_body {
   my $self = shift;
   my $body = $self->content->build_body(@_);
   $self->{state} = 'done';
-  if (my $cb = $self->on_finish) { $self->$cb }
+  $self->emit('finish');
   return $body;
 }
 
@@ -237,7 +230,7 @@ sub get_body_chunk {
   my $self = shift;
 
   # Progress
-  if (my $cb = $self->on_progress) { $self->$cb('body', @_) }
+  $self->emit(progress => 'body', @_);
 
   # Chunk
   my $chunk = $self->content->get_body_chunk(@_);
@@ -245,7 +238,7 @@ sub get_body_chunk {
 
   # Finish
   $self->{state} = 'done';
-  if (my $cb = $self->on_finish) { $self->$cb }
+  $self->emit('finish');
 
   return $chunk;
 }
@@ -254,7 +247,7 @@ sub get_header_chunk {
   my $self = shift;
 
   # Progress
-  if (my $cb = $self->on_progress) { $self->$cb('headers', @_) }
+  $self->emit(progress => 'headers', @_);
 
   # HTTP 0.9 has no headers
   return '' if $self->version eq '0.9';
@@ -264,13 +257,9 @@ sub get_header_chunk {
 
 sub get_start_line_chunk {
   my ($self, $offset) = @_;
-
-  # Progress
-  if (my $cb = $self->on_progress) { $self->$cb('start_line', @_) }
-
-  # Get chunk
-  my $copy = $self->{buffer} ||= $self->_build_start_line;
-  return substr $copy, $offset, CHUNK_SIZE;
+  $self->emit(progress => 'start_line', @_);
+  return substr $self->{start_line_buffer} //= $self->_build_start_line,
+    $offset, CHUNK_SIZE;
 }
 
 sub has_leftovers { shift->content->has_leftovers }
@@ -317,6 +306,23 @@ sub json {
 sub leftovers { shift->content->leftovers }
 
 sub max_line_size { shift->headers->max_line_size(@_) }
+
+# DEPRECATED in Smiling Face With Sunglasses!
+sub on_finish {
+  warn <<EOF;
+Mojo::Message->on_finish is DEPRECATED in favor of using Mojo::Message->on!!!
+EOF
+  shift->on(finish => shift);
+}
+
+# DEPRECATED in Smiling Face With Sunglasses!
+sub on_progress {
+  warn <<EOF;
+Mojo::Message->on_progress is DEPRECATED in favor of using
+Mojo::Message->on!!!
+EOF
+  shift->on(progress => shift);
+}
 
 sub param {
   my $self = shift;
@@ -406,8 +412,8 @@ sub _parse {
   my ($self, $until_body, $chunk) = @_;
 
   # Add chunk
-  $self->{buffer}   = '' unless defined $self->{buffer};
-  $self->{raw_size} = 0  unless exists $self->{raw_size};
+  $self->{buffer}   //= '';
+  $self->{raw_size} //= 0;
   if (defined $chunk) {
     $self->{raw_size} += length $chunk;
     $self->{buffer} .= $chunk;
@@ -431,18 +437,12 @@ sub _parse {
   }
 
   # Content
-  my $state = $self->{state} || '';
-  if ($state eq 'body' || $state eq 'content' || $state eq 'done') {
-    my $content = $self->content;
-
-    # Empty buffer
-    my $buffer = $self->{buffer};
-    $self->{buffer} = '';
+  if (($self->{state} || '') ~~ [qw/body content done/]) {
 
     # Until body
-    if ($until_body) {
-      $self->content($content->parse_until_body($buffer));
-    }
+    my $content = $self->content;
+    my $buffer  = delete $self->{buffer};
+    if ($until_body) { $self->content($content->parse_until_body($buffer)) }
 
     # CGI
     elsif ($self->{state} eq 'body') {
@@ -466,10 +466,10 @@ sub _parse {
   $self->{state} = 'done' if $self->content->is_done;
 
   # Progress
-  if (my $cb = $self->on_progress) { $self->$cb }
+  $self->emit('progress');
 
   # Finished
-  if ((my $cb = $self->on_finish) && $self->is_done) { $self->$cb }
+  $self->emit('finish') if $self->is_done;
 
   return $self;
 }
@@ -518,10 +518,10 @@ sub _parse_formdata {
     if ($charset) {
       my $backup = $name;
       decode $charset, $name if $name;
-      $name = $backup unless defined $name;
+      $name //= $backup;
       $backup = $filename;
       decode $charset, $filename if $filename;
-      $filename = $backup unless defined $filename;
+      $filename //= $backup;
     }
 
     # Form value
@@ -530,7 +530,7 @@ sub _parse_formdata {
       if ($charset && !$part->headers->content_transfer_encoding) {
         my $backup = $value;
         decode $charset, $value;
-        $value = $backup unless defined $value;
+        $value //= $backup;
       }
     }
 
@@ -545,7 +545,7 @@ __END__
 
 =head1 NAME
 
-Mojo::Message - HTTP 1.1 Message Base Class
+Mojo::Message - HTTP 1.1 message base class
 
 =head1 SYNOPSIS
 
@@ -555,6 +555,26 @@ Mojo::Message - HTTP 1.1 Message Base Class
 
 L<Mojo::Message> is an abstract base class for HTTP 1.1 messages as described
 in RFC 2616 and RFC 2388.
+
+=head1 EVENTS
+
+L<Mojo::Message> can emit the following events.
+
+=head2 C<finish>
+
+  $message->on(finish => sub {
+    my $message = shift;
+  });
+
+Emitted after message building or parsing is finished.
+
+=head2 C<progress>
+
+  $message->on(progress => sub {
+    my $message = shift;
+  });
+
+Emitted on progress.
 
 =head1 ATTRIBUTES
 
@@ -597,29 +617,10 @@ to L<Mojo::JSON>.
 
 Maximum message size in bytes, defaults to C<5242880>.
 
-=head2 C<on_finish>
-
-  my $cb   = $message->on_finish;
-  $message = $message->on_finish(sub {
-    my $self = shift;
-  });
-
-Callback to be invoked after message building or parsing is finished.
-
-=head2 C<on_progress>
-
-  my $cb   = $message->on_progress;
-  $message = $message->on_progress(sub {
-    my $self = shift;
-    print '+';
-  });
-
-Callback to be invoked on progress.
-
 =head1 METHODS
 
-L<Mojo::Message> inherits all methods from L<Mojo::Base> and implements the
-following new ones.
+L<Mojo::Message> inherits all methods from L<Mojo::EventEmitter> and
+implements the following new ones.
 
 =head2 C<at_least_version>
 
@@ -631,9 +632,10 @@ Check if message is at least a specific version.
 
   my $string = $message->body;
   $message   = $message->body('Hello!');
-  $message   = $message->body(sub {...});
+  my $cb     = $message->body(sub {...});
 
-Simple C<content> access.
+Access and replace text content or register C<read> event with content, which
+will be emitted when new content arrives.
 
 =head2 C<body_params>
 
@@ -716,7 +718,7 @@ Get a chunk of start line data starting from a specific position.
 
 =head2 C<has_leftovers>
 
-  my $leftovers = $message->has_leftovers;
+  my $success = $message->has_leftovers;
 
 Check if message parser has leftover data.
 
@@ -735,35 +737,35 @@ Message headers, defaults to a L<Mojo::Headers> object.
 
 =head2 C<is_chunked>
 
-  my $chunked = $message->is_chunked;
+  my $success = $message->is_chunked;
 
 Check if message content is chunked.
 
 =head2 C<is_done>
 
-  my $done = $message->is_done;
+  my $success = $message->is_done;
 
 Check if parser is done.
 
 =head2 C<is_dynamic>
 
-  my $dynamic = $message->is_dynamic;
+  my $success = $message->is_dynamic;
 
 Check if message content will be dynamic.
 Note that this method is EXPERIMENTAL and might change without warning!
 
 =head2 C<is_limit_exceeded>
 
-  my $limit = $message->is_limit_exceeded;
+  my $success = $message->is_limit_exceeded;
 
 Check if message has exceeded C<max_line_size> or C<max_message_size>.
 Note that this method is EXPERIMENTAL and might change without warning!
 
 =head2 C<is_multipart>
 
-  my $multipart = $message->is_multipart;
+  my $success = $message->is_multipart;
 
-Check if message content is multipart.
+Check if message content is a L<Mojo::Content::MultiPart> object.
 
 =head2 C<json>
 
@@ -842,16 +844,16 @@ HTTP version of message.
   $message->write('Hello!');
   $message->write('Hello!', sub {...});
 
-Write dynamic content, the optional drain callback will be invoked once all
-data has been written.
+Write dynamic content non-blocking, the optional drain callback will be
+invoked once all data has been written.
 
 =head2 C<write_chunk>
 
   $message->write_chunk('Hello!');
   $message->write_chunk('Hello!', sub {...});
 
-Write chunked content, the optional drain callback will be invoked once all
-data has been written.
+Write dynamic content non-blocking with the C<chunked> transfer encoding, the
+optional drain callback will be invoked once all data has been written.
 
 =head1 SEE ALSO
 

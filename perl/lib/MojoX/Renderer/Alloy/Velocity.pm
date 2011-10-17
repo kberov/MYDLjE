@@ -5,7 +5,7 @@ BEGIN {
   $MojoX::Renderer::Alloy::Velocity::AUTHORITY = 'cpan:AJGB';
 }
 BEGIN {
-  $MojoX::Renderer::Alloy::Velocity::VERSION = '1.110180';
+  $MojoX::Renderer::Alloy::Velocity::VERSION = '1.112200';
 }
 #ABSTRACT: Template::Alloy's Velocity renderer
 
@@ -27,10 +27,7 @@ sub _render {
     # Template::Alloy won't handle undefined strings
     $$output = '' unless defined $$output;
     $alloy->merge( $input,
-        {
-            %{ $c->stash },
-            c => $c,
-        },
+        $self->_template_vars( $c ),
         $output,
     ) || do {
         my $e = $alloy->error;
@@ -56,7 +53,7 @@ MojoX::Renderer::Alloy::Velocity - Template::Alloy's Velocity renderer
 
 =head1 VERSION
 
-version 1.110180
+version 1.112200
 
 =head1 SYNOPSIS
 
@@ -78,7 +75,7 @@ Mojolicious::Lite
 
 =head1 DESCRIPTION
 
-    <a href="$c.url_for('about_us')">Hello!</a>
+    <a href="$h.url_for('about_us')">Hello!</a>
 
     #include('include.inc')
 

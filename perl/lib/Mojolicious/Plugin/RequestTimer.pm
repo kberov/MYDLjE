@@ -1,12 +1,23 @@
 package Mojolicious::Plugin::RequestTimer;
 use Mojo::Base 'Mojolicious::Plugin';
 
-use Time::HiRes ();
+use Time::HiRes qw/gettimeofday tv_interval/;
 
 # "I don't trust that doctor.
 #  I bet I've lost more patients than he's even treated."
 sub register {
   my ($self, $app) = @_;
+
+  # Add "profile" helper
+  $app->helper(
+    profile => sub {
+      my ($self, $name) = @_;
+      my $profile = $self->stash->{'mojo.time'}->{$name} ||= [gettimeofday()];
+      my $elapsed = sprintf '%f', tv_interval($profile, [gettimeofday()]);
+      return $elapsed unless wantarray;
+      return $elapsed, $elapsed == 0 ? '??' : sprintf '%.3f', 1 / $elapsed;
+    }
+  );
 
   # Start timer
   $app->hook(
@@ -14,14 +25,13 @@ sub register {
       my $self = shift;
 
       # Ignore static files
-      my $stash = $self->stash;
-      return if $stash->{'mojo.static'} || $stash->{'mojo.started'};
+      return if $self->stash->{'mojo.static'};
       my $req    = $self->req;
       my $method = $req->method;
       my $path   = $req->url->path->to_abs_string;
       my $ua     = $req->headers->user_agent || 'Anonymojo';
       $self->app->log->debug("$method $path ($ua).");
-      $stash->{'mojo.started'} = [Time::HiRes::gettimeofday()];
+      $self->profile('mojo.request');
     }
   );
 
@@ -31,15 +41,11 @@ sub register {
       my $self = shift;
 
       # Ignore static files
-      my $stash = $self->stash;
-      return unless my $started = delete $stash->{'mojo.started'};
-      return if $stash->{'mojo.static'};
-      my $elapsed = sprintf '%f',
-        Time::HiRes::tv_interval($started, [Time::HiRes::gettimeofday()]);
-      my $rps     = $elapsed == 0 ? '??' : sprintf '%.3f', 1 / $elapsed;
+      return if $self->stash->{'mojo.static'};
       my $res     = $self->res;
       my $code    = $res->code || 200;
       my $message = $res->message || $res->default_message($code);
+      my ($elapsed, $rps) = $self->profile('mojo.request');
       $self->app->log->debug("$code $message (${elapsed}s, $rps/s).");
     }
   );
@@ -50,7 +56,7 @@ __END__
 
 =head1 NAME
 
-Mojolicious::Plugin::RequestTimer - Request Timer Plugin
+Mojolicious::Plugin::RequestTimer - Request timer plugin
 
 =head1 SYNOPSIS
 
@@ -66,6 +72,19 @@ L<Mojolicious::Plugin::RequestTimer> is a plugin to gather and log request
 timing information.
 This is a core plugin, that means it is always enabled and its code a good
 example for learning to build new plugins.
+
+=head1 HELPERS
+
+L<Mojolicious::Plugin::RequestTimer> implements the following helpers.
+
+=head2 C<profile>
+
+  % profile 'page';
+  %= profile 'page'
+  % my ($elapsed, $rps) = profile 'page';
+
+Start profile and return results.
+Note that this helper is EXPERIMENTAL and might change without warning!
 
 =head1 METHODS
 

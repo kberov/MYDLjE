@@ -5,7 +5,7 @@ BEGIN {
   $MojoX::Renderer::Alloy::TT::AUTHORITY = 'cpan:AJGB';
 }
 BEGIN {
-  $MojoX::Renderer::Alloy::TT::VERSION = '1.110180';
+  $MojoX::Renderer::Alloy::TT::VERSION = '1.112200';
 }
 #ABSTRACT: Template::Alloy's Template-Toolkit renderer
 
@@ -27,10 +27,7 @@ sub _render {
     my $alloy = $self->alloy;
 
     $alloy->process( $input,
-        {
-            %{ $c->stash },
-            c => $c,
-        },
+        $self->_template_vars( $c ),
         $output,
         { binmode => ':utf8' },
     ) || do {
@@ -53,7 +50,7 @@ MojoX::Renderer::Alloy::TT - Template::Alloy's Template-Toolkit renderer
 
 =head1 VERSION
 
-version 1.110180
+version 1.112200
 
 =head1 SYNOPSIS
 
@@ -67,7 +64,7 @@ Mojolicious::Lite
 
 =head1 DESCRIPTION
 
-    <a href="[% c.url_for('about_us') %]">Hello!</a>
+    <a href="[% h.url_for('about_us') %]">Hello!</a>
 
     [% INCLUDE "include.inc" %]
 

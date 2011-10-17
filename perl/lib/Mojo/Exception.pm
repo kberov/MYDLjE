@@ -33,7 +33,7 @@ sub throw {
 
 sub trace {
   my ($e, $start) = @_;
-  $start = 1 unless defined $start;
+  $start //= 1;
 
   # Trace
   my @frames;
@@ -215,7 +215,7 @@ __END__
 
 =head1 NAME
 
-Mojo::Exception - Exceptions With Context
+Mojo::Exception - Exceptions with context
 
 =head1 SYNOPSIS
 

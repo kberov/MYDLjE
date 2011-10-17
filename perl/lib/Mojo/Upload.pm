@@ -22,14 +22,14 @@ __END__
 
 =head1 NAME
 
-Mojo::Upload - Upload Container
+Mojo::Upload - Upload container
 
 =head1 SYNOPSIS
 
   use Mojo::Upload;
 
   my $upload = Mojo::Upload->new;
-  print $upload->filename;
+  say $upload->filename;
   $upload->move_to('/foo/bar/baz.txt');
 
 =head1 DESCRIPTION

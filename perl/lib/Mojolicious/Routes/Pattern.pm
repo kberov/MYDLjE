@@ -54,9 +54,9 @@ sub parse {
 
 sub render {
   my ($self, $values) = @_;
+  $values ||= {};
 
   # Merge values with defaults
-  $values ||= {};
   $values = {%{$self->defaults}, %$values};
 
   # Turn pattern into path
@@ -67,9 +67,7 @@ sub render {
     my $rendered = '';
 
     # Slash
-    if ($op eq 'slash') {
-      $rendered = '/' unless $optional;
-    }
+    if ($op eq 'slash') { $rendered = '/' unless $optional }
 
     # Text
     elsif ($op eq 'text') {
@@ -78,10 +76,9 @@ sub render {
     }
 
     # Relaxed, symbol or wildcard
-    elsif ($op eq 'relaxed' || $op eq 'symbol' || $op eq 'wildcard') {
+    elsif ($op ~~ [qw/relaxed symbol wildcard/]) {
       my $name = $token->[1];
-      $rendered = $values->{$name};
-      $rendered = '' unless defined $rendered;
+      $rendered = $values->{$name} // '';
       my $default = $self->defaults->{$name};
       if (!defined $default || ($default ne $rendered)) { $optional = 0 }
       elsif ($optional) { $rendered = '' }
@@ -164,7 +161,7 @@ sub _compile {
     }
 
     # Symbol
-    elsif ($op eq 'relaxed' || $op eq 'symbol' || $op eq 'wildcard') {
+    elsif ($op ~~ [qw/relaxed symbol wildcard/]) {
       my $name = $token->[1];
       unshift @{$self->symbols}, $name;
 
@@ -225,11 +222,7 @@ sub _tokenize {
   while (length(my $char = substr $pattern, 0, 1, '')) {
 
     # Inside a symbol
-    my $symbol = 0;
-    $symbol = 1
-      if $state eq 'relaxed'
-        || $state eq 'symbol'
-        || $state eq 'wildcard';
+    my $symbol = $state ~~ [qw/relaxed symbol wildcard/] ? 1 : 0;
 
     # Quote start
     if ($char eq $quote_start) {
@@ -305,16 +298,22 @@ __END__
 
 =head1 NAME
 
-Mojolicious::Routes::Pattern - Routes Pattern
+Mojolicious::Routes::Pattern - Routes pattern engine
 
 =head1 SYNOPSIS
 
   use Mojolicious::Routes::Pattern;
 
+  # Create pattern
+  my $pattern = Mojolicious::Routes::Pattern->new('/test/:name');
+
+  # Match routes
+  my $result  = $pattern->match('/test/sebastian');
+  say $result->{name};
+
 =head1 DESCRIPTION
 
-L<Mojolicious::Routes::Pattern> is a container for routes pattern which are
-used to match paths against.
+L<Mojolicious::Routes::Pattern> is the core of L<Mojolicious::Routes>.
 
 =head1 ATTRIBUTES
 

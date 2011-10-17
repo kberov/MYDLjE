@@ -1,9 +1,6 @@
 package Mojolicious::Lite;
 use Mojo::Base 'Mojolicious';
 
-# Lite apps are modern!
-require feature if $] >= 5.010;
-
 # "Since when is the Internet all about robbing people of their privacy?
 #  August 6, 1991."
 use File::Basename 'dirname';
@@ -40,9 +37,15 @@ sub import {
   no warnings 'redefine';
   my $root = $routes;
   *{"${caller}::new"} = *{"${caller}::app"} = sub {$app};
-  *{"${caller}::any"}    = sub { $routes->any(@_) };
-  *{"${caller}::del"}    = sub { $routes->del(@_) };
-  *{"${caller}::get"}    = sub { $routes->get(@_) };
+  *{"${caller}::any"} = sub { $routes->any(@_) };
+  *{"${caller}::del"} = sub { $routes->delete(@_) };
+  *{"${caller}::get"} = sub { $routes->get(@_) };
+  *{"${caller}::group"} = sub (&) {
+    my $old = $root;
+    $_[0]->($root = $routes);
+    $routes = $root;
+    $root   = $old;
+  };
   *{"${caller}::helper"} = sub { $app->helper(@_) };
   *{"${caller}::hook"}   = sub { $app->hook(@_) };
   *{"${caller}::under"}  = *{"${caller}::ladder"} =
@@ -67,7 +70,7 @@ __END__
 
 =head1 NAME
 
-Mojolicious::Lite - Micro Web Framework
+Mojolicious::Lite - Real-time micro web framework
 
 =head1 SYNOPSIS
 
@@ -86,7 +89,8 @@ Mojolicious::Lite - Micro Web Framework
 
 =head1 DESCRIPTION
 
-L<Mojolicious::Lite> is a micro web framework built around L<Mojolicious>.
+L<Mojolicious::Lite> is a micro real-time web framework built around
+L<Mojolicious>.
 
 =head1 TUTORIAL
 
@@ -164,7 +168,7 @@ HTTP request and response.
     $self->render(text => 'Hello World!');
   };
 
-=head2 GET/POST Parameters
+=head2 GET/POST parameters
 
 All C<GET> and C<POST> parameters are accessible via C<param>.
 
@@ -175,7 +179,7 @@ All C<GET> and C<POST> parameters are accessible via C<param>.
     $self->render(text => "Hello $user!");
   };
 
-=head2 Stash And Templates
+=head2 Stash and templates
 
 The C<stash> is used to pass data to templates, which can be inlined in the
 C<DATA> section.
@@ -207,7 +211,7 @@ to all HTTP features and information.
     $self->render(text => $self->req->headers->user_agent);
   };
 
-=head2 Route Names
+=head2 Route names
 
 All routes can have a name associated with them, this allows automatic
 template detection and back referencing with C<url_for>, C<link_to> and
@@ -264,19 +268,19 @@ delimited by the C<begin> and C<end> keywords.
   __DATA__
 
   @@ block.html.ep
-  <% my $link = begin %>
-    <% my ($url, $name) = @_; %>
+  % my $link = begin
+    % my ($url, $name) = @_;
     Try <%= link_to $url => begin %><%= $name %><% end %>!
-  <% end %>
+  % end
   <!doctype html><html>
-    <head><title>Sebastians Frameworks!</title></head>
+    <head><title>Sebastians frameworks!</title></head>
     <body>
-      <%= $link->('http://mojolicio.us', 'Mojolicious') %>
-      <%= $link->('http://catalystframework.org', 'Catalyst') %>
+      %= $link->('http://mojolicio.us', 'Mojolicious')
+      %= $link->('http://catalystframework.org', 'Catalyst')
     </body>
   </html>
 
-=head2 Captured Content
+=head2 Captured content
 
 The C<content_for> helper can be used to pass around blocks of captured
 content.
@@ -291,19 +295,19 @@ content.
 
   @@ captured.html.ep
   % layout 'blue', title => 'Green!';
-  <% content_for header => begin %>
+  % content_for header => begin
     <meta http-equiv="Pragma" content="no-cache">
-  <% end %>
+  % end
   Hello World!
-  <% content_for header => begin %>
+  % content_for header => begin
     <meta http-equiv="Expires" content="-1">
-  <% end %>
+  % end
 
   @@ layouts/blue.html.ep
   <!doctype html><html>
     <head>
       <title><%= title %></title>
-      <%= content_for 'header' %>
+      %= content_for 'header'
     </head>
     <body><%= content %></body>
   </html>
@@ -356,7 +360,7 @@ C<param>.
     $self->render(text => "Our :bar placeholder matched $bar");
   };
 
-=head2 Wildcard Placeholders
+=head2 Wildcard placeholders
 
 Wildcard placeholders allow matching absolutely everything, including
 C</> and C<.>.
@@ -364,28 +368,33 @@ C</> and C<.>.
   # /hello/test
   # /hello/test123
   # /hello/test.123/test/123
-  get '/hello/*you' => sub {
-    shift->render('groovy');
-  };
+  get '/hello/*you' => 'groovy';
 
   __DATA__
 
   @@ groovy.html.ep
   Your name is <%= $you %>.
 
-=head2 HTTP Methods
+=head2 HTTP methods
 
 Routes can be restricted to specific request methods.
 
   # GET /bye
-  get '/bye' => sub { shift->render(text => 'Bye!') };
+  get '/bye' => sub {
+    my $self = shift;
+    $self->render(text => 'Bye!');
+  };
 
   # POST /bye
-  post '/bye' => sub { shift->render(text => 'Bye!') };
+  post '/bye' => sub {
+    my $self = shift;
+    $self->render(text => 'Bye!');
+  };
 
   # GET|POST|DELETE /bye
-  any [qw/get post delete/] => '/bye' => sub {
-    shift->render(text => 'Bye!');
+  any ['get', 'post', 'delete'] => '/bye' => sub {
+    my $self = shift;
+    $self->render(text => 'Bye!');
   };
 
   # * /baz
@@ -395,7 +404,7 @@ Routes can be restricted to specific request methods.
     $self->render(text => "You called /baz with $method");
   };
 
-=head2 Optional Placeholders
+=head2 Optional placeholders
 
 Routes allow default values to make placeholders optional.
 
@@ -411,14 +420,14 @@ Routes allow default values to make placeholders optional.
   @@ groovy.txt.ep
   My name is <%= $name %>.
 
-=head2 Restrictive Placeholders
+=head2 Restrictive placeholders
 
 The easiest way to make placeholders more restrictive are alternatives, you
 just make a list of possible values.
 
   # /test
   # /123
-  any '/:foo' => [foo => [qw/test 123/]] => sub {
+  any '/:foo' => [foo => ['test', 123]] => sub {
     my $self = shift;
     my $foo  = $self->param('foo');
     $self->render(text => "Our :foo placeholder matched $foo");
@@ -465,14 +474,14 @@ Restrictive placeholders can also be used for format detection.
 
   # /hello.json
   # /hello.txt
-  get '/hello' => [format => [qw/json txt/]] => sub {
+  get '/hello' => [format => ['json', 'txt']] => sub {
     my $self = shift;
     return $self->render_json({hello => 'world!'})
       if $self->stash('format') eq 'json';
     $self->render_text('hello world!');
   };
 
-=head2 Content Negotiation
+=head2 Content negotiation
 
 For resources with different representations and that require truly
 C<RESTful> content negotiation you can also use C<respond_to>.
@@ -539,10 +548,49 @@ Prefixing multiple routes is another good use for C<under>.
   under '/foo';
 
   # /foo/bar
-  get '/bar' => sub { shift->render(text => 'bar!') };
+  get '/bar' => {text => 'foo bar!'};
 
   # /foo/baz
-  get '/baz' => sub { shift->render(text => 'baz!') };
+  get '/baz' => {text => 'foo baz!'};
+
+  # /
+  under '/' => {message => 'whatever'};
+
+  # /bar
+  get '/bar' => {inline => '<%= $message %> works!'};
+
+  app->start;
+
+You can also C<group> related routes, which allows nesting of multiple
+C<under> statements.
+
+  use Mojolicious::Lite;
+
+  # Global logic shared by all routes
+  under sub {
+    my $self = shift;
+    return 1 if $self->req->headers->header('X-Bender');
+    $self->render(text => "You're not Bender!");
+    return;
+  };
+
+  # Admin section
+  group {
+
+    # Local logic shared only by routes in this group
+    under '/admin' => sub {
+      my $self = shift;
+      return 1 if $self->req->heaers->header('X-Awesome');
+      $self->render(text => "You're not awesome enough!");
+      return;
+    };
+
+    # GET /admin/dashboard
+    get '/dashboard' => {text => 'Nothing to see here yet!'};
+  };
+
+  # GET /welcome
+  get '/welcome' => {text => 'Hi Bender!'};
 
   app->start;
 
@@ -554,17 +602,20 @@ constructs.
 
   # /foo (Firefox)
   get '/foo' => (agent => qr/Firefox/) => sub {
-    shift->render(text => 'Congratulations, you are using a cool browser!');
+    my $self = shift;
+    $self->render(text => 'Congratulations, you are using a cool browser!');
   };
 
   # /foo (Internet Explorer)
   get '/foo' => (agent => qr/Internet Explorer/) => sub {
-    shift->render(text => 'Dude, you really need to upgrade to Firefox!');
+    my $self = shift;
+    $self->render(text => 'Dude, you really need to upgrade to Firefox!');
   };
 
   # http://mojolicio.us/bar
   get '/bar' => (host => 'mojolicio.us') => sub {
-    shift->render(text => 'Hello Mojolicious!');
+    my $self = shift;
+    $self->render(text => 'Hello Mojolicious!');
   };
 
 =head2 Sessions
@@ -576,14 +627,14 @@ using them.
 
   get '/counter' => sub {
     my $self = shift;
-    $self->render(counter => ++$self->session->{counter});
+    $self->session->{counter}++;
   };
 
   app->start;
   __DATA__
 
   @@ counter.html.ep
-  Counter: <%= $counter %>
+  Counter: <%= session 'counter' %>
 
 =head2 Secret
 
@@ -592,7 +643,7 @@ secure.
 
   app->secret('My secret passphrase here!');
 
-=head2 File Uploads
+=head2 File uploads
 
 All files uploaded via C<multipart/form-data> request are automatically
 available as L<Mojo::Upload> instances.
@@ -617,11 +668,11 @@ C<250KB> will be automatically streamed into a temporary file.
   <!doctype html><html>
     <head><title>Upload</title></head>
     <body>
-      <%= form_for upload =>
-            (method => 'post', enctype => 'multipart/form-data') => begin %>
-        <%= file_field 'example' %>
-        <%= submit_button 'Upload' %>
-      <% end %>
+      % my @attrs = (method => 'POST', enctype => 'multipart/form-data');
+      %= form_for upload => @attrs => begin
+        %= file_field 'example'
+        %= submit_button 'Upload'
+      % end
     </body>
   </html>
 
@@ -632,7 +683,7 @@ environment variable.
   # Increase limit to 1GB
   $ENV{MOJO_MAX_MESSAGE_SIZE} = 1073741824;
 
-=head2 User Agent
+=head2 User agent
 
 With L<Mojo::UserAgent> there's a full featured HTTP 1.1 and WebSocket user
 agent built right in.
@@ -656,7 +707,7 @@ WebSocket applications have never been this easy before.
     });
   };
 
-=head2 External Templates
+=head2 External templates
 
 External templates will be searched by the renderer in a C<templates>
 directory.
@@ -669,10 +720,10 @@ directory.
     $self->render('foo/bar');
   };
 
-=head2 Static Files
+=head2 Static files
 
 Static files will be automatically served from the C<DATA> section
-(even Base 64 encoded) or a C<public> directory if it exists.
+(even Base64 encoded) or a C<public> directory if it exists.
 
   @@ something.js
   alert('hello!');
@@ -723,7 +774,7 @@ C<log/$mode.log> file if a C<log> directory exists.
 For more control the L<Mojolicious> instance can be accessed directly.
 
   app->log->level('error');
-  app->routes->route('/foo/:bar')->via('get')->to(cb => sub {
+  app->routes->route('/foo/:bar')->via('GET')->to(cb => sub {
     my $self = shift;
     $self->app->log->debug('Got a request for "Hello Mojo!".');
     $self->render(text => 'Hello Mojo!');
@@ -737,15 +788,21 @@ can be easily mixed to make the transition process very smooth.
   package MyApp::Foo;
   use Mojo::Base 'Mojolicious::Controller';
 
-  sub index { shift->render(text => 'It works!') }
+  sub index {
+    my $self = shift;
+    $self->render(text => 'It works!');
+  }
 
   package main;
   use Mojolicious::Lite;
 
-  get '/bar' => sub { shift->render(text => 'This too!') };
+  get '/bar' => sub {
+    my $self = shift;
+    $self->render(text => 'This too!');
+  };
 
   app->routes->namespace('MyApp');
-  app->routes->route('/foo/:action')->via('get')->to('foo#index');
+  app->routes->route('/foo/:action')->via('GET')->to('foo#index');
 
   app->start;
 
@@ -769,7 +826,7 @@ L<Mojolicious::Lite> implements the following functions.
 =head2 C<any>
 
   my $route = any '/:foo' => sub {...};
-  my $route = any [qw/get post/] => '/:foo' => sub {...};
+  my $route = any ['get', 'post'] => '/:foo' => sub {...};
 
 Generate route matching any of the listed HTTP request methods or all.
 See also the tutorial above for more argument variations.
@@ -793,6 +850,13 @@ See also the tutorial above for more argument variations.
 
 Generate route matching only C<GET> requests.
 See also the tutorial above for more argument variations.
+
+=head2 C<group>
+
+  group {...};
+
+Start a new route group.
+Note that this function is EXPERIMENTAL and might change without warning!
 
 =head2 C<helper>
 

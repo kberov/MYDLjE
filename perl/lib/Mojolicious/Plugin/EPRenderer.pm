@@ -10,19 +10,18 @@ use Mojo::Util 'md5_sum';
 #  Wishful thinking. We have long since evolved beyond the need for asses."
 sub register {
   my ($self, $app, $conf) = @_;
+  $conf ||= {};
 
   # Config
-  $conf ||= {};
   my $name     = $conf->{name}     || 'ep';
   my $template = $conf->{template} || {};
 
   # Custom sandbox
-  $template->{namespace} =
-    'Mojo::Template::SandBox::' . md5_sum(($ENV{MOJO_EXE} || ref $app) . $$)
-    unless defined $template->{namespace};
+  $template->{namespace} //=
+    'Mojo::Template::SandBox::' . md5_sum(($ENV{MOJO_EXE} || ref $app) . $$);
 
   # Auto escape by default to prevent XSS attacks
-  $template->{auto_escape} = 1 unless defined $template->{auto_escape};
+  $template->{auto_escape} //= 1;
 
   # Add "ep" handler
   $app->renderer->add_handler(
@@ -32,22 +31,18 @@ sub register {
       # Generate name
       my $path = $r->template_path($options) || $options->{inline};
       return unless defined $path;
-      my $list = join ', ', sort keys %{$c->stash};
-      my $key = $options->{cache} = md5_sum "$path($list)";
+      my $id = join ', ', $path, sort keys %{$c->stash};
+      utf8::encode $id;
+      my $key = $options->{cache} = md5_sum $id;
 
       # Cache
       my $cache = $r->cache;
       unless ($cache->get($key)) {
         my $mt = Mojo::Template->new($template);
 
-        # Self
-        my $prepend = 'my $self = shift;';
-
-        # Weaken
-        $prepend .= q/use Scalar::Util 'weaken'; weaken $self;/;
-
         # Be a bit more relaxed for helpers
-        $prepend .= q/no strict 'refs'; no warnings 'redefine';/;
+        my $prepend = q/my $self = shift; use Scalar::Util 'weaken';/
+          . q/weaken $self; no strict 'refs'; no warnings 'redefine';/;
 
         # Helpers
         $prepend .= 'my $_H = $self->app->renderer->helpers;';
@@ -88,7 +83,7 @@ __END__
 
 =head1 NAME
 
-Mojolicious::Plugin::EPRenderer - Embedded Perl Renderer Plugin
+Mojolicious::Plugin::EPRenderer - Embedded Perl renderer plugin
 
 =head1 SYNOPSIS
 
@@ -118,6 +113,8 @@ This is a core plugin, that means it is always enabled and its code a good
 example for learning to build new plugins.
 
 =head1 OPTIONS
+
+L<Mojolicious::Plugin::EPRenderer> supports the following options.
 
 =head2 C<name>
 

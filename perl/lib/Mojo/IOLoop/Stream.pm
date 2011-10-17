@@ -1,13 +1,10 @@
 package Mojo::IOLoop::Stream;
-use Mojo::Base 'Mojo::IOLoop::EventEmitter';
+use Mojo::Base 'Mojo::EventEmitter';
 
-use Errno qw/EAGAIN EINTR ECONNRESET EWOULDBLOCK/;
+use Errno qw/EAGAIN ECONNRESET EINTR EPIPE EWOULDBLOCK/;
 use Scalar::Util 'weaken';
 
 use constant CHUNK_SIZE => $ENV{MOJO_CHUNK_SIZE} || 131072;
-
-# Windows
-use constant WINDOWS => $^O eq 'MSWin32' || $^O =~ /cygwin/ ? 1 : 0;
 
 has iowatcher => sub {
   require Mojo::IOLoop;
@@ -21,13 +18,14 @@ has iowatcher => sub {
 sub DESTROY {
   my $self = shift;
   $self->pause if $self->{iowatcher};
-  $self->emit('close') if $self->{handle};
+  return unless my $handle = $self->{handle};
+  close $handle;
+  $self->emit_safe('close');
 }
 
 sub new {
   my $self = shift->SUPER::new;
   $self->{handle} = shift;
-  $self->{handle}->blocking(0);
   $self->{buffer} = '';
   return $self;
 }
@@ -70,19 +68,12 @@ sub write {
   # Prepare chunk for writing
   $self->{buffer} .= $chunk;
 
-  # UNIX only quick write
-  unless (WINDOWS) {
-    local $self->{quick} = 1 if $cb;
-    $self->_write;
-  }
-
   # Write with roundtrip
   if ($cb) { $self->once(drain => $cb) }
   else     { return unless length $self->{buffer} }
 
   # Start writing
-  return unless my $handle = $self->{handle};
-  $self->iowatcher->writing($handle);
+  $self->iowatcher->writing($self->{handle}) if $self->{handle};
 }
 
 sub _read {
@@ -95,27 +86,24 @@ sub _read {
   unless (defined $read) {
 
     # Retry
-    return if $! == EAGAIN || $! == EINTR || $! == EWOULDBLOCK;
+    return if $! ~~ [EAGAIN, EINTR, EWOULDBLOCK];
 
-    # Connection reset
-    return $self->emit('close') if $! == ECONNRESET;
+    # Closed
+    return $self->emit_safe('close') if $! == ECONNRESET;
 
     # Read error
-    return $self->emit(error => $!);
+    return $self->emit_safe(error => $!);
   }
 
   # EOF
-  return $self->emit('close') if $read == 0;
+  return $self->emit_safe('close') if $read == 0;
 
   # Handle read
-  $self->emit(read => $buffer);
+  $self->emit_safe(read => $buffer);
 }
 
 sub _write {
   my $self = shift;
-
-  # Handle drain
-  $self->emit('drain') if !length $self->{buffer} && !$self->{quick};
 
   # Write as much as possible
   my $handle = $self->{handle};
@@ -126,25 +114,24 @@ sub _write {
     unless (defined $written) {
 
       # Retry
-      return if $! == EAGAIN || $! == EINTR || $! == EWOULDBLOCK;
+      return if $! ~~ [EAGAIN, EINTR, EWOULDBLOCK];
 
-      # Close
-      return $self->emit('close')
-        if $handle->can('connected') && !$handle->connected;
+      # Closed
+      return $self->emit_safe('close') if $! ~~ [ECONNRESET, EPIPE];
 
       # Write error
-      return $self->emit(error => $!);
+      return $self->emit_safe(error => $!);
     }
 
     # Remove written chunk from buffer
     substr $self->{buffer}, 0, $written, '';
   }
 
+  # Handle drain
+  $self->emit_safe('drain') if !length $self->{buffer};
+
   # Stop writing
-  return
-    if length $self->{buffer}
-      || $self->{quick}
-      || @{$self->subscribers('drain')};
+  return if length $self->{buffer} || @{$self->subscribers('drain')};
   $self->iowatcher->not_writing($handle);
 }
 
@@ -153,7 +140,7 @@ __END__
 
 =head1 NAME
 
-Mojo::IOLoop::Stream - IOLoop Stream
+Mojo::IOLoop::Stream - IOLoop stream
 
 =head1 SYNOPSIS
 
@@ -190,17 +177,33 @@ L<Mojo::IOLoop::Stream> can emit the following events.
 
 =head2 C<close>
 
+  $stream->on(close => sub {
+    my $stream = shift;
+  });
+
 Emitted if the stream gets closed.
 
 =head2 C<drain>
+
+  $stream->on(drain => sub {
+    my $stream = shift;
+  });
 
 Emitted once all data has been written.
 
 =head2 C<error>
 
+  $stream->on(error => sub {
+    my ($stream, $error) = @_;
+  });
+
 Emitted if an error happens on the stream.
 
 =head2 C<read>
+
+  $stream->on(read => sub {
+    my ($stream, $chunk) = @_;
+  });
 
 Emitted if new data arrives on the stream.
 
@@ -218,8 +221,8 @@ L<Mojo::IOWatcher::EV> object.
 
 =head1 METHODS
 
-L<Mojo::IOLoop::Stream> inherits all methods from
-L<Mojo::IOLoop::EventEmitter> and implements the following new ones.
+L<Mojo::IOLoop::Stream> inherits all methods from L<Mojo::EventEmitter> and
+implements the following new ones.
 
 =head2 C<new>
 
@@ -235,7 +238,7 @@ Get handle for stream.
 
 =head2 C<is_finished>
 
-  my $finished = $stream->is_finished;
+  my $success = $stream->is_finished;
 
 Check if stream is in a state where it is safe to close or steal the handle.
 
@@ -260,6 +263,7 @@ Steal handle from stream and prevent it from getting closed automatically.
 =head2 C<write>
 
   $stream->write('Hello!');
+  $stream->write('Hello!', sub {...});
 
 Write data to stream, the optional drain callback will be invoked once all
 data has been written.

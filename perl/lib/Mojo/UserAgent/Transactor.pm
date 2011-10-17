@@ -188,7 +188,7 @@ sub redirect {
   # Commonly used codes
   my $res = $old->res;
   my $code = $res->code || 0;
-  return unless $code == 301 || $code == 302 || $code == 303 || $code == 307;
+  return unless $code ~~ [301, 302, 303, 307];
 
   # Fix broken location without authority and/or scheme
   return unless my $location = $res->headers->location;
@@ -201,7 +201,7 @@ sub redirect {
   # Clone request if necessary
   my $new    = Mojo::Transaction::HTTP->new;
   my $method = $req->method;
-  if ($code == 301 || $code == 307) {
+  if ($code ~~ [301, 307]) {
     return unless $req = $req->clone;
     $new->req($req);
     my $headers = $req->headers;
@@ -269,7 +269,7 @@ __END__
 
 =head1 NAME
 
-Mojo::UserAgent::Transactor - User Agent Transactor
+Mojo::UserAgent::Transactor - User agent transactor
 
 =head1 SYNOPSIS
 
@@ -324,7 +324,7 @@ implements the following new ones.
 Versatile L<Mojo::Transaction::HTTP> builder for form requests.
 
   my $tx = $t->form('http://kraih.com/foo' => {test => 123});
-  $tx->res->body(sub { print $_[1] });
+  $tx->res->body(sub { say $_[1] });
   $ua->start($tx);
 
 While the "multipart/form-data" content type will be automatically used
@@ -362,13 +362,14 @@ or C<307> redirect response if possible.
   my $tx = $t->tx(GET  => 'mojolicio.us');
   my $tx = $t->tx(POST => 'http://mojolicio.us');
   my $tx = $t->tx(GET  => 'http://kraih.com' => {Accept => '*/*'});
+  my $tx = $t->tx(PUT  => 'http://kraih.com' => 'Hi!');
   my $tx = $t->tx(POST => 'http://kraih.com' => {Accept => '*/*'} => 'Hi!');
 
 Versatile general purpose L<Mojo::Transaction::HTTP> builder for requests.
 
   # Streaming response
   my $tx = $t->tx(GET => 'http://mojolicio.us');
-  $tx->res->body(sub { print $_[1] });
+  $tx->res->body(sub { say $_[1] });
   $ua->start($tx);
 
   # Custom socket
@@ -384,6 +385,7 @@ Versatile general purpose L<Mojo::Transaction::HTTP> builder for requests.
 
 Versatile L<Mojo::Transaction::WebSocket> builder for WebSocket handshake
 requests.
+Note that this method is EXPERIMENTAL and might change without warning!
 
 =head1 SEE ALSO
 

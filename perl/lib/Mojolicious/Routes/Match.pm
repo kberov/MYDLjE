@@ -19,7 +19,7 @@ sub new {
   url_unescape $path;
   my $backup = $path;
   decode 'UTF-8', $path;
-  $path = $backup unless defined $path;
+  $path //= $backup;
   $self->{path} = $path;
 
   # WebSocket
@@ -41,10 +41,7 @@ sub match {
   my $captures   = $pattern->shape_match(\$path);
   return unless $captures;
   $self->{path} = $path;
-
-  # Merge captures
   $captures = {%{$self->captures}, %$captures};
-  $self->captures($captures);
 
   # Method
   if (my $methods = $r->via) {
@@ -72,10 +69,8 @@ sub match {
   # WebSocket
   return if $r->is_websocket && !$self->{websocket};
 
-  # Empty path
-  my $empty = !length $path || $path eq '/' ? 1 : 0;
-
   # Partial
+  my $empty = !length $path || $path eq '/' ? 1 : 0;
   if ($r->partial) {
     $captures->{path} = $path;
     $self->endpoint($r);
@@ -83,6 +78,7 @@ sub match {
   }
 
   # Update stack
+  $self->captures($captures);
   my $endpoint = $r->is_endpoint;
   if ($r->inline || ($endpoint && $empty)) {
     push @{$self->stack}, {%$captures};
@@ -211,7 +207,7 @@ __END__
 
 =head1 NAME
 
-Mojolicious::Routes::Match - Routes Visitor
+Mojolicious::Routes::Match - Routes visitor
 
 =head1 SYNOPSIS
 
@@ -226,7 +222,7 @@ Mojolicious::Routes::Match - Routes Visitor
   # Match
   my $m = Mojolicious::Routes::Match->new(GET => '/bar');
   $m->match($r);
-  print $m->captures->{action};
+  say $m->captures->{action};
 
 =head1 DESCRIPTION
 

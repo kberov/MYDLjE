@@ -139,39 +139,22 @@ sub _build_start_line {
 sub _parse_start_line {
   my $self = shift;
 
-  # HTTP 0.9 responses have no start line
-  return $self->{state} = 'content' if $self->version eq '0.9';
-
   # Try to detect HTTP 0.9
-  if ($self->{buffer} =~ /^\s*(\S+\s*)/) {
-    my $string = $1;
-
-    # HTTP 0.9 will most likely not start with "HTTP/"
-    my $match = "\/PTTH";
-    substr $match, 0, 5 - length $string, '' if length $string < 5;
-    $match = reverse $match;
-
-    # Detected!
-    if ($string !~ /^\s*$match/) {
-      $self->version('0.9');
-      $self->{state} = 'content';
-      $self->content->relaxed(1);
-      return 1;
-    }
+  $self->{state} = 'content';
+  if ($self->{buffer} !~ /^\s*HTTP\//) {
+    $self->version('0.9');
+    return $self->content->relaxed(1);
   }
 
   # We have a full HTTP 1.0+ response line
   my $line = get_line $self->{buffer};
-  if (defined $line) {
-    if ($line =~ m/$START_LINE_RE/o) {
-      $self->version($1);
-      $self->code($2);
-      $self->message($3);
-      $self->{state} = 'content';
-      $self->content->auto_relax(1);
-    }
-    else { $self->error('Bad response start line.') }
-  }
+  return unless defined $line;
+  return $self->error('Bad response start line.')
+    unless $line =~ $START_LINE_RE;
+  $self->version($1);
+  $self->code($2);
+  $self->message($3);
+  $self->content->auto_relax(1);
 }
 
 1;
@@ -179,7 +162,7 @@ __END__
 
 =head1 NAME
 
-Mojo::Message::Response - HTTP 1.1 Response Container
+Mojo::Message::Response - HTTP 1.1 response container
 
 =head1 SYNOPSIS
 
@@ -191,19 +174,23 @@ Mojo::Message::Response - HTTP 1.1 Response Container
   $res->parse("Content-Length: 12\x0a\x0d\x0a\x0d");
   $res->parse("Content-Type: text/plain\x0a\x0d\x0a\x0d");
   $res->parse('Hello World!');
-  print $res->body;
+  say $res->body;
 
   # Build
   my $res = Mojo::Message::Response->new;
   $res->code(200);
   $res->headers->content_type('text/plain');
   $res->body('Hello World!');
-  print $res->to_string;
+  say $res->to_string;
 
 =head1 DESCRIPTION
 
 L<Mojo::Message::Response> is a container for HTTP 1.1 responses as described
 in RFC 2616.
+
+=head1 EVENTS
+
+L<Mojo::Message::Response> inherits all events from L<Mojo::Message>.
 
 =head1 ATTRIBUTES
 
@@ -251,7 +238,7 @@ Make sure message has all required headers for the current HTTP version.
 
 =head2 C<is_status_class>
 
-  my $is_2xx = $res->is_status_class(200);
+  my $success = $res->is_status_class(200);
 
 Check response status class.
 

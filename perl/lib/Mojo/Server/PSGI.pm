@@ -11,7 +11,7 @@ sub run {
   my ($self, $env) = @_;
 
   # Environment
-  my $tx  = $self->on_transaction->($self);
+  my $tx  = $self->build_tx;
   my $req = $tx->req;
   $req->parse($env);
 
@@ -31,13 +31,11 @@ sub run {
   }
 
   # Handle
-  $self->on_request->($self, $tx);
-
-  # Fix headers
-  my $res = $tx->res;
-  $res->fix_headers;
+  $self->emit(request => $tx);
 
   # Response headers
+  my $res = $tx->res;
+  $res->fix_headers;
   my $headers = $res->content->headers;
   my @headers;
   for my $name (@{$headers->names}) {
@@ -46,50 +44,37 @@ sub run {
     }
   }
 
-  # Response body
-  my $body = Mojo::Server::PSGI::_Handle->new(res => $res);
-
-  # Finish transaction
-  $tx->on_finish->($tx);
-
   # PSGI response
-  my $code = $res->code || 404;
-  return [$code, \@headers, $body];
+  return [$res->code || 404,
+    \@headers, Mojo::Server::PSGI::_IO->new(tx => $tx)];
 }
 
 # "Wow! Homer must have got one of those robot cars!
 #  *Car crashes in background*
 #  Yeah, one of those AMERICAN robot cars."
-package Mojo::Server::PSGI::_Handle;
+package Mojo::Server::PSGI::_IO;
 use Mojo::Base -base;
 
-sub close { }
+sub close { shift->{tx}->server_close }
 
 sub getline {
   my $self = shift;
 
   # Blocking read
-  $self->{offset} = 0 unless defined $self->{offset};
-  my $offset = $self->{offset};
+  my $res = $self->{tx}->res;
   while (1) {
-    my $chunk = $self->{res}->get_body_chunk($offset);
+    my $chunk = $res->get_body_chunk($self->{offset} //= 0);
 
     # No content yet, try again
-    unless (defined $chunk) {
-      sleep 1;
-      next;
-    }
+    sleep 1 and next unless defined $chunk;
 
     # End of content
-    last unless length $chunk;
+    return unless length $chunk;
 
     # Content
-    $offset += length $chunk;
-    $self->{offset} = $offset;
+    $self->{offset} += length $chunk;
     return $chunk;
   }
-
-  return;
 }
 
 1;
@@ -97,14 +82,15 @@ __END__
 
 =head1 NAME
 
-Mojo::Server::PSGI - PSGI Server
+Mojo::Server::PSGI - PSGI server
 
 =head1 SYNOPSIS
 
   use Mojo::Server::PSGI;
 
   my $psgi = Mojo::Server::PSGI->new;
-  $psgi->on_request(sub {
+  $psgi->unsubscribe_all('request');
+  $psgi->on(request => sub {
     my ($self, $tx) = @_;
 
     # Request
@@ -119,7 +105,7 @@ Mojo::Server::PSGI - PSGI Server
     # Resume transaction
     $tx->resume;
   });
-  my $app  = sub { $psgi->run(@_) };
+  my $app = sub { $psgi->run(@_) };
 
 =head1 DESCRIPTION
 
@@ -127,6 +113,10 @@ L<Mojo::Server::PSGI> allows L<Mojo> applications to run on all PSGI
 compatible servers.
 
 See L<Mojolicious::Guides::Cookbook> for deployment recipes.
+
+=head1 EVENTS
+
+L<Mojo::Server::PSGI> inherits all events from L<Mojo::Server>.
 
 =head1 METHODS
 

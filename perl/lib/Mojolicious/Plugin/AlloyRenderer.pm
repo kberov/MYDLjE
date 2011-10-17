@@ -4,7 +4,7 @@ BEGIN {
   $Mojolicious::Plugin::AlloyRenderer::AUTHORITY = 'cpan:AJGB';
 }
 BEGIN {
-  $Mojolicious::Plugin::AlloyRenderer::VERSION = '1.110180';
+  $Mojolicious::Plugin::AlloyRenderer::VERSION = '1.112200';
 }
 #ABSTRACT: Template::Alloy renderer plugin
 
@@ -91,7 +91,7 @@ Mojolicious::Plugin::AlloyRenderer - Template::Alloy renderer plugin
 
 =head1 VERSION
 
-version 1.110180
+version 1.112200
 
 =head1 SYNOPSIS
 

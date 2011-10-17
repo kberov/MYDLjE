@@ -28,7 +28,7 @@ sub add {
 
     # Check cookie size
     my $value = $cookie->value;
-    next if length(defined $value ? $value : '') > $self->max_cookie_size;
+    next if length($value //= '') > $self->max_cookie_size;
 
     # Check if we already have a similar cookie
     $domain =~ s/^\.//;
@@ -122,7 +122,7 @@ __END__
 
 =head1 NAME
 
-Mojo::CookieJar - Cookie Jar For HTTP 1.1 User Agents
+Mojo::CookieJar - Cookie jar for HTTP 1.1 user agents
 
 =head1 SYNOPSIS
 
@@ -154,7 +154,7 @@ following new ones.
 
   $jar = $jar->add(@cookies);
 
-Add multiple cookies to the jar.
+Add multiple L<Mojo::Cookie::Response> objects to the jar.
 
 =head2 C<empty>
 
@@ -166,19 +166,19 @@ Empty the jar.
 
   $jar = $jar->extract($tx);
 
-Extract cookies from transaction.
+Extract response cookies from transaction.
 
 =head2 C<find>
 
   my @cookies = $jar->find($url);
 
-Find cookies in the jar.
+Find L<Mojo::Cookie::Request> objects in the jar for L<Mojo::URL> object.
 
 =head2 C<inject>
 
   $jar = $jar->inject($tx);
 
-Inject cookies into transaction.
+Inject request cookies into transaction.
 
 =head1 SEE ALSO
 

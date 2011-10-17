@@ -72,7 +72,7 @@ sub _draw {
     my $mp = ' ' x ($ml - length $methods);
 
     # Route
-    print "$pattern$pp  $methods$mp  $name$np  $regex\n";
+    say "$pattern$pp  $methods$mp  $name$np  $regex";
   }
 }
 
@@ -102,7 +102,7 @@ __END__
 
 =head1 NAME
 
-Mojolicious::Command::routes - Routes Command
+Mojolicious::Command::routes - Routes command
 
 =head1 SYNOPSIS
 

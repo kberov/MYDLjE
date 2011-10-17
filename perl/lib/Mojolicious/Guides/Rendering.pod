@@ -7,7 +7,7 @@ Mojolicious::Guides::Rendering - Rendering
 
 =head1 OVERVIEW
 
-Generating content with the L<Mojolicious> renderer.
+This document explains content generation with the L<Mojolicious> renderer.
 
 =head1 CONCEPTS
 
@@ -123,7 +123,7 @@ There are also many helper functions available, but more about that later.
 
 Most commonly used features every L<Mojolicious> developer should know about.
 
-=head2 Automatic Rendering
+=head2 Automatic rendering
 
 The renderer can be manually started by calling the C<render> controller
 method, but that's usually not necessary, because it will get automatically
@@ -139,7 +139,7 @@ make sure that templates use the current controller instance and not the
 default controller specified in the C<controller_class> attribute of the
 application class.
 
-=head2 Rendering Templates (C<template>)
+=head2 Rendering templates (C<template>)
 
 The renderer will always try to detect the right template but you can also
 use the C<template> stash value to render a specific one.
@@ -158,7 +158,7 @@ shortcut.
 All values passed to the C<render> call are only temporarily assigned to the
 stash and get reset again once rendering is finished.
 
-=head2 Rendering Inline Templates (C<inline>)
+=head2 Rendering inline templates (C<inline>)
 
 Some renderers such as C<ep> allow templates to be passed inline.
 
@@ -169,14 +169,14 @@ too.
 
   $self->render(inline => "<%= shift->param('foo') %>", handler => 'epl');
 
-=head2 Rendering Text (C<text>)
+=head2 Rendering text (C<text>)
 
 Perl characters can be rendered with the C<text> stash value, the given
 content will be automatically encoded to bytes.
 
   $self->render(text => 'Hello Wörld!');
 
-=head2 Rendering Data (C<data>)
+=head2 Rendering data (C<data>)
 
 Raw bytes can be rendered with the C<data> stash value, no encoding will be
 performed.
@@ -190,20 +190,20 @@ which get directly encoded to JSON.
 
   $self->render(json => {foo => [1, 'test', 3]});
 
-=head2 Partial Rendering (C<partial>)
+=head2 Partial rendering (C<partial>)
 
 Sometimes you might want to access the rendered result, for example to
 generate emails, this can be done using the C<partial> stash value.
 
   my $html = $self->render('mail', partial => 1);
 
-=head2 Status Code (C<status>)
+=head2 Status code (C<status>)
 
 Response status codes can be changed with the C<status> stash value.
 
   $self->render(text => 'Oops!', status => 500);
 
-=head2 Content Type (C<format>)
+=head2 Content type (C<format>)
 
 The C<Content-Type> header of the response is actually based on the MIME type
 mapping of the C<format> stash value.
@@ -225,37 +225,41 @@ These mappings can be easily extended or changed with L<Mojolicious/"types">.
 
   1;
 
-=head2 Stash Data
+=head2 Stash data
 
 Data can be passed to templates through the C<stash> in any of the native
 Perl data types.
 
   $self->stash(author => 'Sebastian');
-  $self->stash(frameworks => [qw/Catalyst Mojolicious/]);
+  $self->stash(frameworks => ['Catalyst', 'Mojolicious']);
   $self->stash(examples => {tweetylicious => 'a microblogging app'});
 
-  <%= $author %>
-  <%= $frameworks->[1] %>
-  <%= $examples->{tweetylicious} %>
+  %= $author
+  %= $frameworks->[1]
+  %= $examples->{tweetylicious}
 
 Since everything is just Perl normal control structures just work.
 
-  <% for my $framework (@$frameworks) { %>
+  % for my $framework (@$frameworks) {
     <%= $framework %> was written by <%= $author %>.
-  <% } %>
+  % }
 
-  <% while (my ($app, $description) = each %$examples) { %>
+  % while (my ($app, $description) = each %$examples) {
     <%= $app %> is a <%= $description %>.
-  <% } %>
+  % }
 
-=head2 Content Negotiation
+=head2 Content negotiation
 
 For resources with different representations and that require truly
 C<RESTful> content negotiation you can also use C<respond_to> instead of
 C<render>.
 
-  # "Accept: application/json" -> "json"
-  # "Accept: text/xml"         -> "xml"
+  # /hello (Accept: application/json) -> "json"
+  # /hello (Accept: text/xml)         -> "xml"
+  # /hello.json                       -> "json"
+  # /hello.xml                        -> "xml"
+  # /hello?format=json                -> "json"
+  # /hello?format=xml                 -> "xml"
   $self->respond_to(
     json => {json => {hello => 'world'}},
     xml  => {text => '<hello>world</hello>'}
@@ -276,9 +280,15 @@ parameter.
 Callbacks can be used for representations that are too complex to fit into a
 single C<render> call.
 
-  # "Accept: application/json" -> "json"
-  # "Accept: text/html"        -> "html"
-  # "Accept: image/png"        -> "any"
+  # /hello (Accept: application/json) -> "json"
+  # /hello (Accept: text/html)        -> "html"
+  # /hello (Accept: image/png)        -> "any"
+  # /hello.json                       -> "json"
+  # /hello.html                       -> "html"
+  # /hello.png                        -> "any"
+  # /hello?format=json                -> "json"
+  # /hello?format=html                -> "html"
+  # /hello?format=png                 -> "any"
   $self->respond_to(
     json => {json => {hello => 'world'}},
     html => {template => 'hello', message => 'world'},
@@ -292,7 +302,7 @@ used or an empty C<204> response rendered automatically.
 
 Helpers are little functions you can use in templates and controller code.
 
-  <%= dumper [1, 2, 3] %>
+  %= dumper [1, 2, 3]
 
   my $serialized = $self->dumper([1, 2, 3]);
 
@@ -302,11 +312,11 @@ We differentiate between C<default helpers> which are more general purpose
 like C<dumper> and C<tag helpers>, which are template specific and mostly
 used to generate C<HTML> tags.
 
-  <%= javascript '/script.js' %>
+  %= javascript '/script.js'
 
-  <%= javascript begin %>
+  %= javascript begin
     var a = 'b';
-  <% end %>
+  % end
 
 A list of all built-in helpers can be found in
 L<Mojolicious::Plugin::DefaultHelpers> and
@@ -362,14 +372,14 @@ To set a C<layout> stash value application wide you can use C<defaults>.
 
   1;
 
-=head2 Including Partial Templates
+=head2 Including partial templates
 
 Like most helpers the C<include> helper is just a shortcut to make your life
 a little easier.
 
   @@ foo/bar.html.ep
   <!doctype html><html>
-    <%= include 'header' %>
+    %= include 'header'
     <body>Bar!</body>
   </html>
 
@@ -381,7 +391,7 @@ argument.
 
   @@ foo/bar.html.ep
   <!doctype html><html>
-    <%= $self->render('header', partial => 1) %>
+    %= $self->render('header', partial => 1)
     <body>Bar!</body>
   </html>
 
@@ -394,14 +404,14 @@ in the partial template.
 
   @@ foo/bar.html.ep
   <!doctype html><html>
-    <%= include 'header', title => 'Hello!' %>
+    %= include 'header', title => 'Hello!'
     <body>Bar!</body>
   </html>
 
   @@ header.html.ep
   <head><title><%= $title %></title></head>
 
-=head2 Reusable Template Blocks
+=head2 Reusable template blocks
 
 It's never fun to repeat yourself, that's why you can build reusable template
 blocks in C<ep> that work very similar normal Perl functions.
@@ -437,20 +447,20 @@ A naive translation to equivalent Perl code could look like this.
   }
   print $output;
 
-=head2 Content Blocks
+=head2 Content blocks
 
 Blocks and the C<content_for> helper can also be used to pass whole sections
 of the template to the layout.
 
   @@ foo/bar.html.ep
   % layout 'mylayout';
-  <% content_for header => begin %>
+  % content_for header => begin
     <title>MyApp!</title>
-  <% end %>
+  % end
   Hello World!
-  <% content_for header => begin %>
+  % content_for header => begin
     <meta http-equiv="Pragma" content="no-cache">
-  <% end %>
+  % end
 
   @@ layouts/mylayout.html.ep
   <!doctype html><html>
@@ -458,7 +468,7 @@ of the template to the layout.
     <body><%= content %></body>
   </html>
 
-=head2 Template Inheritance
+=head2 Template inheritance
 
 Inheritance takes the layout concept above one step further.
 Unlike C<content_for> the C<content> helper does not allow appending to
@@ -469,41 +479,41 @@ templates don't get prefixed with C<layouts/>.
   @@ first.html.ep
   %# "<div>First header!First footer!</div>"
   <div>
-  <%= content header => begin %>
+  %= content header => begin
     First header!
-  <% end %>
-  <%= content footer => begin %>
+  % end
+  %= content footer => begin
     First footer!
-  <% end %>
+  % end
   </div>
 
   @@ second.html.ep
   %# "<div>Second header!First footer!</div>"
   % extends 'first';
-  <% content header => begin %>
+  % content header => begin
     Second header!
-  <% end %>
+  % end
 
   @@ third.html.ep
   %# "<div>Second header!Third footer!</div>"
   % extends 'second';
-  <% content footer => begin %>
+  % content footer => begin
     Third footer!
-  <% end %>
+  % end
 
 This chain could go on and on to allow a very high level of template reuse.
 
-=head2 Memorizing Template Blocks
+=head2 Memorizing template blocks
 
 Compiled templates are always cached in memory, but with the C<memorize>
 helper you can go one step further and prevent template blocks from being
 executed more than once.
 
-  <%= memorize begin %>
+  %= memorize begin
     This template was compiled at <%= localtime time %>.
-  <% end %>
+  % end
 
-=head2 Adding Helpers
+=head2 Adding helpers
 
 Adding and redefining helpers is very easy, you can use them to do pretty
 much everything.
@@ -545,16 +555,16 @@ allows very pleasant to use tag helpers and filters.
   __DATA__
 
   @@ index.html.ep
-  <%= trim_newline begin %>
+  %= trim_newline begin
     Some text.
-    <%= 1 + 1 %>
+    %= 1 + 1
     More text.
-  <% end %>
+  % end
 
 Wrapping the helper result into a L<Mojo::ByteStream> object can prevent
 accidental double escaping.
 
-=head2 Helper Plugins
+=head2 Helper plugins
 
 Some helpers might be useful enough for you to share them between multiple
 applications, plugins make that very simple.
@@ -601,7 +611,7 @@ to C<CPAN>.
   $ make dist
   $ mojo cpanify -u USER -p PASS Mojolicious-Plugin-DebugHelper-0.01.tar.gz
 
-=head2 Mode Specific C<exception> And C<not_found> Templates
+=head2 Mode specific C<exception> and C<not_found> templates
 
 While the built-in C<exception> and C<not_found> templates are very useful
 during development, you most likely want to show your users something more
@@ -626,7 +636,7 @@ back to the built-in default templates.
 
 Less commonly used and more powerful features.
 
-=head2 Chunked Transfer Encoding
+=head2 Chunked transfer encoding
 
 For very dynamic content you might not know the response C<Content-Length>
 in advance, that's where the C<chunked> C<Transfer-Encoding> comes in handy.
@@ -694,7 +704,7 @@ script, so don't forget to use the L<utf8> pragma if necessary.
   I ♥ Mojolicious!
   
 
-=head2 Base64 Encoded DATA Files
+=head2 Base64 encoded DATA files
 
 Base64 encoded static files such as images can be easily stored in the
 C<DATA> section of your application, similar to templates.
@@ -702,7 +712,7 @@ C<DATA> section of your application, similar to templates.
   @@ favicon.ico (base64)
   ...base64 encoded image...
 
-=head2 Inflating DATA Templates
+=head2 Inflating DATA templates
 
 Templates stored in files get preferred over files from the C<DATA> section,
 this allows you to include a default set of templates in your application
@@ -713,7 +723,7 @@ directories.
 
   $ ./myapp.pl inflate
 
-=head2 Customizing The Template Syntax
+=head2 Customizing the template syntax
 
 You can easily change the whole template syntax by loading the C<ep_renderer>
 plugin with a custom configuration.
@@ -738,7 +748,7 @@ plugin with a custom configuration.
 
 L<Mojo::Template> contains the whole list of available options.
 
-=head2 Adding Your Favorite Template System
+=head2 Adding your favorite template system
 
 Maybe you would prefer a different template system than C<ep>, all you have
 to do is add a new C<handler>.

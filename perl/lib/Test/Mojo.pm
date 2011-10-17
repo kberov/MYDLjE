@@ -321,8 +321,8 @@ sub websocket_ok {
     $url, @_,
     sub {
       $self->tx(my $tx = pop);
-      $tx->on_finish(sub { $self->{finished} = 1 });
-      $tx->on_message(sub { push @{$self->{messages}}, pop });
+      $tx->on(finish => sub { $self->{finished} = 1 });
+      $tx->on(message => sub { push @{$self->{messages}}, pop });
       Mojo::IOLoop->stop;
     }
   );
@@ -661,6 +661,8 @@ Reset user agent session.
 
   $t = $t->send_message_ok('hello');
   $t = $t->send_message_ok('hello', 'sent successfully');
+  $t = $t->send_message_ok([$bytes]);
+  $t = $t->send_message_ok([$bytes], 'sent successfully');
 
 Send C<WebSocket> message.
 Note that this method is EXPERIMENTAL and might change without warning!

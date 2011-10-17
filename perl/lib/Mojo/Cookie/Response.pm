@@ -44,19 +44,18 @@ sub parse {
       if (not $i) {
         push @cookies, Mojo::Cookie::Response->new;
         $cookies[-1]->name($name);
-        $value = '' unless defined $value;
-        $cookies[-1]->value($value);
+        $cookies[-1]->value($value //= '');
         next;
       }
 
       # Field
-      if (my @match = $name =~ m/$FIELD_RE/o) {
+      if (my @match = $name =~ $FIELD_RE) {
 
         # Underscore
         (my $id = lc $match[0]) =~ tr/-/_/;
 
         # Flag
-        $cookies[-1]->$id($id =~ m/$FLAG_RE/o ? 1 : $value);
+        $cookies[-1]->$id($id =~ $FLAG_RE ? 1 : $value);
       }
     }
   }
@@ -110,7 +109,7 @@ __END__
 
 =head1 NAME
 
-Mojo::Cookie::Response - HTTP 1.1 Response Cookie Container
+Mojo::Cookie::Response - HTTP 1.1 response cookie container
 
 =head1 SYNOPSIS
 
@@ -120,7 +119,7 @@ Mojo::Cookie::Response - HTTP 1.1 Response Cookie Container
   $cookie->name('foo');
   $cookie->value('bar');
 
-  print "$cookie";
+  say $cookie;
 
 =head1 DESCRIPTION
 

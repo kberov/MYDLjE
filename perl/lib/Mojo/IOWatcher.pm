@@ -2,6 +2,8 @@ package Mojo::IOWatcher;
 use Mojo::Base -base;
 
 use IO::Poll qw/POLLERR POLLHUP POLLIN POLLOUT/;
+use Mojo::Loader;
+use Mojo::Util 'md5_sum';
 use Time::HiRes qw/time usleep/;
 
 use constant DEBUG => $ENV{MOJO_IOWATCHER_DEBUG} || 0;
@@ -32,7 +34,7 @@ sub cancel {
 
 sub detect {
   my $try = $ENV{MOJO_IOWATCHER} || 'Mojo::IOWatcher::EV';
-  return $try if eval "use $try; 1";
+  return $try unless Mojo::Loader->load($try);
   return 'Mojo::IOWatcher';
 }
 
@@ -51,23 +53,58 @@ sub is_readable {
 
 sub not_writing {
   my ($self, $handle) = @_;
-
-  # Make sure we only watch for readable events
   my $poll = $self->_poll;
-  $poll->remove($handle)
-    if delete $self->{handles}->{fileno $handle}->{writing};
+  $poll->remove($handle);
   $poll->mask($handle, POLLIN);
-
   return $self;
 }
 
 # "This was such a pleasant St. Patrick's Day until Irish people showed up."
-sub one_tick {
-  my ($self, $timeout) = @_;
+sub recurring { shift->_timer(pop, after => pop, recurring => time) }
+
+sub remove {
+  my ($self, $handle) = @_;
+  delete $self->{handles}->{fileno $handle};
+  $self->_poll->remove($handle);
+  return $self;
+}
+
+sub start {
+  my $self = shift;
+  return if $self->{running}++;
+  $self->_one_tick while $self->{running};
+}
+
+sub stop { delete shift->{running} }
+
+# "Bart, how did you get a cellphone?
+#  The same way you got me, by accident on a golf course."
+sub timer { shift->_timer(pop, after => pop, started => time) }
+
+sub writing {
+  my ($self, $handle) = @_;
+  my $poll = $self->_poll;
+  $poll->remove($handle);
+  $poll->mask($handle, POLLIN | POLLOUT);
+  return $self;
+}
+
+sub _timer {
+  my $self = shift;
+  my $cb   = shift;
+  my $t    = {cb => $cb, @_};
+  my $id;
+  do { $id = md5_sum('t' . time . rand 999) } while $self->{timers}->{$id};
+  $self->{timers}->{$id} = $t;
+  return $id;
+}
+
+sub _one_tick {
+  my $self = shift;
 
   # I/O
   my $poll = $self->_poll;
-  $poll->poll($timeout);
+  $poll->poll('0.025');
   my $handles = $self->{handles};
   $self->_sandbox('Read', $handles->{fileno $_}->{on_readable}, $_)
     for $poll->handles(POLLIN | POLLHUP | POLLERR);
@@ -75,7 +112,7 @@ sub one_tick {
     for $poll->handles(POLLOUT);
 
   # Wait for timeout
-  usleep 1000000 * $timeout unless keys %{$self->{handles}};
+  usleep 25000 unless keys %{$self->{handles}};
 
   # Timers
   my $timers = $self->{timers} || {};
@@ -97,39 +134,6 @@ sub one_tick {
   }
 }
 
-sub recurring { shift->_timer(pop, after => pop, recurring => time) }
-
-sub remove {
-  my ($self, $handle) = @_;
-  delete $self->{handles}->{fileno $handle};
-  $self->_poll->remove($handle);
-  return $self;
-}
-
-# "Bart, how did you get a cellphone?
-#  The same way you got me, by accident on a golf course."
-sub timer { shift->_timer(pop, after => pop, started => time) }
-
-sub writing {
-  my ($self, $handle) = @_;
-
-  my $poll = $self->_poll;
-  $poll->remove($handle);
-  $poll->mask($handle, POLLIN | POLLOUT);
-  $self->{handles}->{fileno $handle}->{writing} = 1;
-
-  return $self;
-}
-
-sub _timer {
-  my $self = shift;
-  my $cb   = shift;
-  my $t    = {cb => $cb, @_};
-  (my $id) = "$t" =~ /0x([\da-f]+)/;
-  $self->{timers}->{$id} = $t;
-  return $id;
-}
-
 sub _poll { shift->{poll} ||= IO::Poll->new }
 
 sub _sandbox {
@@ -144,7 +148,7 @@ __END__
 
 =head1 NAME
 
-Mojo::IOWatcher - Non-Blocking I/O Watcher
+Mojo::IOWatcher - Non-blocking I/O watcher
 
 =head1 SYNOPSIS
 
@@ -161,11 +165,12 @@ Mojo::IOWatcher - Non-Blocking I/O Watcher
   $watcher->timer(15 => sub {
     my $watcher = shift;
     $watcher->remove($handle);
-    print "Timeout!\n";
+    say "Timeout!";
   });
 
-  # And loop!
-  $watcher->one_tick('0.25') while 1;
+  # Start and stop watcher
+  $watcher->start;
+  $watcher->stop;
 
 =head1 DESCRIPTION
 
@@ -215,7 +220,7 @@ Note that this method is EXPERIMENTAL and might change without warning!
 
 =head2 C<is_readable>
 
-  my $readable = $watcher->is_readable($handle);
+  my $success = $watcher->is_readable($handle);
 
 Quick check if a handle is readable, useful for identifying tainted
 sockets.
@@ -225,12 +230,6 @@ sockets.
   $watcher = $watcher->not_writing($handle);
 
 Only watch handle for readable events.
-
-=head2 C<one_tick>
-
-  $watcher->one_tick('0.25');
-
-Run for exactly one tick and watch for I/O and timer events.
 
 =head2 C<recurring>
 
@@ -244,6 +243,18 @@ amount of seconds.
   $watcher = $watcher->remove($handle);
 
 Remove handle.
+
+=head2 C<start>
+
+  $watcher->start;
+
+Start watching for I/O and timer events.
+
+=head2 C<stop>
+
+  $watcher->stop;
+
+Stop watching for I/O and timer events.
 
 =head2 C<timer>
 

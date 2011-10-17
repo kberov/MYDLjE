@@ -1,13 +1,14 @@
 package Mojolicious::Routes;
 use Mojo::Base -base;
 
+use Carp 'croak';
 use Mojo::Cache;
 use Mojo::Exception;
 use Mojo::Loader;
 use Mojo::Util 'camelize';
 use Mojolicious::Routes::Match;
 use Mojolicious::Routes::Pattern;
-use Scalar::Util 'weaken';
+use Scalar::Util qw/blessed weaken/;
 
 has [qw/block inline parent partial namespace/];
 has cache => sub { Mojo::Cache->new };
@@ -24,9 +25,11 @@ sub AUTOLOAD {
 
   # Method
   my ($package, $method) = our $AUTOLOAD =~ /^([\w\:]+)\:\:(\w+)$/;
+  croak qq/Undefined subroutine &${package}::$method called/
+    unless blessed $self && $self->isa(__PACKAGE__);
 
   # Call shortcut
-  Carp::croak(qq/Can't locate object method "$method" via package "$package"/)
+  croak qq/Can't locate object method "$method" via package "$package"/
     unless my $shortcut = $self->shortcuts->{$method};
   return $self->$shortcut(@_);
 }
@@ -86,7 +89,16 @@ sub auto_render {
 
 sub bridge { shift->route(@_)->inline(1) }
 
-sub del { shift->_generate_route('delete', @_) }
+# DEPRECATED in Smiling Face With Sunglasses!
+sub del {
+  warn <<EOF;
+Mojolicious::Routes->del is DEPRECATED in favor of
+Mojolicious::Routes->delete!!!
+EOF
+  shift->delete(@_);
+}
+
+sub delete { shift->_generate_route('delete', @_) }
 
 sub detour {
   my $self = shift;
@@ -217,8 +229,7 @@ sub parse {
   $self->pattern->parse(@_);
 
   # Default name
-  my $name = $self->pattern->pattern;
-  $name = '' unless defined $name;
+  my $name = $self->pattern->pattern // '';
   $name =~ s/\W+//g;
   $self->{name}   = $name;
   $self->{custom} = 0;
@@ -343,7 +354,7 @@ sub waypoint { shift->route(@_)->block(1) }
 
 sub websocket {
   my $self  = shift;
-  my $route = $self->any(@_);
+  my $route = $self->get(@_);
   $route->{websocket} = 1;
   return $route;
 }
@@ -465,7 +476,7 @@ sub _generate_class {
   # Namespace
   my $namespace = $field->{namespace};
   return unless $class || $namespace;
-  $namespace = $self->namespace unless defined $namespace;
+  $namespace //= $self->namespace;
   $class = length $class ? "${namespace}::$class" : $namespace
     if length $namespace;
 
@@ -590,7 +601,7 @@ __END__
 
 =head1 NAME
 
-Mojolicious::Routes - Always Find Your Destination With Routes
+Mojolicious::Routes - Always find your destination with routes
 
 =head1 SYNOPSIS
 
@@ -788,9 +799,9 @@ Automatic rendering.
 
 Add a new bridge to this route as a nested child.
 
-=head2 C<del>
+=head2 C<delete>
 
-  my $del = $route->del('/:foo' => sub {...});
+  my $del = $route->delete('/:foo' => sub {...});
 
 Generate route matching only C<DELETE> requests.
 See also the L<Mojolicious::Lite> tutorial for more argument variations.
@@ -827,21 +838,21 @@ See also the L<Mojolicious::Lite> tutorial for more argument variations.
 
 =head2 C<has_conditions>
 
-  my $has_conditions = $r->has_conditions;
+  my $success = $r->has_conditions;
 
 Returns true if this route contains conditions.
 Note that this method is EXPERIMENTAL and might change without warning!
 
 =head2 C<has_custom_name>
 
-  my $has_custom_name = $r->has_custom_name;
+  my $success = $r->has_custom_name;
 
 Returns true if this route has a custom user defined name.
 Note that this method is EXPERIMENTAL and might change without warning!
 
 =head2 C<has_websocket>
 
-  my $has_websocket = $r->has_websocket;
+  my $success = $r->has_websocket;
 
 Returns true if this route has a WebSocket ancestor.
 Note that this method is EXPERIMENTAL and might change without warning!
@@ -854,13 +865,13 @@ Hide controller method or attribute from routes.
 
 =head2 C<is_endpoint>
 
-  my $is_endpoint = $r->is_endpoint;
+  my $success = $r->is_endpoint;
 
 Returns true if this route qualifies as an endpoint.
 
 =head2 C<is_websocket>
 
-  my $is_websocket = $r->is_websocket;
+  my $success = $r->is_websocket;
 
 Returns true if this route is a WebSocket.
 Note that this method is EXPERIMENTAL and might change without warning!
@@ -947,9 +958,9 @@ See also the L<Mojolicious::Lite> tutorial for more argument variations.
 =head2 C<via>
 
   my $methods = $r->via;
-  $r          = $r->via('get');
-  $r          = $r->via(qw/get post/);
-  $r          = $r->via([qw/get post/]);
+  $r          = $r->via('GET');
+  $r          = $r->via(qw/GET POST/);
+  $r          = $r->via([qw/GET POST/]);
 
 Restrict HTTP methods this route is allowed to handle, defaults to no
 restrictions.

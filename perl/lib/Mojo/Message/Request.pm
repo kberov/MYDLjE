@@ -31,12 +31,10 @@ sub clone {
   # Dynamic requests cannot be cloned
   return unless my $content = $self->content->clone;
   my $clone = $self->new(
-    content     => $content,
-    method      => $self->method,
-    on_progress => $self->on_progress,
-    on_finish   => $self->on_finish,
-    url         => $self->url->clone,
-    version     => $self->version
+    content => $content,
+    method  => $self->method,
+    url     => $self->url->clone,
+    version => $self->version
   );
   $clone->{proxy} = $self->{proxy}->clone if $self->{proxy};
 
@@ -100,10 +98,9 @@ sub fix_headers {
 }
 
 sub is_secure {
-  my $self   = shift;
-  my $url    = $self->url;
-  my $scheme = $url->scheme || $url->base->scheme || '';
-  return 1 if $scheme eq 'https';
+  my $self = shift;
+  my $url  = $self->url;
+  return 1 if ($url->scheme || $url->base->scheme || '') eq 'https';
   return;
 }
 
@@ -219,13 +216,6 @@ sub _build_start_line {
   $path .= "?$query" if $query;
   $path = "/$path" unless $path =~ /^\//;
 
-  # Proxy
-  if ($self->proxy) {
-    my $clone = $url = $url->clone;
-    $clone->userinfo(undef);
-    $path = $clone;
-  }
-
   # CONNECT
   my $method = uc $self->method;
   if ($method eq 'CONNECT') {
@@ -234,10 +224,17 @@ sub _build_start_line {
     $path = "$host:$port";
   }
 
-  # Version
-  my $version = $self->version;
+  # Proxy
+  elsif ($self->proxy) {
+    my $clone = $url = $url->clone;
+    $clone->userinfo(undef);
+    $path = $clone
+      unless ($self->headers->upgrade || '') eq 'websocket'
+      || ($url->scheme || '') eq 'https';
+  }
 
   # HTTP 0.9
+  my $version = $self->version;
   return "$method $path\x0d\x0a" if $version eq '0.9';
 
   # HTTP 1.0 and above
@@ -345,35 +342,25 @@ sub _parse_start_line {
 
   # Ignore any leading empty lines
   my $line = get_line $self->{buffer};
-  while ((defined $line) && ($line =~ m/^\s*$/)) {
-    $line = get_line $self->{buffer};
-  }
+  $line = get_line $self->{buffer}
+    while ((defined $line) && ($line =~ m/^\s*$/));
+  return unless defined $line;
 
   # We have a (hopefully) full request line
-  if (defined $line) {
-    if ($line =~ m/$START_LINE_RE/o) {
-      $self->method($1);
-      my $url = $self->url;
-      $self->method eq 'CONNECT'
-        ? $url->authority($2)
-        : $url->parse($2);
+  return $self->error('Bad request start line.', 400)
+    unless $line =~ $START_LINE_RE;
+  $self->method($1);
+  my $url = $self->url;
+  $1 eq 'CONNECT'
+    ? $url->authority($2)
+    : $url->parse($2);
 
-      # HTTP 0.9 is identified by the missing version
-      if (defined $3) {
-        $self->version($3);
-        $self->{state} = 'content';
-      }
-      else {
-        $self->version('0.9');
-        $self->{state} = 'done';
-
-        # HTTP 0.9 has no headers or body and does not support
-        # pipelining
-        $self->{buffer} = '';
-      }
-    }
-    else { $self->error('Bad request start line.', 400) }
-  }
+  # HTTP 0.9 is identified by the missing version
+  $self->{state} = 'content';
+  return $self->version($3) if defined $3;
+  $self->version('0.9');
+  $self->{state}  = 'done';
+  $self->{buffer} = '';
 }
 
 1;
@@ -381,7 +368,7 @@ __END__
 
 =head1 NAME
 
-Mojo::Message::Request - HTTP 1.1 Request Container
+Mojo::Message::Request - HTTP 1.1 request container
 
 =head1 SYNOPSIS
 
@@ -393,18 +380,22 @@ Mojo::Message::Request - HTTP 1.1 Request Container
   $req->parse("Content-Length: 12\x0a\x0d\x0a\x0d");
   $req->parse("Content-Type: text/plain\x0a\x0d\x0a\x0d");
   $req->parse('Hello World!');
-  print $req->body;
+  say $req->body;
 
   # Build
   my $req = Mojo::Message::Request->new;
   $req->url->parse('http://127.0.0.1/foo/bar');
   $req->method('GET');
-  print $req->to_string;
+  say $req->to_string;
 
 =head1 DESCRIPTION
 
 L<Mojo::Message::Request> is a container for HTTP 1.1 requests as described
 in RFC 2616.
+
+=head1 EVENTS
+
+L<Mojo::Message::Request> inherits all events from L<Mojo::Message>.
 
 =head1 ATTRIBUTES
 
@@ -460,13 +451,13 @@ Make sure message has all required headers for the current HTTP version.
 
 =head2 C<is_secure>
 
-  my $secure = $req->is_secure;
+  my $success = $req->is_secure;
 
 Check if connection is secure.
 
 =head2 C<is_xhr>
 
-  my $xhr = $req->is_xhr;
+  my $success = $req->is_xhr;
 
 Check C<X-Requested-With> header for C<XMLHttpRequest> value.
 

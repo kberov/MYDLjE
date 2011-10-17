@@ -84,7 +84,7 @@ sub _compile {
   my $pattern = [[]];
   while ($css =~ /$TOKEN_RE/g) {
     my $separator  = $1;
-    my $element    = $2;
+    my $element    = $2 // '';
     my $pc         = $3;
     my $attributes = $6;
     my $combinator = $11;
@@ -102,7 +102,6 @@ sub _compile {
     my $selector = $part->[-1];
 
     # Element
-    $element ||= '';
     my $tag = '';
     $element =~ s/$ELEMENT_RE// and $tag = $self->_unescape($1);
 
@@ -141,9 +140,8 @@ sub _compile {
     # Attributes
     while ($attributes =~ /$ATTR_RE/g) {
       my $key   = $self->_unescape($1);
-      my $op    = $2 || '';
-      my $value = $3;
-      $value = $4 unless defined $3;
+      my $op    = $2 // '';
+      my $value = $3 // $4;
 
       push @$selector, ['attribute', $key, $self->_regex($op, $value)];
     }
@@ -177,8 +175,8 @@ sub _element {
 
         # Can't go back to the first
         unless ($first) {
-          $marker   = $i       unless defined $marker;
-          $snapback = $current unless $snapback;
+          $marker   //= $i;
+          $snapback //= $current;
         }
       }
 
@@ -278,7 +276,7 @@ sub _equation {
     $num->[0] = $1;
     $num->[0] = $2 ? 1 : 0 unless defined($num->[0]) && length($num->[0]);
     $num->[0] = -1 if $num->[0] eq '-';
-    $num->[1] = $3 || 0;
+    $num->[1] = $3 // 0;
     $num->[1] =~ s/\s+//g;
   }
 
@@ -287,7 +285,7 @@ sub _equation {
 
 sub _regex {
   my ($self, $op, $value) = @_;
-  return unless $value;
+  return unless defined $value;
   $value = quotemeta $self->_unescape($value);
 
   # "~=" (word)
@@ -340,8 +338,8 @@ sub _selector {
       my $found = 0;
       for my $name (keys %$attrs) {
         if ($name =~ /\:?$key$/) {
-          ++$found and last
-            if !$regex || ($attrs->{$name} || '') =~ /$regex/;
+          next unless defined(my $value = $attrs->{$name});
+          ++$found and last if !$regex || $value =~ $regex;
         }
       }
       next if $found;
@@ -468,7 +466,7 @@ __END__
 
 =head1 NAME
 
-Mojo::DOM::CSS - CSS3 Selector Engine
+Mojo::DOM::CSS - CSS3 selector engine
 
 =head1 SYNOPSIS
 

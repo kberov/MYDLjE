@@ -47,16 +47,13 @@ sub build_boundary {
   my $headers = $self->headers;
   my $type = $headers->content_type || '';
   my $boundary;
-  $type =~ /boundary=\"?([^\s\"]+)\"?/i and $boundary = $1;
+  $type =~ /boundary="?([^\s"]+)"?/i and $boundary = $1;
   return $boundary if $boundary;
 
   # Generate and check boundary
   my $size = 1;
   while (1) {
-
-    # Mostly taken from LWP
-    $boundary = join('', map chr(rand(256)), 1 .. $size * 3);
-    b64_encode $boundary;
+    $boundary = b64_encode join('', map chr(rand(256)), 1 .. $size * 3);
     $boundary =~ s/\W/X/g;
 
     # Check parts for boundary
@@ -65,7 +62,7 @@ sub build_boundary {
   }
 
   # Add boundary to Content-Type header
-  $type =~ /^(.*multipart\/[^;]+)(.*)$/;
+  $type =~ m#^(.*multipart/[^;]+)(.*)$#;
   my $before = $1 || 'multipart/mixed';
   my $after  = $2 || '';
   $headers->content_type("$before; boundary=$boundary$after");
@@ -146,7 +143,7 @@ sub _parse_multipart {
   # Parse
   $self->{multi_state} ||= 'multipart_preamble';
   my $boundary = $self->boundary;
-  while (!$self->is_done) {
+  while (!$self->is_finished) {
 
     # Preamble
     if (($self->{multi_state} || '') eq 'multipart_preamble') {
@@ -195,7 +192,8 @@ sub _parse_multipart_boundary {
     substr $self->{buffer}, 0, length($boundary) + 6, '';
 
     # New part
-    push @{$self->parts}, Mojo::Content::Single->new(relaxed => 1);
+    $self->emit(part => my $part = Mojo::Content::Single->new(relaxed => 1));
+    push @{$self->parts}, $part;
     $self->{multi_state} = 'multipart_body';
     return 1;
   }
@@ -205,8 +203,8 @@ sub _parse_multipart_boundary {
   if ((index $self->{buffer}, $end) == 0) {
     substr $self->{buffer}, 0, length $end, '';
 
-    # Done
-    $self->{state} = $self->{multi_state} = 'done';
+    # Finished
+    $self->{state} = $self->{multi_state} = 'finished';
   }
 
   return;
@@ -240,9 +238,9 @@ Mojo::Content::MultiPart - HTTP 1.1 multipart content container
 
   use Mojo::Content::MultiPart;
 
-  my $content = Mojo::Content::MultiPart->new;
-  $content->parse('Content-Type: multipart/mixed; boundary=---foobar');
-  my $part = $content->parts->[4];
+  my $multi = Mojo::Content::MultiPart->new;
+  $multi->parse('Content-Type: multipart/mixed; boundary=---foobar');
+  my $single = $multi->parts->[4];
 
 =head1 DESCRIPTION
 
@@ -251,7 +249,23 @@ described in RFC 2616.
 
 =head1 EVENTS
 
-L<Mojo::Content::Multipart> inherits all events from L<Mojo::Content>.
+L<Mojo::Content::Multipart> inherits all events from L<Mojo::Content> and can
+emit the following new ones.
+
+=head2 C<part>
+
+  $multi->on(part => sub {
+    my ($multi, $single) = @_;
+  });
+
+Emitted when a new L<Mojo::Content::Single> part starts.
+Note that this event is EXPERIMENTAL and might change without warning!
+
+  $multi->on(part => sub {
+    my ($multi, $single) = @_;
+    return unless $single->headers->content_disposition =~ /name="([^"]+)"/;
+    say "Field: $1";
+  });
 
 =head1 ATTRIBUTES
 
@@ -260,7 +274,8 @@ and implements the following new ones.
 
 =head2 C<parts>
 
-  my $parts = $content->parts;
+  my $parts = $multi->parts;
+  $multi    = $multi->parts([]);
 
 Content parts embedded in this multipart content, usually
 L<Mojo::Content::Single> objects.
@@ -272,44 +287,44 @@ implements the following new ones.
 
 =head2 C<body_contains>
 
-  my $success = $content->body_contains('foobarbaz');
+  my $success = $multi->body_contains('foobarbaz');
 
 Check if content parts contain a specific string.
 
 =head2 C<body_size>
 
-  my $size = $content->body_size;
+  my $size = $multi->body_size;
 
 Content size in bytes.
 
 =head2 C<build_boundary>
 
-  my $boundary = $content->build_boundary;
+  my $boundary = $multi->build_boundary;
 
 Generate a suitable boundary for content.
 
 =head2 C<clone>
 
-  my $clone = $content->clone;
+  my $clone = $multi->clone;
 
 Clone content if possible.
 Note that this method is EXPERIMENTAL and might change without warning!
 
 =head2 C<get_body_chunk>
 
-  my $chunk = $content->get_body_chunk(0);
+  my $chunk = $multi->get_body_chunk(0);
 
 Get a chunk of content starting from a specfic position.
 
 =head2 C<is_multipart>
 
-  my $true = $content->is_multipart;
+  my $true = $multi->is_multipart;
 
 True.
 
 =head2 C<parse>
 
-  $content = $content->parse('Content-Type: multipart/mixed');
+  $multi = $multi->parse('Content-Type: multipart/mixed');
 
 Parse content chunk.
 

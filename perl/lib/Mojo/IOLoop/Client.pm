@@ -2,6 +2,7 @@ package Mojo::IOLoop::Client;
 use Mojo::Base 'Mojo::EventEmitter';
 
 use IO::Socket::INET;
+use Mojo::IOLoop::Resolver;
 use Scalar::Util 'weaken';
 use Socket qw/IPPROTO_TCP SO_ERROR TCP_NODELAY/;
 
@@ -17,10 +18,7 @@ use constant TLS => $ENV{MOJO_NO_TLS}
 use constant TLS_READ  => TLS ? IO::Socket::SSL::SSL_WANT_READ()  : 0;
 use constant TLS_WRITE => TLS ? IO::Socket::SSL::SSL_WANT_WRITE() : 0;
 
-has resolver => sub {
-  require Mojo::IOLoop::Resolver;
-  Mojo::IOLoop::Resolver->new;
-};
+has resolver => sub { Mojo::IOLoop::Resolver->new };
 
 # "It's like my dad always said: eventually, everybody gets shot."
 sub DESTROY {
@@ -54,8 +52,8 @@ sub _cleanup {
   return unless my $resolver = $self->{resolver};
   return unless my $loop     = $resolver->ioloop;
   return unless my $watcher  = $loop->iowatcher;
-  $watcher->cancel($self->{timer})  if $self->{timer};
-  $watcher->remove($self->{handle}) if $self->{handle};
+  $watcher->drop_timer($self->{timer})   if $self->{timer};
+  $watcher->drop_handle($self->{handle}) if $self->{handle};
 }
 
 sub _connect {
@@ -121,7 +119,7 @@ sub _connect {
 
   # Start writing right away
   $self->{handle} = $handle;
-  $watcher->add(
+  $watcher->watch(
     $handle,
     on_readable => sub { $self->_connecting },
     on_writable => sub { $self->_connecting }
@@ -138,8 +136,8 @@ sub _connecting {
   my $watcher = $self->resolver->ioloop->iowatcher;
   if ($self->{tls} && !$handle->connect_SSL) {
     my $error = $IO::Socket::SSL::SSL_ERROR;
-    if    ($error == TLS_READ)  { $watcher->not_writing($handle) }
-    elsif ($error == TLS_WRITE) { $watcher->writing($handle) }
+    if    ($error == TLS_READ)  { $watcher->change($handle, 1, 0) }
+    elsif ($error == TLS_WRITE) { $watcher->change($handle, 1, 1) }
     return;
   }
 
@@ -167,11 +165,11 @@ Mojo::IOLoop::Client - IOLoop socket client
   # Create socket connection
   my $client = Mojo::IOLoop::Client->new;
   $client->on(connect => sub {
-    my ($self, $handle) = @_;
+    my ($client, $handle) = @_;
     ...
   });
   $client->on(error => sub {
-    my ($self, $error) = @_;
+    my ($client, $error) = @_;
     ...
   });
   $client->connect(address => 'mojolicio.us', port => 80);
@@ -211,7 +209,7 @@ L<Mojo::IOLoop::Client> implements the following attributes.
   my $resolver = $client->resolver;
   $client      = $client->resolver(Mojo::IOLoop::Resolver->new);
 
-DNS stub resolver, usually a L<Mojo::IOLoop::Resolver> object.
+DNS stub resolver, defaults to a L<Mojo::IOLoop::Resolver> object.
 
 =head1 METHODS
 

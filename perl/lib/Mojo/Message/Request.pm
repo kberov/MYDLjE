@@ -10,20 +10,17 @@ has env => sub { {} };
 has method => 'GET';
 has url => sub { Mojo::URL->new };
 
-# Start line regex
-my $START_LINE_RE = qr/
+my $START_LINE_RE = qr|
   ^\s*
-  ([a-zA-Z]+)                                                  # Method
+  (?<method>[a-zA-Z]+)                                          # Method
   \s+
-  (
-  [0-9a-zA-Z\-\.\_\~\:\/\?\#\[\]\@\!\$\&\'\(\)\*\+\,\;\=\%]+   # Path
+  (?<path>
+    [0-9a-zA-Z\-\.\_\~\:/\?\#\[\]\@\!\$\&\'\(\)\*\+\,\;\=\%]+   # Path
   )
-  (?:\s+HTTP\/(\d+\.\d+))?                                     # Version
+  (?:\s+HTTP/(?<version>\d+\.\d+))?                             # Version
   $
-/x;
-
-# Host regex
-my $HOST_RE = qr/^([^\:]*)\:?(.*)$/;
+|x;
+my $HOST_RE = qr/^(?<host>[^\:]*)\:?(?<port>.*)$/;
 
 sub clone {
   my $self = shift;
@@ -82,15 +79,13 @@ sub fix_headers {
 
   # Basic authorization
   if ((my $u = $url->userinfo) && !$headers->authorization) {
-    b64_encode $u, '';
-    $headers->authorization("Basic $u");
+    $headers->authorization('Basic ' . b64_encode($u, ''));
   }
 
   # Basic proxy authorization
   if (my $proxy = $self->proxy) {
     if ((my $u = $proxy->userinfo) && !$headers->proxy_authorization) {
-      b64_encode $u, '';
-      $headers->proxy_authorization("Basic $u");
+      $headers->proxy_authorization('Basic ' . b64_encode($u, ''));
     }
   }
 
@@ -98,17 +93,12 @@ sub fix_headers {
 }
 
 sub is_secure {
-  my $self = shift;
-  my $url  = $self->url;
-  return 1 if ($url->scheme || $url->base->scheme || '') eq 'https';
-  return;
+  my $url = shift->url;
+  return ($url->scheme || $url->base->scheme || '') eq 'https';
 }
 
 sub is_xhr {
-  my $self = shift;
-  return unless my $with = $self->headers->header('X-Requested-With');
-  return 1 if $with =~ /XMLHttpRequest/i;
-  return;
+  (shift->headers->header('X-Requested-With') || '') =~ /XMLHttpRequest/i;
 }
 
 sub param {
@@ -173,8 +163,8 @@ sub parse {
       # "X-Forwarded-Host"
       if (my $host = $headers->header('X-Forwarded-Host')) {
         if ($host =~ $HOST_RE) {
-          $base->host($1);
-          $base->port($2) if defined $2;
+          $base->host($+{host});
+          $base->port($+{port}) if defined $+{port};
         }
       }
 
@@ -214,7 +204,7 @@ sub _build_start_line {
   my $path  = $url->path->to_string;
   my $query = $url->query->to_string;
   $path .= "?$query" if $query;
-  $path = "/$path" unless $path =~ /^\//;
+  $path = "/$path" unless $path =~ m#^/#;
 
   # CONNECT
   my $method = uc $self->method;
@@ -244,9 +234,7 @@ sub _build_start_line {
 sub _parse_basic_auth {
   my ($self, $header) = @_;
   return unless $header =~ /Basic (.+)$/;
-  my $auth = $1;
-  b64_decode $auth;
-  return $auth;
+  return b64_decode $1;
 }
 
 sub _parse_env {
@@ -271,10 +259,7 @@ sub _parse_env {
     if ($name eq 'HOST') {
       my $host = $value;
       my $port = undef;
-      if ($host =~ $HOST_RE) {
-        $host = $1;
-        $port = $2;
-      }
+      ($host, $port) = ($+{host}, $+{port}) if $host =~ $HOST_RE;
       $base->host($host);
       $base->port($port);
     }
@@ -296,7 +281,7 @@ sub _parse_env {
   $self->method($env->{REQUEST_METHOD}) if $env->{REQUEST_METHOD};
 
   # Scheme/Version
-  if (($env->{SERVER_PROTOCOL} || '') =~ /^([^\/]+)\/([^\/]+)$/) {
+  if (($env->{SERVER_PROTOCOL} || '') =~ m#^([^/]+)/([^/]+)$#) {
     $base->scheme($1);
     $self->version($2);
   }
@@ -309,7 +294,7 @@ sub _parse_env {
   if (my $value = $env->{SCRIPT_NAME}) {
 
     # Make sure there is a trailing slash (important for merging)
-    $value .= '/' unless $value =~ /\/$/;
+    $value .= '/' unless $value =~ m#/$#;
     $base_path->parse($value);
   }
 
@@ -324,10 +309,10 @@ sub _parse_env {
   if (defined $buffer && defined $base_buffer && length $base_buffer) {
 
     # Remove SCRIPT_NAME prefix if it's there
-    $base_buffer =~ s/^\///;
-    $base_buffer =~ s/\/$//;
-    $buffer      =~ s/^\/?$base_buffer\/?//;
-    $buffer      =~ s/^\///;
+    $base_buffer =~ s|^/||;
+    $base_buffer =~ s|/$||;
+    $buffer      =~ s|^/?$base_buffer/?||;
+    $buffer      =~ s|^/||;
     $path->parse($buffer);
   }
 
@@ -341,25 +326,25 @@ sub _parse_start_line {
   my $self = shift;
 
   # Ignore any leading empty lines
-  my $line = get_line $self->{buffer};
-  $line = get_line $self->{buffer}
+  my $line = get_line \$self->{buffer};
+  $line = get_line \$self->{buffer}
     while ((defined $line) && ($line =~ m/^\s*$/));
   return unless defined $line;
 
   # We have a (hopefully) full request line
   return $self->error('Bad request start line.', 400)
     unless $line =~ $START_LINE_RE;
-  $self->method($1);
+  $self->method($+{method});
   my $url = $self->url;
   $1 eq 'CONNECT'
-    ? $url->authority($2)
-    : $url->parse($2);
+    ? $url->authority($+{path})
+    : $url->parse($+{path});
 
   # HTTP 0.9 is identified by the missing version
   $self->{state} = 'content';
-  return $self->version($3) if defined $3;
+  return $self->version($+{version}) if defined $+{version};
   $self->version('0.9');
-  $self->{state}  = 'done';
+  $self->{state}  = 'finished';
   $self->{buffer} = '';
 }
 
@@ -443,6 +428,8 @@ Note that this method is EXPERIMENTAL and might change without warning!
 
 Access request cookies, usually L<Mojo::Cookie::Request> objects.
 
+  say $req->cookies->[1]->value;
+
 =head2 C<fix_headers>
 
   $req = $req->fix_headers;
@@ -473,6 +460,8 @@ Access C<GET> and C<POST> parameters.
 
 All C<GET> and C<POST> parameters, usually a L<Mojo::Parameters> object.
 
+  say $req->params->param('foo');
+
 =head2 C<parse>
 
   $req = $req->parse('GET /foo/bar HTTP/1.1');
@@ -494,6 +483,8 @@ Proxy URL for message.
   my $params = $req->query_params;
 
 All C<GET> parameters, usually a L<Mojo::Parameters> object.
+
+  say $req->query_params->param('foo');
 
 =head1 SEE ALSO
 

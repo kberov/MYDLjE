@@ -20,24 +20,28 @@ sub error {
   return;
 }
 
+# DEPRECATED in Leaf Fluttering In Wind!
 sub is_done {
-  return 1 if (shift->{state} || '') eq 'done';
-  return;
+  warn <<EOF;
+Mojo::Transaction->is_done is DEPRECATED in favor of
+Mojo::Transaction->is_finished!
+EOF
+  shift->is_finished;
 }
+
+sub is_finished { (shift->{state} || '') eq 'finished' }
 
 sub is_websocket {undef}
 
 sub is_writing {
   return 1 unless my $state = shift->{state};
-  return 1 if $state ~~ [qw/write write_start_line write_headers write_body/];
-  return;
+  return $state ~~ [qw/write write_start_line write_headers write_body/];
 }
 
 # DEPRECATED in Smiling Face With Sunglasses!
 sub on_finish {
   warn <<EOF;
-Mojo::Transaction->on_finish is DEPRECATED in favor of using
-Mojo::Transaction->on!!!
+Mojo::Transaction->on_finish is DEPRECATED in favor of Mojo::Transaction->on!
 EOF
   shift->on(finish => shift);
 }
@@ -45,8 +49,7 @@ EOF
 # DEPRECATED in Smiling Face With Sunglasses!
 sub on_resume {
   warn <<EOF;
-Mojo::Transaction->on_resume is DEPRECATED in favor of using
-Mojo::Transaction->on!!!
+Mojo::Transaction->on_resume is DEPRECATED in favor of Mojo::Transaction->on!
 EOF
   shift->on(resume => shift);
 }
@@ -191,13 +194,13 @@ implements the following new ones.
 
 =head2 C<client_close>
 
-  $tx = $tx->client_close;
+  $tx->client_close;
 
 Transaction closed.
 
 =head2 C<client_read>
 
-  $tx = $tx->client_read($chunk);
+  $tx->client_read($chunk);
 
 Read and process client data.
 
@@ -214,11 +217,11 @@ Write client data.
 
 Parser errors and codes.
 
-=head2 C<is_done>
+=head2 C<is_finished>
 
-  my $success = $tx->is_done;
+  my $success = $tx->is_finished;
 
-Check if transaction is done.
+Check if transaction is finished.
 
 =head2 C<is_websocket>
 
@@ -252,13 +255,13 @@ Resume transaction.
 
 =head2 C<server_close>
 
-  $tx = $tx->server_close;
+  $tx->server_close;
 
 Transaction closed.
 
 =head2 C<server_read>
 
-  $tx = $tx->server_read($chunk);
+  $tx->server_read($chunk);
 
 Read and process server data.
 

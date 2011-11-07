@@ -22,8 +22,7 @@ sub load {
 
   # Deserialize
   $value =~ s/\-/\=/g;
-  b64_decode $value;
-  return unless my $session = $JSON->decode($value);
+  return unless my $session = $JSON->decode(b64_decode $value);
 
   # Expiration
   return unless my $expires = delete $session->{expires};
@@ -66,8 +65,7 @@ sub store {
       ||= time + $self->default_expiration;
 
     # Serialize
-    $value = $JSON->encode($session);
-    b64_encode $value, '';
+    $value = b64_encode $JSON->encode($session), '';
     $value =~ s/\=/\-/g;
   }
 
@@ -92,11 +90,13 @@ Mojolicious::Sessions - Signed cookie based sessions
 
   use Mojolicious::Sessions;
 
+  my $sessions = Mojolicious::Sessions->new;
+
 =head1 DESCRIPTION
 
 L<Mojolicious::Sessions> is a very simple signed cookie based session
 implementation.
-All data gets serialized with L<Mojo::JSON> and stored on the client side,
+All data gets serialized with L<Mojo::JSON> and stored on the client-side,
 but is protected from unwanted changes with a signature.
 
 =head1 ATTRIBUTES

@@ -6,7 +6,7 @@ use Mojo::DOM;
 use Mojo::IOLoop;
 use Mojo::Transaction::HTTP;
 use Mojo::UserAgent;
-use Mojo::Util 'decode';
+use Mojo::Util qw/decode encode/;
 
 has description => <<'EOF';
 Perform HTTP 1.1 request.
@@ -66,7 +66,7 @@ sub run {
   # URL and selector
   my $url = shift @ARGV;
   die $self->usage unless $url;
-  decode 'UTF-8', $url;
+  $url = decode 'UTF-8', $url;
   my $selector = shift @ARGV;
 
   # Fresh user agent
@@ -75,7 +75,7 @@ sub run {
   $ua->max_redirects(5) if $redirect;
 
   # Absolute URL
-  if ($url =~ /^\w+:\/\//) { $ua->detect_proxy }
+  if ($url =~ m#^\w+://#) { $ua->detect_proxy }
 
   # Application
   else { $ua->app($ENV{MOJO_APP} || 'Mojo::HelloWorld') }
@@ -98,7 +98,7 @@ sub run {
         my $res = shift;
 
         # Wait for headers
-        return unless $v && $res->headers->is_done;
+        return unless $v && $res->headers->is_finished;
 
         # Request
         warn "$startline$headers";
@@ -110,7 +110,7 @@ sub run {
         warn "HTTP/$version $code $message\n",
           $res->headers->to_string, "\n\n";
 
-        # Done
+        # Finished
         $v = 0;
       };
 
@@ -139,11 +139,11 @@ sub run {
 
   # Error
   my ($message, $code) = $tx->error;
-  utf8::encode $url;
+  $url = encode 'UTF-8', $url;
   warn qq/Problem loading URL "$url". ($message)\n/ if $message && !$code;
 
   # Charset
-  ($tx->res->headers->content_type || '') =~ /charset=\"?([^\"\s;]+)\"?/
+  ($tx->res->headers->content_type || '') =~ /charset="?([^"\s;]+)"?/
     and $charset = $1
     unless defined $charset;
 
@@ -153,8 +153,7 @@ sub run {
 
 sub _say {
   return unless length(my $value = shift);
-  utf8::encode $value;
-  say $value;
+  say encode('UTF-8', $value);
 }
 
 sub _select {
@@ -165,7 +164,7 @@ sub _select {
   my $results = $dom->find($selector);
 
   # Commands
-  my $done = 0;
+  my $finished = 0;
   while (defined(my $command = shift @ARGV)) {
 
     # Number
@@ -188,11 +187,11 @@ sub _select {
 
     # Unknown
     else { die qq/Unknown command "$command".\n/ }
-    $done++;
+    $finished++;
   }
 
   # Render
-  unless ($done) { _say($_) for @$results }
+  unless ($finished) { _say($_) for @$results }
 }
 
 1;

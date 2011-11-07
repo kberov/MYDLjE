@@ -17,10 +17,11 @@ has iowatcher => sub {
 #  including my children..."
 sub DESTROY {
   my $self = shift;
-  $self->pause if $self->{iowatcher};
-  return unless my $handle = $self->{handle};
+  return unless my $watcher = $self->{iowatcher};
+  return unless my $handle  = $self->{handle};
+  $watcher->drop_handle($handle);
   close $handle;
-  $self->emit_safe('close');
+  $self->_close;
 }
 
 sub new {
@@ -32,33 +33,40 @@ sub new {
 
 sub handle { shift->{handle} }
 
-sub is_finished {
+sub is_writing {
   my $self = shift;
-  return if length $self->{buffer};
-  return if @{$self->subscribers('drain')};
-  return 1;
+  return length($self->{buffer}) || $self->has_subscribers('drain');
 }
 
 sub pause {
   my $self = shift;
-  $self->iowatcher->remove($self->{handle}) if $self->{handle};
+  return if $self->{paused}++;
+  $self->iowatcher->change($self->{handle}, 0, $self->is_writing);
 }
 
 sub resume {
   my $self = shift;
-  weaken $self;
-  $self->iowatcher->add(
-    $self->{handle},
-    on_readable => sub { $self->_read },
-    on_writable => sub { $self->_write }
-  );
+
+  # Start streaming
+  unless ($self->{streaming}++) {
+    weaken $self;
+    return $self->iowatcher->watch(
+      $self->{handle},
+      on_readable => sub { $self->_read },
+      on_writable => sub { $self->_write }
+    );
+  }
+
+  # Resume streaming
+  return unless delete $self->{paused};
+  $self->iowatcher->change($self->{handle}, 1, $self->is_writing);
 }
 
 # "No children have ever meddled with the Republican Party and lived to tell
 #  about it."
 sub steal_handle {
   my $self = shift;
-  $self->pause;
+  $self->iowatcher->drop_handle($self->{handle});
   return delete $self->{handle};
 }
 
@@ -73,7 +81,13 @@ sub write {
   else     { return unless length $self->{buffer} }
 
   # Start writing
-  $self->iowatcher->writing($self->{handle}) if $self->{handle};
+  $self->iowatcher->change($self->{handle}, !$self->{paused}, 1)
+    if $self->{handle};
+}
+
+sub _close {
+  my $self = shift;
+  $self->emit_safe('close') unless $self->{closed}++;
 }
 
 sub _read {
@@ -89,14 +103,14 @@ sub _read {
     return if $! ~~ [EAGAIN, EINTR, EWOULDBLOCK];
 
     # Closed
-    return $self->emit_safe('close') if $! == ECONNRESET;
+    return $self->_close if $! == ECONNRESET;
 
     # Read error
     return $self->emit_safe(error => $!);
   }
 
   # EOF
-  return $self->emit_safe('close') if $read == 0;
+  return $self->_close if $read == 0;
 
   # Handle read
   $self->emit_safe(read => $buffer);
@@ -117,7 +131,7 @@ sub _write {
       return if $! ~~ [EAGAIN, EINTR, EWOULDBLOCK];
 
       # Closed
-      return $self->emit_safe('close') if $! ~~ [ECONNRESET, EPIPE];
+      return $self->_close if $! ~~ [ECONNRESET, EPIPE];
 
       # Write error
       return $self->emit_safe(error => $!);
@@ -131,8 +145,8 @@ sub _write {
   $self->emit_safe('drain') if !length $self->{buffer};
 
   # Stop writing
-  return if length $self->{buffer} || @{$self->subscribers('drain')};
-  $self->iowatcher->not_writing($handle);
+  return if $self->is_writing;
+  $self->iowatcher->change($handle, !$self->{paused}, 0);
 }
 
 1;
@@ -149,15 +163,15 @@ Mojo::IOLoop::Stream - IOLoop stream
   # Create stream
   my $stream = Mojo::IOLoop::Stream->new($handle);
   $stream->on(read => sub {
-    my ($self, $chunk) = @_;
+    my ($stream, $chunk) = @_;
     ...
   });
   $stream->on(close => sub {
-    my $self = shift;
+    my $stream = shift;
     ...
   });
   $stream->on(error => sub {
-    my ($self, $error) = @_;
+    my ($stream, $error) = @_;
     ...
   });
 
@@ -216,8 +230,8 @@ L<Mojo::IOLoop::Stream> implements the following attributes.
   my $watcher = $stream->iowatcher;
   $stream     = $stream->iowatcher(Mojo::IOWatcher->new);
 
-Low level event watcher, usually a L<Mojo::IOWatcher> or
-L<Mojo::IOWatcher::EV> object.
+Low level event watcher, defaults to the C<iowatcher> attribute value of the
+global L<Mojo::IOLoop> singleton.
 
 =head1 METHODS
 
@@ -236,11 +250,11 @@ Construct a new L<Mojo::IOLoop::Stream> object.
 
 Get handle for stream.
 
-=head2 C<is_finished>
+=head2 C<is_writing>
 
-  my $success = $stream->is_finished;
+  my $success = $stream->is_writing;
 
-Check if stream is in a state where it is safe to close or steal the handle.
+Check if stream is writing.
 
 =head2 C<pause>
 

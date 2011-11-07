@@ -166,13 +166,21 @@ sub header {
 sub host { scalar shift->header(Host => @_) }
 sub if_modified_since { scalar shift->header('If-Modified-Since' => @_) }
 
-sub is_done { (shift->{state} || '') eq 'done' }
+# DEPRECATED in Leaf Fluttering In Wind!
+sub is_done {
+  warn <<EOF;
+Mojo::Headers->is_done is DEPRECATED in favor of Mojo::Headers->is_finished!
+EOF
+  shift->is_finished;
+}
+
+sub is_finished { (shift->{state} || '') eq 'finished' }
 
 sub is_limit_exceeded { shift->{limit} }
 
 sub last_modified { scalar shift->header('Last-Modified' => @_) }
 
-sub leftovers { shift->{buffer} }
+sub leftovers { delete shift->{buffer} }
 
 sub location { scalar shift->header(Location => @_) }
 
@@ -191,11 +199,11 @@ sub parse {
   $self->{buffer} .= $chunk if defined $chunk;
   my $headers = $self->{cache} ||= [];
   my $max = $self->max_line_size;
-  while (defined(my $line = get_line $self->{buffer})) {
+  while (defined(my $line = get_line \$self->{buffer})) {
 
     # Check line size limit
     if (length $line > $max) {
-      $self->{state} = 'done';
+      $self->{state} = 'finished';
       $self->{limit} = 1;
       return $self;
     }
@@ -209,14 +217,14 @@ sub parse {
     # Empty line
     else {
       $self->add(splice @$headers, 0, 2) while @$headers;
-      $self->{state} = 'done';
+      $self->{state} = 'finished';
       return $self;
     }
   }
 
   # Check line size limit
   if (length $self->{buffer} > $max) {
-    $self->{state} = 'done';
+    $self->{state} = 'finished';
     $self->{limit} = 1;
   }
 
@@ -330,7 +338,8 @@ L<Mojo::Headers> implements the following attributes.
   my $size = $headers->max_line_size;
   $headers = $headers->max_line_size(1024);
 
-Maximum line size in bytes, defaults to C<10240>.
+Maximum line size in bytes, defaults to the value of C<MOJO_MAX_LINE_SIZE> or
+C<10240>.
 Note that this attribute is EXPERIMENTAL and might change without warning!
 
 =head1 METHODS
@@ -477,8 +486,6 @@ Parse headers from a hash.
   $headers   = $headers->header('Content-Type' => 'text/plain');
 
 Get or replace the current header values.
-Note that this method is context sensitive and will turn all header lines
-into a single one in scalar context.
 
   # Multiple headers with the same name
   for my $header ($headers->header('Set-Cookie')) {
@@ -504,11 +511,11 @@ Shortcut for the C<Host> header.
 
 Shortcut for the C<If-Modified-Since> header.
 
-=head2 C<is_done>
+=head2 C<is_finished>
 
-  my $success = $headers->is_done;
+  my $success = $headers->is_finished;
 
-Check if header parser is done.
+Check if header parser is finished.
 
 =head2 C<is_limit_exceeded>
 

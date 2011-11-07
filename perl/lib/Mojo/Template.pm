@@ -2,10 +2,10 @@ package Mojo::Template;
 use Mojo::Base -base;
 
 use Carp 'croak';
-use Encode qw/decode encode/;
 use IO::File;
 use Mojo::ByteStream;
 use Mojo::Exception;
+use Mojo::Util qw/decode encode/;
 
 use constant CHUNK_SIZE => $ENV{MOJO_CHUNK_SIZE} || 131072;
 
@@ -45,7 +45,6 @@ sub escape;
     $v = "$_[0]";
   }
   Mojo::Util::xml_escape $v;
-  $v;
 };
 use Mojo::Base -strict;
 EOF
@@ -55,8 +54,7 @@ sub build {
   my $self = shift;
 
   # Compile
-  my @lines;
-  my $cpst;
+  my (@lines, $cpst);
   my $multi = 0;
   for my $line (@{$self->tree}) {
 
@@ -84,7 +82,6 @@ sub build {
         # Quote and fix line ending
         $value = quotemeta($value);
         $value .= '\n' if $newline;
-
         $lines[-1] .= "\$_M .= \"" . $value . "\";" if length $value;
       }
 
@@ -123,11 +120,7 @@ sub build {
       }
 
       # Capture start
-      if ($type eq 'cpst') {
-
-        # Start block
-        $cpst = " sub { my \$_M = ''; ";
-      }
+      if ($type eq 'cpst') { $cpst = " sub { my \$_M = ''; " }
     }
   }
 
@@ -141,7 +134,7 @@ sub build {
     . $lines[0];
   $lines[-1] .= "$append; \$_M; } };";
 
-  # Done
+  # Final code
   $self->code(join "\n", @lines);
   $self->tree([]);
 
@@ -282,7 +275,7 @@ sub parse {
 
     # Tokenize
     my @token;
-    for my $token (split /$token_re/, $line) {
+    for my $token (split $token_re, $line) {
 
       # Capture end
       @capture_token = ('cpen', undef)
@@ -373,7 +366,7 @@ sub render_file {
   }
 
   # Decode and render
-  $tmpl = decode($self->encoding, $tmpl) if $self->encoding;
+  $tmpl = decode $self->encoding, $tmpl if $self->encoding;
   return $self->render($tmpl, @_);
 }
 
@@ -433,7 +426,7 @@ sub _write_file {
   # Encode and write to file
   croak "Can't open file '$path': $!"
     unless my $file = IO::File->new("> $path");
-  $output = encode($self->encoding, $output) if $self->encoding;
+  $output = encode $self->encoding, $output if $self->encoding;
   $file->syswrite($output) or croak "Can't write to file '$path': $!";
 
   return;

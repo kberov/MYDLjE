@@ -4,7 +4,7 @@ use Mojo::Base -base;
 use Mojo::IOLoop;
 use Mojo::Message::Response;
 use Mojo::UserAgent;
-use Mojo::Util 'decode';
+use Mojo::Util qw/decode encode/;
 use Test::More ();
 
 has ua => sub { Mojo::UserAgent->new->ioloop(Mojo::IOLoop->singleton) };
@@ -25,7 +25,7 @@ sub new {
   elsif (@_) {
     warn <<EOF;
 Test::Mojo->new(app => 'MyApp') is DEPRECATED in favor of
-Test::Mojo->new('MyApp')!!!
+Test::Mojo->new('MyApp')!
 EOF
     my $args = {@_};
     for my $key (qw/app max_redirects tx ua/) {
@@ -136,7 +136,7 @@ sub finish_ok {
   my ($self, $desc) = @_;
 
   $self->tx->finish;
-  Mojo::IOLoop->singleton->one_tick while !$self->{finished};
+  Mojo::IOLoop->one_tick while !$self->{finished};
   local $Test::Builder::Level = $Test::Builder::Level + 1;
   Test::More::ok 1, $desc || 'finished websocket';
 
@@ -231,9 +231,7 @@ sub post_form_ok {
 
   $self->tx($self->ua->post_form($url, @_));
   local $Test::Builder::Level = $Test::Builder::Level + 1;
-  my $desc = "post $url";
-  utf8::encode $desc;
-  Test::More::ok $self->tx->is_done, $desc;
+  Test::More::ok $self->tx->is_finished, encode('UTF-8', "post $url");
 
   return $self;
 }
@@ -313,8 +311,6 @@ sub websocket_ok {
   my $self = shift;
   my $url  = shift;
 
-  my $desc = "websocket $url";
-  utf8::encode $desc;
   $self->{messages} = [];
   $self->{finished} = 0;
   $self->ua->websocket(
@@ -328,7 +324,8 @@ sub websocket_ok {
   );
   Mojo::IOLoop->start;
   local $Test::Builder::Level = $Test::Builder::Level + 1;
-  Test::More::ok $self->tx->res->code eq 101, $desc;
+  Test::More::ok $self->tx->res->code eq 101,
+    encode('UTF-8', "websocket $url");
 
   return $self;
 }
@@ -338,19 +335,17 @@ sub _get_content {
 
   # Charset
   my $charset;
-  ($tx->res->headers->content_type || '') =~ /charset=\"?([^"\s]+)\"?/
+  ($tx->res->headers->content_type || '') =~ /charset="?([^"\s]+)"?/
     and $charset = $1;
 
   # Content
   my $content = $tx->res->body;
-  decode $charset, $content if $charset;
-  return $content;
+  return $charset ? decode($charset, $content) : $content;
 }
 
 sub _message {
   my $self = shift;
-  Mojo::IOLoop->singleton->one_tick
-    while !$self->{finished} && !@{$self->{messages}};
+  Mojo::IOLoop->one_tick while !$self->{finished} && !@{$self->{messages}};
   return shift @{$self->{messages}};
 }
 
@@ -364,10 +359,8 @@ sub _request_ok {
   $self->tx($self->ua->$method($url, %$headers, $body));
   local $Test::Builder::Level = $Test::Builder::Level + 2;
   my ($error, $code) = $self->tx->error;
-  my $desc = "$method $url";
-  utf8::encode $desc;
   Test::More::diag $error if !(my $ok = !$error || $code) && $error;
-  Test::More::ok $ok, $desc;
+  Test::More::ok $ok, encode('UTF-8', "$method $url");
 
   return $self;
 }
@@ -661,8 +654,6 @@ Reset user agent session.
 
   $t = $t->send_message_ok('hello');
   $t = $t->send_message_ok('hello', 'sent successfully');
-  $t = $t->send_message_ok([$bytes]);
-  $t = $t->send_message_ok([$bytes], 'sent successfully');
 
 Send C<WebSocket> message.
 Note that this method is EXPERIMENTAL and might change without warning!

@@ -6,10 +6,8 @@ use Mojo::Util 'quote';
 
 has [qw/comment domain httponly max_age port secure/];
 
-# Regex
 my $FIELD_RE =
   qr/(Comment|Domain|expires|HttpOnly|Max-Age|Path|Port|Secure|Version)/msi;
-my $FLAG_RE = qr/(?:Secure|HttpOnly)/i;
 
 sub expires {
   my ($self, $expires) = @_;
@@ -55,7 +53,7 @@ sub parse {
         (my $id = lc $match[0]) =~ tr/-/_/;
 
         # Flag
-        $cookies[-1]->$id($id =~ $FLAG_RE ? 1 : $value);
+        $cookies[-1]->$id($id =~ /(?:Secure|HttpOnly)/i ? 1 : $value);
       }
     }
   }
@@ -71,8 +69,7 @@ sub to_string {
   my $cookie = $self->name;
   my $value  = $self->value;
   if (defined $value) {
-    quote $value if $value =~ /[,;"]/;
-    $cookie .= "=$value";
+    $cookie .= '=' . ($value =~ /[,;"]/ ? quote($value) : $value);
   }
   else { $cookie .= '=' }
   $cookie .= sprintf "; Version=%d", ($self->version || 1);
@@ -118,7 +115,6 @@ Mojo::Cookie::Response - HTTP 1.1 response cookie container
   my $cookie = Mojo::Cookie::Response->new;
   $cookie->name('foo');
   $cookie->value('bar');
-
   say $cookie;
 
 =head1 DESCRIPTION

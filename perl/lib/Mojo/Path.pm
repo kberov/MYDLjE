@@ -5,23 +5,19 @@ use overload
   '""'     => sub { shift->to_string },
   fallback => 1;
 
-use Mojo::Util qw/url_escape url_unescape/;
+use Mojo::Util qw/encode url_escape url_unescape/;
 use Mojo::URL;
 
 has [qw/leading_slash trailing_slash/];
 has parts => sub { [] };
 
-sub new {
-  my $self = shift->SUPER::new();
-  $self->parse(@_);
-  return $self;
-}
+sub new { shift->SUPER::new()->parse(@_) }
 
 # DEPRECATED in Smiling Face With Sunglasses!
 sub append {
   warn <<EOF;
 Mojo::Path->append is DEPRECATED in favor of using Mojo::Path->parts
-directly!!!
+directly!
 EOF
   my $self = shift;
   push @{$self->parts}, @_;
@@ -32,26 +28,23 @@ sub canonicalize {
   my $self = shift;
 
   # Resolve path
-  my @path;
+  my @parts;
   for my $part (@{$self->parts}) {
 
     # ".."
     if ($part eq '..') {
-
-      # Leading '..' can't be resolved
-      unless (@path && $path[-1] ne '..') { push @path, '..' }
-
-      # Uplevel
-      else { pop @path }
+      unless (@parts && $parts[-1] ne '..') { push @parts, '..' }
+      else                                  { pop @parts }
       next;
     }
 
     # "."
-    next if $part eq '.';
+    next if $part ~~ ['.', ''];
 
-    push @path, $part;
+    # Part
+    push @parts, $part;
   }
-  $self->parts(\@path);
+  $self->parts(\@parts);
 
   return $self;
 }
@@ -86,47 +79,33 @@ sub parse {
   my ($self, $path) = @_;
   $path //= '';
 
-  # Leading and trailing slash
-  $path =~ /^\// ? $self->leading_slash(1)  : $self->leading_slash(undef);
-  $path =~ /\/$/ ? $self->trailing_slash(1) : $self->trailing_slash(undef);
-
-  # Parse
-  url_unescape $path;
+  $path = url_unescape $path;
   utf8::decode $path;
-  my @parts;
-  for my $part (split '/', $path) {
-
-    # Empty parts before the first are garbage
-    next unless length $part or @parts;
-    push @parts, $part;
-  }
-  $self->parts(\@parts);
+  $path =~ s|^/|| ? $self->leading_slash(1)  : $self->leading_slash(undef);
+  $path =~ s|/$|| ? $self->trailing_slash(1) : $self->trailing_slash(undef);
+  $self->parts([split '/', $path, -1]);
 
   return $self;
 }
 
 sub to_abs_string {
   my $self = shift;
-  return $self->to_string if $self->leading_slash;
-  return '/' . $self->to_string;
+  return $self->leading_slash ? $self->to_string : ('/' . $self->to_string);
 }
 
 sub to_string {
   my $self = shift;
 
   # Escape
-  my @path;
-  for my $part (@{$self->parts}) {
-    my $escaped = $part;
-    utf8::encode $escaped;
-    url_escape $escaped, "$Mojo::URL::UNRESERVED$Mojo::URL::SUBDELIM\:\@";
-    push @path, $escaped;
-  }
+  my @parts = map {
+    url_escape(encode('UTF-8', $_),
+      "$Mojo::URL::UNRESERVED$Mojo::URL::SUBDELIM\:\@")
+  } @{$self->parts};
 
   # Format
-  my $path = join '/', @path;
+  my $path = join '/', @parts;
   $path = "/$path" if $self->leading_slash;
-  $path = "$path/" if @path && $self->trailing_slash;
+  $path = "$path/" if $self->trailing_slash;
 
   return $path;
 }
@@ -193,6 +172,9 @@ Construct a new L<Mojo::Path> object.
 
 Canonicalize path.
 
+  # "/foo/baz"
+  say Mojo::Path->new('/foo/bar/../baz')->canonicalize;
+
 =head2 C<clone>
 
   my $clone = $path->clone;
@@ -206,6 +188,16 @@ Clone path.
 Check if path contains given prefix.
 Note that this method is EXPERIMENTAL and might change without warning!
 
+  # True
+  Mojo::Path->new('/foo/bar')->contains('/');
+  Mojo::Path->new('/foo/bar')->contains('/foo');
+  Mojo::Path->new('/foo/bar')->contains('/foo/bar');
+
+  # False
+  Mojo::Path->new('/foo/bar')->contains('/f');
+  Mojo::Path->new('/foo/bar')->contains('/bar');
+  Mojo::Path->new('/foo/bar')->contains('/whatever');
+
 =head2 C<parse>
 
   $path = $path->parse('/foo/bar%3B/baz.html');
@@ -217,7 +209,6 @@ Parse path.
   my $string = $path->to_abs_string;
 
 Turn path into an absolute string.
-Note that this method is EXPERIMENTAL and might change without warning!
 
 =head2 C<to_string>
 

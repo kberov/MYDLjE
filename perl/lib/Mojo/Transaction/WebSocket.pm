@@ -22,9 +22,6 @@ use constant {
   PONG         => 10
 };
 
-# Core module since Perl 5.9.3
-use constant SHA1 => eval 'use Digest::SHA (); 1';
-
 has handshake => sub { Mojo::Transaction::HTTP->new };
 has 'masked';
 has max_websocket_size => sub { $ENV{MOJO_MAX_WEBSOCKET_SIZE} || 262144 };
@@ -108,9 +105,8 @@ sub client_handshake {
   $headers->sec_websocket_version(13) unless $headers->sec_websocket_version;
 
   # Generate WebSocket challenge
-  my $key = pack 'N*', int(rand 9999999);
-  b64_encode $key, '';
-  $headers->sec_websocket_key($key) unless $headers->sec_websocket_key;
+  $headers->sec_websocket_key(b64_encode(pack('N*', int(rand 9999999)), ''))
+    unless $headers->sec_websocket_key;
 
   return $self;
 }
@@ -121,7 +117,7 @@ sub connection   { shift->handshake->connection(@_) }
 
 sub finish {
   my $self = shift;
-  $self->_send_frame(CLOSE, '');
+  $self->send_frame(1, CLOSE, '');
   $self->{finished} = 1;
   return $self;
 }
@@ -216,17 +212,29 @@ sub resume {
   return $self;
 }
 
-sub send_message {
-  my ($self, $message, $cb) = @_;
-  $message //= '';
+sub send_frame {
+  my ($self, $fin, $type, $payload, $cb) = @_;
 
-  # Binary
+  # Prepare frame
   $self->{drain} = $cb if $cb;
-  return $self->_send_frame(BINARY, $message->[0]) if ref $message;
+  $self->{write} //= '';
+  $self->{write} .= $self->build_frame($fin, $type, $payload);
+  $self->{state} = 'write';
+
+  # Resume
+  $self->emit('resume');
+}
+
+sub send_message {
+  my ($self, $m, $cb) = @_;
+  $m //= '';
+
+  # Binary or raw text
+  return $self->send_frame(1, $m->[0] eq 'text' ? TEXT : BINARY, $m->[1], $cb)
+    if ref $m;
 
   # Text
-  encode 'UTF-8', $message;
-  $self->_send_frame(TEXT, $message);
+  $self->send_frame(1, TEXT, encode('UTF-8', $m), $cb);
 }
 
 sub server_handshake {
@@ -256,21 +264,18 @@ sub server_read {
   $self->{read} .= $chunk if defined $chunk;
   $self->{message} //= '';
   while (my $frame = $self->parse_frame(\$self->{read})) {
+    $self->emit(frame => $frame);
     my $op = $frame->[1] || CONTINUATION;
 
-    # Ping
-    if ($op == PING) {
-      $self->_send_frame(PONG, $frame->[2]);
-      next;
-    }
+    # Ping/Pong
+    $self->send_frame(1, PONG, $frame->[2]) and next if $op == PING;
+    next if $op == PONG;
 
     # Close
-    elsif ($op == CLOSE) {
-      $self->finish;
-      next;
-    }
+    $self->finish and next if $op == CLOSE;
 
     # Append chunk and check message size
+    next unless $self->has_subscribers('message');
     $self->{op} = $op unless exists $self->{op};
     $self->{message} .= $frame->[2];
     $self->finish and last
@@ -282,8 +287,8 @@ sub server_read {
     # Message
     my $message = $self->{message};
     $self->{message} = '';
-    decode 'UTF-8', $message if $message && delete $self->{op} == TEXT;
-    return $self->finish unless $self->has_subscribers('message');
+    $message = decode 'UTF-8', $message
+      if $message && delete $self->{op} == TEXT;
     $self->emit(message => $message);
   }
 
@@ -299,7 +304,7 @@ sub server_write {
   # Drain
   $self->{write} //= '';
   unless (length $self->{write}) {
-    $self->{state} = $self->{finished} ? 'done' : 'read';
+    $self->{state} = $self->{finished} ? 'finished' : 'read';
     my $cb = delete $self->{drain};
     $self->$cb if $cb;
   }
@@ -311,28 +316,7 @@ sub server_write {
   return $write;
 }
 
-sub _challenge {
-  my ($self, $key) = @_;
-
-  # No key or SHA1 support
-  return '' unless $key && SHA1;
-
-  # Base64 checksum
-  my $challenge = sha1_bytes($key . GUID);
-  b64_encode $challenge, '';
-
-  return $challenge;
-}
-
-sub _send_frame {
-  my ($self, $op, $payload) = @_;
-
-  # Build frame and resume
-  $self->{write} //= '';
-  $self->{write} .= $self->build_frame(1, $op, $payload);
-  $self->{state} = 'write';
-  $self->emit('resume');
-}
+sub _challenge { b64_encode(sha1_bytes(pop . GUID), '') }
 
 sub _xor_mask {
   my ($input, $mask) = @_;
@@ -357,6 +341,8 @@ Mojo::Transaction::WebSocket - WebSocket transaction container
 
   use Mojo::Transaction::WebSocket;
 
+  my $ws = Mojo::Transaction::WebSocket->new;
+
 =head1 DESCRIPTION
 
 L<Mojo::Transaction::WebSocket> is a container for WebSocket transactions as
@@ -369,13 +355,33 @@ Note that this module is EXPERIMENTAL and might change without warning!
 L<Mojo::Transaction::WebSocket> inherits all events from L<Mojo::Transaction>
 and can emit the following new ones.
 
+=head2 C<frame>
+
+  $ws->on(frame => sub {
+    my ($ws, $frame) = @_;
+  });
+
+Emitted when a WebSocket frame has been received.
+
+  $ws->on(frame => sub {
+    my ($ws, $frame) = @_;
+    say 'Fin: ',     $frame->[0];
+    say 'Type: ',    $frame->[1];
+    say 'Payload: ', $frame->[2];
+  });
+
 =head2 C<message>
 
   $ws->on(message => sub {
     my ($ws, $message) = @_;
   });
 
-Emitted when a new message arrives.
+Emitted when a complete WebSocket message has been received.
+
+  $ws->on(message => sub {
+    my ($ws, $message) = @_;
+    say "Message: $message";
+  });
 
 =head1 ATTRIBUTES
 
@@ -402,7 +408,8 @@ Mask outgoing frames with XOR cipher and a random 32bit key.
   my $size = $ws->max_websocket_size;
   $ws      = $ws->max_websocket_size(1024);
 
-Maximum WebSocket message size in bytes, defaults to C<262144>.
+Maximum WebSocket message size in bytes, defaults to the value of
+C<MOJO_MAX_WEBSOCKET_SIZE> or C<262144>.
 
 =head1 METHODS
 
@@ -423,13 +430,13 @@ Check WebSocket handshake challenge.
 
 =head2 C<client_handshake>
 
-  $ws = $ws->client_handshake;
+  $ws->client_handshake;
 
 WebSocket handshake.
 
 =head2 C<client_read>
 
-  $ws = $ws->client_read($data);
+  $ws->client_read($data);
 
 Read raw WebSocket data.
 
@@ -505,25 +512,33 @@ The original handshake response.
 
 Resume transaction.
 
+=head2 C<send_frame>
+
+  $ws->send_frame($fin, $op, $payload);
+  $ws->send_frame($fin, $op, $payload, sub {...});
+
+Send a single frame non-blocking via WebSocket, the optional drain callback
+will be invoked once all data has been written.
+
 =head2 C<send_message>
 
+  $ws->send_message([binary => $bytes]);
+  $ws->send_message([text   => $bytes]);
   $ws->send_message('Hi there!');
   $ws->send_message('Hi there!', sub {...});
-  $ws->send_message([$bytes]);
-  $ws->send_message([$bytes], sub {...});
 
 Send a message non-blocking via WebSocket, the optional drain callback will
 be invoked once all data has been written.
 
 =head2 C<server_handshake>
 
-  $ws = $ws->server_handshake;
+  $ws->server_handshake;
 
 WebSocket handshake.
 
 =head2 C<server_read>
 
-  $ws = $ws->server_read($data);
+  $ws->server_read($data);
 
 Read raw WebSocket data.
 

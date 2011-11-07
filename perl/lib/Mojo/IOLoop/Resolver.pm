@@ -17,12 +17,12 @@ has ioloop => sub {
 };
 has timeout => 3;
 
-# IPv4 regex (RFC 3986)
+# IPv4 (RFC 3986)
 my $DEC_OCTET_RE = qr/(?:[0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])/;
 my $IPV4_RE =
   qr/^$DEC_OCTET_RE\.$DEC_OCTET_RE\.$DEC_OCTET_RE\.$DEC_OCTET_RE$/;
 
-# IPv6 regex (RFC 3986)
+# IPv6 (RFC 3986)
 my $H16_RE  = qr/[0-9A-Fa-f]{1,4}/;
 my $LS32_RE = qr/(?:$H16_RE:$H16_RE|$IPV4_RE)/;
 my $IPV6_RE = qr/(?:
@@ -111,15 +111,9 @@ sub build {
   return $req;
 }
 
-sub is_ipv4 {
-  return 1 if pop =~ $IPV4_RE;
-  return;
-}
+sub is_ipv4 { pop =~ $IPV4_RE }
 
-sub is_ipv6 {
-  return 1 if pop =~ $IPV6_RE;
-  return;
-}
+sub is_ipv6 { pop =~ $IPV6_RE }
 
 sub lookup {
   my ($self, $name, $cb) = @_;
@@ -361,13 +355,13 @@ Mojo::IOLoop::Resolver - IOLoop DNS stub resolver
   # Lookup address
   my $resolver = Mojo::IOLoop::Resolver->new;
   $resolver->lookup('mojolicio.us' => sub {
-    my ($self, $address) = @_;
+    my ($resolver, $address) = @_;
     ...
   });
 
   # Resolve "MX" records
   $resolver->resolve('mojolicio.us', 'MX', sub {
-    my ($self, $records) = @_;
+    my ($resolver, $records) = @_;
     ...
   });
 
@@ -386,7 +380,8 @@ L<Mojo::IOLoop::Resolver> implements the following attributes.
   my $ioloop = $resolver->ioloop;
   $resolver  = $resolver->ioloop(Mojo::IOLoop->new);
 
-Loop object to use for I/O operations, defaults to a L<Mojo::IOLoop> object.
+Loop object to use for I/O operations, defaults to the global L<Mojo::IOLoop>
+singleton.
 
 =head2 C<timeout>
 

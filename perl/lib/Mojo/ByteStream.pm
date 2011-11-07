@@ -5,6 +5,25 @@ use overload '""' => sub { shift->to_string }, fallback => 1;
 use Mojo::Collection;
 use Mojo::Util;
 
+# Turn most functions from Mojo::Util into methods
+my @UTILS = (
+  qw/b64_decode b64_encode camelize decamelize hmac_md5_sum hmac_sha1_sum/,
+  qw/html_escape html_unescape md5_bytes md5_sum punycode_decode/,
+  qw/punycode_encode qp_decode qp_encode quote sha1_bytes sha1_sum trim/,
+  qw/unquote url_escape url_unescape xml_escape/
+);
+{
+  no strict 'refs';
+  for my $name (@UTILS) {
+    my $sub = Mojo::Util->can($name);
+    *{__PACKAGE__ . "::$name"} = sub {
+      my $self = shift;
+      $$self = $sub->($$self, @_);
+      return $self;
+    };
+  }
+}
+
 sub import {
   my $class = shift;
   return unless @_ > 0;
@@ -21,33 +40,9 @@ sub new {
   bless \(my $dummy = join '', @_), ref $class || $class;
 }
 
-sub b64_decode {
-  my $self = shift;
-  $$self = Mojo::Util::b64_decode($$self);
-  return $self;
-}
-
-sub b64_encode {
-  my $self = shift;
-  $$self = Mojo::Util::b64_encode($$self, @_);
-  return $self;
-}
-
-sub camelize {
-  my $self = shift;
-  Mojo::Util::camelize $$self;
-  return $self;
-}
-
 sub clone {
   my $self = shift;
   return $self->new($$self);
-}
-
-sub decamelize {
-  my $self = shift;
-  Mojo::Util::decamelize $$self;
-  return $self;
 }
 
 # "I want to share something with you: The three little sentences that will
@@ -57,85 +52,19 @@ sub decamelize {
 #  Number 3: 'It was like that when I got here.'"
 sub decode {
   my $self = shift;
-  Mojo::Util::decode shift || 'UTF-8', $$self;
+  $$self = Mojo::Util::decode shift || 'UTF-8', $$self;
   return $self;
 }
 
 sub encode {
   my $self = shift;
-  Mojo::Util::encode shift || 'UTF-8', $$self;
-  return $self;
-}
-
-sub hmac_md5_sum {
-  my $self = shift;
-  $$self = Mojo::Util::hmac_md5_sum $$self, @_;
-  return $self;
-}
-
-sub hmac_sha1_sum {
-  my $self = shift;
-  $$self = Mojo::Util::hmac_sha1_sum $$self, @_;
-  return $self;
-}
-
-sub html_escape {
-  my $self = shift;
-  Mojo::Util::html_escape $$self;
-  return $self;
-}
-
-sub html_unescape {
-  my $self = shift;
-  Mojo::Util::html_unescape $$self;
-  return $self;
-}
-
-sub md5_bytes {
-  my $self = shift;
-  $$self = Mojo::Util::md5_bytes $$self;
-  return $self;
-}
-
-sub md5_sum {
-  my $self = shift;
-  $$self = Mojo::Util::md5_sum $$self;
-  return $self;
-}
-
-sub punycode_decode {
-  my $self = shift;
-  Mojo::Util::punycode_decode $$self;
-  return $self;
-}
-
-sub punycode_encode {
-  my $self = shift;
-  Mojo::Util::punycode_encode $$self;
+  $$self = Mojo::Util::encode shift || 'UTF-8', $$self;
   return $self;
 }
 
 # "Old people don't need companionship.
 #  They need to be isolated and studied so it can be determined what
 #  nutrients they have that might be extracted for our personal use."
-sub qp_decode {
-  my $self = shift;
-  Mojo::Util::qp_decode $$self;
-  return $self;
-}
-
-sub qp_encode {
-  my $self = shift;
-  Mojo::Util::qp_encode $$self;
-  return $self;
-}
-
-sub quote {
-  my $self = shift;
-  Mojo::Util::quote $$self;
-  return $self;
-}
-
 sub say {
   my ($self, $handle) = @_;
   $handle ||= \*STDOUT;
@@ -147,18 +76,6 @@ sub secure_compare {
   return Mojo::Util::secure_compare $$self, $check;
 }
 
-sub sha1_bytes {
-  my $self = shift;
-  $$self = Mojo::Util::sha1_bytes $$self;
-  return $self;
-}
-
-sub sha1_sum {
-  my $self = shift;
-  $$self = Mojo::Util::sha1_sum $$self;
-  return $self;
-}
-
 sub size { length ${shift()} }
 
 sub split {
@@ -167,36 +84,6 @@ sub split {
 }
 
 sub to_string { ${shift()} }
-
-sub trim {
-  my $self = shift;
-  Mojo::Util::trim $$self, @_;
-  return $self;
-}
-
-sub unquote {
-  my $self = shift;
-  Mojo::Util::unquote $$self, @_;
-  return $self;
-}
-
-sub url_escape {
-  my $self = shift;
-  Mojo::Util::url_escape $$self, @_;
-  return $self;
-}
-
-sub url_unescape {
-  my $self = shift;
-  Mojo::Util::url_unescape $$self;
-  return $self;
-}
-
-sub xml_escape {
-  my $self = shift;
-  Mojo::Util::xml_escape $$self;
-  return $self;
-}
 
 1;
 __END__
@@ -332,13 +219,13 @@ Turn bytestream into MD5 checksum of old content.
 
   $stream = $stream->punycode_decode;
 
-Punycode decode bytestream, as described in RFC 3492.
+Punycode decode bytestream.
 
 =head2 C<punycode_encode>
 
   $stream = $stream->punycode_encode;
 
-Punycode encode bytestream, as described in RFC 3492.
+Punycode encode bytestream.
 
 =head2 C<qp_decode>
 

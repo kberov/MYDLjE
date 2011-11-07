@@ -21,7 +21,7 @@ sub run {
 
   # Request body
   my $len = $env->{CONTENT_LENGTH};
-  while (!$req->is_done) {
+  while (!$req->is_finished) {
     my $chunk = ($len && $len < CHUNK_SIZE) ? $len : CHUNK_SIZE;
     my $read = $env->{'psgi.input'}->read(my $buffer, $chunk, 0);
     last unless $read;
@@ -89,9 +89,9 @@ Mojo::Server::PSGI - PSGI server
   use Mojo::Server::PSGI;
 
   my $psgi = Mojo::Server::PSGI->new;
-  $psgi->unsubscribe_all('request');
+  $psgi->unsubscribe('request');
   $psgi->on(request => sub {
-    my ($self, $tx) = @_;
+    my ($psgi, $tx) = @_;
 
     # Request
     my $method = $tx->req->method;

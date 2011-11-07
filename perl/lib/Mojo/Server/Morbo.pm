@@ -39,12 +39,12 @@ sub run {
   # Watch files and manage worker
   $SIG{CHLD} = sub { $self->_reap };
   $SIG{INT} = $SIG{TERM} = $SIG{QUIT} = sub {
-    $self->{done} = 1;
+    $self->{finished} = 1;
     kill 'TERM', $self->{running} if $self->{running};
   };
   unshift @{$self->watch}, $app;
   $self->{modified} = 1;
-  $self->_manage while !$self->{done} || $self->{running};
+  $self->_manage while !$self->{finished} || $self->{running};
   exit 0;
 }
 
@@ -110,7 +110,7 @@ sub _spawn {
   # Worker
   warn "WORKER STARTED $$\n" if DEBUG;
   $SIG{CHLD} = 'DEFAULT';
-  $SIG{INT} = $SIG{TERM} = $SIG{QUIT} = sub { $self->{done} = 1 };
+  $SIG{INT} = $SIG{TERM} = $SIG{QUIT} = sub { $self->{finished} = 1 };
   my $daemon = Mojo::Server::Daemon->new;
   $daemon->load_app($self->watch->[0]);
   $daemon->silent(1) if $ENV{MORBO_REV} > 1;
@@ -118,7 +118,7 @@ sub _spawn {
   $daemon->prepare_ioloop;
   my $loop = $daemon->ioloop;
   $loop->recurring(
-    1 => sub { shift->stop if !kill(0, $manager) || $self->{done} });
+    1 => sub { shift->stop if !kill(0, $manager) || $self->{finished} });
   $loop->start;
   exit 0;
 }
@@ -143,6 +143,7 @@ L<Mojo::Server::Morbo> is a full featured self-restart capable non-blocking
 I/O HTTP 1.1 and WebSocket server built around the very well tested and
 reliable L<Mojo::Server::Daemon> with C<IPv6>, C<TLS>, C<Bonjour> and
 C<libev> support.
+Note that this module is EXPERIMENTAL and might change without warning!
 
 To start applications with it you can use the L<morbo> script.
 
@@ -152,8 +153,6 @@ To start applications with it you can use the L<morbo> script.
 Optional modules L<EV>, L<IO::Socket::IP>, L<IO::Socket::SSL> and
 L<Net::Rendezvous::Publish> are supported transparently and used if
 installed.
-
-Note that this module is EXPERIMENTAL and might change without warning!
 
 =head1 ATTRIBUTES
 

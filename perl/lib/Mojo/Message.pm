@@ -71,15 +71,15 @@ sub body_params {
   my $params = Mojo::Parameters->new;
   my $type = $self->headers->content_type || '';
   $params->charset($self->default_charset);
-  $type =~ /charset=\"?(\S+)\"?/ and $params->charset($1);
+  $type =~ /charset="?(\S+)"?/ and $params->charset($1);
 
   # "x-application-urlencoded" and "application/x-www-form-urlencoded"
-  if ($type =~ /(?:x-application|application\/x-www-form)-urlencoded/i) {
+  if ($type =~ m#(?:x-application|application/x-www-form)-urlencoded#i) {
     $params->parse($self->content->asset->slurp);
   }
 
   # "multipart/formdata"
-  elsif ($type =~ /multipart\/form-data/i) {
+  elsif ($type =~ m#multipart/form-data#i) {
     my $formdata = $self->_parse_formdata;
 
     # Formdata
@@ -108,7 +108,7 @@ sub body_size { shift->content->body_size }
 sub build_body {
   my $self = shift;
   my $body = $self->content->build_body(@_);
-  $self->{state} = 'done';
+  $self->{state} = 'finished';
   $self->emit('finish');
   return $body;
 }
@@ -183,9 +183,9 @@ sub dom {
   # Parse
   return if $self->is_multipart;
   my $charset;
-  ($self->headers->content_type || '') =~ /charset=\"?([^\"\s;]+)\"?/
+  ($self->headers->content_type || '') =~ /charset="?([^"\s;]+)"?/
     and $charset = $1;
-  my $dom = $self->dom_class->new(charset => $charset)->parse($self->body);
+  my $dom = $self->dom_class->new->charset($charset)->parse($self->body);
 
   # Find right away
   return $dom->find(@_) if @_;
@@ -204,7 +204,7 @@ sub error {
 
   # Set
   $self->{error} = [@_];
-  $self->{state} = 'done';
+  $self->{state} = 'finished';
 
   return $self;
 }
@@ -237,7 +237,7 @@ sub get_body_chunk {
   return $chunk if !defined $chunk || length $chunk;
 
   # Finish
-  $self->{state} = 'done';
+  $self->{state} = 'finished';
   $self->emit('finish');
 
   return $chunk;
@@ -281,18 +281,21 @@ sub headers {
 
 sub is_chunked { shift->content->is_chunked }
 
+# DEPRECATED in Leaf Fluttering In Wind!
 sub is_done {
-  return 1 if (shift->{state} || '') eq 'done';
-  return;
+  warn <<EOF;
+Mojo::Message->is_done is DEPRECATED in favor of Mojo::Message->is_finished!
+EOF
+  shift->is_finished;
 }
 
 sub is_dynamic { shift->content->is_dynamic }
 
+sub is_finished { (shift->{state} || '') eq 'finished' }
+
 sub is_limit_exceeded {
-  my $self = shift;
-  return unless my $code = ($self->error)[1];
-  return unless $code eq '413';
-  return 1;
+  return unless my $code = (shift->error)[1];
+  return $code ~~ [413, 431];
 }
 
 sub is_multipart { shift->content->is_multipart }
@@ -309,17 +312,15 @@ sub max_line_size { shift->headers->max_line_size(@_) }
 
 # DEPRECATED in Smiling Face With Sunglasses!
 sub on_finish {
-  warn <<EOF;
-Mojo::Message->on_finish is DEPRECATED in favor of using Mojo::Message->on!!!
-EOF
+  warn
+    "Mojo::Message->on_finish is DEPRECATED in favor of Mojo::Message->on!\n";
   shift->on(finish => shift);
 }
 
 # DEPRECATED in Smiling Face With Sunglasses!
 sub on_progress {
   warn <<EOF;
-Mojo::Message->on_progress is DEPRECATED in favor of using
-Mojo::Message->on!!!
+Mojo::Message->on_progress is DEPRECATED in favor of Mojo::Message->on!
 EOF
   shift->on(progress => shift);
 }
@@ -429,7 +430,7 @@ sub _parse {
     # Check line size
     my $len = index $self->{buffer}, "\x0a";
     $len = length $self->{buffer} if $len < 0;
-    return $self->error('Maximum line size exceeded.', 413)
+    return $self->error('Maximum line size exceeded.', 431)
       if $len > $self->max_line_size;
 
     # Parse
@@ -437,7 +438,7 @@ sub _parse {
   }
 
   # Content
-  if (($self->{state} || '') ~~ [qw/body content done/]) {
+  if (($self->{state} || '') ~~ [qw/body content finished/]) {
 
     # Until body
     my $content = $self->content;
@@ -459,17 +460,17 @@ sub _parse {
   }
 
   # Check line size
-  return $self->error('Maximum line size exceeded.', 413)
+  return $self->error('Maximum line size exceeded.', 431)
     if $self->headers->is_limit_exceeded;
 
-  # Done
-  $self->{state} = 'done' if $self->content->is_done;
+  # Finished
+  $self->{state} = 'finished' if $self->content->is_finished;
 
   # Progress
   $self->emit('progress');
 
   # Finished
-  $self->emit('finish') if $self->is_done;
+  $self->emit('finish') if $self->is_finished;
 
   return $self;
 }
@@ -486,7 +487,7 @@ sub _parse_formdata {
   my $content = $self->content;
   return \@formdata unless $content->is_multipart;
   my $default = $self->default_charset;
-  ($self->headers->content_type || '') =~ /charset=\"?(\S+)\"?/
+  ($self->headers->content_type || '') =~ /charset="?(\S+)"?/
     and $default = $1;
 
   # Walk the tree
@@ -502,36 +503,29 @@ sub _parse_formdata {
 
     # Charset
     my $charset = $default;
-    ($part->headers->content_type || '') =~ /charset=\"?(\S+)\"?/
+    ($part->headers->content_type || '') =~ /charset="?(\S+)"?/
       and $charset = $1;
 
     # "Content-Disposition"
     my $disposition = $part->headers->content_disposition;
     next unless $disposition;
-    my ($name)     = $disposition =~ /\ name="?([^\";]+)"?/;
-    my ($filename) = $disposition =~ /\ filename="?([^\"]*)"?/;
+    my ($name)     = $disposition =~ /\ name="?([^";]+)"?/;
+    my ($filename) = $disposition =~ /\ filename="?([^"]*)"?/;
     my $value      = $part;
 
     # Unescape
-    url_unescape $name     if $name;
-    url_unescape $filename if $filename;
+    $name     = url_unescape $name     if $name;
+    $filename = url_unescape $filename if $filename;
     if ($charset) {
-      my $backup = $name;
-      decode $charset, $name if $name;
-      $name //= $backup;
-      $backup = $filename;
-      decode $charset, $filename if $filename;
-      $filename //= $backup;
+      $name     = decode($charset, $name)     // $name     if $name;
+      $filename = decode($charset, $filename) // $filename if $filename;
     }
 
     # Form value
     unless ($filename) {
       $value = $part->asset->slurp;
-      if ($charset && !$part->headers->content_transfer_encoding) {
-        my $backup = $value;
-        decode $charset, $value;
-        $value //= $backup;
-      }
+      $value = decode($charset, $value) // $value
+        if $charset && !$part->headers->content_transfer_encoding;
     }
 
     push @formdata, [$name, $filename, $value];
@@ -568,13 +562,26 @@ L<Mojo::Message> can emit the following events.
 
 Emitted after message building or parsing is finished.
 
+  my $before = time;
+  $message->on(finish => sub {
+    my $message = shift;
+    $message->headers->header('X-Parser-Time' => time - $before);
+  });
+
 =head2 C<progress>
 
   $message->on(progress => sub {
     my $message = shift;
   });
 
-Emitted on progress.
+Emitted when message building or parsing makes progress.
+
+  $message->on(progress => sub {
+    my $message = shift;
+    return unless my $len = $message->headers->content_length;
+    my $size = $message->content->progress;
+    say 'Progress: ', $size == $len ? 100 : int($size / ($len / 100)), '%';
+  });
 
 =head1 ATTRIBUTES
 
@@ -615,7 +622,8 @@ to L<Mojo::JSON>.
   my $size = $message->max_message_size;
   $message = $message->max_message_size(1024);
 
-Maximum message size in bytes, defaults to C<5242880>.
+Maximum message size in bytes, defaults to the value of
+C<MOJO_MAX_MESSAGE_SIZE> or C<5242880>.
 
 =head1 METHODS
 
@@ -634,14 +642,21 @@ Check if message is at least a specific version.
   $message   = $message->body('Hello!');
   my $cb     = $message->body(sub {...});
 
-Access and replace text content or register C<read> event with content, which
-will be emitted when new content arrives.
+Access and replace text content or register C<read> event with C<content>,
+which will be emitted when new data arrives.
+
+  $message->body(sub {
+    my ($message, $chunk) = @_;
+    say "Streaming: $chunk";
+  });
 
 =head2 C<body_params>
 
   my $params = $message->body_params;
 
 C<POST> parameters, usually a L<Mojo::Parameters> object.
+
+  say $message->body_params->param('foo');
 
 =head2 C<body_size>
 
@@ -675,6 +690,8 @@ Render start line.
 Access message cookies, usually L<Mojo::Cookie::Request> or
 L<Mojo::Cookie::Response> objects.
 
+  say $message->cookie('foo')->value;
+
 =head2 C<dom>
 
   my $dom        = $message->dom;
@@ -682,6 +699,12 @@ L<Mojo::Cookie::Response> objects.
 
 Turns content into a L<Mojo::DOM> object and takes an optional selector to
 perform a C<find> on it right away, which returns a collection.
+
+  # Perform "find" right away
+  $message->dom('h1, h2, h3')->each(sub { say $_->text });
+
+  # Use everything else Mojo::DOM has to offer
+  say $message->dom->at('title')->text;
 
 =head2 C<error>
 
@@ -735,17 +758,13 @@ Size of headers in bytes.
 
 Message headers, defaults to a L<Mojo::Headers> object.
 
+  say $message->headers->content_type;
+
 =head2 C<is_chunked>
 
   my $success = $message->is_chunked;
 
 Check if message content is chunked.
-
-=head2 C<is_done>
-
-  my $success = $message->is_done;
-
-Check if parser is done.
 
 =head2 C<is_dynamic>
 
@@ -753,6 +772,12 @@ Check if parser is done.
 
 Check if message content will be dynamic.
 Note that this method is EXPERIMENTAL and might change without warning!
+
+=head2 C<is_finished>
+
+  my $success = $message->is_finished;
+
+Check if parser is finished.
 
 =head2 C<is_limit_exceeded>
 
@@ -775,6 +800,8 @@ Check if message content is a L<Mojo::Content::MultiPart> object.
 Decode JSON message body directly using L<Mojo::JSON> if possible, returns
 C<undef> otherwise.
 
+  say $message->json->{foo}->{bar}->[23];
+
 =head2 C<leftovers>
 
   my $bytes = $message->leftovers;
@@ -785,7 +812,7 @@ Remove leftover data from message parser.
 
   $message->max_line_size(1024);
 
-Maximum line size in bytes.
+Alias for L<Mojo::Headers/"max_line_size">.
 Note that this method is EXPERIMENTAL and might change without warning!
 
 =head2 C<param>
@@ -826,11 +853,15 @@ Render whole message.
 
 Access C<multipart/form-data> file uploads, usually L<Mojo::Upload> objects.
 
+  say $message->upload('foo')->asset->slurp;
+
 =head2 C<uploads>
 
   my $uploads = $message->uploads;
 
 All C<multipart/form-data> file uploads, usually L<Mojo::Upload> objects.
+
+  say $message->uploads->[2]->filename;
 
 =head2 C<version>
 

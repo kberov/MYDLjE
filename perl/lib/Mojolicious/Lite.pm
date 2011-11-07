@@ -74,14 +74,14 @@ Mojolicious::Lite - Real-time micro web framework
 
 =head1 SYNOPSIS
 
-  # Using Mojolicious::Lite will enable "strict" and "warnings"
+  # Automatically enables "strict", "warnings" and Perl 5.10 features
   use Mojolicious::Lite;
 
   # Route with placeholder
   get '/:foo' => sub {
     my $self = shift;
     my $foo  = $self->param('foo');
-    $self->render(text => "Hello from $foo!");
+    $self->render(text => "Hello from $foo.");
   };
 
   # Start the Mojolicious command system
@@ -98,12 +98,12 @@ A quick example driven introduction to the wonders of L<Mojolicious::Lite>.
 Most of what you'll learn here also applies to normal L<Mojolicious>
 applications.
 
-=head2 Hello World!
+=head2 Hello World
 
-A simple Hello World application can look like this, L<strict> and
-L<warnings> are automatically enabled and a few functions imported when you
-use L<Mojolicious::Lite>, turning your script into a full featured web
-application.
+A simple Hello World application can look like this, L<strict>, L<warnings>
+and Perl 5.10 features are automatically enabled and a few functions imported
+when you use L<Mojolicious::Lite>, turning your script into a full featured
+web application.
 
   #!/usr/bin/env perl
   use Mojolicious::Lite;
@@ -176,7 +176,7 @@ All C<GET> and C<POST> parameters are accessible via C<param>.
   get '/foo' => sub {
     my $self = shift;
     my $user = $self->param('user');
-    $self->render(text => "Hello $user!");
+    $self->render(text => "Hello $user.");
   };
 
 =head2 Stash and templates
@@ -247,7 +247,7 @@ Templates can have layouts.
   __DATA__
 
   @@ with_layout.html.ep
-  % title 'Green!';
+  % title 'Green';
   % layout 'green';
   Hello World!
 
@@ -270,10 +270,10 @@ delimited by the C<begin> and C<end> keywords.
   @@ block.html.ep
   % my $link = begin
     % my ($url, $name) = @_;
-    Try <%= link_to $url => begin %><%= $name %><% end %>!
+    Try <%= link_to $url => begin %><%= $name %><% end %>.
   % end
   <!doctype html><html>
-    <head><title>Sebastians frameworks!</title></head>
+    <head><title>Sebastians frameworks</title></head>
     <body>
       %= $link->('http://mojolicio.us', 'Mojolicious')
       %= $link->('http://catalystframework.org', 'Catalyst')
@@ -294,7 +294,7 @@ content.
   __DATA__
 
   @@ captured.html.ep
-  % layout 'blue', title => 'Green!';
+  % layout 'blue', title => 'Green';
   % content_for header => begin
     <meta http-equiv="Pragma" content="no-cache">
   % end
@@ -382,19 +382,19 @@ Routes can be restricted to specific request methods.
   # GET /bye
   get '/bye' => sub {
     my $self = shift;
-    $self->render(text => 'Bye!');
+    $self->render(text => 'Bye.');
   };
 
   # POST /bye
   post '/bye' => sub {
     my $self = shift;
-    $self->render(text => 'Bye!');
+    $self->render(text => 'Bye.');
   };
 
   # GET|POST|DELETE /bye
   any ['get', 'post', 'delete'] => '/bye' => sub {
     my $self = shift;
-    $self->render(text => 'Bye!');
+    $self->render(text => 'Bye.');
   };
 
   # * /baz
@@ -463,7 +463,7 @@ Formats can be automatically detected by looking at file extensions.
 
   @@ detected.html.ep
   <!doctype html><html>
-    <head><title>Detected!</title></head>
+    <head><title>Detected</title></head>
     <body>HTML was detected.</body>
   </html>
 
@@ -476,9 +476,9 @@ Restrictive placeholders can also be used for format detection.
   # /hello.txt
   get '/hello' => [format => ['json', 'txt']] => sub {
     my $self = shift;
-    return $self->render_json({hello => 'world!'})
+    return $self->render_json({hello => 'world'})
       if $self->stash('format') eq 'json';
-    $self->render_text('hello world!');
+    $self->render_text('hello world');
   };
 
 =head2 Content negotiation
@@ -535,10 +535,10 @@ true value.
   __DATA__;
 
   @@ denied.html.ep
-  You are not Bender, permission denied!
+  You are not Bender, permission denied.
 
   @@ index.html.ep
-  Hi Bender!
+  Hi Bender.
 
 Prefixing multiple routes is another good use for C<under>.
 
@@ -548,16 +548,16 @@ Prefixing multiple routes is another good use for C<under>.
   under '/foo';
 
   # /foo/bar
-  get '/bar' => {text => 'foo bar!'};
+  get '/bar' => {text => 'foo bar'};
 
   # /foo/baz
-  get '/baz' => {text => 'foo baz!'};
+  get '/baz' => {text => 'foo baz'};
 
   # /
   under '/' => {message => 'whatever'};
 
   # /bar
-  get '/bar' => {inline => '<%= $message %> works!'};
+  get '/bar' => {inline => '<%= $message %> works'};
 
   app->start;
 
@@ -570,7 +570,7 @@ C<under> statements.
   under sub {
     my $self = shift;
     return 1 if $self->req->headers->header('X-Bender');
-    $self->render(text => "You're not Bender!");
+    $self->render(text => "You're not Bender.");
     return;
   };
 
@@ -581,16 +581,16 @@ C<under> statements.
     under '/admin' => sub {
       my $self = shift;
       return 1 if $self->req->heaers->header('X-Awesome');
-      $self->render(text => "You're not awesome enough!");
+      $self->render(text => "You're not awesome enough.");
       return;
     };
 
     # GET /admin/dashboard
-    get '/dashboard' => {text => 'Nothing to see here yet!'};
+    get '/dashboard' => {text => 'Nothing to see here yet.'};
   };
 
   # GET /welcome
-  get '/welcome' => {text => 'Hi Bender!'};
+  get '/welcome' => {text => 'Hi Bender.'};
 
   app->start;
 
@@ -603,19 +603,19 @@ constructs.
   # /foo (Firefox)
   get '/foo' => (agent => qr/Firefox/) => sub {
     my $self = shift;
-    $self->render(text => 'Congratulations, you are using a cool browser!');
+    $self->render(text => 'Congratulations, you are using a cool browser.');
   };
 
   # /foo (Internet Explorer)
   get '/foo' => (agent => qr/Internet Explorer/) => sub {
     my $self = shift;
-    $self->render(text => 'Dude, you really need to upgrade to Firefox!');
+    $self->render(text => 'Dude, you really need to upgrade to Firefox.');
   };
 
   # http://mojolicio.us/bar
   get '/bar' => (host => 'mojolicio.us') => sub {
     my $self = shift;
-    $self->render(text => 'Hello Mojolicious!');
+    $self->render(text => 'Hello Mojolicious.');
   };
 
 =head2 Sessions
@@ -641,7 +641,7 @@ using them.
 Note that you should use a custom C<secret> to make signed cookies really
 secure.
 
-  app->secret('My secret passphrase here!');
+  app->secret('My secret passphrase here');
 
 =head2 File uploads
 
@@ -676,9 +676,9 @@ C<250KB> will be automatically streamed into a temporary file.
     </body>
   </html>
 
-To protect you from excessively large files there is also a global limit of
-C<5MB> by default, which you can tweak with the C<MOJO_MAX_MESSAGE_SIZE>
-environment variable.
+To protect you from excessively large files there is also a limit of C<5MB>
+by default, which you can tweak with the C<MOJO_MAX_MESSAGE_SIZE> environment
+variable.
 
   # Increase limit to 1GB
   $ENV{MOJO_MAX_MESSAGE_SIZE} = 1073741824;
@@ -701,11 +701,14 @@ WebSocket applications have never been this easy before.
 
   websocket '/echo' => sub {
     my $self = shift;
-    $self->on_message(sub {
+    $self->on(message => sub {
       my ($self, $message) = @_;
       $self->send_message("echo: $message");
     });
   };
+
+The C<message> event will be emitted for every new WebSocket message that is
+received.
 
 =head2 External templates
 
@@ -746,7 +749,7 @@ it with normal Perl unit tests.
   require "$FindBin::Bin/../myapp.pl";
 
   my $t = Test::Mojo->new;
-  $t->get_ok('/')->status_is(200)->content_like(qr/Funky!/);
+  $t->get_ok('/')->status_is(200)->content_like(qr/Funky/);
 
 Run all unit tests with the C<test> command.
 
@@ -790,7 +793,7 @@ can be easily mixed to make the transition process very smooth.
 
   sub index {
     my $self = shift;
-    $self->render(text => 'It works!');
+    $self->render(text => 'It works.');
   }
 
   package main;
@@ -798,7 +801,7 @@ can be easily mixed to make the transition process very smooth.
 
   get '/bar' => sub {
     my $self = shift;
-    $self->render(text => 'This too!');
+    $self->render(text => 'This too.');
   };
 
   app->routes->namespace('MyApp');
@@ -863,14 +866,12 @@ Note that this function is EXPERIMENTAL and might change without warning!
   helper foo => sub {...};
 
 Alias for L<Mojolicious/"helper">.
-Note that this function is EXPERIMENTAL and might change without warning!
 
 =head2 C<hook>
 
   hook after_dispatch => sub {...};
 
 Alias for L<Mojolicious/"hook">.
-Note that this function is EXPERIMENTAL and might change without warning!
 
 =head2 C<plugin>
 

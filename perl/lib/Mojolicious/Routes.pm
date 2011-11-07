@@ -15,7 +15,7 @@ has cache => sub { Mojo::Cache->new };
 has [qw/children conditions/] => sub { [] };
 has controller_base_class => 'Mojolicious::Controller';
 has [qw/dictionary shortcuts/] => sub { {} };
-has hidden  => sub { [qw/new app attr has render req res stash tx/] };
+has hidden  => sub { [qw/new attr has/] };
 has pattern => sub { Mojolicious::Routes::Pattern->new };
 
 # "Yet thanks to my trusty safety sphere,
@@ -36,11 +36,7 @@ sub AUTOLOAD {
 
 sub DESTROY { }
 
-sub new {
-  my $self = shift->SUPER::new();
-  $self->parse(@_);
-  return $self;
-}
+sub new { shift->SUPER::new()->parse(@_) }
 
 sub add_child {
   my ($self, $route) = @_;
@@ -93,7 +89,7 @@ sub bridge { shift->route(@_)->inline(1) }
 sub del {
   warn <<EOF;
 Mojolicious::Routes->del is DEPRECATED in favor of
-Mojolicious::Routes->delete!!!
+Mojolicious::Routes->delete!
 EOF
   shift->delete(@_);
 }
@@ -113,7 +109,7 @@ sub dispatch {
   # Path
   my $req  = $c->req;
   my $path = $c->stash->{path};
-  if (defined $path) { $path = "/$path" if $path !~ /^\// }
+  if (defined $path) { $path = "/$path" if $path !~ m#^/# }
   else               { $path = $req->url->path->to_abs_string }
 
   # Match
@@ -162,20 +158,17 @@ sub get { shift->_generate_route('get', @_) }
 sub has_conditions {
   my $self = shift;
   return 1 if @{$self->conditions};
-  if (my $parent = $self->parent) { return $parent->has_conditions }
-  return;
+  return unless my $parent = $self->parent;
+  return $parent->has_conditions;
 }
 
-sub has_custom_name {
-  return 1 if shift->{custom};
-  return;
-}
+sub has_custom_name { shift->{custom} }
 
 sub has_websocket {
   my $self = shift;
   return 1 if $self->is_websocket;
-  if (my $parent = $self->parent) { return $parent->is_websocket }
-  return;
+  return unless my $parent = $self->parent;
+  return $parent->is_websocket;
 }
 
 sub hide { push @{shift->hidden}, @_ }
@@ -184,14 +177,10 @@ sub is_endpoint {
   my $self = shift;
   return   if $self->inline;
   return 1 if $self->block;
-  return   if @{$self->children};
-  return 1;
+  return !@{$self->children};
 }
 
-sub is_websocket {
-  return 1 if shift->{websocket};
-  return;
-}
+sub is_websocket { shift->{websocket} }
 
 sub name {
   my $self = shift;
@@ -253,7 +242,7 @@ sub render {
 
   # Format
   if ((my $format = $values->{format}) && !$self->parent) {
-    $path .= ".$format" unless $path =~ /\.[^\/]+$/;
+    $path .= ".$format" unless $path =~ m#\.[^/]+$#;
   }
 
   # Parent
@@ -363,7 +352,7 @@ sub _dispatch_callback {
   my ($self, $c, $field, $staging) = @_;
 
   # Routed
-  $c->stash->{'mojo.routed'} = 1;
+  $c->stash->{'mojo.routed'}++;
   $c->app->log->debug(qq/Dispatching callback./);
 
   # Dispatch
@@ -416,7 +405,7 @@ sub _dispatch_controller {
       # Call action
       my $stash = $c->stash;
       if ($app->can($method)) {
-        $stash->{'mojo.routed'} = 1 unless $staging;
+        $stash->{'mojo.routed'}++ unless $staging;
         $continue = $app->$method;
       }
 
@@ -468,10 +457,7 @@ sub _generate_class {
   # Class
   my $class = $field->{class};
   my $controller = $field->{controller} || '';
-  unless ($class) {
-    $class = $controller;
-    camelize $class;
-  }
+  $class = camelize $controller unless $class;
 
   # Namespace
   my $namespace = $field->{namespace};
@@ -558,6 +544,9 @@ sub _generate_route {
   return $route;
 }
 
+# "Stop being such a spineless jellyfish!
+#  You know full well I'm more closely related to the sea cucumber.
+#  Not where it counts."
 sub _walk_stack {
   my ($self, $c) = @_;
 

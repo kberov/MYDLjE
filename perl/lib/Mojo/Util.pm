@@ -9,13 +9,13 @@ require MIME::QuotedPrint;
 
 # Punycode bootstring parameters
 use constant {
-  PUNYCODE_BASE         => 36,
-  PUNYCODE_TMIN         => 1,
-  PUNYCODE_TMAX         => 26,
-  PUNYCODE_SKEW         => 38,
-  PUNYCODE_DAMP         => 700,
-  PUNYCODE_INITIAL_BIAS => 72,
-  PUNYCODE_INITIAL_N    => 128
+  PC_BASE         => 36,
+  PC_TMIN         => 1,
+  PC_TMAX         => 26,
+  PC_SKEW         => 38,
+  PC_DAMP         => 700,
+  PC_INITIAL_BIAS => 72,
+  PC_INITIAL_N    => 128
 };
 
 # Punycode delimiter
@@ -295,16 +295,17 @@ push @EXPORT_OK, qw/punycode_encode qp_decode qp_encode quote/;
 push @EXPORT_OK, qw/secure_compare sha1_bytes sha1_sum trim unquote/;
 push @EXPORT_OK, qw/url_escape url_unescape xml_escape/;
 
-sub b64_decode { $_[0] = MIME::Base64::decode_base64($_[0]) }
+sub b64_decode { MIME::Base64::decode_base64(@_) }
 
-sub b64_encode { $_[0] = MIME::Base64::encode_base64($_[0], $_[1]) }
+sub b64_encode { MIME::Base64::encode_base64(@_) }
 
 sub camelize {
-  return if $_[0] =~ /^[A-Z]/;
+  my $string = shift;
+  return $string if $string =~ /^[A-Z]/;
 
   # Module parts
   my @parts;
-  for my $part (split /-/, $_[0]) {
+  for my $part (split /-/, $string) {
     next unless $part;
 
     # Camel case words
@@ -312,15 +313,16 @@ sub camelize {
     @words = map { ucfirst lc } @words;
     push @parts, join '', @words;
   }
-  $_[0] = join '::', @parts;
+  return join '::', @parts;
 }
 
 sub decamelize {
-  return if $_[0] !~ /^[A-Z]/;
+  my $string = shift;
+  return $string if $string !~ /^[A-Z]/;
 
   # Module parts
   my @parts;
-  for my $part (split /\:\:/, $_[0]) {
+  for my $part (split /\:\:/, $string) {
 
     # Camel case words
     my @words;
@@ -328,73 +330,81 @@ sub decamelize {
     @words = map {lc} @words;
     push @parts, join '_', @words;
   }
-  $_[0] = join '-', @parts;
+  return join '-', @parts;
 }
 
 sub decode {
+  my ($encoding, $bytes) = @_;
 
   # Try decoding
-  eval {
+  return unless eval {
 
     # UTF-8
-    if ($_[0] eq 'UTF-8') { die unless utf8::decode $_[1] }
+    if ($encoding eq 'UTF-8') { die unless utf8::decode $bytes }
 
     # Everything else
     else {
-      $_[1] =
-        ($ENCODE{$_[0]} ||= Encode::find_encoding($_[0]))->decode($_[1], 1);
+      $bytes =
+        ($ENCODE{$encoding} ||= Encode::find_encoding($encoding))
+        ->decode($bytes, 1);
     }
+
+    1;
   };
 
-  # Failed
-  $_[1] = undef if $@;
+  return $bytes;
 }
 
 sub encode {
+  my ($encoding, $chars) = @_;
 
   # UTF-8
-  if ($_[0] eq 'UTF-8') { utf8::encode $_[1] }
+  if ($encoding eq 'UTF-8') {
+    utf8::encode $chars;
+    return $chars;
+  }
 
   # Everything else
-  else {
-    $_[1] = ($ENCODE{$_[0]} ||= Encode::find_encoding($_[0]))->encode($_[1]);
-  }
+  return ($ENCODE{$encoding} ||= Encode::find_encoding($encoding))
+    ->encode($chars);
 }
 
 sub get_line {
+  my $stringref = shift;
 
   # Locate line ending
-  return if (my $pos = index $_[0], "\x0a") == -1;
+  return if (my $pos = index $$stringref, "\x0a") == -1;
 
   # Extract line and ending
-  my $line = substr $_[0], 0, $pos + 1, '';
+  my $line = substr $$stringref, 0, $pos + 1, '';
   $line =~ s/\x0d?\x0a$//;
 
   return $line;
 }
 
-sub hmac_md5_sum { _hmac(\&_md5, @_) }
-
-sub hmac_sha1_sum { _hmac(\&_sha1, @_) }
+sub hmac_md5_sum  { _hmac(0, @_) }
+sub hmac_sha1_sum { _hmac(1, @_) }
 
 sub html_escape {
+  my $string  = shift;
   my $escaped = '';
-  for (1 .. length $_[0]) {
+  for (1 .. length $string) {
 
     # Escape entities
-    my $char = substr $_[0], 0, 1, '';
+    my $char = substr $string, 0, 1, '';
     my $num = unpack 'U', $char;
     my $named = $REVERSE_ENTITIES{$num};
     $char = "&$named;" if $named;
     $escaped .= $char;
   }
-  $_[0] = $escaped;
+  return $escaped;
 }
 
 # "Daddy, I'm scared. Too scared to even wet my pants.
 #  Just relax and it'll come, son."
 sub html_unescape {
-  $_[0] =~ s/
+  my $string = shift;
+  $string =~ s/
     &
     (?:
       \#
@@ -410,44 +420,42 @@ sub html_unescape {
     )
     ;
   /_unescape($1, $2)/gex;
+  return $string;
 }
 
-sub md5_bytes { _md5(@_) }
-
-sub md5_sum { Digest::MD5::md5_hex(@_) }
+sub md5_bytes { Digest::MD5::md5(@_) }
+sub md5_sum   { Digest::MD5::md5_hex(@_) }
 
 sub punycode_decode {
+  my $input = shift;
   use integer;
 
   # Defaults
-  my $n    = PUNYCODE_INITIAL_N;
+  my $n    = PC_INITIAL_N;
   my $i    = 0;
-  my $bias = PUNYCODE_INITIAL_BIAS;
+  my $bias = PC_INITIAL_BIAS;
   my @output;
 
   # Delimiter
-  if ($_[0] =~ s/(.*)$DELIMITER//os) { push @output, split //, $1 }
+  if ($input =~ s/(.*)$DELIMITER//s) { push @output, split //, $1 }
 
   # Decode (direct translation of RFC 3492)
-  while (length $_[0]) {
+  while (length $input) {
     my $oldi = $i;
     my $w    = 1;
 
     # Base to infinity in steps of base
-    for (my $k = PUNYCODE_BASE; 1; $k += PUNYCODE_BASE) {
+    for (my $k = PC_BASE; 1; $k += PC_BASE) {
 
       # Digit
-      my $digit = ord substr $_[0], 0, 1, '';
+      my $digit = ord substr $input, 0, 1, '';
       $digit = $digit < 0x40 ? $digit + (26 - 0x30) : ($digit & 0x1f) - 1;
       $i += $digit * $w;
       my $t = $k - $bias;
-      $t =
-          $t < PUNYCODE_TMIN ? PUNYCODE_TMIN
-        : $t > PUNYCODE_TMAX ? PUNYCODE_TMAX
-        :                      $t;
+      $t = $t < PC_TMIN ? PC_TMIN : $t > PC_TMAX ? PC_TMAX : $t;
       last if $digit < $t;
 
-      $w *= (PUNYCODE_BASE - $t);
+      $w *= (PC_BASE - $t);
     }
 
     # Bias
@@ -460,15 +468,19 @@ sub punycode_decode {
     $i++;
   }
 
-  $_[0] = join '', @output;
+  return join '', @output;
 }
 
 sub punycode_encode {
   use integer;
 
   # Defaults
-  my $output = $_[0];
-  my $len    = length $_[0];
+  my $output = shift;
+  my $len    = length $output;
+
+  # Split input
+  my @input = map ord, split //, $output;
+  my @chars = sort grep { $_ >= PC_INITIAL_N } @input;
 
   # Remove non basic characters
   $output =~ s/[^\x00-\x7f]+//gs;
@@ -477,14 +489,10 @@ sub punycode_encode {
   my $h = my $b = length $output;
   $output .= $DELIMITER if $b > 0;
 
-  # Split input
-  my @input = map ord, split //, $_[0];
-  my @chars = sort grep { $_ >= PUNYCODE_INITIAL_N } @input;
-
   # Defaults
-  my $n     = PUNYCODE_INITIAL_N;
+  my $n     = PC_INITIAL_N;
   my $delta = 0;
-  my $bias  = PUNYCODE_INITIAL_BIAS;
+  my $bias  = PC_INITIAL_BIAS;
 
   # Encode (direct translation of RFC 3492)
   for my $m (@chars) {
@@ -508,19 +516,16 @@ sub punycode_encode {
         my $q = $delta;
 
         # Base to infinity in steps of base
-        for (my $k = PUNYCODE_BASE; 1; $k += PUNYCODE_BASE) {
+        for (my $k = PC_BASE; 1; $k += PC_BASE) {
           my $t = $k - $bias;
-          $t =
-              $t < PUNYCODE_TMIN ? PUNYCODE_TMIN
-            : $t > PUNYCODE_TMAX ? PUNYCODE_TMAX
-            :                      $t;
+          $t = $t < PC_TMIN ? PC_TMIN : $t > PC_TMAX ? PC_TMAX : $t;
           last if $q < $t;
 
           # Code point for digit "t"
-          my $o = $t + (($q - $t) % (PUNYCODE_BASE - $t));
+          my $o = $t + (($q - $t) % (PC_BASE - $t));
           $output .= chr $o + ($o < 26 ? 0x61 : 0x30 - 26);
 
-          $q = ($q - $t) / (PUNYCODE_BASE - $t);
+          $q = ($q - $t) / (PC_BASE - $t);
         }
 
         # Code point for digit "q"
@@ -537,18 +542,17 @@ sub punycode_encode {
     $n++;
   }
 
-  $_[0] = $output;
+  return $output;
 }
 
-sub qp_decode { $_[0] = MIME::QuotedPrint::decode_qp($_[0]) }
+sub qp_decode { MIME::QuotedPrint::decode_qp(@_) }
 
-sub qp_encode { $_[0] = MIME::QuotedPrint::encode_qp($_[0]) }
+sub qp_encode { MIME::QuotedPrint::encode_qp(@_) }
 
 sub quote {
-
-  # Escape and quote
-  $_[0] =~ s/([\"\\])/\\$1/g;
-  $_[0] = '"' . $_[0] . '"';
+  my $string = shift;
+  $string =~ s/(["\\])/\\$1/g;
+  return qq/"$string"/;
 }
 
 sub secure_compare {
@@ -559,57 +563,59 @@ sub secure_compare {
   return $r == 0 ? 1 : undef;
 }
 
-sub sha1_bytes { _sha1(@_) }
-
-sub sha1_sum { Digest::SHA::sha1_hex(@_) }
+sub sha1_bytes { Digest::SHA::sha1(@_) }
+sub sha1_sum   { Digest::SHA::sha1_hex(@_) }
 
 sub trim {
-  for ($_[0]) {
+  my $string = shift;
+  for ($string) {
     s/^\s*//;
     s/\s*$//;
   }
+  return $string;
 }
 
 sub unquote {
-
-  # Not quoted
-  return unless $_[0] =~ /^\".*\"$/g;
+  my $string = shift;
+  return $string unless $string =~ /^".*"$/g;
 
   # Unquote
-  for ($_[0]) {
-    s/^\"//g;
-    s/\"$//g;
+  for ($string) {
+    s/^"//g;
+    s/"$//g;
     s/\\\\/\\/g;
-    s/\\\"/\"/g;
+    s/\\"/"/g;
   }
+
+  return $string;
 }
 
 sub url_escape {
-
-  # Default to unreserved characters
-  my $pattern = $_[1] || 'A-Za-z0-9\-\.\_\~';
-
-  # Escape
-  return unless $_[0] =~ /[^$pattern]/;
-  $_[0] =~ s/([^$pattern])/sprintf('%%%02X',ord($1))/ge;
+  my ($string, $pattern) = @_;
+  $pattern ||= 'A-Za-z0-9\-\.\_\~';
+  return $string unless $string =~ /[^$pattern]/;
+  $string =~ s/([^$pattern])/sprintf('%%%02X',ord($1))/ge;
+  return $string;
 }
 
 # "I've gone back in time to when dinosaurs weren't just confined to zoos."
 sub url_unescape {
-  return if index($_[0], '%') == -1;
-  $_[0] =~ s/%([0-9A-Fa-f]{2})/chr(hex($1))/ge;
+  my $string = shift;
+  return $string if index($string, '%') == -1;
+  $string =~ s/%([0-9A-Fa-f]{2})/chr(hex($1))/ge;
+  return $string;
 }
 
 sub xml_escape {
-
-  # Replace "&", "<", ">", """ and "'"
-  for ($_[0]) {
+  my $string = shift;
+  for ($string) {
     s/&/&amp;/g;
     s/</&lt;/g;
     s/>/&gt;/g;
     s/"/&quot;/g;
     s/'/&#39;/g;
   }
+  return $string;
 }
 
 # Helper for punycode
@@ -617,37 +623,33 @@ sub _adapt {
   my ($delta, $numpoints, $firsttime) = @_;
 
   use integer;
-  $delta = $firsttime ? $delta / PUNYCODE_DAMP : $delta / 2;
+  $delta = $firsttime ? $delta / PC_DAMP : $delta / 2;
   $delta += $delta / $numpoints;
   my $k = 0;
-  while ($delta > ((PUNYCODE_BASE - PUNYCODE_TMIN) * PUNYCODE_TMAX) / 2) {
-    $delta /= PUNYCODE_BASE - PUNYCODE_TMIN;
-    $k += PUNYCODE_BASE;
+  while ($delta > ((PC_BASE - PC_TMIN) * PC_TMAX) / 2) {
+    $delta /= PC_BASE - PC_TMIN;
+    $k += PC_BASE;
   }
 
-  return $k
-    + (
-    ((PUNYCODE_BASE - PUNYCODE_TMIN + 1) * $delta) / ($delta + PUNYCODE_SKEW)
-    );
+  return $k + (((PC_BASE - PC_TMIN + 1) * $delta) / ($delta + PC_SKEW));
 }
 
 sub _hmac {
+  my ($sha, $string, $secret) = @_;
+
+  # Hash function
+  my $hash =
+    $sha ? sub { Digest::SHA::sha1(@_) } : sub { Digest::MD5::md5(@_) };
 
   # Secret
-  my $secret = $_[2] || 'Very unsecure!';
-  $secret = $_[0]->($secret) if length $secret > 64;
+  $secret ||= 'Very unsecure!';
+  $secret = $hash->($secret) if length $secret > 64;
 
   # HMAC
   my $ipad = $secret ^ (chr(0x36) x 64);
   my $opad = $secret ^ (chr(0x5c) x 64);
-  return unpack 'H*', $_[0]->($opad . $_[0]->($ipad . $_[1]));
+  return unpack 'H*', $hash->($opad . $hash->($ipad . $string));
 }
-
-# Helper for md5_bytes
-sub _md5 { Digest::MD5::md5(shift) }
-
-# Helper for sha1_bytes
-sub _sha1 { Digest::SHA::sha1(shift) }
 
 # Helper for html_unescape
 sub _unescape {
@@ -670,13 +672,12 @@ Mojo::Util - Portable utility functions
   use Mojo::Util qw/url_escape url_unescape/;
 
   my $string = 'test=23';
-  url_escape $string;
-  url_unescape $string;
+  my $escaped = url_escape $string;
+  say url_unescape $escaped;
 
 =head1 DESCRIPTION
 
 L<Mojo::Util> provides portable utility functions for L<Mojo>.
-Note that this module is EXPERIMENTAL and might change without warning!
 
 =head1 FUNCTIONS
 
@@ -684,51 +685,51 @@ L<Mojo::Util> implements the following functions.
 
 =head2 C<b64_decode>
 
-  b64_decode $string;
+  my $string = b64_decode $b64;
 
-Base64 decode in-place.
+Base64 decode string.
 
 =head2 C<b64_encode>
 
-  b64_encode $string;
+  my $b64 = b64_encode $string;
 
-Base64 encode in-place.
+Base64 encode string.
 
 =head2 C<camelize>
 
-  camelize $string;
+  my $camelcase = camelize $snakecase;
 
-Convert snake case string to camel case and replace C<-> with C<::> in-place.
+Convert snake case string to camel case and replace C<-> with C<::>.
 
   foo_bar     -> FooBar
   foo_bar-baz -> FooBar::Baz
 
 =head2 C<decamelize>
 
-  decamelize $string;
+  my $snakecase = decamelize $camelcase;
 
-Convert camel case string to snake case and replace C<::> with C<-> in-place.
+Convert camel case string to snake case and replace C<::> with C<->.
 
   FooBar      -> foo_bar
   FooBar::Baz -> foo_bar-baz
 
 =head2 C<decode>
 
-  decode 'UTF-8', $octets;
+  my $chars = decode 'UTF-8', $bytes;
 
-Decode octets in-place.
+Decode bytes to characters.
 
 =head2 C<encode>
 
-  encode 'UTF-8', $chars;
+  my $bytes = encode 'UTF-8', $chars;
 
-Encode characters in-place.
+Encode characters to bytes.
 
 =head2 C<get_line>
 
-  my $line = get_line $chunk;
+  my $line = get_line \$string;
 
-Extract a whole line from chunk or return undef.
+Extract whole line from string or return C<undef>.
 Lines are expected to end with C<0x0d 0x0a> or C<0x0a>.
 
 =head2 C<hmac_md5_sum>
@@ -745,57 +746,57 @@ Generate HMAC-SHA1 checksum for string.
 
 =head2 C<html_escape>
 
-  html_escape $string;
+  my $escaped = html_escape $string;
 
-HTML escape string in-place.
+HTML escape string.
 
 =head2 C<html_unescape>
 
-  html_unescape $string;
+  my $string = html_unescape $escaped;
 
-HTML unescape string in-place.
+HTML unescape string.
 
 =head2 C<md5_bytes>
 
   my $checksum = md5_bytes $string;
 
-Generate binary MD5 checksum.
+Generate binary MD5 checksum for string.
 
 =head2 C<md5_sum>
 
   my $checksum = md5_sum $string;
 
-Generate MD5 checksum.
+Generate MD5 checksum for string.
 
 =head2 C<punycode_decode>
 
-  punycode_decode $string;
+  my $string = punycode_decode $punycode;
 
-Punycode decode string in-place, as described in RFC 3492.
+Punycode decode string.
 
 =head2 C<punycode_encode>
 
-  punycode_encode $string;
+  my $punycode = punycode_encode $string;
 
-Punycode encode string in-place, as described in RFC 3492.
+Punycode encode string.
 
 =head2 C<quote>
 
-  quote $string;
+  my $quoted = quote $string;
 
-Quote string in-place.
+Quote string.
 
 =head2 C<qp_decode>
 
-  qp_decode $string;
+  my $string = qp_decode $qp;
 
-Quoted Printable decode in-place.
+Quoted Printable decode string.
 
 =head2 C<qp_encode>
 
-  qp_encode $string;
+  my $qp = qp_encode $string;
 
-Quoted Printable encode in-place.
+Quoted Printable encode string.
 
 =head2 C<secure_compare>
 
@@ -807,45 +808,45 @@ Constant time comparison algorithm to prevent timing attacks.
 
   my $checksum = sha1_bytes $string;
 
-Generate binary SHA1 checksum.
+Generate binary SHA1 checksum for string.
 
 =head2 C<sha1_sum>
 
   my $checksum = sha1_sum $string;
 
-Generate SHA1 checksum.
+Generate SHA1 checksum for string.
 
 =head2 C<trim>
 
-  trim $string;
+  my $trimmed = trim $string;
 
-Trim whitespace characters from both ends of string in-place.
+Trim whitespace characters from both ends of string.
 
 =head2 C<unquote>
 
-  unquote $string;
+  my $string = unquote $quoted;
 
-Unquote string in-place.
+Unquote string.
 
 =head2 C<url_escape>
 
-  url_escape $string;
-  url_escape $string, 'A-Za-z0-9\-\.\_\~';
+  my $escaped = url_escape $string;
+  my $escaped = url_escape $string, 'A-Za-z0-9\-\.\_\~';
 
-URL escape in-place.
+URL escape string.
 
 =head2 C<url_unescape>
 
-  url_unescape $string;
+  my $string = url_unescape $escaped;
 
-URL unescape in-place.
+URL unescape string.
 
 =head2 C<xml_escape>
 
-  xml_escape $string;
+  my $escaped = xml_escape $string;
 
-XML escape string in-place, this is a much faster version of C<html_escape>
-escaping only the characters C<&>, C<E<lt>>, C<E<gt>>, C<"> and C<'>.
+XML escape string, this is a much faster version of C<html_escape> escaping
+only the characters C<&>, C<E<lt>>, C<E<gt>>, C<"> and C<'>.
 
 =head1 SEE ALSO
 

@@ -46,12 +46,12 @@ sub register {
 
   # Perldoc
   $app->routes->any(
-    '/perldoc/(*module)' => {module => 'Mojolicious/Guides'} => sub {
+    '/perldoc/*module' => {module => 'Mojolicious/Guides'} => sub {
       my $self = shift;
 
       # Find module
       my $module = $self->param('module');
-      $module =~ s/\//\:\:/g;
+      $module =~ s|/|\:\:|g;
       my $path = Pod::Simple::Search->new->find($module, @PATHS);
 
       # Redirect to CPAN
@@ -68,9 +68,9 @@ sub register {
       $dom->find('a[href]')->each(
         sub {
           my $attrs = shift->attrs;
-          $attrs->{href} =~ s/%3A%3A/\//gi
+          $attrs->{href} =~ s|%3A%3A|/|gi
             if $attrs->{href}
-              =~ s/^http\:\/\/search\.cpan\.org\/perldoc\?/$perldoc/;
+              =~ s|^http\://search\.cpan\.org/perldoc\?|$perldoc|;
         }
       );
 
@@ -86,7 +86,7 @@ sub register {
 
       # Rewrite headers
       my $url = $self->req->url->clone;
-      $url =~ s/%2F/\//gi;
+      $url =~ s|%2F|/|gi;
       my $sections = [];
       $dom->find('h1, h2, h3')->each(
         sub {
@@ -94,7 +94,7 @@ sub register {
           my $text   = $tag->all_text;
           my $anchor = $text;
           $anchor =~ s/\s+/_/g;
-          url_escape $anchor, 'A-Za-z0-9_';
+          $anchor = url_escape $anchor, 'A-Za-z0-9_';
           $anchor =~ s/\%//g;
           push @$sections, [] if $tag->type eq 'h1' || !@$sections;
           push @{$sections->[-1]}, $text, $url->fragment($anchor)->to_abs;
@@ -115,7 +115,7 @@ sub register {
       # Combine everything to a proper response
       $self->content_for(mojobar => $self->include(inline => $MOJOBAR));
       $self->content_for(perldoc => "$dom");
-      $self->app->plugins->run_hook(before_perldoc => $self);
+      $self->app->plugins->emit_hook(before_perldoc => $self);
       $self->render(
         inline   => $PERLDOC,
         title    => $title,
@@ -147,8 +147,8 @@ sub _pod_to_html {
   return $@ if $@;
 
   # Filter
-  $output =~ s/<a name='___top' class='dummyTopAnchor'\s*?><\/a>\n//g;
-  $output =~ s/<a class='u'.*?name=".*?"\s*>(.*?)<\/a>/$1/sg;
+  $output =~ s|<a name='___top' class='dummyTopAnchor'\s*?></a>\n||g;
+  $output =~ s|<a class='u'.*?name=".*?"\s*>(.*?)</a>|$1|sg;
 
   return $output;
 }

@@ -7,18 +7,17 @@ use Mojo::Util 'get_line';
 
 has [qw/code message/];
 
-# Start line regex
-my $START_LINE_RE = qr/
+my $START_LINE_RE = qr|
   ^\s*
-  HTTP\/(\d\.\d)   # Version
+  HTTP/(?<version>\d\.\d)   # Version
   \s+
-  (\d\d\d)         # Code
+  (?<code>\d\d\d)            # Code
   \s*
-  ([\w\'\s]+)?     # Message (with "I'm a teapot" support)
+  (?<message>[\w\'\s]+)?     # Message (with "I'm a teapot" support)
   $
-/x;
+|x;
 
-# Umarked codes are from RFC 2616 (mostly taken from LWP)
+# Umarked codes are from RFC 2616
 my %MESSAGES = (
   100 => 'Continue',
   101 => 'Switching Protocols',
@@ -62,6 +61,9 @@ my %MESSAGES = (
   424 => 'Failed Dependency',               # RFC 2518 (WebDAV)
   425 => 'Unordered Colection',             # RFC 3648 (WebDav)
   426 => 'Upgrade Required',                # RFC 2817
+  428 => 'Precondition Required',           # draft-nottingham-http-new-status
+  429 => 'Too Many Requests',               # draft-nottingham-http-new-status
+  431 => 'Request Header Fields Too Large', # draft-nottingham-http-new-status
   449 => 'Retry With',                      # unofficial Microsoft
   500 => 'Internal Server Error',
   501 => 'Not Implemented',
@@ -72,7 +74,8 @@ my %MESSAGES = (
   506 => 'Variant Also Negotiates',         # RFC 2295
   507 => 'Insufficient Storage',            # RFC 2518 (WebDAV)
   509 => 'Bandwidth Limit Exceeded',        # unofficial
-  510 => 'Not Extended'                     # RFC 2774
+  510 => 'Not Extended',                    # RFC 2774
+  511 => 'Network Authentication Required', # draft-nottingham-http-new-status
 );
 
 sub cookies {
@@ -117,8 +120,7 @@ sub fix_headers {
 sub is_status_class {
   my ($self, $class) = @_;
   return unless my $code = $self->code;
-  return 1 if $code >= $class && $code < ($class + 100);
-  return;
+  return $code >= $class && $code < ($class + 100);
 }
 
 sub _build_start_line {
@@ -140,21 +142,21 @@ sub _parse_start_line {
   my $self = shift;
 
   # Try to detect HTTP 0.9
-  $self->{state} = 'content';
-  if ($self->{buffer} !~ /^\s*HTTP\//) {
+  if ($self->{buffer} =~ /^\s*(\S.{4})/ && $1 !~ m#^HTTP/#) {
     $self->version('0.9');
-    return $self->content->relaxed(1);
+    $self->content->relaxed(1);
+    return $self->{state} = 'content';
   }
 
   # We have a full HTTP 1.0+ response line
-  my $line = get_line $self->{buffer};
-  return unless defined $line;
+  return unless defined(my $line = get_line \$self->{buffer});
   return $self->error('Bad response start line.')
     unless $line =~ $START_LINE_RE;
-  $self->version($1);
-  $self->code($2);
-  $self->message($3);
+  $self->version($+{version});
+  $self->code($+{code});
+  $self->message($+{message});
   $self->content->auto_relax(1);
+  $self->{state} = 'content';
 }
 
 1;
@@ -223,6 +225,8 @@ implements the following new ones.
   $req        = $req->cookies({name => 'foo', value => 'bar'});
 
 Access response cookies, usually L<Mojo::Cookie::Response> objects.
+
+  say $res->cookies->[1]->value;
 
 =head2 C<default_message>
 

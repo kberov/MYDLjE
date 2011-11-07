@@ -32,7 +32,7 @@ sub dispatch {
 
   # Serve static file
   return unless $self->serve($c, join('/', @parts));
-  $stash->{'mojo.static'} = 1;
+  $stash->{'mojo.static'}++;
   $c->rendered;
 
   return 1;
@@ -125,6 +125,8 @@ sub serve {
   return 1;
 }
 
+# "I like being a women.
+#  Now when I say something stupid, everyone laughs and buys me things."
 sub _get_data_file {
   my ($self, $c, $rel) = @_;
 
@@ -165,6 +167,8 @@ Mojolicious::Static - Serve static files
 =head1 SYNOPSIS
 
   use Mojolicious::Static;
+
+  my $static = Mojolicious::Static->new;
 
 =head1 DESCRIPTION
 

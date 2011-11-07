@@ -35,7 +35,7 @@ has static   => sub { Mojolicious::Static->new };
 has types    => sub { Mojolicious::Types->new };
 
 our $CODENAME = 'Leaf Fluttering In Wind';
-our $VERSION  = '2.0';
+our $VERSION  = '2.24';
 
 # "These old doomsday devices are dangerously unstable.
 #  I'll rest easier not knowing where they are."
@@ -72,12 +72,12 @@ sub new {
   $r->namespace(ref $self);
 
   # Hide own controller methods
-  $r->hide(qw/AUTOLOAD DESTROY client cookie delayed finish finished/);
-  $r->hide(qw/flash handler helper on_message param redirect_to render/);
-  $r->hide(qw/render_content render_data render_exception render_json/);
-  $r->hide(qw/render_not_found render_partial render_static render_text/);
-  $r->hide(qw/rendered send_message session signed_cookie url_for/);
-  $r->hide(qw/write write_chunk/);
+  $r->hide(qw/AUTOLOAD DESTROY app cookie finish flash handler on on_finish/);
+  $r->hide(qw/param redirect_to render render_content render_data/);
+  $r->hide(qw/render_exception render_json render_not_found render_partial/);
+  $r->hide(qw/render_static render_text rendered req res respond_to/);
+  $r->hide(qw/send_message session signed_cookie stash tx ua url_for write/);
+  $r->hide('write_chunk');
 
   # Prepare log
   my $mode = $self->mode;
@@ -85,7 +85,6 @@ sub new {
     if -w $home->rel_file('log');
 
   # Load default plugins
-  $self->plugin('CallbackCondition');
   $self->plugin('HeaderCondition');
   $self->plugin('DefaultHelpers');
   $self->plugin('TagHelpers');
@@ -110,7 +109,7 @@ sub new {
 sub build_tx {
   my $self = shift;
   my $tx   = Mojo::Transaction::HTTP->new;
-  $self->plugins->run_hook(after_build_tx => $tx, $self);
+  $self->plugins->emit_hook(after_build_tx => $tx, $self);
   return $tx;
 }
 
@@ -144,11 +143,11 @@ sub dispatch {
   $c->res->code(undef) if $tx->is_websocket;
   $self->sessions->load($c);
   my $plugins = $self->plugins;
-  $plugins->run_hook(before_dispatch => $c);
+  $plugins->emit_hook(before_dispatch => $c);
 
   # Try to find a static file
   $self->static->dispatch($c);
-  $plugins->run_hook_reverse(after_static_dispatch => $c);
+  $plugins->emit_hook_reverse(after_static_dispatch => $c);
 
   # Routes
   my $res = $tx->res;
@@ -208,7 +207,7 @@ sub helper {
 #  You better not breathe, you better not move.
 #  You're better off dead, I'm tellin' you, dude.
 #  Santa Claus is gunning you down!"
-sub hook { shift->plugins->add_hook(@_) }
+sub hook { shift->plugins->on(@_) }
 
 sub plugin {
   my $self = shift;
@@ -312,9 +311,12 @@ Request processing callback, defaults to calling the C<dispatch> method.
 Generally you will use a plugin or controller instead of this, consider it
 the sledgehammer in your toolbox.
 
+  my $next = $app->on_process;
   $app->on_process(sub {
     my ($self, $c) = @_;
-    $self->dispatch($c);
+    return $c->render(text => 'Hello world!')
+      if $c->req->url->path->contains('/hello');
+    $self->$next($c);
   });
 
 =head2 C<plugins>
@@ -458,71 +460,59 @@ and the application object, as well as a function in C<ep> templates.
 
   $app->hook(after_dispatch => sub {...});
 
-Extend L<Mojolicious> by adding hooks to named events.
+Extend L<Mojolicious> by adding hooks.
 
-The following events are available and run in the listed order.
+These hooks are currently available and are emitted in the listed order:
 
 =over 2
 
 =item after_build_tx
 
-Triggered right after the transaction is built and before the HTTP request
-gets parsed, the callbacks of this hook run in the order they were added.
-One use case would be upload progress bars.
-(Passed the transaction and application instances)
+Emitted in reverse order right after the transaction is built and before the
+HTTP request gets parsed.
 
   $app->hook(after_build_tx => sub {
     my ($tx, $app) = @_;
   });
 
+One use case would be upload progress bars.
+(Passed the transaction and application instances)
+
 =item before_dispatch
 
-Triggered right before the static and routes dispatchers start their work,
-the callbacks of this hook run in the order they were added.
-Very useful for rewriting incoming requests and other preprocessing tasks.
-(Passed the default controller instance)
+Emitted right before the static and routes dispatchers start their work.
 
   $app->hook(before_dispatch => sub {
     my $self = shift;
   });
 
+Very useful for rewriting incoming requests and other preprocessing tasks.
+(Passed the default controller instance)
+
 =item after_static_dispatch
 
-Triggered after the static dispatcher determined if a static file should be
-served and before the routes dispatcher starts its work, the callbacks of
-this hook run in reverse order.
-Mostly used for custom dispatchers and postprocessing static file responses.
-(Passed the default controller instance)
+Emitted in reverse order after the static dispatcher determined if a static
+file should be served and before the routes dispatcher starts its work.
 
   $app->hook(after_static_dispatch => sub {
     my $self = shift;
   });
 
-=item before_render
-
-Triggered right before the renderer turns the stash into a response, the
-callbacks of this hook run in the order they were added.
-Very useful for making adjustments to the stash right before rendering.
-(Passed the current controller instance and argument hash)
-
-  $app->hook(before_render => sub {
-    my ($self, $args) = @_;
-  });
-
-Note that this hook is EXPERIMENTAL and might change without warning!
+Mostly used for custom dispatchers and postprocessing static file responses.
+(Passed the default controller instance)
 
 =item after_dispatch
 
-Triggered after a response has been rendered, the callbacks of this hook run
-in reverse order.
+Emitted in reverse order after a response has been rendered.
 Note that this hook can trigger before C<after_static_dispatch> due to its
 dynamic nature.
-Useful for all kinds of postprocessing tasks.
-(Passed the current controller instance)
 
   $app->hook(after_dispatch => sub {
     my $self = shift;
   });
+
+Useful for all kinds of postprocessing tasks.
+(Passed the current controller instance)
 
 =back
 
@@ -540,14 +530,9 @@ Useful for all kinds of postprocessing tasks.
 
 Load a plugin with L<Mojolicious::Plugins/"register_plugin">.
 
-The following plugins are included in the L<Mojolicious> distribution as
-examples.
+These plugins are included in the L<Mojolicious> distribution as examples:
 
 =over 2
-
-=item L<Mojolicious::Plugin::CallbackCondition>
-
-Very versatile route condition for arbitrary callbacks.
 
 =item L<Mojolicious::Plugin::Charset>
 
@@ -668,22 +653,11 @@ L<http://creativecommons.org/licenses/by-sa/3.0>.
 
 =head2 jQuery
 
-  Version 1.6.3
-
-jQuery is a fast and concise JavaScript Library that simplifies HTML document
-traversing, event handling, animating, and Ajax interactions for rapid web
-development. jQuery is designed to change the way that you write JavaScript.
-
   Copyright 2011, John Resig.
 
 Licensed under the MIT License, L<http://creativecommons.org/licenses/MIT>.
 
 =head2 prettify.js
-
-  Version 1-Jun-2011
-
-A Javascript module and CSS file that allows syntax highlighting of source
-code snippets in an html page.
 
   Copyright (C) 2006, Google Inc.
 
@@ -717,7 +691,7 @@ Sebastian Riedel, C<sri@cpan.org>.
 
 =head1 CREDITS
 
-In alphabetical order.
+In alphabetical order:
 
 =over 2
 

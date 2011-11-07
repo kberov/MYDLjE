@@ -1,7 +1,6 @@
 package Mojo::Content::Single;
 use Mojo::Base 'Mojo::Content';
 
-use Mojo::Asset::File;
 use Mojo::Asset::Memory;
 use Mojo::Content::MultiPart;
 
@@ -48,19 +47,14 @@ sub parse {
 
   # Content needs to be upgraded to multipart
   if ($self->auto_upgrade && defined($self->boundary)) {
-    return $self if $self->isa('Mojo::Content::MultiPart');
-    return Mojo::Content::MultiPart->new($self)->parse;
+    $self->emit(upgrade => my $multi = Mojo::Content::MultiPart->new($self));
+    return $multi->parse;
   }
 
-  # Don't waste memory and upgrade to file based storage on demand
-  my $asset = $self->asset;
-  $self->asset($asset = Mojo::Asset::File->new->add_chunk($asset->slurp))
-    if $asset->isa('Mojo::Asset::Memory')
-      && $asset->size > ($ENV{MOJO_MAX_MEMORY_SIZE} || 262144);
-
   # Chunked body or relaxed content
+  my $asset = $self->asset;
   if ($self->is_chunked || $self->relaxed) {
-    $asset->add_chunk($self->{buffer});
+    $self->asset($asset->add_chunk($self->{buffer}));
     $self->{buffer} = '';
   }
 
@@ -68,10 +62,11 @@ sub parse {
   else {
     my $len = $self->headers->content_length || 0;
     my $need = $len - $asset->size;
-    $asset->add_chunk(substr $self->{buffer}, 0, $need, '') if $need > 0;
+    $self->asset($asset->add_chunk(substr $self->{buffer}, 0, $need, ''))
+      if $need > 0;
 
-    # Done
-    $self->{state} = 'done' if $len <= $self->progress;
+    # Finished
+    $self->{state} = 'finished' if $len <= $self->progress;
   }
 
   return $self;
@@ -88,8 +83,8 @@ Mojo::Content::Single - HTTP 1.1 content container
 
   use Mojo::Content::Single;
 
-  my $content = Mojo::Content::Single->new;
-  $content->parse("Content-Length: 12\r\n\r\nHello World!");
+  my $single = Mojo::Content::Single->new;
+  $single->parse("Content-Length: 12\r\n\r\nHello World!");
 
 =head1 DESCRIPTION
 
@@ -98,7 +93,23 @@ RFC 2616.
 
 =head1 EVENTS
 
-L<Mojo::Content::Single> inherits all events from L<Mojo::Content>.
+L<Mojo::Content::Single> inherits all events from L<Mojo::Content> and can
+emit the following new ones.
+
+=head2 C<upgrade>
+
+  $single->on(upgrade => sub {
+    my ($single, $multi) = @_;
+  });
+
+Emitted when content gets upgraded to a L<Mojo::Content::MultiPart> object.
+Note that this event is EXPERIMENTAL and might change without warning!
+
+  $single->on(upgrade => sub {
+    my ($single, $multi) = @_;
+    return unless $multi->headers->content_type =~ /multipart\/([^;]+)/i;
+    say "Multipart: $1";
+  });
 
 =head1 ATTRIBUTES
 
@@ -107,15 +118,15 @@ implements the following new ones.
 
 =head2 C<asset>
 
-  my $asset = $content->asset;
-  $content  = $content->asset(Mojo::Asset::Memory->new);
+  my $asset = $single->asset;
+  $single   = $single->asset(Mojo::Asset::Memory->new);
 
 The actual content, defaults to a L<Mojo::Asset::Memory> object.
 
 =head2 C<auto_upgrade>
 
-  my $upgrade = $content->auto_upgrade;
-  $content    = $content->auto_upgrade(0);
+  my $upgrade = $single->auto_upgrade;
+  $single     = $single->auto_upgrade(0);
 
 Try to detect multipart content and automatically upgrade to a
 L<Mojo::Content::MultiPart> object, defaults to C<1>.
@@ -128,34 +139,36 @@ implements the following new ones.
 
 =head2 C<body_contains>
 
-  my $success = $content->body_contains('1234567');
+  my $success = $single->body_contains('1234567');
 
 Check if content contains a specific string.
 
 =head2 C<body_size>
 
-  my $size = $content->body_size;
+  my $size = $single->body_size;
 
 Content size in bytes.
 
 =head2 C<clone>
 
-  my $clone = $content->clone;
+  my $clone = $single->clone;
 
 Clone content if possible.
 Note that this method is EXPERIMENTAL and might change without warning!
 
 =head2 C<get_body_chunk>
 
-  my $chunk = $content->get_body_chunk(0);
+  my $chunk = $single->get_body_chunk(0);
 
 Get a chunk of content starting from a specfic position.
 
 =head2 C<parse>
 
-  $content = $content->parse("Content-Length: 12\r\n\r\nHello World!");
+  $single   = $single->parse("Content-Length: 12\r\n\r\nHello World!");
+  my $multi = $single->parse("Content-Type: multipart/form-data\r\n\r\n");
 
-Parse content chunk.
+Parse content chunk and upgrade to L<Mojo::Content::MultiPart> object if
+possible.
 
 =head1 SEE ALSO
 

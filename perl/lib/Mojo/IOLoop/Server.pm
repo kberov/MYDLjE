@@ -74,11 +74,12 @@ has iowatcher => sub {
 
 sub DESTROY {
   my $self = shift;
+  if (my $port = $self->{port}) { $ENV{MOJO_REUSE} =~ s/(?:^|\,)$port\:\d+// }
   if (my $cert = $self->{cert}) { unlink $cert if -w $cert }
   if (my $key  = $self->{key})  { unlink $key  if -w $key }
   return unless my $watcher = $self->{iowatcher};
   $self->pause if $self->{handle};
-  $watcher->remove($_) for values %{$self->{handles}};
+  $watcher->drop_handle($_) for values %{$self->{handles}};
 }
 
 # "And I gave that man directions, even though I didn't know the way,
@@ -88,7 +89,7 @@ sub listen {
   my $args = ref $_[0] ? $_[0] : {@_};
 
   # Look for reusable file descriptor
-  my $reuse = my $port = $args->{port} || 3000;
+  my $reuse = my $port = $self->{port} = $args->{port} || 3000;
   $ENV{MOJO_REUSE} ||= '';
   my $fd;
   if ($ENV{MOJO_REUSE} =~ /(?:^|\,)$reuse\:(\d+)/) { $fd = $1 }
@@ -165,13 +166,13 @@ sub generate_port {
 
 sub pause {
   my $self = shift;
-  $self->iowatcher->remove($self->{handle});
+  $self->iowatcher->drop_handle($self->{handle});
 }
 
 sub resume {
   my $self = shift;
   weaken $self;
-  $self->iowatcher->add($self->{handle},
+  $self->iowatcher->watch($self->{handle},
     on_readable => sub { $self->_accept for 1 .. $self->accepts });
 }
 
@@ -190,11 +191,11 @@ sub _accept {
   weaken $self;
   $tls->{SSL_error_trap} = sub {
     return unless my $handle = delete $self->{handles}->{shift()};
-    $self->iowatcher->remove($handle);
+    $self->iowatcher->drop_handle($handle);
     close $handle;
   };
   $handle = IO::Socket::SSL->start_SSL($handle, %$tls);
-  $self->iowatcher->add(
+  $self->iowatcher->watch(
     $handle,
     on_readable => sub { $self->_tls($handle) },
     on_writable => sub { $self->_tls($handle) }
@@ -243,15 +244,15 @@ sub _tls {
 
   # Accepted
   if ($handle->accept_SSL) {
-    $self->iowatcher->remove($handle);
+    $self->iowatcher->drop_handle($handle);
     delete $self->{handles}->{$handle};
     return $self->emit_safe(accept => $handle);
   }
 
   # Switch between reading and writing
   my $error = $IO::Socket::SSL::SSL_ERROR;
-  if    ($error == TLS_READ)  { $self->iowatcher->not_writing($handle) }
-  elsif ($error == TLS_WRITE) { $self->iowatcher->writing($handle) }
+  if    ($error == TLS_READ)  { $self->iowatcher->change($handle, 1, 0) }
+  elsif ($error == TLS_WRITE) { $self->iowatcher->change($handle, 1, 1) }
 }
 
 1;
@@ -268,7 +269,7 @@ Mojo::IOLoop::Server - IOLoop socket server
   # Create listen socket
   my $server = Mojo::IOLoop::Server->new;
   $server->on(accept => sub {
-    my ($self, $handle) = @_;
+    my ($server, $handle) = @_;
     ...
   });
   $server->listen(port => 3000);
@@ -311,8 +312,8 @@ Number of connections to accept at once, defaults to C<10>.
   my $watcher = $server->iowatcher;
   $server     = $server->iowatcher(Mojo::IOWatcher->new);
 
-Low level event watcher, usually a L<Mojo::IOWatcher> or
-L<Mojo::IOWatcher::EV> object.
+Low level event watcher, defaults to the C<iowatcher> attribute value of the
+global L<Mojo::IOLoop> singleton.
 
 =head1 METHODS
 

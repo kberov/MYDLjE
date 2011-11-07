@@ -23,8 +23,6 @@ sub new {
 
 sub build_tx { shift->app->build_tx }
 
-sub upgrade_tx { shift->app->upgrade_tx(shift)->server_handshake }
-
 sub load_app {
   my ($self, $file) = @_;
 
@@ -55,9 +53,8 @@ EOF
 
 # DEPRECATED in Smiling Face With Sunglasses!
 sub on_request {
-  warn <<EOF;
-Mojo::Server->on_request is DEPRECATED in favor of using Mojo::Server->on!!!
-EOF
+  warn
+    "Mojo::Server->on_request is DEPRECATED in favor of Mojo::Server->on!\n";
   shift->on(request => shift);
 }
 
@@ -88,7 +85,7 @@ Mojo::Server - HTTP server base class
     # Get a transaction
     my $tx = $self->build_tx;
 
-    # Emit request
+    # Emit "request" event
     $self->emit(request => $tx);
   }
 
@@ -106,7 +103,16 @@ L<Mojo::Server> can emit the following events.
     my ($server, $tx) = @_;
   });
 
-Emitted for requests that need a response.
+Emitted when a request is ready and needs to be handled.
+
+  $server->unsubscribe('request');
+  $server->on(request => sub {
+    my ($server, $tx) = @_;
+    $tx->res->code(200);
+    $tx->res->headers->content_type('text/plain');
+    $tx->res->body('Hello World!');
+    $tx->resume;
+  });
 
 =head1 ATTRIBUTES
 
@@ -136,7 +142,7 @@ implements the following new ones.
 
   my $server = Mojo::Server->new;
 
-Construct a new L<Mojo::Server> object.
+Construct a new L<Mojo::Server> object and register default C<request> event.
 
 =head2 C<build_tx>
 
@@ -149,7 +155,6 @@ Let application build a transaction.
   my $app = $server->load_app('./myapp.pl');
 
 Load application from script.
-Note that this method is EXPERIMENTAL and might change without warning!
 
   say Mojo::Server->new->load_app('./myapp.pl')->home;
 
@@ -158,12 +163,6 @@ Note that this method is EXPERIMENTAL and might change without warning!
   $server->run;
 
 Start server.
-
-=head2 C<upgrade_tx>
-
-  my $ws = $server->upgrade_tx(tx);
-
-Let application upgrade transaction.
 
 =head1 SEE ALSO
 

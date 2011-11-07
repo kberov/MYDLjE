@@ -1,5 +1,5 @@
 package Mojo::Log;
-use Mojo::Base -base;
+use Mojo::Base 'Mojo::EventEmitter';
 
 use Carp 'croak';
 use Fcntl ':flock';
@@ -27,6 +27,20 @@ has 'path';
 
 # Supported log level
 my $LEVEL = {debug => 1, info => 2, warn => 3, error => 4, fatal => 5};
+
+sub new {
+  my $self = shift->SUPER::new(@_);
+  $self->on(
+    message => sub {
+      my $self = shift;
+      return unless my $handle = $self->handle;
+      flock $handle, LOCK_EX;
+      $handle->syswrite($self->format(@_));
+      flock $handle, LOCK_UN;
+    }
+  );
+  return $self;
+}
 
 # "Yes, I got the most! I win X-Mas!"
 sub debug { shift->log('debug', @_) }
@@ -59,22 +73,10 @@ sub is_warn { shift->is_level('warn') }
 # "If The Flintstones has taught us anything,
 #  it's that pelicans can be used to mix cement."
 sub log {
-  my ($self, $level, @msgs) = @_;
-
-  # Check log level
-  $level = lc $level;
+  my $self  = shift;
+  my $level = lc shift;
   return $self unless $level && $self->is_level($level);
-
-  # Lock
-  my $handle = $self->handle;
-  flock $handle, LOCK_EX;
-
-  # Format and log messages
-  $handle->syswrite($self->format($level, @msgs));
-
-  # Unlock
-  flock $handle, LOCK_UN;
-
+  $self->emit(message => $level => @_);
   return $self;
 }
 
@@ -100,6 +102,7 @@ Mojo::Log - Simple logger for Mojo
     level => 'warn',
   );
 
+  # Log messages
   $log->debug("Why isn't this working?");
   $log->info("FYI: it happened again");
   $log->warn("This might be a problem");
@@ -110,6 +113,25 @@ Mojo::Log - Simple logger for Mojo
 
 L<Mojo::Log> is a simple logger for L<Mojo> projects.
 
+=head1 EVENTS
+
+L<Mojo::Log> can emit the following events.
+
+=head2 C<message>
+
+  $log->on(message => sub {
+    my ($log, $level, @messages) = @_;
+  });
+
+Emitted when a new message gets logged.
+Note that this event is EXPERIMENTAL and might change without warning!
+
+  $log->unsubscribe('message');
+  $log->on(message => sub {
+    my ($log, $level, @messages) = @_;
+    say "$level: ", @messages;
+  });
+
 =head1 ATTRIBUTES
 
 L<Mojo::Log> implements the following attributes.
@@ -119,26 +141,49 @@ L<Mojo::Log> implements the following attributes.
   my $handle = $log->handle;
   $log       = $log->handle(IO::File->new);
 
-Logfile handle.
+Logfile handle used by default C<message> event, defaults to opening the
+value of C<path> or C<STDERR>.
 
 =head2 C<level>
 
   my $level = $log->level;
   $log      = $log->level('debug');
 
-Log level.
+Active log level, defaults to C<debug>.
+
+These levels are currently available:
+
+=over 2
+
+=item C<debug>
+
+=item C<info>
+
+=item C<warn>
+
+=item C<error>
+
+=item C<fatal>
+
+=back
 
 =head2 C<path>
 
   my $path = $log->path
   $log     = $log->path('/var/log/mojo.log');
 
-Logfile path.
+Logfile path used by C<handle>.
 
 =head1 METHODS
 
-L<Mojo::Log> inherits all methods from L<Mojo::Base> and implements the
-following new ones.
+L<Mojo::Log> inherits all methods from L<Mojo::EventEmitter> and implements
+the following new ones.
+
+=head2 C<new>
+
+  my $log = Mojo::Log->new;
+
+Construct a new L<Mojo::Log> object and register default C<message> event.
 
 =head2 C<debug>
 
@@ -164,7 +209,6 @@ Log fatal message.
   my $message = $log->format('debug', 'Hi', 'there!');
 
 Format log message.
-Note that this method is EXPERIMENTAL and might change without warning!
 
 =head2 C<info>
 
@@ -212,7 +256,7 @@ Check for warn log level.
 
   $log = $log->log(debug => 'This should work');
 
-Log a message.
+Emit C<message> event.
 
 =head2 C<warn>
 

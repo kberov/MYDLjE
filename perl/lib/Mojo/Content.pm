@@ -8,6 +8,7 @@ use constant CHUNK_SIZE => $ENV{MOJO_CHUNK_SIZE} || 131072;
 
 has [qw/auto_relax relaxed/] => 0;
 has headers => sub { Mojo::Headers->new };
+has max_leftover_size => sub { $ENV{MOJO_MAX_LEFTOVER_SIZE} || 262144 };
 
 sub body_contains {
   croak 'Method "body_contains" not implemented by subclass';
@@ -16,10 +17,10 @@ sub body_contains {
 sub body_size { croak 'Method "body_size" not implemented by subclass' }
 
 sub boundary {
-  return
-    unless (shift->headers->content_type || '')
-    =~ /multipart.*boundary=\"*([a-zA-Z0-9\'\(\)\,\.\:\?\-\_\+\/]+)/i;
-  return $1;
+  return $1
+    if (shift->headers->content_type || '')
+    =~ m#multipart.*boundary=\"*([a-zA-Z0-9\'\(\)\,\.\:\?\-\_\+/]+)#i;
+  return;
 }
 
 # "Operator! Give me the number for 911!"
@@ -75,8 +76,6 @@ sub clone {
   return $self->new(headers => $self->headers->clone);
 }
 
-# "Aren't we forgetting the true meaning of Christmas?
-#  You know, the birth of Santa."
 sub generate_body_chunk {
   my ($self, $offset) = @_;
 
@@ -112,54 +111,37 @@ sub get_header_chunk {
   return substr $self->{header_buffer}, $offset, CHUNK_SIZE;
 }
 
-sub has_leftovers {
-  my $self = shift;
-  return 1 if length $self->{buffer} || length $self->{pre_buffer};
-  return;
-}
+sub has_leftovers { length(shift->{buffer} || '') }
 
 sub header_size { length shift->build_headers }
 
-sub is_chunked {
-  my $self = shift;
-  my $encoding = $self->headers->transfer_encoding || '';
-  return $encoding =~ /chunked/i ? 1 : 0;
-}
+sub is_chunked { (shift->headers->transfer_encoding || '') =~ /chunked/i }
 
+# DEPRECATED in Leaf Fluttering In Wind!
 sub is_done {
-  return 1 if (shift->{state} || '') eq 'done';
-  return;
+  warn <<EOF;
+Mojo::Content->is_done is DEPRECATED in favor of Mojo::Content->is_finished!
+EOF
+  shift->is_finished;
 }
 
 sub is_dynamic {
   my $self = shift;
-  return 1 if $self->{dynamic} && !defined $self->headers->content_length;
-  return;
+  return $self->{dynamic} && !defined $self->headers->content_length;
 }
+
+sub is_finished { (shift->{state} || '') eq 'finished' }
 
 sub is_multipart {undef}
 
-sub is_parsing_body {
-  return 1 if (shift->{state} || '') eq 'body';
-  return;
-}
+sub is_parsing_body { (shift->{state} || '') eq 'body' }
 
-sub leftovers {
-  my $self = shift;
-
-  # Chunked leftovers are in the chunked buffer, and so are those from a
-  # HEAD request
-  return $self->{pre_buffer} if length $self->{pre_buffer};
-
-  # Normal leftovers
-  return $self->{buffer};
-}
+sub leftovers { shift->{buffer} }
 
 # DEPRECATED in Smiling Face With Sunglasses!
 sub on_read {
-  warn <<EOF;
-Mojo::Content->on_read is DEPRECATED in favor of using Mojo::Content->on!!!
-EOF
+  warn
+    "Mojo::Content->on_read is DEPRECATED in favor of Mojo::Content->on!\n";
   shift->on(read => shift);
 }
 
@@ -186,13 +168,15 @@ sub parse {
   $self->{real_size} = 0 unless exists $self->{real_size};
   if ($self->is_chunked && ($self->{state} || '') ne 'headers') {
     $self->_parse_chunked;
-    $self->{state} = 'done' if ($self->{chunked} || '') eq 'done';
+    $self->{state} = 'finished' if ($self->{chunked} || '') eq 'finished';
   }
 
   # Not chunked, pass through to second buffer
   else {
     $self->{real_size} += length $self->{pre_buffer};
-    $self->{buffer} .= $self->{pre_buffer};
+    $self->{buffer} .= $self->{pre_buffer}
+      unless $self->is_finished
+        && length($self->{buffer}) > $self->max_leftover_size;
     $self->{pre_buffer} = '';
   }
 
@@ -220,8 +204,8 @@ sub parse {
         $self->emit(read => $chunk);
       }
 
-      # Done
-      $self->{state} = 'done' if $len <= $self->progress;
+      # Finished
+      $self->{state} = 'finished' if $len <= $self->progress;
     }
   }
 
@@ -237,13 +221,10 @@ sub parse_body {
 sub parse_body_once {
   my $self = shift;
   $self->parse_body(@_);
-  $self->{state} = 'done';
+  $self->{state} = 'finished';
   return $self;
 }
 
-# "Quick Smithers. Bring the mind eraser device!
-#  You mean the revolver, sir?
-#  Precisely."
 sub parse_until_body {
   my ($self, $chunk) = @_;
 
@@ -275,6 +256,7 @@ sub parse_until_body {
 
 sub progress {
   my $self = shift;
+  return 0 unless ($self->{state} || '') ~~ [qw/body finished/];
   return $self->{raw_size} - ($self->{header_size} || 0);
 }
 
@@ -384,8 +366,8 @@ sub _parse_chunked_trailing_headers {
   $headers->parse($self->{pre_buffer});
   $self->{pre_buffer} = '';
 
-  # Done
-  if ($headers->is_done) {
+  # Finished
+  if ($headers->is_finished) {
 
     # Remove Transfer-Encoding
     my $headers  = $self->headers;
@@ -396,7 +378,7 @@ sub _parse_chunked_trailing_headers {
       : $headers->remove('Transfer-Encoding');
     $headers->content_length($self->{real_size});
 
-    $self->{chunked} = 'done';
+    $self->{chunked} = 'finished';
   }
 }
 
@@ -408,8 +390,8 @@ sub _parse_headers {
   $headers->parse($self->{pre_buffer});
   $self->{pre_buffer} = '';
 
-  # Done
-  if ($headers->is_done) {
+  # Finished
+  if ($headers->is_finished) {
     my $leftovers = $headers->leftovers;
     $self->{header_size} = $self->{raw_size} - length $leftovers;
     $self->{pre_buffer}  = $leftovers;
@@ -444,8 +426,13 @@ L<Mojo::Content> can emit the following events.
     my $content = shift;
   });
 
-Emitted once all headers have been parsed and the content starts.
+Emitted once all headers have been parsed and the body starts.
 Note that this event is EXPERIMENTAL and might change without warning!
+
+  $content->on(body => sub {
+    my $content = shift;
+    $content->auto_upgrade(0) if $content->headers->header('X-No-MultiPart');
+  });
 
 =head2 C<read>
 
@@ -453,7 +440,13 @@ Note that this event is EXPERIMENTAL and might change without warning!
     my ($content, $chunk) = @_;
   });
 
-Emitted when new content arrives.
+Emitted when a new chunk of content arrives, also disables normal content
+storage in asset objects.
+
+  $content->on(read => sub {
+    my ($content, $chunk) = @_;
+    say "Streaming: $chunk";
+  });
 
 =head1 ATTRIBUTES
 
@@ -472,6 +465,15 @@ Try to detect broken web servers and turn on relaxed parsing automatically.
   $content    = $content->headers(Mojo::Headers->new);
 
 Content headers, defaults to a L<Mojo::Headers> object.
+
+=head2 C<max_leftover_size>
+
+  my $size = $content->max_leftover_size;
+  $content = $content->max_leftover_size(1024);
+
+Maximum size in bytes of buffer for pipelined HTTP requests, defaults to the
+value of C<MOJO_MAX_LEFTOVER_SIZE> or C<262144>.
+Note that this attribute is EXPERIMENTAL and might change without warning!
 
 =head2 C<relaxed>
 
@@ -559,18 +561,18 @@ Size of headers in bytes.
 
 Check if content is chunked.
 
-=head2 C<is_done>
-
-  my $success = $content->is_done;
-
-Check if parser is done.
-
 =head2 C<is_dynamic>
 
   my $success = $content->is_dynamic;
 
 Check if content will be dynamic.
 Note that this method is EXPERIMENTAL and might change without warning!
+
+=head2 C<is_finished>
+
+  my $success = $content->is_finished;
+
+Check if parser is finished.
 
 =head2 C<is_multipart>
 
@@ -618,9 +620,9 @@ Parse chunk and stop after headers.
 
 =head2 C<progress>
 
-  my $bytes = $content->progress;
+  my $size = $content->progress;
 
-Number of bytes already received from message content.
+Size of content already received from message in bytes.
 Note that this method is EXPERIMENTAL and might change without warning!
 
 =head2 C<write>

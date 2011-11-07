@@ -229,6 +229,147 @@ into alien environments like foreign event loops.
   # Call "one_tick" repeatedly from the alien environment
   $daemon->ioloop->one_tick while 1;
 
+=head1 REAL-TIME WEB
+
+The real-time web is a collection of technologies that include Comet
+(long-polling), EventSource and WebSockets, which allow content to be pushed
+to consumers as soon as it is generated, instead of relying on the more
+traditional pull model.
+
+=head2 WebSocket
+
+The WebSocket protocol offers full bi-directional low-latency communication
+channels between clients and servers.
+Receiving messages is as easy as subscribing to the C<message> event of the
+transaction, just be aware that all of this is event based, so you should not
+block for too long.
+
+  use Mojolicious::Lite;
+
+  # Template with browser-side code
+  get '/' => 'index';
+
+  # WebSocket echo service
+  websocket '/echo' => sub {
+    my $self = shift;
+
+    # Connected
+    $self->app->log->debug('WebSocket connected.');
+
+    # Incoming message
+    $self->on(message => sub {
+      my ($self, $message) = @_;
+      $self->send_message("echo: $message");
+    });
+
+    # Disconnected
+    $self->on(finish => sub {
+      my $self = shift;
+      $self->app->log->debug('WebSocket disconnected.');
+    });
+  };
+
+  app->start;
+  __DATA__
+
+  @@ index.html.ep
+  <!doctype html><html>
+    <head><title>Echo</title></head>
+    <body>
+      <script>
+        var ws = new WebSocket('<%= url_for('echo')->to_abs %>');
+
+        // Incoming messages
+        ws.onmessage = function(event) {
+          document.body.innerHTML += event.data + '<br/>';
+        };
+
+        // Outgoing messages
+        window.setInterval(function() {
+          ws.send('Hello Mojo!');
+        }, 1000);
+      </script>
+    </body>
+  </html>
+
+The C<finish> event will be emitted right after the WebSocket connection has
+been closed.
+
+=head2 Testing WebSockets
+
+While the message flow on WebSocket connections can be rather dynamic, it
+more often than not is quite predictable, which allows this rather pleasant
+L<Test::Mojo> API to be used.
+
+  use Test::More tests => 4;
+  use Test::Mojo;
+
+  # Include application
+  use FindBin;
+  require "$FindBin::Bin/../echo.pl";
+
+  # Test echo web service
+  my $t = Test::Mojo->new;
+  $t->websocket_ok('/echo')->send_message_ok('Hello Mojo!')
+    ->message_is('echo: Hello Mojo!')->finish_ok;
+
+=head2 EventSource
+
+HTML5 EventSource is a special form of long-polling where you can directly
+send DOM events from servers to clients.
+It is uni-directional, that means you will have to use Ajax requests for
+sending data from clients to servers, the advantage however is low
+infrastructure requirements, since it reuses the HTTP protocol for transport.
+
+  use Mojolicious::Lite;
+
+  # Template with browser-side code
+  get '/' => 'index';
+
+  # EventSource for log messages
+  get '/events' => sub {
+    my $self = shift;
+
+    # Increase connection timeout a bit
+    Mojo::IOLoop->connection_timeout($self->tx->connection => 300);
+
+    # Change content type
+    $self->res->headers->content_type('text/event-stream');
+
+    # Subscribe to "message" event and forward "log" events to browser
+    my $cb = $self->app->log->on(message => sub {
+      my ($log, $level, $message) = @_;
+      $self->write("event:log\ndata: [$level] $message\n\n");
+    });
+
+    # Unsubscribe from "message" event again once we are done
+    $self->on(finish => sub {
+      my $self = shift;
+      $self->app->log->unsubscribe(message => $cb);
+    });
+  };
+
+  app->start;
+  __DATA__
+
+  @@ index.html.ep
+  <!doctype html><html>
+    <head><title>LiveLog</title></head>
+    <body>
+      <script>
+        var events = new EventSource('<%= url_for 'events' %>');
+
+        // Subscribe to "log" event
+        events.addEventListener('log', function(event) {
+          document.body.innerHTML += event.data + '<br/>';
+        }, false);
+      </script>
+    </body>
+  </html>
+
+The C<message> event will be emitted for every new log message and the
+C<finish> event right after the transaction has been finished.
+
 =head1 USER AGENT
 
 When we say L<Mojolicious> is a web framework we actually mean it.
@@ -288,16 +429,16 @@ You can just add username and password to the URL.
 
 =head2 Decorating followup requests
 
-L<Mojo::UserAgent> can automatically follow redirects, the C<on_start>
-callback allows you direct access to each transaction right after they have
-been initialized and before a connection gets associated with them.
+L<Mojo::UserAgent> can automatically follow redirects, the C<start> event
+allows you direct access to each transaction right after they have been
+initialized and before a connection gets associated with them.
 
   # User agent following up to 10 redirects
   my $ua = Mojo::UserAgent->new(max_redirects => 10);
 
   # Add a witty header to every request
   $ua->on(start => sub {
-    my ($self, $tx) = @_;
+    my ($ua, $tx) = @_;
     $tx->req->headers->header('X-Bender' => 'Bite my shiny metal ass!');
     say 'Request: ', $tx->req->url->clone->to_abs;
   });
@@ -309,15 +450,18 @@ This even works for proxy C<CONNECT> requests.
 
 =head2 Streaming response
 
-Receiving a streaming response can be really tricky in most HTTP clients,
+Receiving a streaming response can be really tricky in most HTTP clients, but
 L<Mojo::UserAgent> makes it actually easy.
 
   my $ua = Mojo::UserAgent->new;
   my $tx = $ua->build_tx(GET => 'http://mojolicio.us');
-  $tx->res->body(sub { say $_[1] });
+  $tx->res->content->on(read => sub {
+    my ($content, $chunk) = @_;
+    say $chunk;
+  });
   $ua->start($tx);
 
-The C<body> callback will be called for every chunk of data that is received,
+The C<read> event will be emitted for every chunk of data that is received,
 even C<chunked> encoding will be handled transparently if necessary.
 
 =head2 Streaming request
@@ -352,9 +496,9 @@ above C<250KB> into a temporary file.
   my $tx = $ua->get('latest.mojolicio.us');
   $tx->res->content->asset->move_to('mojo.tar.gz');
 
-To protect you from excessively large files there is also a global limit of
-C<5MB> by default, which you can tweak with the C<MOJO_MAX_MESSAGE_SIZE>
-environment variable.
+To protect you from excessively large files there is also a limit of C<5MB>
+by default, which you can tweak with the C<MOJO_MAX_MESSAGE_SIZE> environment
+variable.
 
   # Increase limit to 1GB
   $ENV{MOJO_MAX_MESSAGE_SIZE} = 1073741824;
@@ -403,7 +547,7 @@ time.
 
     # Fetch non-blocking just by adding a callback
     $ua->get($url => sub {
-      my ($self, $tx) = @_;
+      my ($ua, $tx) = @_;
 
       # Extract URLs
       say "[$id] $url";
@@ -426,22 +570,22 @@ time.
   # Start a bunch of parallel crawlers sharing the same user agent
   $crawl->($_) for 1 .. 3;
 
-  # Start event loop
+  # Start reactor
   Mojo::IOLoop->start;
 
-You can take full control of the L<Mojo::IOLoop> event loop.
+You can take full control of the L<Mojo::IOLoop> reactor.
 
 =head2 Parallel blocking requests
 
-You can emulate blocking behavior by using a L<Mojo::IOLoop> trigger to
+You can emulate blocking behavior by using a L<Mojo::IOLoop> delay to
 synchronize multiple non-blocking requests.
 
   # Synchronize non-blocking requests and capture result
-  my $ua = Mojo::UserAgent->new;
-  my $t  = Mojo::IOLoop->trigger;
-  $ua->get('http://mojolicio.us'         => $t->begin);
-  $ua->get('http://mojolicio.us/perldoc' => $t->begin);
-  my ($tx, $tx2) = $t->start;
+  my $ua    = Mojo::UserAgent->new;
+  my $delay = Mojo::IOLoop->delay;
+  $ua->get('http://mojolicio.us'         => $delay->begin);
+  $ua->get('http://mojolicio.us/perldoc' => $delay->begin);
+  my ($tx, $tx2) = $delay->wait;
 
 Just be aware that the resulting transactions will be in random order.
 
@@ -624,23 +768,6 @@ L<ojo> oneliner.
 And you can use all the commands from L<Mojolicious::Commands>.
 
   perl -Mojo -e'a({text => "Hello World!"})->start' get -v /
-
-=head2 jQuery (Content Distribution Network)
-
-These days L<Mojolicious> ships with a bundled version of jQuery, which you
-can easily use as a fallback for applications that might be used offline from
-time to time.
-
-  <%= javascript
-    'http://ajax.googleapis.com/ajax/libs/jquery/1.6/jquery.min.js' %>
-  %= javascript begin
-    if (typeof jQuery == 'undefined') {
-      var e = document.createElement('script');
-      e.src = '/js/jquery.js';
-      e.type = 'text/javascript';
-      document.getElementsByTagName("head")[0].appendChild(e);
-    }
-  % end
 
 =head1 MORE
 

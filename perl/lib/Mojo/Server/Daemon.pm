@@ -21,18 +21,18 @@ has max_clients        => 1000;
 has max_requests       => 25;
 has websocket_timeout  => 300;
 
-# Regex for listen sockets
-my $SOCKET_RE = qr/^
-  (http(?:s)?)\:\/\/   # Scheme
-  (.+)                 # Host
-  \:(\d+)              # Port
+my $SOCKET_RE = qr|
+  ^
+  (?<scheme>http(?:s)?)\://   # Scheme
+  (?<address>.+)                # Address
+  \:(?<port>\d+)                # Port
   (?:
-    \:(.*?)          # Certificate
-    \:(.*?)          # Key
-    (?:\:(.+)?)?     # Certificate Authority
+    \:(?<cert>.*?)              # Certificate
+    \:(?<key>.*?)               # Key
+    (?:\:(?<ca>.+)?)?           # Certificate Authority
   )?
   $
-/x;
+|x;
 
 sub DESTROY {
   my $self = shift;
@@ -110,14 +110,21 @@ sub _build_tx {
   weaken $self;
   $tx->on(
     request => sub {
-      my $tx = pop;
+      my ($tx, $ws) = @_;
+
+      # WebSocket
+      if ($ws) {
+        $self->{connections}->{$id}->{websocket} = $ws->server_handshake;
+        $self->emit(request => $ws);
+      }
+
+      # HTTP
       $self->emit(request => $tx);
+
+      # Resume
       $tx->on(resume => sub { $self->_write($id) });
     }
   );
-
-  # Upgrade
-  $tx->on(upgrade => sub { $self->_upgrade($id, pop) });
 
   # New request on the connection
   $c->{requests} ||= 0;
@@ -216,12 +223,12 @@ sub _listen {
   croak qq/Invalid listen value "$listen"/ unless $listen =~ $SOCKET_RE;
   my $options = {};
   my $tls;
-  $tls = $options->{tls} = 1 if $1 eq 'https';
-  $options->{address}  = $2 if $2 ne '*';
-  $options->{port}     = $3;
-  $options->{tls_cert} = $4 if $4;
-  $options->{tls_key}  = $5 if $5;
-  $options->{tls_ca}   = $6 if $6;
+  $tls = $options->{tls} = 1 if $+{scheme} eq 'https';
+  $options->{address}  = $+{address} if $+{address} ne '*';
+  $options->{port}     = $+{port};
+  $options->{tls_cert} = $+{cert} if $+{cert};
+  $options->{tls_key}  = $+{key} if $+{key};
+  $options->{tls_ca}   = $+{ca} if $+{ca};
 
   # Listen backlog size
   my $backlog = $self->backlog;
@@ -262,7 +269,7 @@ sub _listen {
   # Friendly message
   return if $self->silent;
   $self->app->log->info("Server listening ($listen)");
-  $listen =~ s/^(https?\:\/\/)\*/${1}127.0.0.1/i;
+  $listen =~ s|^(https?\://)\*|${1}127.0.0.1|i;
   say "Server available at $listen.";
 }
 
@@ -273,7 +280,7 @@ sub _read {
   # Make sure we have a transaction
   my $c = $self->{connections}->{$id};
   my $tx = $c->{transaction} || $c->{websocket};
-  $tx = $c->{transaction} = $self->_build_tx($id, $c) unless $tx;
+  $tx ||= $c->{transaction} = $self->_build_tx($id, $c);
 
   # Parse chunk
   $tx->server_read($chunk);
@@ -283,15 +290,8 @@ sub _read {
     if ($c->{requests} || 0) >= $self->max_requests;
 
   # Finish or start writing
-  if ($tx->is_done) { $self->_finish($id, $tx) }
+  if ($tx->is_finished) { $self->_finish($id, $tx) }
   elsif ($tx->is_writing) { $self->_write($id) }
-}
-
-sub _upgrade {
-  my ($self, $id, $txref) = @_;
-  return unless $$txref->req->headers->upgrade =~ /WebSocket/i;
-  my $c = $self->{connections}->{$id};
-  $c->{websocket} = $$txref = $self->upgrade_tx($$txref);
 }
 
 sub _user {
@@ -312,16 +312,25 @@ sub _write {
 
   # Get chunk
   my $chunk = $tx->server_write;
+  warn "> $chunk\n" if DEBUG;
 
   # Write
+  my $loop = $self->ioloop;
+  $loop->write($id, $chunk);
+
+  # Finish or continue writing
   weaken $self;
   my $cb = sub { $self->_write($id) };
-  if ($tx->is_done) {
-    $self->_finish($id, $tx);
-    $cb = undef unless $c->{transaction} || $c->{websocket};
+  if ($tx->is_finished) {
+    if ($tx->has_subscribers('finish')) {
+      $cb = sub { $self->_finish($id, $tx) }
+    }
+    else {
+      $self->_finish($id, $tx);
+      return unless $c->{transaction} || $c->{websocket};
+    }
   }
-  $self->ioloop->write($id, $chunk, $cb);
-  warn "> $chunk\n" if DEBUG;
+  $loop->write($id, '', $cb);
 }
 
 1;
@@ -336,9 +345,9 @@ Mojo::Server::Daemon - Non-blocking I/O HTTP 1.1 and WebSocket server
   use Mojo::Server::Daemon;
 
   my $daemon = Mojo::Server::Daemon->new(listen => ['http://*:8080']);
-  $daemon->unsubscribe_all('request');
+  $daemon->unsubscribe('request');
   $daemon->on(request => sub {
-    my ($self, $tx) = @_;
+    my ($daemon, $tx) = @_;
 
     # Request
     my $method = $tx->req->method;
@@ -393,7 +402,8 @@ Group for server process.
   my $loop = $daemon->ioloop;
   $daemon  = $daemon->ioloop(Mojo::IOLoop->new);
 
-Event loop for server I/O, defaults to the global L<Mojo::IOLoop> singleton.
+Loop object to use for I/O operations, defaults to the global L<Mojo::IOLoop>
+singleton.
 
 =head2 C<keep_alive_timeout>
 
@@ -464,7 +474,7 @@ implements the following new ones.
 
   $daemon->prepare_ioloop;
 
-Prepare event loop.
+Prepare loop.
 
 =head2 C<run>
 

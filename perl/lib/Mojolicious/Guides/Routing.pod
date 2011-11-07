@@ -19,17 +19,17 @@ Essentials every L<Mojolicious> developer should know.
 The foundation of every web framework is a tiny black box connecting incoming
 requests with code generating the appropriate response.
 
-  GET /user/show/1 -> $self->render(text => 'Sebastian!');
+  GET /user/show/1 -> $self->render(text => 'Sebastian');
 
 This black box is usually called a dispatcher.
 There are many implementations using different strategies to establish these
 connections, but pretty much all are based around mapping the requests path
 to some kind of response generator.
 
-  /user/show/1 -> $self->render(text => 'Sebastian!');
-  /user/show/2 -> $self->render(text => 'Sara!');
-  /user/show/3 -> $self->render(text => 'Baerbel!');
-  /user/show/4 -> $self->render(text => 'Wolfgang!');
+  /user/show/1 -> $self->render(text => 'Sebastian');
+  /user/show/2 -> $self->render(text => 'Sara');
+  /user/show/3 -> $self->render(text => 'Baerbel');
+  /user/show/4 -> $self->render(text => 'Wolfgang');
 
 While it is very well possible to make all these connections static, it is
 also rather inefficient.
@@ -173,7 +173,7 @@ C<MyApp::Foo> and call its C<welcome> method.
     my $self = shift;
 
     # Render response
-    $self->render(text => 'Hello there!');
+    $self->render(text => 'Hello there.');
   }
 
   1;
@@ -196,12 +196,11 @@ hash to try and find appropriate code to generate a response.
 
 The generated hash of a matching route is actually the center of the whole
 L<Mojolicious> request cycle.
-We call it the stash, and it is basically a global namespace that persists
-until a response has been generated.
+We call it the stash, and it persists until a response has been generated.
 
-  # /bye -> {controller => 'foo', action => 'bye', mymessage => 'Bye!'}
+  # /bye -> {controller => 'foo', action => 'bye', mymessage => 'Bye'}
   $r->route('/bye')
-    ->to(controller => 'foo', action => 'bye', mymessage => 'Bye!');
+    ->to(controller => 'foo', action => 'bye', mymessage => 'Bye');
 
 There are a few stash values with special meaning, such as C<controller> and
 C<action>, but you can generally fill it with whatever data you need to
@@ -215,8 +214,11 @@ Once dispatched the whole stash content can be changed at any time.
     my $message = $self->stash('mymessage');
 
     # Change message in stash
-    $self->stash(mymessage => 'Welcome!');
+    $self->stash(mymessage => 'Welcome');
   }
+
+A full list of all reserved stash values can also be found in
+L<Mojolicious::Guides::Cheatsheet>.
 
 =head2 Special stash values (C<controller> and C<action>)
 
@@ -251,7 +253,7 @@ at all, because of this both values are case sensitive.
     my $self = shift;
 
     # Render response
-    $self->render(text => 'Good bye!');
+    $self->render(text => 'Good bye.');
   }
 
   1;
@@ -261,8 +263,8 @@ There are more dispatch strategies, but because controllers are the most
 commonly used ones they also got a special shortcut in the form of
 C<controller#action>.
 
-  # /bye -> {controller => 'foo', action => 'bye', mymessage => 'Bye!'}
-  $r->route('/bye')->to('foo#bye', mymessage => 'Bye!');
+  # /bye -> {controller => 'foo', action => 'bye', mymessage => 'Bye'}
+  $r->route('/bye')->to('foo#bye', mymessage => 'Bye');
 
 During camelization C<-> gets replaced with C<::>, this allows multi level
 C<controller> hierarchies.
@@ -294,7 +296,7 @@ callback instead.
 
   $r->route('/bye')->to(cb => sub {
     my $self = shift;
-    $self->render(text => 'Good bye!');
+    $self->render(text => 'Good bye.');
   });
 
 This technique is the foundation of L<Mojolicious::Lite>, you can learn more
@@ -504,7 +506,7 @@ will be broken, this makes bridges a very powerful tool for authentication.
     return 1 if $self->req->headers->header('X-Bender');
 
     # Not authenticated
-    $self->render(text => "You're not Bender!");
+    $self->render(text => "You're not Bender.");
     return;
   });
   $foo->route('/bar')->to(controller => 'foo', action => 'bar');
@@ -523,7 +525,7 @@ full L<Mojolicious> applications very straightforward.
   # POST /bar
   $r->post('/bar' => sub {
     my $self = shift;
-    $self->render(text => 'Just like a Mojolicious::Lite action!');
+    $self->render(text => 'Just like a Mojolicious::Lite action.');
   });
 
 Even the more abstract concepts are available.
@@ -533,11 +535,11 @@ Even the more abstract concepts are available.
   my $yada = $r->under('/yada');
   $yada->get(sub {
     my $self = shift;
-    $self->render(text => 'Hello!');
+    $self->render(text => 'Hello.');
   });
   $yada->post(sub {
     my $self = shift;
-    $self->render(text => 'Go away!');
+    $self->render(text => 'Go away.');
   });
 
 =head2 Shortcuts
@@ -567,9 +569,53 @@ You can also add your own shortcuts to make route generation more expressive.
 Shortcuts can lead to anything, routes, bridges or maybe even both.
 And watch out for quicksand!
 
+=head2 Introspection
+
+The C<routes> command can be used from the command line to list all available
+routes together with name and underlying regular expressions.
+
+  $ script/myapp routes -v
+  /foo/:name  GET   fooname  ^/foo/([^/\.]+))(?:\.([^/]+)$)?
+  /bar        POST  bar      ^/bar(?:\.([^/]+)$)?
+
 =head1 ADVANCED
 
 Less commonly used and more powerful features.
+
+=head2 IRIs
+
+IRIs are handled transparently, that means paths are guaranteed to be
+unescaped and decoded to Perl characters.
+
+  use utf8;
+
+  # /☃ (unicode snowman) -> {controller => 'foo', action => 'snowman'}
+  $r->route('/☃')->to(controller => 'foo', action => 'snowman');
+
+Just don't forget to use the L<utf8> pragma or you'll make the unicode
+snowman very sad.
+
+=head2 WebSockets
+
+You can restrict access to WebSocket handshakes using the C<websocket> method.
+
+  # /echo (WebSocket handshake)
+  $r->websocket('/echo')->to(controller => 'foo', action => 'echo');
+
+  # Controller
+  package MyApp::Foo;
+  use Mojo::Base 'Mojolicious::Controller';
+
+  # Action
+  sub echo {
+    my $self = shift;
+    $self->on(message => sub {
+      my ($self, $message) = @_;
+      $self->send_message("echo: $message");
+    });
+  }
+
+  1;
 
 =head2 Conditions
 
@@ -668,7 +714,7 @@ language in normal L<Mojolicious> controllers.
   get '/hello' => sub {
     my $self = shift;
     my $name = $self->param('name');
-    $self->render(text => "Hello $name!");
+    $self->render(text => "Hello $name.");
   };
 
   1;
@@ -690,7 +736,7 @@ containing a C<handler> method accepting L<Mojolicious::Controller> objects.
     my ($self, $c) = @_;
     $c->res->code(200);
     my $name = $c->param('name');
-    $c->res->body("Hello $name!");
+    $c->res->body("Hello $name.");
   }
 
   1;
@@ -749,51 +795,6 @@ Now just load the plugin and you're done.
   }
 
   1;
-
-=head2 WebSockets
-
-You can restrict access to WebSocket handshakes using the C<websocket> method.
-
-  # /ws (WebSocket handshake)
-  $r->websocket('/echo')->to(controller => 'foo', action => 'echo');
-
-  # Controller
-  package MyApp::Foo;
-  use Mojo::Base 'Mojolicious::Controller';
-
-  # Action
-  sub echo {
-    my $self = shift;
-    $self->on_message(sub {
-      my ($self, $message) = @_;
-      $self->send_message("echo: $message");
-    });
-  }
-
-  1;
-
-=head2 IRIs
-
-IRIs are handled transparently, that means paths are guaranteed to be
-unescaped and decoded to Perl characters.
-
-  use utf8;
-
-  # /☃ (unicode snowman) -> {controller => 'foo', action => 'snowman'}
-  $r->route('/☃')->to(controller => 'foo', action => 'snowman');
-
-Just don't forget to use the L<utf8> pragma or you'll make the unicode
-snowman very sad.
-
-=head2 Introspection
-
-The C<routes> command can be used from the command line to list all available
-routes together with name and underlying regular expressions.
-
-  $ script/myapp routes
-  /foo/:name        GET   fooname        (?-xism:^/foo/([^\/\.]+))
-  /baz/*everything  POST  bazeverything  (?-xism:^/baz/(.+))
-  /bar/(.test)      *     bartest        (?-xism:^/bar/([^\/]+))
 
 =head1 MORE
 

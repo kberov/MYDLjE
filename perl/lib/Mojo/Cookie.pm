@@ -10,19 +10,18 @@ use Mojo::Util 'unquote';
 
 has [qw/name path value version/];
 
-# Regex
 my $COOKIE_SEPARATOR_RE = qr/^\s*\,\s*/;
 my $NAME_RE             = qr/
   ^\s*
-  ([^\=\;\,]+)   # Relaxed Netscape token, allowing whitespace
+  (?<name>[^\=\;\,]+)   # Relaxed Netscape token, allowing whitespace
   \s*
-  \=?            # '=' (optional)
+  \=?                   # '=' (optional)
   \s*
 /x;
 my $SEPARATOR_RE = qr/^\s*\;\s*/;
 my $VALUE_RE     = qr/
   ^
-  (
+  (?<value>
     "(?:\\\\|\\"|[^"])+"   # Quoted
   |
     [^\;\,]+               # Unquoted
@@ -43,25 +42,22 @@ sub _tokenize {
   while ($string) {
 
     # Name
-    if ($string =~ s/$NAME_RE//o) {
-      my $name = $1;
+    if ($string =~ s/$NAME_RE//) {
+      my $name = $+{name};
 
       # "expires" is a special case, thank you Netscape...
       $string =~ s/^([^\;\,]+\,?[^\;\,]+)/"$1"/ if $name =~ /^expires$/i;
 
       # Value
       my $value;
-      if ($string =~ s/$VALUE_RE//o) {
-        $value = $1;
-        unquote $value;
-      }
+      $value = unquote $+{value} if $string =~ s/$VALUE_RE//;
 
       # Token
       push @token, [$name, $value];
 
       # Separator
-      $string =~ s/$SEPARATOR_RE//o;
-      if ($string =~ s/$COOKIE_SEPARATOR_RE//o) {
+      $string =~ s/$SEPARATOR_RE//;
+      if ($string =~ s/$COOKIE_SEPARATOR_RE//) {
         push @tree, [@token];
         @token = ();
       }

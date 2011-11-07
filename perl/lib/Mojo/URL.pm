@@ -19,26 +19,19 @@ our $PCHAR      = "$UNRESERVED$SUBDELIM\%\:\@";
 
 # "Homer, it's easy to criticize.
 #  Fun, too."
-sub new {
-  my $self = shift->SUPER::new();
-  $self->parse(@_);
-  return $self;
-}
+sub new { shift->SUPER::new()->parse(@_) }
 
 sub authority {
   my ($self, $authority) = @_;
 
   # New authority
   if (defined $authority) {
-    my $userinfo = '';
-    my $host     = $authority;
+    my $host = $authority;
 
     # Userinfo
     if ($authority =~ /^([^\@]+)\@(.+)$/) {
-      $userinfo = $1;
-      $host     = $2;
-      url_unescape $userinfo;
-      $self->userinfo($userinfo);
+      $self->userinfo(url_unescape $1);
+      $host = $2;
     }
 
     # Port
@@ -49,27 +42,33 @@ sub authority {
     }
 
     # Host
-    url_unescape $host;
+    $host = url_unescape $host;
     return $host =~ /[^\x00-\x7f]/
       ? $self->ihost($host)
       : $self->host($host);
   }
 
-  # *( unreserved / pct-encoded / sub-delims ), extended with "[" and "]"
-  # to support IPv6
-  my $host = $self->ihost;
-  my $port = $self->port;
-
-  # *( unreserved / pct-encoded / sub-delims / ":" )
-  my $userinfo = $self->userinfo;
-  url_escape $userinfo, "$UNRESERVED$SUBDELIM\:" if $userinfo;
-
   # Format
-  $authority .= "$userinfo\@" if $userinfo;
-  $authority .= lc($host || '');
+  my $userinfo = $self->userinfo;
+  $authority .= url_escape($userinfo, "$UNRESERVED$SUBDELIM\:") . '@'
+    if $userinfo;
+  $authority .= lc($self->ihost || '');
+  my $port = $self->port;
   $authority .= ":$port" if $port;
 
   return $authority;
+}
+
+sub canonicalize {
+  my $self = shift;
+
+  $self->path->canonicalize;
+  return $self unless my $port   = $self->port;
+  return $self unless my $scheme = $self->scheme;
+  $self->port(undef) if $port eq '80'  && $scheme ~~ [qw/http ws/];
+  $self->port(undef) if $port eq '443' && $scheme ~~ [qw/https wss/];
+
+  return $self;
 }
 
 sub clone {
@@ -95,10 +94,7 @@ sub ihost {
     # Decode parts
     my @decoded;
     for my $part (split /\./, $_[1]) {
-      if ($part =~ /^xn--(.+)$/) {
-        $part = $1;
-        punycode_decode $part;
-      }
+      $part = punycode_decode $1 if $part =~ /^xn--(.+)$/;
       push @decoded, $part;
     }
     $self->host(join '.', @decoded);
@@ -113,10 +109,7 @@ sub ihost {
   # Encode parts
   my @encoded;
   for my $part (split /\./, $host || '') {
-    if ($part =~ /[^\x00-\x7f]/) {
-      punycode_encode $part;
-      $part = "xn--$part";
-    }
+    $part = 'xn--' . punycode_encode $part if $part =~ /[^\x00-\x7f]/;
     push @encoded, $part;
   }
 
@@ -125,17 +118,15 @@ sub ihost {
 
 sub is_abs {
   my $self = shift;
-  return 1 if $self->scheme && $self->authority;
-  return;
+  return $self->scheme && $self->authority;
 }
 
 sub parse {
   my ($self, $url) = @_;
   return $self unless $url;
 
-  # Official regex
-  my ($scheme, $authority, $path, $query, $fragment) = $url
-    =~ m|(?:([^:/?#]+):)?(?://([^/?#]*))?([^?#]*)(?:\?([^#]*))?(?:#(.*))?|;
+  my ($scheme, $authority, $path, $query, $fragment) =
+    $url =~ m|(?:([^:/?#]+)://([^/?#]*))?([^?#]*)(?:\?([^#]*))?(?:#(.*))?|;
   $self->scheme($scheme);
   $self->authority($authority);
   $self->path->parse($path);
@@ -153,7 +144,7 @@ sub path {
     if (!ref $path) {
 
       # Absolute path
-      if ($path =~ /^\//) { $path = Mojo::Path->new($path) }
+      if ($path =~ m#^/#) { $path = Mojo::Path->new($path) }
 
       # Relative path
       else {
@@ -235,7 +226,6 @@ sub to_abs {
   }
 
   # Absolute path
-  $new->canonicalize;
   $new->leading_slash(1);
   $new->trailing_slash($old->trailing_slash);
   $abs->path($new);
@@ -298,8 +288,7 @@ sub to_string {
 
   # Fragment
   if (my $fragment = $self->fragment) {
-    url_escape $fragment, "$PCHAR\/\?";
-    $url .= "#$fragment";
+    $url .= '#' . url_escape $fragment, "$PCHAR\/\?";
   }
 
   return $url;
@@ -307,6 +296,8 @@ sub to_string {
 
 1;
 __END__
+
+=encoding utf8
 
 =head1 NAME
 
@@ -410,6 +401,16 @@ following new ones.
 
 Construct a new L<Mojo::URL> object.
 
+=head2 C<canonicalize>
+
+  $url = $url->canonicalize;
+
+Canonicalize URL.
+Note that this method is EXPERIMENTAL and might change without warning!
+
+  # "http://mojolicio.us/foo/baz"
+  say Mojo::URL->new('http://mojolicio.us:80/foo/bar/../baz')->canonicalize;
+
 =head2 C<clone>
 
   my $url2 = $url->clone;
@@ -422,6 +423,9 @@ Clone this URL.
   $url      = $url->ihost('xn--bcher-kva.ch');
 
 Host part of this URL in punycode format.
+
+  # "xn--da5b0n.net"
+  say Mojo::URL->new('http://☃.net')->ihost;
 
 =head2 C<is_abs>
 
@@ -445,6 +449,12 @@ Parse URL.
 Path part of this URL, relative paths will be appended to the existing path,
 defaults to a L<Mojo::Path> object.
 
+  # "http://mojolicio.us/Mojo/DOM"
+  say Mojo::URL->new('http://mojolicio.us/perldoc')->path('/Mojo/DOM');
+
+  # "http://mojolicio.us/perldoc/Mojo/DOM"
+  say Mojo::URL->new('http://mojolicio.us/perldoc')->path('Mojo/DOM');
+
 =head2 C<query>
 
   my $query = $url->query;
@@ -455,19 +465,31 @@ defaults to a L<Mojo::Path> object.
 
 Query part of this URL, defaults to a L<Mojo::Parameters> object.
 
+  # "2"
+  say Mojo::URL->new('http://mojolicio.us?a=1&b=2')->query->param('b');
+
+  # "http://mojolicio.us?a=2&c=3"
+  say Mojo::URL->new('http://mojolicio.us?a=1&b=2')->query(a => 2, c => 3);
+
+  # "http://mojolicio.us?a=2&b=2&c=3"
+  say Mojo::URL->new('http://mojolicio.us?a=1&b=2')->query([a => 2, c => 3]);
+
+  # "http://mojolicio.us?a=1&b=2&a=2&c=3"
+  say Mojo::URL->new('http://mojolicio.us?a=1&b=2')->query({a => 2, c => 3});
+
 =head2 C<to_abs>
 
   my $abs = $url->to_abs;
   my $abs = $url->to_abs(Mojo::URL->new('http://kraih.com/foo'));
 
-Turn relative URL into an absolute one.
+Clone relative URL and turn it into an absolute one.
 
 =head2 C<to_rel>
 
   my $rel = $url->to_rel;
   my $rel = $url->to_rel(Mojo::URL->new('http://kraih.com/foo'));
 
-Turn absolute URL into a relative one.
+Clone absolute URL and turn it into a relative one.
 
 =head2 C<to_string>
 

@@ -15,12 +15,8 @@ sub new {
   $self->{method} = lc shift;
 
   # Path
-  my $path = shift;
-  url_unescape $path;
-  my $backup = $path;
-  decode 'UTF-8', $path;
-  $path //= $backup;
-  $self->{path} = $path;
+  my $path = url_unescape shift;
+  $self->{path} = decode('UTF-8', $path) // $path;
 
   # WebSocket
   $self->{websocket} = shift;
@@ -38,7 +34,7 @@ sub match {
   my $dictionary = $self->{dictionary} ||= $r->dictionary;
   my $path       = $self->{path};
   my $pattern    = $r->pattern;
-  my $captures   = $pattern->shape_match(\$path);
+  my $captures   = $pattern->shape_match(\$path, $r->is_endpoint);
   return unless $captures;
   $self->{path} = $path;
   $captures = {%{$self->captures}, %$captures};

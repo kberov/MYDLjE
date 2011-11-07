@@ -4,43 +4,42 @@ use Mojo::Base -base;
 use Mojo::Util qw/decode encode html_unescape xml_escape/;
 use Scalar::Util 'weaken';
 
-# Regex
 my $ATTR_RE = qr/
   \s*
-  ([^=\s>]+)       # Key
+  (?<key>[^=\s>]+)              # Key
   (?:
     \s*
     =
     \s*
     (?:
-      "([^"]*?)"   # Quotation marks
+      "(?<quoted>[^"]*?)"       # Quotation marks
       |
-      '([^']*?)'   # Apostrophes
+      '(?<quoted_too>[^']*?)'   # Apostrophes
       |
-      ([^>\s]+)    # Unquoted
+      (?<unquoted>[^>\s]+)      # Unquoted
     )
   )?
   \s*
 /x;
-my $END_RE   = qr/^\s*\/\s*(.+)\s*/;
-my $START_RE = qr/([^\s\/]+)([\s\S]*)/;
+my $END_RE   = qr#^\s*/\s*(?<tag>.+)\s*#;
+my $START_RE = qr#(?<tag>[^\s/]+)(?<attrs>[\s\S]*)#;
 my $TOKEN_RE = qr/
-  ([^<]*)                                           # Text
+  (?<text>[^<]*)                                    # Text
   (?:
-    <\?(.*?)\?>                                     # Processing Instruction
+    <\?(?<pi>.*?)\?>                                # Processing Instruction
     |
-    <\!--(.*?)-->                                   # Comment
+    <\!--(?<comment>.*?)-->                         # Comment
     |
-    <\!\[CDATA\[(.*?)\]\]>                          # CDATA
+    <\!\[CDATA\[(?<cdata>.*?)\]\]>                  # CDATA
     |
-    <!DOCTYPE(
+    <!DOCTYPE(?<doctype>
       \s+\w+
       (?:(?:\s+\w+)?(?:\s+(?:"[^"]*"|'[^']*'))+)?   # External ID
       (?:\s+\[.+?\])?                               # Int Subset
       \s*
     )>
     |
-    <(
+    <(?<tag>
       \s*
       [^>\s]+                                       # Tag
       (?:$ATTR_RE)*                                 # Attributes
@@ -96,22 +95,18 @@ sub parse {
 
   # Decode
   my $charset = $self->charset;
-  decode $charset, $html if $charset;
+  $html = decode $charset, $html if $charset;
 
   # Tokenize
   my $tree    = ['root'];
   my $current = $tree;
   while ($html =~ m/\G$TOKEN_RE/gcs) {
-    my $text    = $1;
-    my $pi      = $2;
-    my $comment = $3;
-    my $cdata   = $4;
-    my $doctype = $5;
-    my $tag     = $6;
+    my ($text, $pi, $comment, $cdata, $doctype, $tag) =
+      (@+{qw/text pi comment cdata doctype tag/});
 
     # Text
     if (length $text) {
-      html_unescape $text if (index $text, '&') >= 0;
+      $text = html_unescape $text if (index $text, '&') >= 0;
       $self->_text($text, \$current);
     }
 
@@ -132,26 +127,25 @@ sub parse {
     # End
     next unless $tag;
     my $cs = $self->xml;
-    if ($tag =~ /$END_RE/) {
-      if (my $end = $cs ? $1 : lc($1)) { $self->_end($end, \$current) }
+    if ($tag =~ $END_RE) {
+      $self->_end($cs ? $+{tag} : lc($+{tag}), \$current);
     }
 
     # Start
-    elsif ($tag =~ /$START_RE/) {
-      my $start = $cs ? $1 : lc($1);
-      my $attr = $2;
+    elsif ($tag =~ $START_RE) {
+      my ($start, $attr) = ($cs ? $+{tag} : lc($+{tag}), $+{attrs});
 
       # Attributes
       my $attrs = {};
       while ($attr =~ /$ATTR_RE/g) {
-        my $key = $cs ? $1 : lc($1);
-        my $value = $2 // $3 // $4;
+        my $key = $cs ? $+{key} : lc($+{key});
+        my $value = $+{quoted} // $+{quoted_too} // $+{unquoted};
 
         # Empty tag
         next if $key eq '/';
 
         # Add unescaped value
-        html_unescape $value if $value && (index $value, '&') >= 0;
+        $value = html_unescape $value if $value && (index $value, '&') >= 0;
         $attrs->{$key} = $value;
       }
 
@@ -160,11 +154,11 @@ sub parse {
 
       # Empty element
       $self->_end($start, \$current)
-        if (!$self->xml && $VOID{$start}) || $attr =~ /\/\s*$/;
+        if (!$self->xml && $VOID{$start}) || $attr =~ m#/\s*$#;
 
       # Relaxed "script" or "style"
       if ($start ~~ [qw/script style/]) {
-        if ($html =~ /\G(.*?)<\s*\/\s*$start\s*>/gcsi) {
+        if ($html =~ m#\G(.*?)<\s*/\s*$start\s*>#gcsi) {
           $self->_raw($1, \$current);
           $self->_end($start, \$current);
         }
@@ -180,8 +174,7 @@ sub render {
   my $self    = shift;
   my $content = $self->_render($self->tree);
   my $charset = $self->charset;
-  encode $charset, $content if $charset;
-  return $content;
+  return $charset ? encode($charset, $content) : $content;
 }
 
 # "Woah! God is so in your face!
@@ -283,11 +276,7 @@ sub _render {
 
   # Text (escaped)
   my $e = $tree->[0];
-  if ($e eq 'text') {
-    my $escaped = $tree->[1];
-    xml_escape $escaped;
-    return $escaped;
-  }
+  return xml_escape $tree->[1] if $e eq 'text';
 
   # Raw text
   return $tree->[1] if $e eq 'raw';
@@ -327,8 +316,7 @@ sub _render {
       push @attrs, $key and next unless defined $value;
 
       # Key and value
-      xml_escape $value;
-      push @attrs, qq/$key="$value"/;
+      push @attrs, qq/$key="/ . xml_escape($value) . '"';
     }
     my $attrs = join ' ', @attrs;
     $content .= " $attrs" if $attrs;

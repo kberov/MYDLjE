@@ -1,37 +1,40 @@
 package Mojo::DOM::CSS;
 use Mojo::Base -base;
 
-use List::Util 'first';
-
-# Regex
 my $ESCAPE_RE = qr/\\[^0-9a-fA-F]|\\[0-9a-fA-F]{1,6}/;
 my $ATTR_RE   = qr/
   \[
-  ((?:$ESCAPE_RE|\w)+)            # Key
+  (?<key>(?:$ESCAPE_RE|\w)+)                            # Key
   (?:
-    (\W)?                         # Operator
+    (?<op>\W)?                                          # Operator
     =
-    (?:"((?:\\"|[^"])+)"|(\S+))   # Value
+    (?:"(?<escaped>(?:\\"|[^"])+)"|(?<unescaped>\S+))   # Value
   )?
   \]
 /x;
 my $CLASS_ID_RE = qr/
   (?:
-    (?:\.((?:\\\.|[^\#\.])+))   # Class
+    (?:\.(?<class>(?:\\\.|[^\#\.])+))   # Class
   |
-    (?:\#((?:\\\#|[^\.\#])+))   # ID
+    (?:\#(?<id>(?:\\\#|[^\.\#])+))      # ID
   )
 /x;
-my $ELEMENT_RE      = qr/^((?:\\\.|\\\#|[^\.\#])+)/;
-my $PSEUDO_CLASS_RE = qr/(?:\:([\w\-]+)(?:\(((?:\([^\)]+\)|[^\)])+)\))?)/;
-my $TOKEN_RE        = qr/
-  (\s*,\s*)?                            # Separator
-  ((?:[^\[\\\:\s\,]|$ESCAPE_RE\s?)+)?   # Element
-  ($PSEUDO_CLASS_RE*)?                  # Pseudoclass
-  ((?:$ATTR_RE)*)?                      # Attributes
+my $ELEMENT_RE      = qr/^(?<element>(?:\\\.|\\\#|[^\.\#])+)/;
+my $PSEUDO_CLASS_RE = qr/
+  (?:\:
+  (?<class>[\w\-]+)                     # Class
+  (?:\(
+    (?<args>(?:\([^\)]+\)|[^\)])+)\))?  # Arguments
+  )
+/x;
+my $TOKEN_RE = qr/
+  (?<separator>\s*,\s*)?                          # Separator
+  (?<element>(?:[^\[\\\:\s\,]|$ESCAPE_RE\s?)+)?   # Element
+  (?<pc>$PSEUDO_CLASS_RE*)?                       # Pseudoclass
+  (?<attrs>(?:$ATTR_RE)*)?                        # Attributes
   (?:
-  \s*
-  ([\>\+\~])                            # Combinator
+    \s*
+    (?<combinator>[\>\+\~])                       # Combinator
   )?
 /x;
 
@@ -67,9 +70,8 @@ sub select {
 
       # Parts
       for my $part (@$pattern) {
-        my $result = $self->_element($current, $part, $tree);
-        push(@results, $result) and last
-          if $result && !first { $_ eq $result } @results;
+        push(@results, $current) and last
+          if $self->_element($current, $part, $tree);
       }
     }
   }
@@ -83,15 +85,11 @@ sub _compile {
   # Tokenize
   my $pattern = [[]];
   while ($css =~ /$TOKEN_RE/g) {
-    my $separator  = $1;
-    my $element    = $2 // '';
-    my $pc         = $3;
-    my $attributes = $6;
-    my $combinator = $11;
+    my ($separator, $element, $pc, $attrs, $combinator) =
+      ($+{separator}, $+{element} // '', $+{pc}, $+{attrs}, $+{combinator});
 
     # Trash
-    next
-      unless $separator || $element || $pc || $attributes || $combinator;
+    next unless $separator || $element || $pc || $attrs || $combinator;
 
     # New selector
     push @$pattern, [] if $separator;
@@ -102,46 +100,42 @@ sub _compile {
     my $selector = $part->[-1];
 
     # Element
-    my $tag = '';
-    $element =~ s/$ELEMENT_RE// and $tag = $self->_unescape($1);
-
-    # Subject
-    $selector->[0] = 'subject' if $tag =~ s/^\$//;
+    my $tag = '*';
+    $element =~ s/$ELEMENT_RE// and $tag = $self->_unescape($+{element});
 
     # Tag
-    $tag = '*' unless $tag;
     push @$selector, ['tag', $tag];
 
     # Class or ID
     while ($element =~ /$CLASS_ID_RE/g) {
 
       # Class
-      push @$selector, ['attribute', 'class', $self->_regex('~', $1)]
-        if defined $1;
+      push @$selector, ['attribute', 'class', $self->_regex('~', $+{class})]
+        if defined $+{class};
 
       # ID
-      push @$selector, ['attribute', 'id', $self->_regex('', $2)]
-        if defined $2;
+      push @$selector, ['attribute', 'id', $self->_regex('', $+{id})]
+        if defined $+{id};
     }
 
     # Pseudo classes
     while ($pc =~ /$PSEUDO_CLASS_RE/g) {
 
       # "not"
-      if ($1 eq 'not') {
-        my $subpattern = $self->_compile($2)->[-1]->[-1];
+      if ($+{class} eq 'not') {
+        my $subpattern = $self->_compile($+{args})->[-1]->[-1];
         push @$selector, ['pseudoclass', 'not', $subpattern];
       }
 
       # Everything else
-      else { push @$selector, ['pseudoclass', $1, $2] }
+      else { push @$selector, ['pseudoclass', $+{class}, $+{args}] }
     }
 
     # Attributes
-    while ($attributes =~ /$ATTR_RE/g) {
-      my $key   = $self->_unescape($1);
-      my $op    = $2 // '';
-      my $value = $3 // $4;
+    while ($attrs =~ /$ATTR_RE/g) {
+      my $key   = $self->_unescape($+{key});
+      my $op    = $+{op} // '';
+      my $value = $+{escaped} // $+{unescaped};
 
       push @$selector, ['attribute', $key, $self->_regex($op, $value)];
     }
@@ -160,7 +154,7 @@ sub _element {
   my @selectors  = reverse @$selectors;
   my $first      = 2;
   my $parentonly = 0;
-  my ($current, $marker, $snapback, $siblings);
+  my ($current, $marker, $previous, $siblings);
   for (my $i = 0; $i <= $#selectors; $i++) {
     my $selector = $selectors[$i];
 
@@ -176,7 +170,7 @@ sub _element {
         # Can't go back to the first
         unless ($first) {
           $marker   //= $i;
-          $snapback //= $current;
+          $previous //= $current;
         }
       }
 
@@ -208,14 +202,7 @@ sub _element {
       $first-- if $first > 0;
 
       # Next sibling
-      if ($siblings) {
-
-        # Last sibling
-        unless ($current = shift @$siblings) {
-          $siblings = undef;
-          return;
-        }
-      }
+      if ($siblings) { return unless $current = shift @$siblings }
 
       # Next parent
       else {
@@ -228,9 +215,6 @@ sub _element {
 
       # Not a tag
       return if $current->[0] ne 'tag';
-
-      # Subject
-      $candidate = $current if $selector->[0] eq 'subject';
 
       # Compare part to element
       if ($self->_selector($selector, $current)) {
@@ -248,16 +232,15 @@ sub _element {
         return unless defined $marker;
 
         # Reset
-        $i        = $marker - 2;
-        $current  = $snapback;
-        $snapback = undef;
-        $marker   = undef;
+        $i       = $marker - 2;
+        $current = $previous;
+        ($marker, $previous) = undef;
         last;
       }
     }
   }
 
-  return $candidate;
+  return 1;
 }
 
 # "Rock stars... is there anything they don't know?"
@@ -338,8 +321,9 @@ sub _selector {
       my $found = 0;
       for my $name (keys %$attrs) {
         if ($name =~ /\:?$key$/) {
-          next unless defined(my $value = $attrs->{$name});
-          ++$found and last if !$regex || $value =~ $regex;
+          next unless exists $attrs->{$name};
+          ++$found and last unless defined $attrs->{$name};
+          ++$found and last if !$regex || $attrs->{$name} =~ $regex;
         }
       }
       next if $found;
@@ -365,8 +349,7 @@ sub _selector {
       # ":checked"
       if ($class eq 'checked') {
         my $attrs = $current->[2];
-        next if ($attrs->{checked}  || '') eq 'checked';
-        next if ($attrs->{selected} || '') eq 'selected';
+        next if exists $attrs->{checked} || exists $attrs->{selected};
       }
 
       # ":empty"
@@ -380,9 +363,7 @@ sub _selector {
       }
 
       # "not"
-      elsif ($class eq 'not') {
-        next unless $self->_selector($args, $current);
-      }
+      elsif ($class eq 'not') { next if !$self->_selector($args, $current) }
 
       # "nth-*"
       elsif ($class =~ /^nth-/) {
@@ -680,19 +661,6 @@ Elements of type C<E>, C<F> and C<G>.
 An C<E> element whose attributes match all following attribute selectors.
 
   my $links = $css->select('a[foo^="b"][foo$="ar"]');
-
-=head2 C<E $F G>
-
-An C<F> element descendant of an C<E> element and ancestor of a C<G> element.
-
-  my $wrappers = $css->select('$div.wrapper > :checked');
-
-By default, the subjects of a selector are the elements represented by the
-last compound selector.
-In CSS4 however the subject can be explicitly identified by prepending a
-dollar sign to one of the compound selectors.
-Note that the CSS4 spec is still a work in progress, so this selector might
-change without warning!
 
 =head1 ATTRIBUTES
 

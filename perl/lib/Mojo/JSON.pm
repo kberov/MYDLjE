@@ -10,7 +10,6 @@ has 'error';
 our $FALSE = Mojo::JSON::_Bool->new(0);
 our $TRUE  = Mojo::JSON::_Bool->new(1);
 
-# Regex
 my $BOM_RE = qr/
   (?:
   \357\273\277   # UTF-8
@@ -62,7 +61,7 @@ sub decode {
   $self->error('Missing or empty input.') and return unless $string;
 
   # Remove BOM
-  $string =~ s/^$BOM_RE//go;
+  $string =~ s/^$BOM_RE//g;
 
   # Wide characters
   $self->error('Wide character in input.') and return
@@ -76,14 +75,14 @@ sub decode {
       last;
     }
   }
-  Mojo::Util::decode $encoding, $string;
+  $string = Mojo::Util::decode $encoding, $string;
 
   # Object or array
   my $res = eval {
     local $_ = $string;
 
     # Leading whitespace
-    m/\G$WHITESPACE_RE/xogc;
+    m/\G$WHITESPACE_RE/xgc;
 
     # Array
     my $ref;
@@ -96,7 +95,7 @@ sub decode {
     else { _exception('Expected array or object') }
 
     # Leftover data
-    unless (m/\G$WHITESPACE_RE\z/xogc) {
+    unless (m/\G$WHITESPACE_RE\z/xgc) {
       my $got = ref $ref eq 'ARRAY' ? 'array' : 'object';
       _exception("Unexpected data after $got");
     }
@@ -115,9 +114,7 @@ sub decode {
 
 sub encode {
   my ($self, $ref) = @_;
-  my $string = _encode_values($ref);
-  Mojo::Util::encode 'UTF-8', $string;
-  return $string;
+  return Mojo::Util::encode 'UTF-8', _encode_values($ref);
 }
 
 sub false {$FALSE}
@@ -125,16 +122,16 @@ sub true  {$TRUE}
 
 sub _decode_array {
   my @array;
-  until (m/\G$WHITESPACE_RE\]/xogc) {
+  until (m/\G$WHITESPACE_RE\]/xgc) {
 
     # Value
     push @array, _decode_value();
 
     # Separator
-    redo if m/\G$WHITESPACE_RE,/xogc;
+    redo if m/\G$WHITESPACE_RE,/xgc;
 
     # End
-    last if m/\G$WHITESPACE_RE\]/xogc;
+    last if m/\G$WHITESPACE_RE\]/xgc;
 
     # Invalid character
     _exception('Expected comma or right square bracket while parsing array');
@@ -145,27 +142,27 @@ sub _decode_array {
 
 sub _decode_object {
   my %hash;
-  until (m/\G$WHITESPACE_RE\}/xogc) {
+  until (m/\G$WHITESPACE_RE\}/xgc) {
 
     # Quote
-    m/\G$WHITESPACE_RE"/xogc
+    m/\G$WHITESPACE_RE"/xgc
       or _exception("Expected string while parsing object");
 
     # Key
     my $key = _decode_string();
 
     # Colon
-    m/\G$WHITESPACE_RE:/xogc
+    m/\G$WHITESPACE_RE:/xgc
       or _exception('Expected colon while parsing object');
 
     # Value
     $hash{$key} = _decode_value();
 
     # Separator
-    redo if m/\G$WHITESPACE_RE,/xogc;
+    redo if m/\G$WHITESPACE_RE,/xgc;
 
     # End
-    last if m/\G$WHITESPACE_RE\}/xogc;
+    last if m/\G$WHITESPACE_RE\}/xgc;
 
     # Invalid character
     _exception(q/Expected comma or right curly bracket while parsing object/);
@@ -178,7 +175,7 @@ sub _decode_string {
   my $pos = pos;
 
   # Extract string with escaped characters
-  m/\G(((?:[^\x00-\x1F\\"]|\\(?:["\\\/bfnrt]|u[A-Fa-f0-9]{4})){0,32766})*)/gc;
+  m#\G(((?:[^\x00-\x1F\\"]|\\(?:["\\/bfnrt]|u[A-Fa-f0-9]{4})){0,32766})*)#gc;
   my $str = $1;
 
   # Missing quote
@@ -190,7 +187,7 @@ sub _decode_string {
 
   # Unescape popular characters
   if (index($str, '\\u') < 0) {
-    $str =~ s/\\(["\\\/bfnrt])/$ESCAPE{$1}/gs;
+    $str =~ s|\\(["\\/bfnrt])|$ESCAPE{$1}|gs;
     return $str;
   }
 
@@ -239,7 +236,7 @@ sub _decode_string {
 sub _decode_value {
 
   # Leading whitespace
-  m/\G$WHITESPACE_RE/xogc;
+  m/\G$WHITESPACE_RE/xgc;
 
   # String
   return _decode_string() if m/\G"/gc;
@@ -302,7 +299,7 @@ sub _encode_string {
 
   # Escape string
   $string
-    =~ s/([\x00-\x1F\x7F\x{2028}\x{2029}\\\"\/\b\f\n\r\t])/$REVERSE{$1}/gs;
+    =~ s|([\x00-\x1F\x7F\x{2028}\x{2029}\\"/\b\f\n\r\t])|$REVERSE{$1}|gs;
 
   # Stringify
   return "\"$string\"";
@@ -342,7 +339,7 @@ sub _encode_values {
 sub _exception {
 
   # Leading whitespace
-  m/\G$WHITESPACE_RE/xogc;
+  m/\G$WHITESPACE_RE/xgc;
 
   # Context
   my $context = 'Malformed JSON: ' . shift;

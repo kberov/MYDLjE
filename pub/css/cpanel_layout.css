@@ -167,19 +167,23 @@ ul.items {
 ul.items a {display: inline-block;}
 
 ul.items li.page, ul.items li.domain, ul.items li.article,
-ul.items li.brick,.ui-menu-item {                                                  
+ul.items li.user,
+ul.items li.brick, .ui-menu-item {                                                  
   list-style-type: none;
   margin: 0;
   padding-right: 0.5ex;
   border-top: none;
 }
-ul.items li.page:first-child, ul.items li.domain:first-child {
+ul.items li.page:first-child, 
+ul.items li.domain:first-child,
+ul.items li.user:first-child {
 border-top: 1px solid ;
 }
 #main-working-area ul.items li.ui-state-disabled {
 border-width: inherit;
 }
-
+ul.items li div.login_name,
+ul.items li div.email {width: 30ex;}
 ul.items li div.buttons {
   text-align: right;
 }

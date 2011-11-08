@@ -1,5 +1,77 @@
 [% WRAPPER ${TEMPLATE_WRAPPER} %]
 <!-- start [% action %] -->
-[% template.name %]
+<div id="[% action %]-area" class="container ui-corner-all ui-widget-content">
+<form id="[% action %]_form" class="tree_form">
+<fieldset class="ui-widget-content ui-corner-all">
+        <legend class="ui-widget-header ui-corner-all">[% c.l('Users') %]
+            <span  class="legend_icon"><a href="[% c.url_for('/site/edit_user')%]"
+           title="[% c.l('New [_1]', c.l('User') ) %]"
+           id="new_user_button"
+           class="new domain">
+             <span class="ui-icon" 
+             style="background-image: url(pub/css/icons/user_add.png) ">
+             </span></a></span>
+        </legend>
+<ul class="items">
+[% FOREACH u IN users;
+    IF (u.disabled > 0 ||(u.start>now || (u.stop>0 && u.stop < now)));
+        state = 'ui-state-disabled' ;
+    ELSE
+        state = 'ui-state-default';
+    END;
+%]
+<li class="user [%+ state %]">
+        <div class="columns">
+            <div class="fixed column login_name">
+                <div class="container" 
+                title="[% u.description %]">[% u.login_name +%]
+                ([% u.first_name _ ' '_ u.last_name %])
+                </div>
+            </div>
+            <div class="fixed column email">
+                <div class="container" 
+                title="[% c.l('email') %]">[% u.email +%]
+                </div>
+            </div>
+            <div class="elastic column">
+                <div class="container buttons">
+           <span  class="legend_icon"><a 
+           href="[% c.url_for('/accounts/edit_user/' _ u.id )%]"
+           title="[% c.l('Edit [_1]', c.l('User') ) %]"
+           id="edit_user_button"
+           class="edit_user">
+             <span class="ui-icon" 
+             style="background-image: url(pub/css/icons/user_edit.png) "></span></a></span>
+             
+           <span  class="legend_icon"><a 
+           href="[% c.url_for('/accounts/disable_user/' _ u.id )%]"
+           title="[% c.l('Disable [_1]', u.login_name ) %]"
+           id="disable_user_button_[%d.id%]"
+           class="disable_user">
+             <span class="ui-icon" 
+             style="background-image: url(pub/css/icons/user_delete.png) "></span>
+             <div class="modal_message" style="display:none;">
+                <p class="ui-button-text">
+                    [% c.l('disable_user_confirm_message', u.login_name ) %]
+                </p>
+             </div>
+             </a>
+           </span>
+             </div><!-- end class="container buttons" -->
+            </div>
+        </div>
+    </li>
+[% END %]
+</ul>
+</fieldset>
+</form>
+</div><!-- end div id="[% action %]-area" -->
+<script  type="text/javascript">//<![CDATA[
+$(document).ready(function() {
+  enhance_delete_buttons('disable_user');
+});
+
+//]]>
+</script>
 <!-- end [%+ action +%] -->
 [% END %]

@@ -29,9 +29,9 @@ PROCESS 'site/page_options.tt';
   [%+ 
   +%]
   <div class="unit" style="[% save_error ?'':'display:none;'%]">
-  <div class="container ui-state-error ui-corner-all ">
-  [% save_error %]
-  </div>
+    <div class="container ui-state-error ui-corner-all ">
+      [% save_error %]
+    </div>
   </div>
 <div class="unit on-2 columns">
   <div class="column">

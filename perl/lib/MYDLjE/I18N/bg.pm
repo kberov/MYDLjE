@@ -19,6 +19,9 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
     'Моля въведете Вашата парола. Тя е защитена дори ако не ползвате HTTPS протокола!',
   login_field_error =>
     'Моля въведете валидна стойност за полето "[_1]"!',
+  first_name => 'Име',
+  last_name  => 'Фамилия',
+  email      => 'Е-поща',
   session_id_error =>
     'Невалидна сесия. Моля опитайте отново!',
 
@@ -38,8 +41,8 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   list_notes          => 'Списък с бележки',
   list_books          => 'Списък с книги',
   list_list           => 'Списък с всякакво съдържание',
-  'New [_1]'          => 'Ново съдържание ([_1])',
-  'Edit [_1]'         => 'Редакция на съдържание ([_1])',
+  'New [_1]'          => 'Нов запис ([_1])',
+  'Edit [_1]'         => 'Редакция на ([_1])',
   page                => 'Страница',
   book                => 'Книга',
   article             => 'Статия',
@@ -54,6 +57,7 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   Merchants           => 'Търговци',
   Products            => 'Продукти',
   'Rules and Coupons' => 'Правила и Купони',
+  user                => 'Потребител',
 
   #MYDLjE::M::Content fields
   title => 'Заглавие/Име',
@@ -71,7 +75,7 @@ AA
   tags        => 'Етикети',
   featured    => 'Препоръчано',
   sorting     => 'Подредба',
-  data_type   => 'Семантичен Тип',
+  data_type   => 'Тип',
   data_format => 'Формат',
   data_format_help =>
 
@@ -249,7 +253,17 @@ AA
     'Всяка страница в MYDLjE се състои от "Кутии". '
     . 'Въведете името на кутията, в която искате да се показва този елемент. '
     . 'По подразбиране всички елементи съдържание се поставят в кутията "MAIN_AREA".'
-    . ' Кутиите са дефинирани в "layouts/${DOMAIN.id}/pre_process.tt".'
+    . ' Кутиите са дефинирани в "layouts/${DOMAIN.id}/pre_process.tt".',
+  user_description_help =>
+    'Няколко думи за потребителя от самия него - до 255 символа.',
+  created_by => 'Създаден от',
+  created_by_help =>
+    'Кой е създал потебителя? Ако това е "гост", то този потребител се е регистрирал през сайта.',
+  changed_by      => 'Променен от',
+  changed_by_help => 'Кой за последно е променял записа?,',
+  tstamp          => 'Последна промяна',
+  reg_tstamp      => 'Регистрация',
+  disabled        => 'Заключен',
 
 );
 

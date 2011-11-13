@@ -32,7 +32,7 @@ float:left;
   width:500px;
   margin:5em auto;
 }
-#edit_domain_form {
+#edit_domain_form,#edit_user_form {
   width: 80%;
   margin:1em auto;
 }

@@ -1,0 +1,100 @@
+[% WRAPPER ${TEMPLATE_WRAPPER} %]
+<!-- start [% action %] -->
+[% 
+IF id;
+  legend = c.l('Edit [_1]', c.l('user') );
+  form_action = c.url_for('/site/edit_user/' _ id );
+ELSE;
+  legend = c.l('New [_1]', c.l('user') );
+  form_action = c.url_for('/site/edit_user');
+END;
+
+%]
+
+<div id="[% action %]-area" class="container ui-corner-all ui-widget-content">
+<form id="[% action %]_form" 
+    action="[% form_action %]"
+    method="POST">
+<fieldset class="ui-widget-content ui-corner-all">
+  <legend class="ui-widget-header ui-corner-all">
+  [% legend %]<span class="legend_icon"><span class="ui-icon" 
+  style="background-image: url(pub/css/icons/user_[%id?'edit':'add'%].png) "></span>
+  </span></legend>
+  [%#
+  id group_id login_name login_password
+first_name last_name email description created_by changed_by tstamp reg_tstamp
+disabled start stop properties
+%]
+  [%+ 
+  +%]
+  <div class="unit" style="[% save_error ?'':'display:none;'%]">
+    <div class="container ui-state-error ui-corner-all ">
+      [% save_error %]
+    </div>
+  </div>
+<div class="unit on-2 columns">
+  <div class="column">
+      [% text_field('login_name') %]
+    </div>
+    <div class="column">
+      [% text_field_readonly('primary_group', {label=>c.l('group').ucfirst}); %]
+    </div>
+</div>
+<div class="unit on-2 columns">
+  <div class="column">
+      [% text_field('first_name') %]
+  </div>
+  <div class="column">
+    [% text_field('last_name'); %]
+  </div>
+</div>
+<div class="unit on-2 columns">
+  <div class="column">
+      [%  text_field('email'); %]
+  </div>
+  <div class="column">
+      [% textarea('description',{help => 'user_description_help'}) %] 
+  </div>
+</div>
+<div class="unit on-2 columns">
+  <div class="column">
+      [% text_field_readonly('created_by_username', {
+        label=>c.l('created_by').ucfirst
+        }) %]
+  </div>
+  <div class="column">
+    [% text_field_readonly('changed_by_username', {
+      label=>c.l('changed_by').ucfirst, 
+      }); %]
+  </div>
+</div>
+<div class="unit on-2 columns">
+  <div class="column">
+      [% text_field_readonly('tstamp_formated', {
+        label =>c.l('tstamp').ucfirst
+        }) %]
+  </div>
+  <div class="column">
+    [% text_field_readonly('reg_tstamp_formated',{
+      label =>c.l('reg_tstamp').ucfirst
+      }) %]
+  </div>
+<div class="unit on-2 columns">
+  <div class="column">
+      [% text_datepicker_field('start') %]
+  </div>
+  <div class="column">
+    [% text_datepicker_field('stop'); %]
+  </div>
+</div>    
+<div class="unit on-1 columns">
+  <div class="column">
+      [% checkbox_field('disabled')%]
+  </div>
+</div>    
+  [% button_set() %]
+</fieldset>
+</form>
+</div><!-- end div id="[% action %]-area" -->
+<!-- end [%+ action +%] -->
+[% END %]

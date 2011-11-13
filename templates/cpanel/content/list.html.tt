@@ -31,13 +31,21 @@
             <div class="elastic column">
               <div class="on-3 columns">
                 <div class="elastic column">
-                  [% select_field('page.domain_id', {label => c.l('Domains'), 
-       options => domains_options, help =>'domain_help',selected=>c.msession('domain_id')} ); %]
+                  [% select_field('page.domain_id', {
+                    label => c.l('Domains'), 
+                    options => domains_options, 
+                    help =>'domain_help',
+                    selected=>c.msession('domain_id')
+                    }); %]
                 </div>
 
                 <div class="elastic column">
-                  [% select_field('page_id', {label => c.l('Pages'), 
-       options => page_id_options, help =>'page_type_help',selected=>c.msession('page_id')} ); %]
+                  [% select_field('page_id', {
+                    label => c.l('Pages'), 
+                    options => page_id_options,
+                    help =>'page_type_help',
+                    selected=>c.msession('page_id')
+                    }); %]
                 </div>
 
                 <div class="elastic column">

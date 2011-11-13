@@ -1,6 +1,8 @@
 package MYDLjE::ControlPanel::C::Accounts;
 use Mojo::Base 'MYDLjE::ControlPanel::C';
 use Mojo::ByteStream qw(b);
+use Time::Piece;
+use Time::Seconds;
 
 sub users {
   my $c = shift;
@@ -29,6 +31,40 @@ sub get_users {
     push @$users, $user;
   }
   return $users;
+}
+
+sub edit_user {
+  my $c = shift;
+  my $u_form = MYDLjE::M::User->select(id => $c->stash->{id})->data;
+  if (not $u_form) {
+    $c->stash(id => 0);
+    $u_form = {};
+  }
+  ($u_form->{created_by_username}, $u_form->{changed_by_username}) =
+    $c->dbix->select(MYDLjE::M::User->TABLE, 'login_name',
+    {id => {-in => [$u_form->{created_by}, $u_form->{changed_by}]}})->list;
+
+  #primary_group is disabled and only shown
+  #It is always the same as the login_name
+  $c->stash(
+    form => {
+      %$u_form,
+      primary_group => $u_form->{login_name},
+      reg_tstamp_formated =>
+        localtime($u_form->{reg_tstamp})
+        ->strftime($c->app->config('date_timeseconds_format')),
+      tstamp_formated =>
+        localtime($u_form->{tstamp})
+        ->strftime($c->app->config('date_timeseconds_format')),
+      start => $u_form->{start}
+      ? localtime($u_form->{start})->strftime($c->app->config('date_format'))
+      : '',
+      stop => $u_form->{stop}
+      ? localtime($u_form->{stop})->strftime($c->app->config('date_format'))
+      : '',
+    }
+  );
+  return;
 }
 
 sub settings {

@@ -14,6 +14,8 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
     'Please enter your password. It is NOT transmitted in plain text even if you are not using HTTPS protocol.',
   login_field_error => 'Please enter valid value for the field "[_1]"!',
   session_id_error  => 'Invalid session. Please try again!',
+  first_name        => 'First Name',
+  last_name         => 'Last Name',
   list_pages        => 'List of pages',
   list_questions    => 'List of questions',
   list_answers      => 'List of answers',
@@ -122,7 +124,16 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
     'Each page in MYDLjE consists of "Boxes". Start typing the name of the box in which you want this element to appear. By default all content elements will be put in the "MAIN_AREA" box.'
     . ' Boxes are defined in "layouts/${DOMAIN.id}/pre_process.tt".',
   in_box => 'in box "[_1]"',
-
+  user_description_help =>
+    'Several words about the user from him self. up to 255 symbols.',
+  created_by => 'Created by',
+  created_by_help =>
+    'Who created this user? If this is "guest", the this user registered via the site.',
+  changed_by      => 'Changed By',
+  changed_by_help => 'Who changed this record for the last time?',
+  tstamp          => 'Last change on',
+  reg_tstamp      => 'Registered on',
+  disabled        => 'Locked',
 );
 
 1;

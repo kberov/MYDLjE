@@ -102,7 +102,7 @@ textarea('body');
 $(window).load(function() {
   prepend_type_icons('option');
   $('.button_close').click(function(){
-      location.href = "[% c.url_for('/content/[% data_type %]s') %]";
+      location.href = "[% c.url_for('/content/' _ data_type _ 's') %]";
       return false;
   });
   /*

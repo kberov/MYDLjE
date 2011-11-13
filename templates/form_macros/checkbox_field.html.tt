@@ -1,0 +1,54 @@
+[%# 
+  Renders an enhanced "<input type="checkbox" />" 
+  with a localized label, error message and help boxes.
+  This field is always available in the form with value 0 when unchecked
+  and value 1 when checked.
+  Params: 
+    arg - string - the name for the field
+    params - hash - attributes for the widged
+%]
+[%MACRO checkbox_field(arg,params) BLOCK;
+  name_and_id =  arg||params.name; 
+  field_error = validator_errors.${name_and_id};
+  params.value ||= form.${name_and_id};
+  label = name_and_id.replace('[^\.]+\.','');
+  name_and_id_help = params.help || label _ '_help';
++%]
+<!-- start [%+ name_and_id %]_unit -->
+<div class="unit on-2 columns" id="[% name_and_id %]_unit">
+    <div class="column" style="[% field_error?'':'display:none;'%]" 
+    id="[% name_and_id %]_error">
+      <div class="container ui-state-error ui-corner-all ">[% field_error %]</div>
+    </div>
+    <div class="fixed column label" id="[% name_and_id _ '_label_column' %]">&#160;
+    <input type="hidden" name="[% name_and_id %]" id="[% name_and_id %]"  
+    value="[% params.value %]" />
+    <input type="checkbox" class="checkbox"
+    [% params.value ? ' checked="checked" ' : ' ' %]
+    id="[% name_and_id %]_" name="[% name_and_id %]_" value="1" />
+    <label for="[% params.id || name_and_id %]" id="[% name_and_id _ '_label' %]" 
+    style="display: inline-block;">                                                 
+      [% params.label|| c.l(label).ucfirst %]
+      [% params.required ? '&#160;*' : '' %]
+    </label>
+    </div>
+    <div class="column span-2">
+      <div class="ui-state-default container help">
+        [% c.textile(c.l(name_and_id_help)) %]
+      </div>
+    </div>
+<script  type="text/javascript">//<![CDATA[
+$(window).load(function() {
+    
+    $('[name="[% name_and_id %]_"]').change(function(){
+        if( $('[name="[% name_and_id %]_"]').prop('checked') )
+          $('[name="[% name_and_id %]"]').val(1)
+        else
+          $('[name="[% name_and_id %]"]').val(0)
+    });    
+});
+//]]>
+</script>
+</div><!-- end [%+ name_and_id %]_unit -->
+[%+ END %]
+

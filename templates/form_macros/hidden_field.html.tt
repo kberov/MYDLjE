@@ -1,0 +1,13 @@
+[%# 
+  Renders a simple "<input type="hidden" />" .
+  Params: 
+    arg - string - the name for the field
+    params - hash - attributes for the widged
+%]
+[% MACRO hidden_field(arg,params) BLOCK;
+name_and_id =  arg||params.name;
+params.value ||= form.${name_and_id};
++%]
+<input type="hidden" id="[% params.id||name_and_id%]" 
+name="[% name_and_id %]" value="[% params.value %]" />
+[% END %]

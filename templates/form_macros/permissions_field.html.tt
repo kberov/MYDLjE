@@ -1,0 +1,139 @@
+[%# 
+  Renders a complex permissions widged build as a grid of checkboxes
+  with a localized label, error message and help boxes.
+  There are three rows of checkboxes for user, group and others permissions.
+  Params: 
+    arg - string - the name for the field
+    params - hash - attributes for the widged
+%]
+[% MACRO permissions_field(arg,params) BLOCK;
+  name_and_id =  arg||params.name; 
+  field_error = validator_errors.${name_and_id};
+  params.value ||= form.${name_and_id};
+  label = name_and_id.replace('[^\.]+\.','');
+  name_and_id_help = params.help|| label _ '_help';
++%]
+<!-- start [% name_and_id %]_unit -->
+<div class="unit on-2 columns" id="[% name_and_id %]_unit">
+    <div class="column span-2" style="[% field_error?'':'display:none;'%]" 
+    id="[% name_and_id %]_error">
+      <div class="container ui-state-error ui-corner-all ">[% field_error %]</div>
+    </div>
+    <div class="fixed column label" id="[% name_and_id _ '_label_column' %]">
+      <label for="[% params.id || name_and_id %]" id="[% name_and_id _ '_label' %]">
+        [% params.label|| c.l(label).ucfirst;
+           params.required ? ':&#160;*' : ':';
+        %]
+      </label>
+    </div>
+    <div class="elastic column"  id="[% name_and_id _ '_field_column' %]">
+      <div class="container field">
+      <table id="[% name_and_id _ '_ptable' %]" 
+        class="ui-widget-content ui-corner-all permissions">
+        <tbody >
+            <tr>
+            <th>[% c.l('Record Type') %]</th>
+                <td colspan="3">
+                    <select name="[% name_and_id %]_type">
+                    <option value="-">[% c.l('Regular Record') %]</option>    
+                       <option 
+                       [% params.value.match('^l') ? ' selected="selected" ':' ' %]
+                       value="l">[% c.l('Link') %]</option>
+                       <option 
+                       [% params.value.match('^d') ? ' selected="selected" ':' ' %]
+                       value="d">[% c.l('Container') %]</option>
+                    </select>
+                </td>
+            </tr>
+            <tr><th> </th><th>Read</th><th>Write</th><th>Execute</th></tr>
+            <tr>
+                <th>Owner</th>
+                <td><input name="[% name_and_id %]_owner_read" 
+                [% params.value.match('^[ld\-]r') ? ' checked="checked" ':' ' %]
+                type="checkbox" value="r"/></td>
+                <td><input name="[% name_and_id %]_owner_write" 
+                [% params.value.match('^[ld\-]rw') ? ' checked="checked" ':' ' %]
+                type="checkbox" value="w"/></td>
+                <td><input name="[% name_and_id %]_owner_execute" 
+                [% params.value.match('^[ld\-][rw-]{2}x') ? ' checked="checked" ':' ' %]
+                type="checkbox" value="x"/></td>
+            </tr>
+            <tr>
+                <th>Group</th>
+                <td><input name="[% name_and_id %]_group_read" 
+                [% params.value.match('^[ld\-][rwx-]{3}r') ? ' checked="checked" ':' ' %]
+                type="checkbox" value="r"/></td>
+                <td><input name="[% name_and_id %]_group_write" 
+                [% params.value.match('^[ld\-][rwx-]{3}rw') ? ' checked="checked" ':' ' %]
+                type="checkbox" value="w"/></td>
+                <td><input name="[% name_and_id %]_group_execute" 
+                [% params.value.match('^[ld\-][rwx-]{3}[rw-]{2}x') ? ' checked="checked" ':' ' %]
+                type="checkbox" value="x"/></td>
+            </tr>
+            <tr>
+                <th>Others</th>
+                <td><input name="[% name_and_id %]_others_read" 
+                [% params.value.match('^[ld\-][rwx-]{3}[rwx-]{3}r') ? ' checked="checked" ':' ' %]
+                type="checkbox" value="r"/></td>
+                <td><input name="[% name_and_id %]_others_write" 
+                [% params.value.match('^[ld\-][rwx-]{3}[rwx-]{3}rw') ? ' checked="checked" ':' ' %]
+                type="checkbox" value="w"/></td>
+                <td><input name="[% name_and_id %]_others_execute" 
+                [% params.value.match('^[ld\-][rwx-]{3}[rwx-]{3}[rw-]{2}x') ? ' checked="checked" ':' ' %]
+                type="checkbox" value="x"/></td>
+            </tr>
+            <tr>
+              <td colspan="4">
+              <input type="text" class="textbox" id="[% params.id||name_and_id%]" 
+              name="[% name_and_id %]" value="[% params.value %]" />
+              </td>
+            </tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+    <div class="column span-2">
+      <div class="ui-state-default container help">
+        [% c.textile(c.l(name_and_id_help)) %]
+      </div>
+    </div>
+<script  type="text/javascript">//<![CDATA[
+$(window).load(function() {
+    var scope = 'table[id$="permissions_ptable"]';
+    var checkboxes = scope + ' input[type="checkbox"]';
+    var pselect = scope + ' [name$="permissions_type"]';
+    var permissions ='[name$="ermissions"]';
+    $(permissions).attr({readonly: 'readonly'});
+    $(permissions).removeClass('ui-state-default');
+    $(permissions).addClass('ui-state-disabled');
+    $(permissions).css({border:'none','font-family':'monospace'});
+    /**
+    TT is doing this on the server side now
+    var cvalues = $(permissions).val()
+    .match(/^([ld\-])([r\-])([w\-])([x\-])([r\-])([w\-])([x\-])([r\-])([w\-])([x\-])$/);
+    
+    $(pselect).val(cvalues[1]);
+    i = 2;
+    $(checkboxes).each(function() {
+        if(cvalues[i]!='-')
+          $(this).prop("checked","checked");
+        i++;
+    });
+    */
+    $(checkboxes +', ' + pselect).change(function() {
+        var pvalue = '';
+        $(checkboxes).each(function() {
+            if($(this).prop("checked"))
+              pvalue = pvalue + this.value;
+            else
+              pvalue = pvalue + '-';
+        });
+        pvalue = $(pselect).val() + pvalue;
+        $(scope + ' ' + permissions).val(pvalue);
+    });
+});
+//]]>
+</script>
+</div><!-- end [% name_and_id %]_unit -->
+[%+ END %]
+

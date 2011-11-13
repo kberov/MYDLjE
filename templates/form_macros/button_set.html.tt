@@ -1,0 +1,17 @@
+[%# 
+  A set of buttons used among most forms.
+  You must add functionality for the Close button via javascript in your template. 
+  See edit_page.html.tt for example.
++%]
+[% MACRO button_set() BLOCK; +%]
+<!-- start [%+ name_and_id %]_unit -->
+<div class="unit" id="buttons_unit">
+  <div class="container buttons">
+    <button type="submit" name="save">[% c.l('Save') %]</button>
+    <button type="submit" name="save_and_close">[% c.l('Save and close') %]</button>
+    <button type="reset">[% c.l('Reset') %]</button>
+    <button class="button_close">[% c.l('Close') %]</button>
+  </div>
+</div><!-- end [%+ name_and_id %]_unit -->
+[%+ END %]
+

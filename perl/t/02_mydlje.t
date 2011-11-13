@@ -47,10 +47,10 @@ for my $app (@apps) {
 
 }
 
-my $app = 'MYDLjE::ControlPanel';
-my $hi =
+#my $app = 'MYDLjE::ControlPanel';
+#my $hi =
   "Controller home from MYDLjE::ControlPanel::C::Home with action hi and id 1 says Hi";
 
-my $t = Test::Mojo->new($app);
-$t->get_ok('/hi')->status_is(200)->content_like(qr/$hi!/, $hi . '!');
+#my $t = Test::Mojo->new($app);
+#$t->get_ok('/hi')->status_is(200)->content_like(qr/$hi!/, $hi . '!');
 

@@ -5,7 +5,7 @@
     arg - string - the name for the field
     params - hash - attributes for the widged
 %]
-[% MACRO text_field(arg,params) BLOCK;
+[% MACRO text_field_readonly(arg,params) BLOCK;
   name_and_id =  arg||params.name; 
   field_error = validator_errors.${name_and_id};
   params.value ||= form.${name_and_id};
@@ -26,11 +26,8 @@
       </label>
     </div>
     <div class="elastic column"  id="[% name_and_id _ '_field_column' %]">
-      <div class="container field [% params.disabled ?' ui-state-disabled':'' %]">
-        <input type="text" class="textbox" id="[% params.id || name_and_id %]" 
-        name="[% name_and_id %]" value="[% params.value %]"
-        [% params.readonly ?' readonly="readonly" ':'' %]
-        [% params.disabled ?' disabled="disabled" ':'' %]/>
+      <div class="container field [% params.disabled ?' ui-state-disabled ':'' %]">
+        [% params.value %]
       </div>
     </div>
     <div class="column span-2">

@@ -25,6 +25,7 @@ DEFAULT form = c.req.params.to_hash;
 %]
 [% 
 PROCESS 'form_macros/text_field.html.tt' ;
+PROCESS 'form_macros/text_field_readonly.html.tt' ;
 PROCESS 'form_macros/password_field.html.tt';
 PROCESS 'form_macros/file_field.html.tt';
 PROCESS 'form_macros/select_field.html.tt';
@@ -36,7 +37,7 @@ PROCESS 'form_macros/button_set.html.tt';
 PROCESS 'form_macros/text_simple_autocomplete_field.html.tt';
 #TODO
 #PROCESS 'form_macros/text_ajax_autocomplete_field.html.tt';
-#PROCESS 'form_macros/text_calendar_field.html.tt';
+PROCESS 'form_macros/text_datepicker_field.html.tt';
 #PROCESS 'form_macros/markitup_textarea.html.tt';
 %]
 

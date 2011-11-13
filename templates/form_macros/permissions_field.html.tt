@@ -97,7 +97,7 @@
         [% c.textile(c.l(name_and_id_help)) %]
       </div>
     </div>
-<script  type="text/javascript">//<![CDATA[
+<script type="text/javascript">//<![CDATA[
 $(window).load(function() {
     var scope = 'table[id$="permissions_ptable"]';
     var checkboxes = scope + ' input[type="checkbox"]';

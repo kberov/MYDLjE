@@ -1,0 +1,19 @@
+[% 
+MACRO text_datepicker_field(arg,params) BLOCK;
+  name_and_id =  arg||params.name;
+  text_field(arg,params);
+  date_format = app.config("jq_date_format");
+%]
+<script type="text/javascript" 
+        src="pub/js/i18n/jquery.ui.datepicker-[%LANGUAGE%].js"></script>
+<script type="text/javascript">//<![CDATA[
+$( "#[% params.id || name_and_id %]" ).datepicker({
+    regional: ['bg'],
+    changeMonth: true,
+    changeYear: true,
+    dateFormat: '[% date_format %]' 
+});
+//]]>
+</script>
+
+[% END %]

@@ -273,7 +273,8 @@ block for too long.
   __DATA__
 
   @@ index.html.ep
-  <!doctype html><html>
+  <!DOCTYPE html>
+  <html>
     <head><title>Echo</title></head>
     <body>
       <script>
@@ -331,7 +332,7 @@ infrastructure requirements, since it reuses the HTTP protocol for transport.
     my $self = shift;
 
     # Increase connection timeout a bit
-    Mojo::IOLoop->connection_timeout($self->tx->connection => 300);
+    Mojo::IOLoop->timeout($self->tx->connection => 300);
 
     # Change content type
     $self->res->headers->content_type('text/event-stream');
@@ -353,7 +354,8 @@ infrastructure requirements, since it reuses the HTTP protocol for transport.
   __DATA__
 
   @@ index.html.ep
-  <!doctype html><html>
+  <!DOCTYPE html>
+  <html>
     <head><title>LiveLog</title></head>
     <body>
       <script>
@@ -453,12 +455,17 @@ This even works for proxy C<CONNECT> requests.
 Receiving a streaming response can be really tricky in most HTTP clients, but
 L<Mojo::UserAgent> makes it actually easy.
 
+  # Build a normal transaction
   my $ua = Mojo::UserAgent->new;
   my $tx = $ua->build_tx(GET => 'http://mojolicio.us');
-  $tx->res->content->on(read => sub {
+
+  # Replace "read" events to disable default content parser
+  $tx->res->content->unsubscribe('read')->on(read => sub {
     my ($content, $chunk) = @_;
-    say $chunk;
+    say "Streaming: $chunk";
   });
+
+  # Process transaction
   $ua->start($tx);
 
 The C<read> event will be emitted for every chunk of data that is received,
@@ -468,10 +475,15 @@ even C<chunked> encoding will be handled transparently if necessary.
 
 Sending a streaming request is almost just as easy.
 
-  my $ua      = Mojo::UserAgent->new;
-  my $tx      = $ua->build_tx(GET => 'http://mojolicio.us');
+  # Build a normal transaction
+  my $ua = Mojo::UserAgent->new;
+  my $tx = $ua->build_tx(GET => 'http://mojolicio.us');
+
+  # Prepare content
   my $content = 'Hello world!';
   $tx->req->headers->content_length(length $content);
+
+  # Start writing directly with a drain callback
   my $drain;
   $drain = sub {
     my $req   = shift;
@@ -479,7 +491,9 @@ Sending a streaming request is almost just as easy.
     $drain    = undef unless length $content;
     $req->write($chunk, $drain);
   };
-  $drain->($tx->req);
+  $tx->req->$drain;
+
+  # Process transaction
   $ua->start($tx);
 
 The drain callback passed to C<write> will be invoked whenever the entire
@@ -637,10 +651,10 @@ Don't you hate waiting for C<make test> to finally finish?
 In newer Perl versions you can set the C<HARNESS_OPTIONS> environment
 variable to take advantage of multiple cpu cores and run tests parallel.
 
-  $ HARNESS_OPTIONS=j5 make test
+  $ HARNESS_OPTIONS=j9 make test
   ...
 
-The C<j5> allows 5 tests to run at the same time, which makes for example the
+The C<j9> allows 9 tests to run at the same time, which makes for example the
 L<Mojolicious> test suite finish 3 times as fast on a dual core laptop!
 
 =head2 Adding commands to Mojolicious

@@ -18,9 +18,8 @@ sub register {
   else { $path = $prefix }
 
   # Generate route
-  my $route =
-    $app->routes->route($path)
-    ->detour(app => Mojo::Server->new->load_app($conf->{$prefix}));
+  my $embed = Mojo::Server->new->load_app($conf->{$prefix});
+  my $route = $app->routes->route($path)->detour(app => $embed);
   $route->over(host => $host) if $host;
 
   return $route;

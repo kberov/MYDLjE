@@ -2,14 +2,23 @@ package Mojo::Transaction;
 use Mojo::Base 'Mojo::EventEmitter';
 
 use Carp 'croak';
+use Mojo::Message::Request;
+use Mojo::Message::Response;
 
-has [qw/connection kept_alive local_address local_port previous remote_port/];
+has [qw/kept_alive local_address local_port previous remote_port/];
+has req => sub { Mojo::Message::Request->new };
+has res => sub { Mojo::Message::Response->new };
 
 # "Please don't eat me! I have a wife and kids. Eat them!"
 sub client_close { shift->server_close(@_) }
-
 sub client_read  { croak 'Method "client_read" not implemented by subclass' }
 sub client_write { croak 'Method "client_write" not implemented by subclass' }
+
+sub connection {
+  my ($self, $c) = @_;
+  return $self->emit(connection => $self->{connection} = $c) if $c;
+  return $self->{connection};
+}
 
 sub error {
   my $self = shift;
@@ -73,23 +82,14 @@ sub remote_address {
   return $self->{remote_address};
 }
 
-sub req { croak 'Method "req" not implemented by subclass' }
-sub res { croak 'Method "res" not implemented by subclass' }
-
 sub resume {
   my $self = shift;
   if (($self->{state} || '') eq 'paused') { $self->{state} = 'write_body' }
   elsif (!$self->is_writing) { $self->{state} = 'write' }
-  $self->emit('resume');
-  return $self;
+  return $self->emit('resume');
 }
 
-sub server_close {
-  my $self = shift;
-  $self->emit('finish');
-  return $self;
-}
-
+sub server_close { shift->emit('finish') }
 sub server_read  { croak 'Method "server_read" not implemented by subclass' }
 sub server_write { croak 'Method "server_write" not implemented by subclass' }
 
@@ -118,13 +118,22 @@ L<Mojo::Transaction> is an abstract base class for transactions.
 
 L<Mojo::Transaction> can emit the following events.
 
+=head2 C<connection>
+
+  $tx->on(connection => sub {
+    my ($tx, $connection) = @_;
+  });
+
+Emitted when a connection has been assigned to transaction.
+Note that this event is EXPERIMENTAL and might change without warning!
+
 =head2 C<finish>
 
   $tx->on(finish => sub {
     my $tx = shift;
   });
 
-Emitted when a transaction is finished.
+Emitted when transaction is finished.
 
 =head2 C<resume>
 
@@ -132,18 +141,11 @@ Emitted when a transaction is finished.
     my $tx = shift;
   });
 
-Emitted when a transaction is resumed.
+Emitted when transaction is resumed.
 
 =head1 ATTRIBUTES
 
 L<Mojo::Transaction> implements the following attributes.
-
-=head2 C<connection>
-
-  my $connection = $tx->connection;
-  $tx            = $tx->connection($connection);
-
-Connection identifier or socket.
 
 =head2 C<kept_alive>
 
@@ -173,6 +175,8 @@ Local interface port.
 
 Previous transaction that triggered this followup transaction.
 
+  say $tx->previous->req->url->path;
+
 =head2 C<remote_address>
 
   my $remote_address = $tx->remote_address;
@@ -186,6 +190,20 @@ Remote interface address.
   $tx             = $tx->remote_port($port);
 
 Remote interface port.
+
+=head2 C<req>
+
+  my $req = $tx->req;
+  $tx     = $tx->req(Mojo::Message::Request->new);
+
+HTTP 1.1 request, defaults to a L<Mojo::Message::Request> object.
+
+=head2 C<res>
+
+  my $res = $tx->res;
+  $tx     = $tx->res(Mojo::Message::Response->new);
+
+HTTP 1.1 response, defaults to a L<Mojo::Message::Response> object.
 
 =head1 METHODS
 
@@ -209,6 +227,13 @@ Read and process client data.
   my $chunk = $tx->client_write;
 
 Write client data.
+
+=head2 C<connection>
+
+  my $connection = $tx->connection;
+  $tx            = $tx->connection($connection);
+
+Connection identifier or socket.
 
 =head2 C<error>
 
@@ -234,18 +259,6 @@ False.
   my $success = $tx->is_writing;
 
 Check if transaction is writing.
-
-=head2 C<req>
-
-  my $req = $tx->req;
-
-Transaction request, usually a L<Mojo::Message::Request> object.
-
-=head2 C<res>
-
-  my $res = $tx->res;
-
-Transaction response, usually a L<Mojo::Message::Response> object.
 
 =head2 C<resume>
 

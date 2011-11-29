@@ -17,9 +17,9 @@ sub body_contains {
 sub body_size { croak 'Method "body_size" not implemented by subclass' }
 
 sub boundary {
-  return $1
-    if (shift->headers->content_type || '')
-    =~ m#multipart.*boundary=\"*([a-zA-Z0-9\'\(\)\,\.\:\?\-\_\+/]+)#i;
+  (shift->headers->content_type || '')
+    =~ m#multipart.*boundary=\"*([a-zA-Z0-9\'\(\)\,\.\:\?\-\_\+/]+)#i
+    and return $1;
   return;
 }
 
@@ -68,6 +68,12 @@ sub build_headers {
   }
 
   return $headers;
+}
+
+sub charset {
+  (shift->headers->content_type || '') =~ /charset="?([^"\s;]+)"?/i
+    and return $1;
+  return;
 }
 
 sub clone {
@@ -180,33 +186,28 @@ sub parse {
     $self->{pre_buffer} = '';
   }
 
-  # Custom body parser
-  if ($self->has_subscribers('read')) {
+  # Chunked or relaxed content
+  if ($self->is_chunked || $self->relaxed) {
+    $self->{size} += length($self->{buffer} //= '');
+    $self->emit(read => $self->{buffer});
+    $self->{buffer} = '';
+  }
 
-    # Chunked or relaxed content
-    if ($self->is_chunked || $self->relaxed) {
-      $self->emit(read => $self->{buffer} //= '');
-      $self->{buffer} = '';
+  # Normal content
+  else {
+    my $len = $self->headers->content_length || 0;
+    $self->{size} ||= 0;
+    my $need = $len - $self->{size};
+
+    # Slurp
+    if ($need > 0) {
+      my $chunk = substr $self->{buffer}, 0, $need, '';
+      $self->{size} += length $chunk;
+      $self->emit(read => $chunk);
     }
 
-    # Normal content
-    else {
-
-      # Bytes needed
-      my $len = $self->headers->content_length || 0;
-      $self->{size} ||= 0;
-      my $need = $len - $self->{size};
-
-      # Slurp
-      if ($need > 0) {
-        my $chunk = substr $self->{buffer}, 0, $need, '';
-        $self->{size} = $self->{size} + length $chunk;
-        $self->emit(read => $chunk);
-      }
-
-      # Finished
-      $self->{state} = 'finished' if $len <= $self->progress;
-    }
+    # Finished
+    $self->{state} = 'finished' if $len <= $self->progress;
   }
 
   return $self;
@@ -440,9 +441,9 @@ Note that this event is EXPERIMENTAL and might change without warning!
     my ($content, $chunk) = @_;
   });
 
-Emitted when a new chunk of content arrives, also disables normal content
-storage in asset objects.
+Emitted when a new chunk of content arrives.
 
+  $content->unsubscribe('read');
   $content->on(read => sub {
     my ($content, $chunk) = @_;
     say "Streaming: $chunk";
@@ -503,7 +504,7 @@ Content size in bytes.
 
   my $boundary = $content->boundary;
 
-Extract multipart boundary from content type header.
+Extract multipart boundary from C<Content-Type> header.
 Note that this method is EXPERIMENTAL and might change without warning!
 
 =head2 C<build_body>
@@ -517,6 +518,13 @@ Render whole body.
   my $string = $content->build_headers;
 
 Render all headers.
+
+=head2 C<charset>
+
+  my $charset = $content->charset;
+
+Extract charset from C<Content-Type> header.
+Note that this method is EXPERIMENTAL and might change without warning!
 
 =head2 C<clone>
 

@@ -22,6 +22,19 @@ sub emit_hook {
   return $self;
 }
 
+sub emit_chain {
+  my ($self, $name, @args) = @_;
+  my @subscribers = @{$self->subscribers($name)};
+  my $cb;
+  $cb = sub {
+    return unless my $next = shift @subscribers;
+    $next->($cb, @args);
+    undef $cb;
+  };
+  $cb->();
+  return $self;
+}
+
 # "Everybody's a jerk. You, me, this jerk."
 sub emit_hook_reverse {
   my $self = shift;
@@ -33,19 +46,6 @@ sub emit_hook_reverse {
 #  That's a calculator. I ate it to gain its power."
 sub load_plugin {
   my ($self, $name) = @_;
-
-  # DEPRECATED in Smiling Face With Sunglasses!
-  my %special = (
-    ep_render    => 'EPRenderer',
-    epl_renderer => 'EPLRenderer',
-    i18n         => 'I18N',
-    json_config  => 'JSONConfig',
-    pod_renderer => 'PODRenderer'
-  );
-  if (my $new = $special{$name}) {
-    warn qq/Plugin "$name" is DEPRECATED in favor of "$new"!\n/;
-    $name = $new;
-  }
 
   # Try all namspaces
   my $class = $name =~ /^[a-z]/ ? camelize($name) : $name;
@@ -62,10 +62,7 @@ sub load_plugin {
 }
 
 sub register_plugin {
-  my $self = shift;
-  my $name = shift;
-  my $app  = shift;
-  $self->load_plugin($name)->register($app, ref $_[0] ? $_[0] : {@_});
+  shift->load_plugin(shift)->register(shift, ref $_[0] ? $_[0] : {@_});
 }
 
 # DEPRECATED in Leaf Fluttering In Wind!
@@ -135,6 +132,14 @@ Namespaces to load plugins from.
 
 L<Mojolicious::Plugins> inherits all methods from L<Mojo::EventEmitter> and
 implements the following new ones.
+
+=head2 C<emit_chain>
+
+  $plugins = $plugins->emit_chain('foo');
+  $plugins = $plugins->emit_chain(foo => 123);
+
+Emit events as chained hooks.
+Note that this method is EXPERIMENTAL and might change without warning!
 
 =head2 C<emit_hook>
 

@@ -1,12 +1,7 @@
 package Mojo::Transaction::HTTP;
 use Mojo::Base 'Mojo::Transaction';
 
-use Mojo::Message::Request;
-use Mojo::Message::Response;
 use Mojo::Transaction::WebSocket;
-
-has req => sub { Mojo::Message::Request->new };
-has res => sub { Mojo::Message::Response->new };
 
 # "What's a wedding?  Webster's dictionary describes it as the act of
 #  removing weeds from one's garden."
@@ -19,7 +14,7 @@ sub client_read {
 
   # HEAD response
   my $res = $self->res;
-  if ($self->req->method =~ /^HEAD$/i) {
+  if ($self->req->method eq 'HEAD') {
     $res->parse_until_body($chunk);
     $self->{state} = 'finished' if $res->content->is_parsing_body;
   }
@@ -65,57 +60,13 @@ sub client_write {
 
   # Start line
   my $chunk = '';
-  if ($self->{state} eq 'write_start_line') {
-
-    # Chunk
-    my $buffer = $req->get_start_line_chunk($self->{offset});
-    my $written = defined $buffer ? length $buffer : 0;
-    $self->{write}  = $self->{write} - $written;
-    $self->{offset} = $self->{offset} + $written;
-    $chunk .= $buffer;
-
-    # Write headers
-    if ($self->{write} <= 0) {
-      $self->{state}  = 'write_headers';
-      $self->{offset} = 0;
-      $self->{write}  = $req->header_size;
-    }
-  }
+  $chunk .= $self->_start_line($req) if $self->{state} eq 'write_start_line';
 
   # Headers
-  if ($self->{state} eq 'write_headers') {
-
-    # Chunk
-    my $buffer = $req->get_header_chunk($self->{offset});
-    my $written = defined $buffer ? length $buffer : 0;
-    $self->{write}  = $self->{write} - $written;
-    $self->{offset} = $self->{offset} + $written;
-    $chunk .= $buffer;
-
-    # Write body
-    if ($self->{write} <= 0) {
-      $self->{state}  = 'write_body';
-      $self->{offset} = 0;
-      $self->{write}  = $req->body_size;
-      $self->{write}  = 1 if $req->is_chunked;
-    }
-  }
+  $chunk .= $self->_headers($req, 0) if $self->{state} eq 'write_headers';
 
   # Body
-  if ($self->{state} eq 'write_body') {
-
-    # Chunk
-    my $buffer = $req->get_body_chunk($self->{offset});
-    my $written = defined $buffer ? length $buffer : 0;
-    $self->{write}  = $self->{write} - $written;
-    $self->{offset} = $self->{offset} + $written;
-    $chunk .= $buffer if defined $buffer;
-    $self->{write} = 1 if $req->is_chunked;
-
-    # Read response
-    $self->{state} = 'read_response'
-      if (defined $buffer && !length $buffer) || $self->{write} <= 0;
-  }
+  $chunk .= $self->_body($req, 0) if $self->{state} eq 'write_body';
 
   return $chunk;
 }
@@ -177,15 +128,10 @@ sub server_read {
 
   # EOF
   elsif ((length $chunk == 0) || ($req->is_finished && !$self->{handled}++)) {
-
-    # WebSocket
-    if (($req->headers->upgrade || '') eq 'websocket') {
-      $self->emit(
-        request => Mojo::Transaction::WebSocket->new(handshake => $self));
-    }
-
-    # HTTP
-    else { $self->emit('request') }
+    $self->emit(
+      upgrade => Mojo::Transaction::WebSocket->new(handshake => $self))
+      if lc($req->headers->upgrade || '') eq 'websocket';
+    $self->emit('request');
   }
 
   # Expect 100 Continue
@@ -226,48 +172,10 @@ sub server_write {
   }
 
   # Start line
-  if ($self->{state} eq 'write_start_line') {
-
-    # Chunk
-    my $buffer = $res->get_start_line_chunk($self->{offset});
-    my $written = defined $buffer ? length $buffer : 0;
-    $self->{write}  = $self->{write} - $written;
-    $self->{offset} = $self->{offset} + $written;
-    $chunk .= $buffer;
-
-    # Write headers
-    if ($self->{write} <= 0) {
-      $self->{state}  = 'write_headers';
-      $self->{offset} = 0;
-      $self->{write}  = $res->header_size;
-    }
-  }
+  $chunk .= $self->_start_line($res) if $self->{state} eq 'write_start_line';
 
   # Headers
-  if ($self->{state} eq 'write_headers') {
-
-    # Chunk
-    my $buffer = $res->get_header_chunk($self->{offset});
-    my $written = defined $buffer ? length $buffer : 0;
-    $self->{write}  = $self->{write} - $written;
-    $self->{offset} = $self->{offset} + $written;
-    $chunk .= $buffer;
-
-    # Write body
-    if ($self->{write} <= 0) {
-
-      # HEAD request
-      if ($self->req->method =~ /^head$/i) { $self->{state} = 'finished' }
-
-      # Body
-      else {
-        $self->{state}  = 'write_body';
-        $self->{offset} = 0;
-        $self->{write}  = $res->body_size;
-        $self->{write}  = 1 if $res->is_dynamic;
-      }
-    }
-  }
+  $chunk .= $self->_headers($res, 1) if $self->{state} eq 'write_headers';
 
   # Body
   if ($self->{state} eq 'write_body') {
@@ -287,33 +195,81 @@ sub server_write {
     }
 
     # Normal body
-    else {
-
-      # Chunk
-      my $buffer = $res->get_body_chunk($self->{offset});
-      my $written = defined $buffer ? length $buffer : 0;
-      $self->{write}  = $self->{write} - $written;
-      $self->{offset} = $self->{offset} + $written;
-      $self->{write}  = 1 if $res->is_dynamic;
-      if (defined $buffer) {
-        $chunk .= $buffer;
-        delete $self->{delay};
-      }
-
-      # Delayed
-      else {
-        my $delay = delete $self->{delay};
-        $self->{state} = 'paused' if $delay;
-        $self->{delay} = 1 unless $delay;
-      }
-
-      # Finished
-      $self->{state} = 'finished'
-        if $self->{write} <= 0 || (defined $buffer && !length $buffer);
-    }
+    else { $chunk .= $self->_body($res, 1) }
   }
 
   return $chunk;
+}
+
+sub _body {
+  my ($self, $message, $finish) = @_;
+
+  # Chunk
+  my $buffer = $message->get_body_chunk($self->{offset});
+  my $written = defined $buffer ? length $buffer : 0;
+  $self->{write}  = $self->{write} - $written;
+  $self->{offset} = $self->{offset} + $written;
+  $self->{write}  = 1 if $message->is_dynamic;
+  if (defined $buffer) { delete $self->{delay} }
+
+  # Delayed
+  else {
+    my $delay = delete $self->{delay};
+    $self->{state} = 'paused' if $delay;
+    $self->{delay} = 1 unless $delay;
+  }
+
+  # Finished
+  $self->{state} = $finish ? 'finished' : 'read_response'
+    if $self->{write} <= 0 || (defined $buffer && !length $buffer);
+
+  return defined $buffer ? $buffer : '';
+}
+
+sub _headers {
+  my ($self, $message, $head) = @_;
+
+  # Chunk
+  my $buffer = $message->get_header_chunk($self->{offset});
+  my $written = defined $buffer ? length $buffer : 0;
+  $self->{write}  = $self->{write} - $written;
+  $self->{offset} = $self->{offset} + $written;
+
+  # Write body
+  if ($self->{write} <= 0) {
+
+    # HEAD request
+    if ($head && $self->req->method eq 'HEAD') { $self->{state} = 'finished' }
+
+    # Body
+    else {
+      $self->{state}  = 'write_body';
+      $self->{offset} = 0;
+      $self->{write}  = $message->body_size;
+      $self->{write}  = 1 if $message->is_dynamic;
+    }
+  }
+
+  return $buffer;
+}
+
+sub _start_line {
+  my ($self, $message) = @_;
+
+  # Chunk
+  my $buffer = $message->get_start_line_chunk($self->{offset});
+  my $written = defined $buffer ? length $buffer : 0;
+  $self->{write}  = $self->{write} - $written;
+  $self->{offset} = $self->{offset} + $written;
+
+  # Write headers
+  if ($self->{write} <= 0) {
+    $self->{state}  = 'write_headers';
+    $self->{offset} = 0;
+    $self->{write}  = $message->header_size;
+  }
+
+  return $buffer;
 }
 
 1;
@@ -342,36 +298,34 @@ can emit the following new ones.
 =head2 C<request>
 
   $tx->on(request => sub {
-    my ($tx, $ws) = @_;
+    my $tx = shift;
   });
 
-Emitted when a request is ready and needs to be handled, an optional
-L<Mojo::Transaction::WebSocket> object will be passed for WebSocket handshake
-requests.
+Emitted when a request is ready and needs to be handled.
 
   $tx->on(request => sub {
     my $tx = shift;
     $tx->res->headers->header('X-Bender', 'Bite my shiny metal ass!');
   });
 
+=head2 C<upgrade>
+
+  $tx->on(upgrade => sub {
+    my ($tx, $ws) = @_;
+  });
+
+Emitted when transaction gets upgraded to a L<Mojo::Transaction::WebSocket>
+object.
+Note that this event is EXPERIMENTAL and might change without warning!.
+
+  $tx->on(upgrade => sub {
+    my ($tx, $ws) = @_;
+    $ws->res->headers->header('X-Bender', 'Bite my shiny metal ass!');
+  });
+
 =head1 ATTRIBUTES
 
-L<Mojo::Transaction::HTTP> inherits all attributes from L<Mojo::Transaction>
-and implements the following new ones.
-
-=head2 C<req>
-
-  my $req = $tx->req;
-  $tx     = $tx->req(Mojo::Message::Request->new);
-
-HTTP 1.1 request, defaults to a L<Mojo::Message::Request> object.
-
-=head2 C<res>
-
-  my $res = $tx->res;
-  $tx     = $tx->res(Mojo::Message::Response->new);
-
-HTTP 1.1 response, defaults to a L<Mojo::Message::Response> object.
+L<Mojo::Transaction::HTTP> inherits all attributes from L<Mojo::Transaction>.
 
 =head1 METHODS
 

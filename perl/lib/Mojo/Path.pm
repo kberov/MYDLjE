@@ -13,17 +13,6 @@ has parts => sub { [] };
 
 sub new { shift->SUPER::new()->parse(@_) }
 
-# DEPRECATED in Smiling Face With Sunglasses!
-sub append {
-  warn <<EOF;
-Mojo::Path->append is DEPRECATED in favor of using Mojo::Path->parts
-directly!
-EOF
-  my $self = shift;
-  push @{$self->parts}, @_;
-  return $self;
-}
-
 sub canonicalize {
   my $self = shift;
 
@@ -44,6 +33,7 @@ sub canonicalize {
     # Part
     push @parts, $part;
   }
+  $self->trailing_slash(undef) unless @parts;
   $self->parts(\@parts);
 
   return $self;
@@ -93,6 +83,11 @@ sub to_abs_string {
   return $self->leading_slash ? $self->to_string : ('/' . $self->to_string);
 }
 
+# "How is education supposed to make me feel smarter?
+#  Besides, every time I learn something new,
+#  it pushes some old stuff out of my brain.
+#  Remember when I took that home winemaking course,
+#  and I forgot how to drive?"
 sub to_string {
   my $self = shift;
 

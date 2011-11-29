@@ -49,14 +49,8 @@ sub DESTROY {
 
 sub prepare_ioloop {
   my $self = shift;
-
-  # Listen
-  my $loop = $self->ioloop;
-  my $listen = $self->listen || ['http://*:3000'];
-  $self->_listen($_) for @$listen;
-
-  # Max clients
-  $loop->max_connections($self->max_clients);
+  $self->_listen($_) for @{$self->listen || ['http://*:3000']};
+  $self->ioloop->max_connections($self->max_clients);
 }
 
 # "40 dollars!? This better be the best damn beer ever..
@@ -95,33 +89,27 @@ sub _build_tx {
   $tx->res->headers->server('Mojolicious (Perl)');
 
   # Store connection information
-  my $loop  = $self->ioloop;
-  my $local = $loop->local_info($id);
-  $tx->local_address($local->{address} || '127.0.0.1');
-  $tx->local_port($local->{port});
-  my $remote = $loop->remote_info($id);
-  $tx->remote_address($remote->{address} || '127.0.0.1');
-  $tx->remote_port($remote->{port});
+  my $handle = $self->ioloop->stream($id)->handle;
+  $tx->local_address($handle->sockhost);
+  $tx->local_port($handle->sockport);
+  $tx->remote_address($handle->peerhost);
+  $tx->remote_port($handle->peerport);
 
   # TLS
   $tx->req->url->base->scheme('https') if $c->{tls};
 
-  # Handle
+  # Events
   weaken $self;
   $tx->on(
-    request => sub {
+    upgrade => sub {
       my ($tx, $ws) = @_;
-
-      # WebSocket
-      if ($ws) {
-        $self->{connections}->{$id}->{websocket} = $ws->server_handshake;
-        $self->emit(request => $ws);
-      }
-
-      # HTTP
-      $self->emit(request => $tx);
-
-      # Resume
+      $self->{connections}->{$id}->{websocket} = $ws->server_handshake;
+    }
+  );
+  $tx->on(
+    request => sub {
+      my $tx = shift;
+      $self->emit(request => $self->{connections}->{$id}->{websocket} || $tx);
       $tx->on(resume => sub { $self->_write($id) });
     }
   );
@@ -136,10 +124,7 @@ sub _build_tx {
   return $tx;
 }
 
-sub _close {
-  my ($self, $loop, $id) = @_;
-  $self->_drop($id);
-}
+sub _close { shift->_drop(pop) }
 
 sub _drop {
   my ($self, $id) = @_;
@@ -153,7 +138,7 @@ sub _drop {
 }
 
 sub _error {
-  my ($self, $loop, $id, $error) = @_;
+  my ($self, $id, $error) = @_;
   $self->app->log->error($error);
   $self->_drop($id);
 }
@@ -180,7 +165,7 @@ sub _finish {
     if ($ws->res->code eq '101') {
 
       # Upgrade connection timeout
-      $self->ioloop->connection_timeout($id, $self->websocket_timeout);
+      $self->ioloop->timeout($id, $self->websocket_timeout);
 
       # Resume
       weaken $self;
@@ -234,23 +219,24 @@ sub _listen {
   my $backlog = $self->backlog;
   $options->{backlog} = $backlog if $backlog;
 
-  # Events
-  weaken $self;
-  $options->{on_accept} = sub {
-    my ($loop, $id) = @_;
-
-    # Add new connection
-    $self->{connections}->{$id} = {tls => $tls};
-
-    # Keep alive timeout
-    $loop->connection_timeout($id => $self->keep_alive_timeout);
-  };
-  $options->{on_close} = sub { $self->_close(@_) };
-  $options->{on_error} = sub { $self->_error(@_) };
-  $options->{on_read}  = sub { $self->_read(@_) };
-
   # Listen
-  my $id = $self->ioloop->listen($options);
+  weaken $self;
+  my $id = $self->ioloop->server(
+    $options => sub {
+      my ($loop, $stream, $id) = @_;
+
+      # Add new connection
+      $self->{connections}->{$id} = {tls => $tls};
+
+      # Keep alive timeout
+      $loop->timeout($id => $self->keep_alive_timeout);
+
+      # Events
+      $stream->on(close => sub { $self->_close($id) });
+      $stream->on(error => sub { $self->_error($id, pop) });
+      $stream->on(read  => sub { $self->_read($id, pop) });
+    }
+  );
   $self->{listening} ||= [];
   push @{$self->{listening}}, $id;
 
@@ -274,7 +260,7 @@ sub _listen {
 }
 
 sub _read {
-  my ($self, $loop, $id, $chunk) = @_;
+  my ($self, $id, $chunk) = @_;
   warn "< $chunk\n" if DEBUG;
 
   # Make sure we have a transaction
@@ -311,12 +297,14 @@ sub _write {
   return unless $tx->is_writing;
 
   # Get chunk
+  return if $c->{writing}++;
   my $chunk = $tx->server_write;
+  delete $c->{writing};
   warn "> $chunk\n" if DEBUG;
 
   # Write
-  my $loop = $self->ioloop;
-  $loop->write($id, $chunk);
+  my $stream = $self->ioloop->stream($id);
+  $stream->write($chunk);
 
   # Finish or continue writing
   weaken $self;
@@ -330,7 +318,7 @@ sub _write {
       return unless $c->{transaction} || $c->{websocket};
     }
   }
-  $loop->write($id, '', $cb);
+  $stream->write('', $cb);
 }
 
 1;
@@ -410,7 +398,7 @@ singleton.
   my $keep_alive_timeout = $daemon->keep_alive_timeout;
   $daemon                = $daemon->keep_alive_timeout(5);
 
-Maximum amount of time in seconds a connection can be inactive before being
+Maximum amount of time in seconds a connection can be inactive before getting
 dropped, defaults to C<15>.
 
 =head2 C<listen>
@@ -463,7 +451,7 @@ User for the server process.
   $server               = $server->websocket_timeout(300);
 
 Maximum amount of time in seconds a WebSocket connection can be inactive
-before being dropped, defaults to C<300>.
+before getting dropped, defaults to C<300>.
 
 =head1 METHODS
 

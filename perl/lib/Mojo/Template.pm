@@ -336,10 +336,9 @@ sub parse {
 
 sub render {
   my $self = shift;
-  my $tmpl = shift;
 
   # Parse
-  $self->parse($tmpl);
+  $self->parse(shift);
 
   # Build
   $self->build;
@@ -353,8 +352,7 @@ sub render {
 }
 
 sub render_file {
-  my $self = shift;
-  my $path = shift;
+  my ($self, $path) = (shift, shift);
 
   # Slurp file
   $self->name($path) unless defined $self->{name};
@@ -371,28 +369,16 @@ sub render_file {
 }
 
 sub render_file_to_file {
-  my $self  = shift;
-  my $spath = shift;
-  my $tpath = shift;
-
-  # Render
+  my ($self, $spath, $tpath) = (shift, shift, shift);
   my $output = $self->render_file($spath, @_);
   return $output if ref $output;
-
-  # Write to file
   return $self->_write_file($tpath, $output);
 }
 
 sub render_to_file {
-  my $self = shift;
-  my $tmpl = shift;
-  my $path = shift;
-
-  # Render
+  my ($self, $tmpl, $path) = (shift, shift, shift);
   my $output = $self->render($tmpl, @_);
   return $output if ref $output;
-
-  # Write to file
   return $self->_write_file($path, $output);
 }
 
@@ -446,7 +432,8 @@ Mojo::Template - Perl-ish templates!
 
   # Simple
   my $output = $mt->render(<<'EOF');
-  <!doctype html><html>
+  <!DOCTYPE html>
+  <html>
     <head><title>Simple</title></head>
     <body>Time: <%= localtime(time) %></body>
   </html>
@@ -583,7 +570,7 @@ build a wrapper around it.
   $mt->template($template);
   $mt->code($code);
   $mt->compile;
-  my $output = $mt->interpret(@arguments);
+  my $output = $mt->interpret(@args);
 
 =head1 ATTRIBUTES
 
@@ -773,7 +760,7 @@ Compile template.
 =head2 C<interpret>
 
   my $output = $mt->interpret;
-  my $output = $mt->interpret(@arguments);
+  my $output = $mt->interpret(@args);
 
 Interpret template.
 
@@ -786,14 +773,14 @@ Parse template.
 =head2 C<render>
 
   my $output = $mt->render($template);
-  my $output = $mt->render($template, @arguments);
+  my $output = $mt->render($template, @args);
 
 Render template.
 
 =head2 C<render_file>
 
   my $output = $mt->render_file($template_file);
-  my $output = $mt->render_file($template_file, @arguments);
+  my $output = $mt->render_file($template_file, @args);
 
 Render template file.
 
@@ -801,7 +788,7 @@ Render template file.
 
   my $exception = $mt->render_file_to_file($template_file, $output_file);
   my $exception = $mt->render_file_to_file(
-    $template_file, $output_file, @arguments
+    $template_file, $output_file, @args
   );
 
 Render template file to a specific file.
@@ -809,9 +796,7 @@ Render template file to a specific file.
 =head2 C<render_to_file>
 
   my $exception = $mt->render_to_file($template, $output_file);
-  my $exception = $mt->render_to_file(
-    $template, $output_file, @arguments
-  );
+  my $exception = $mt->render_to_file($template, $output_file, @args);
 
 Render template to a specific file.
 

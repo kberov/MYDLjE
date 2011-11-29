@@ -74,7 +74,7 @@ sub build_frame {
   }
 
   if (DEBUG) {
-    warn 'HEAD: ' . unpack('B*', $frame) . "\n";
+    warn 'HEAD: ', unpack('B*', $frame), "\n";
     warn "OPCODE: $op\n";
   }
 
@@ -293,9 +293,7 @@ sub server_read {
   }
 
   # Resume
-  $self->emit('resume');
-
-  return $self;
+  return $self->emit('resume');
 }
 
 sub server_write {
@@ -316,7 +314,7 @@ sub server_write {
   return $write;
 }
 
-sub _challenge { b64_encode(sha1_bytes(pop . GUID), '') }
+sub _challenge { b64_encode(sha1_bytes((pop() || '') . GUID), '') }
 
 sub _xor_mask {
   my ($input, $mask) = @_;
@@ -450,7 +448,7 @@ Raw WebSocket data to write.
 
   my $connection = $ws->connection;
 
-The connection this websocket is using.
+Alias for L<Mojo::Transaction/"connection">.
 
 =head2 C<finish>
 
@@ -468,13 +466,13 @@ True.
 
   my $local_address = $ws->local_address;
 
-The local address of this WebSocket.
+Alias for L<Mojo::Transaction/"local_address">.
 
 =head2 C<local_port>
 
   my $local_port = $ws->local_port;
 
-The local port of this WebSocket.
+Alias for L<Mojo::Transaction/"local_port">.
 
 =head2 C<parse_frame>
 
@@ -486,31 +484,35 @@ Parse WebSocket frame.
 
   my $remote_address = $ws->remote_address;
 
-The remote address of this WebSocket.
+Alias for L<Mojo::Transaction/"remote_address">.
 
 =head2 C<remote_port>
 
   my $remote_port = $ws->remote_port;
 
-The remote port of this WebSocket.
+Alias for L<Mojo::Transaction/"remote_port">.
 
 =head2 C<req>
 
   my $req = $ws->req;
 
-The original handshake request.
+Alias for L<Mojo::Transaction/"req">.
+
+  $ws->req->headers->header('X-Bender' => 'Bite my shiny metal ass!');
 
 =head2 C<res>
 
-  my $req = $ws->res;
+  my $res = $ws->res;
 
-The original handshake response.
+Alias for L<Mojo::Transaction/"res">.
+
+  $ws->res->headers->header('X-Bender' => 'Bite my shiny metal ass!');
 
 =head2 C<resume>
 
   $ws = $ws->resume;
 
-Resume transaction.
+Alias for L<Mojo::Transaction/"resume">.
 
 =head2 C<send_frame>
 

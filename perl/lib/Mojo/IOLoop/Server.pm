@@ -72,6 +72,9 @@ has iowatcher => sub {
   Mojo::IOLoop->singleton->iowatcher;
 };
 
+# "Your guilty consciences may make you vote Democratic, but secretly you all
+#  yearn for a Republican president to lower taxes, brutalize criminals, and
+#  rule you like a king!"
 sub DESTROY {
   my $self = shift;
   if (my $port = $self->{port}) { $ENV{MOJO_REUSE} =~ s/(?:^|\,)$port\:\d+// }
@@ -173,7 +176,7 @@ sub resume {
   my $self = shift;
   weaken $self;
   $self->iowatcher->watch($self->{handle},
-    on_readable => sub { $self->_accept for 1 .. $self->accepts });
+    sub { $self->_accept for 1 .. $self->accepts });
 }
 
 sub _accept {
@@ -197,8 +200,8 @@ sub _accept {
   $handle = IO::Socket::SSL->start_SSL($handle, %$tls);
   $self->iowatcher->watch(
     $handle,
-    on_readable => sub { $self->_tls($handle) },
-    on_writable => sub { $self->_tls($handle) }
+    sub { $self->_tls($handle) },
+    sub { $self->_tls($handle) }
   );
   $self->{handles}->{$handle} = $handle;
 }
@@ -260,7 +263,7 @@ __END__
 
 =head1 NAME
 
-Mojo::IOLoop::Server - IOLoop socket server
+Mojo::IOLoop::Server - Non-blocking TCP server
 
 =head1 SYNOPSIS
 
@@ -280,8 +283,7 @@ Mojo::IOLoop::Server - IOLoop socket server
 
 =head1 DESCRIPTION
 
-L<Mojo::IOLoop::Server> accepts incoming socket connections for
-L<Mojo::IOLoop>.
+L<Mojo::IOLoop::Server> accepts TCP connections for L<Mojo::IOLoop>.
 Note that this module is EXPERIMENTAL and might change without warning!
 
 =head1 EVENTS
@@ -294,7 +296,7 @@ L<Mojo::IOLoop::Server> can emit the following events.
     my ($server, $handle) = @_;
   });
 
-Emitted for each accepted connection.
+Emitted safely for each accepted connection.
 
 =head1 ATTRIBUTES
 

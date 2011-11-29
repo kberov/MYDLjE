@@ -18,11 +18,13 @@ sub end {
   $self->emit_safe('finish', @{$self->{args}}) if --$self->{counter} <= 0;
 }
 
+# "Mrs. Simpson, bathroom is not for customers.
+#  Please use the crack house across the street."
 sub wait {
   my $self = shift;
   $self->once(finish => sub { shift->ioloop->stop });
   $self->ioloop->start;
-  return @{$self->{args}};
+  return wantarray ? @{$self->{args}} : $self->{args}->[0];
 }
 
 1;
@@ -30,7 +32,7 @@ __END__
 
 =head1 NAME
 
-Mojo::IOLoop::Delay - IOLoop delay
+Mojo::IOLoop::Delay - Synchronize events
 
 =head1 SYNOPSIS
 
@@ -65,7 +67,7 @@ L<Mojo::IOLoop::Delay> can emit the following events.
     my $delay = shift;
   });
 
-Emitted once the active event counter reaches zero.
+Emitted safely once the active event counter reaches zero.
 
 =head1 ATTRIBUTES
 
@@ -91,8 +93,8 @@ Increment active event counter, the returned callback can be used instead of
 C<end>.
 
   my $delay = Mojo::IOLoop->delay;
-  Mojo::IOLoop->resolver->lookup('mojolicio.us' => $delay->begin);
-  my $address = $delay->wait;
+  Mojo::UserAgent->new->get('mojolicio.us' => $delay->begin);
+  my $tx = $delay->wait;
 
 =head2 C<end>
 
@@ -105,8 +107,7 @@ Decrement active event counter.
 
   my @args = $delay->wait;
 
-Start C<ioloop> and register C<finish> event that stops it again once the
-active event counter reaches zero.
+Start C<ioloop> and stop it again once the C<finish> event gets emitted.
 
 =head1 SEE ALSO
 

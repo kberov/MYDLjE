@@ -1,5 +1,5 @@
 package Mojo::IOWatcher;
-use Mojo::Base -base;
+use Mojo::Base 'Mojo::EventEmitter';
 
 use IO::Poll qw/POLLERR POLLHUP POLLIN POLLOUT/;
 use Mojo::Loader;
@@ -68,18 +68,16 @@ sub stop { delete shift->{running} }
 sub timer { shift->_timer(pop, after => pop, started => time) }
 
 sub watch {
-  my $self   = shift;
-  my $handle = shift;
-  my $args   = {@_, handle => $handle};
-  $self->{handles}->{fileno $handle} = $args;
-  $self->change($handle, 1, $args->{on_writable});
+  my ($self, $handle, $read, $write) = @_;
+  $self->{handles}->{fileno $handle} =
+    {handle => $handle, read => $read, write => $write};
+  $self->change($handle, 1, $write);
   return $self;
 }
 
 sub _timer {
-  my $self = shift;
-  my $cb   = shift;
-  my $t    = {cb => $cb, @_};
+  my ($self, $cb) = (shift, shift);
+  my $t = {cb => $cb, @_};
   my $id;
   do { $id = md5_sum('t' . time . rand 999) } while $self->{timers}->{$id};
   $self->{timers}->{$id} = $t;
@@ -93,9 +91,9 @@ sub _one_tick {
   my $poll = $self->_poll;
   $poll->poll('0.025');
   my $handles = $self->{handles};
-  $self->_sandbox('Read', $handles->{fileno $_}->{on_readable}, $_)
+  $self->_sandbox('Read', $handles->{fileno $_}->{read}, $_)
     for $poll->handles(POLLIN | POLLHUP | POLLERR);
-  $self->_sandbox('Write', $handles->{fileno $_}->{on_writable}, $_)
+  $self->_sandbox('Write', $handles->{fileno $_}->{write}, $_)
     for $poll->handles(POLLOUT);
 
   # Wait for timeout
@@ -124,10 +122,10 @@ sub _one_tick {
 sub _poll { shift->{poll} ||= IO::Poll->new }
 
 sub _sandbox {
-  my $self = shift;
-  my $desc = shift;
+  my ($self, $desc) = (shift, shift);
   return unless my $cb = shift;
-  warn "$desc failed: $@" unless eval { $self->$cb(@_); 1 };
+  $self->emit_safe(error => "$desc failed: $@")
+    unless eval { $self->$cb(@_); 1 };
 }
 
 1;
@@ -143,7 +141,7 @@ Mojo::IOWatcher - Non-blocking I/O watcher
 
   # Watch if handle becomes readable
   my $watcher = Mojo::IOWatcher->new;
-  $watcher->watch($handle, on_readable => sub {
+  $watcher->watch($handle => sub {
     my ($watcher, $handle) = @_;
     ...
   });
@@ -152,7 +150,7 @@ Mojo::IOWatcher - Non-blocking I/O watcher
   $watcher->timer(15 => sub {
     my $watcher = shift;
     $watcher->drop_handle($handle);
-    say "Timeout!";
+    say 'Timeout!';
   });
 
   # Start and stop watcher
@@ -166,10 +164,22 @@ foundation of L<Mojo::IOLoop>.
 L<Mojo::IOWatcher::EV> is a good example for its extensibility.
 Note that this module is EXPERIMENTAL and might change without warning!
 
+=head1 EVENTS
+
+L<Mojo::IOWatcher> can emit the following events.
+
+=head2 C<error>
+
+  $watcher->on(error => sub {
+    my ($watcher, $error) = @_;
+  });
+
+Emitted safely if an error happens.
+
 =head1 METHODS
 
-L<Mojo::IOWatcher> inherits all methods from L<Mojo::Base> and implements the
-following new ones.
+L<Mojo::IOWatcher> inherits all methods from L<Mojo::EventEmitter> and
+implements the following new ones.
 
 =head2 C<detect>
 
@@ -232,23 +242,10 @@ Create a new timer, invoking the callback after a given amount of seconds.
 
 =head2 C<watch>
 
-  $watcher = $watcher->watch($handle, on_readable => sub {...});
+  $watcher = $watcher->watch($handle, sub {...});
+  $watcher = $watcher->watch($handle, sub {...}, sub {...});
 
 Watch handle for I/O events.
-
-These options are currently available:
-
-=over 2
-
-=item C<on_readable>
-
-Callback to be invoked once the handle becomes readable.
-
-=item C<on_writable>
-
-Callback to be invoked once the handle becomes writable.
-
-=back
 
 =head1 DEBUGGING
 

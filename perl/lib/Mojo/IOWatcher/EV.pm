@@ -46,18 +46,15 @@ sub _io {
   my ($self, $fd, $w, $revents) = @_;
   my $handles = $self->{handles};
   my $h       = $handles->{$fd};
-  $self->_sandbox('Read', $h->{on_readable}, $h->{handle})
-    if EV::READ &$revents;
-  $self->_sandbox('Write', $h->{on_writable}, $h->{handle})
+  $self->_sandbox('Read', $h->{read}, $h->{handle}) if EV::READ &$revents;
+  $self->_sandbox('Write', $h->{write}, $h->{handle})
     if EV::WRITE &$revents && $handles->{$fd};
 }
 
 # "It's great! We can do *anything* now that Science has invented Magic."
 sub _timer {
-  my $self      = shift;
-  my $after     = shift || '0.0001';
-  my $recurring = shift;
-  my $cb        = shift;
+  my ($self, $after, $recurring, $cb) = @_;
+  $after ||= '0.0001';
 
   my $id = $self->SUPER::_timer($cb);
   weaken $self;
@@ -92,6 +89,10 @@ Mojo::IOWatcher::EV - EV non-blocking I/O watcher
 L<Mojo::IOWatcher::EV> is a minimalistic non-blocking I/O watcher with
 C<libev> support.
 Note that this module is EXPERIMENTAL and might change without warning!
+
+=head1 EVENTS
+
+L<Mojo::IOWatcher::EV> inherits all events from L<Mojo::IOWatcher>.
 
 =head1 METHODS
 

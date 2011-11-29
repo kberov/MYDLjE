@@ -10,7 +10,7 @@ use Carp 'croak';
 use Mojo::Server;
 use Mojo::Template;
 use Mojo::Loader;
-use Mojo::Util qw/b64_decode camelize decamelize/;
+use Mojo::Util qw/b64_decode decamelize/;
 
 has hint => <<"EOF";
 
@@ -157,23 +157,18 @@ sub rel_file {
 
 sub render_data {
   my $self = shift;
-  my $data = shift;
-  $self->renderer->render($self->get_data($data), @_);
+  $self->renderer->render($self->get_data(shift), @_);
 }
 
 sub render_to_file {
-  my $self = shift;
-  my $data = shift;
-  my $path = shift;
+  my ($self, $data, $path) = (shift, shift, shift);
   $self->write_file($path, $self->render_data($data, @_));
   return $self;
 }
 
 sub render_to_rel_file {
   my $self = shift;
-  my $data = shift;
-  my $path = shift;
-  $self->render_to_file($data, $self->rel_dir($path), @_);
+  $self->render_to_file(shift, $self->rel_dir(shift), @_);
 }
 
 # "The only thing I asked you to do for this party was put on clothes,
@@ -199,9 +194,6 @@ sub run {
     my $module;
     for my $namespace (@{$self->namespaces}) {
       last if $module = _command("${namespace}::$name");
-
-      # DEPRECATED in Smiling Face With Sunglasses!
-      last if $module = _command("${namespace}::" . camelize $name);
     }
 
     # Command missing
@@ -489,7 +481,7 @@ Portably generate an absolute path from a relative UNIX style path.
 
 =head2 C<render_data>
 
-  my $data = $command->render_data('foo_bar', @arguments);
+  my $data = $command->render_data('foo_bar', @args);
 
 Render a template from the C<DATA> section of the command class.
 

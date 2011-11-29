@@ -5,6 +5,7 @@ use Carp 'croak';
 use IO::File;
 use Mojo::Asset::File;
 
+has 'auto_upgrade';
 has max_memory_size => sub { $ENV{MOJO_MAX_MEMORY_SIZE} || 262144 };
 
 # "There's your giraffe, little girl.
@@ -19,9 +20,10 @@ sub new {
 sub add_chunk {
   my ($self, $chunk) = @_;
   $self->{content} .= $chunk if defined $chunk;
-  return Mojo::Asset::File->new->add_chunk($self->slurp)
-    if $self->size > $self->max_memory_size;
-  return $self;
+  return $self
+    if !$self->auto_upgrade || $self->size <= $self->max_memory_size;
+  $self->emit(upgrade => my $file = Mojo::Asset::File->new);
+  return $file->add_chunk($self->slurp);
 }
 
 sub contains {
@@ -79,10 +81,37 @@ Mojo::Asset::Memory - In-memory storage for HTTP 1.1 content
 
 L<Mojo::Asset::Memory> is an in-memory storage backend for HTTP 1.1 content.
 
+=head1 EVENTS
+
+L<Mojo::Asset::Memory> can emit the following events.
+
+=head2 C<upgrade>
+
+  $mem->on(upgrade => sub {
+    my ($mem, $file) = @_;
+  });
+
+Emitted when asset gets upgraded to a L<Mojo::Asset::File> object.
+Note that this event is EXPERIMENTAL and might change without warning!
+
+  $mem->on(upgrade => sub {
+    my ($mem, $file) = @_;
+    $file->tmpdir('/tmp');
+  });
+
 =head1 ATTRIBUTES
 
 L<Mojo::Asset::Memory> inherits all attributes from L<Mojo::Asset> and
 implements the following new ones.
+
+=head2 C<auto_upgrade>
+
+  my $upgrade = $mem->auto_upgrade;
+  $mem        = $mem->auto_upgrade(1);
+
+Try to detect if content size exceeds C<max_memory_size> limit and
+automatically upgrade to a L<Mojo::Asset::File> object.
+Note that this attribute is EXPERIMENTAL and might change without warning!
 
 =head2 C<max_memory_size>
 

@@ -52,7 +52,8 @@ sub body {
   # Callback
   if (ref $new eq 'CODE') {
     weaken $self;
-    return $content->on(read => sub { $self->$new(pop) });
+    return $content->unsubscribe('read')
+      ->on(read => sub { $self->$new(pop) });
   }
 
   # Set text content
@@ -69,11 +70,10 @@ sub body_params {
 
   # Charset
   my $params = Mojo::Parameters->new;
-  my $type = $self->headers->content_type || '';
-  $params->charset($self->default_charset);
-  $type =~ /charset="?(\S+)"?/ and $params->charset($1);
+  $params->charset($self->content->charset || $self->default_charset);
 
   # "x-application-urlencoded" and "application/x-www-form-urlencoded"
+  my $type = $self->headers->content_type || '';
   if ($type =~ m#(?:x-application|application/x-www-form)-urlencoded#i) {
     $params->parse($self->content->asset->slurp);
   }
@@ -179,18 +179,11 @@ sub cookie {
 
 sub dom {
   my $self = shift;
-
-  # Parse
   return if $self->is_multipart;
-  my $charset;
-  ($self->headers->content_type || '') =~ /charset="?([^"\s;]+)"?/
-    and $charset = $1;
-  my $dom = $self->dom_class->new->charset($charset)->parse($self->body);
-
-  # Find right away
-  return $dom->find(@_) if @_;
-
-  return $dom;
+  my $dom = $self->dom_class->new;
+  $dom->charset($self->content->charset);
+  $dom->parse($self->body);
+  return @_ ? $dom->find(@_) : $dom;
 }
 
 sub error {
@@ -270,14 +263,7 @@ sub header_size {
   return $self->content->header_size;
 }
 
-sub headers {
-  my $self = shift;
-  if (@_) {
-    $self->content->headers(@_);
-    return $self;
-  }
-  return $self->content->headers(@_);
-}
+sub headers { shift->content->headers(@_) }
 
 sub is_chunked { shift->content->is_chunked }
 
@@ -486,9 +472,7 @@ sub _parse_formdata {
   my @formdata;
   my $content = $self->content;
   return \@formdata unless $content->is_multipart;
-  my $default = $self->default_charset;
-  ($self->headers->content_type || '') =~ /charset="?(\S+)"?/
-    and $default = $1;
+  my $default = $content->charset || $self->default_charset;
 
   # Walk the tree
   my @parts;
@@ -502,11 +486,9 @@ sub _parse_formdata {
     }
 
     # Charset
-    my $charset = $default;
-    ($part->headers->content_type || '') =~ /charset="?(\S+)"?/
-      and $charset = $1;
+    my $charset = $part->charset || $default;
 
-    # "Content-Disposition"
+    # Content-Disposition header
     my $disposition = $part->headers->content_disposition;
     next unless $disposition;
     my ($name)     = $disposition =~ /\ name="?([^";]+)"?/;
@@ -625,6 +607,13 @@ to L<Mojo::JSON>.
 Maximum message size in bytes, defaults to the value of
 C<MOJO_MAX_MESSAGE_SIZE> or C<5242880>.
 
+=head2 C<version>
+
+  my $version = $message->version;
+  $message    = $message->version('1.1');
+
+HTTP version of message.
+
 =head1 METHODS
 
 L<Mojo::Message> inherits all methods from L<Mojo::EventEmitter> and
@@ -642,8 +631,7 @@ Check if message is at least a specific version.
   $message   = $message->body('Hello!');
   my $cb     = $message->body(sub {...});
 
-Access and replace text content or register C<read> event with C<content>,
-which will be emitted when new data arrives.
+Access C<content> data or replace all subscribers of the C<read> event.
 
   $message->body(sub {
     my ($message, $chunk) = @_;
@@ -754,9 +742,8 @@ Size of headers in bytes.
 =head2 C<headers>
 
   my $headers = $message->headers;
-  $message    = $message->headers(Mojo::Headers->new);
 
-Message headers, defaults to a L<Mojo::Headers> object.
+Alias for L<Mojo::Content/"headers">.
 
   say $message->headers->content_type;
 
@@ -862,13 +849,6 @@ Access C<multipart/form-data> file uploads, usually L<Mojo::Upload> objects.
 All C<multipart/form-data> file uploads, usually L<Mojo::Upload> objects.
 
   say $message->uploads->[2]->filename;
-
-=head2 C<version>
-
-  my $version = $message->version;
-  $message    = $message->version('1.1');
-
-HTTP version of message.
 
 =head2 C<write>
 

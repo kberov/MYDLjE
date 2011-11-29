@@ -2,7 +2,6 @@ package Mojo::IOLoop::Client;
 use Mojo::Base 'Mojo::EventEmitter';
 
 use IO::Socket::INET;
-use Mojo::IOLoop::Resolver;
 use Scalar::Util 'weaken';
 use Socket qw/IPPROTO_TCP SO_ERROR TCP_NODELAY/;
 
@@ -18,40 +17,31 @@ use constant TLS => $ENV{MOJO_NO_TLS}
 use constant TLS_READ  => TLS ? IO::Socket::SSL::SSL_WANT_READ()  : 0;
 use constant TLS_WRITE => TLS ? IO::Socket::SSL::SSL_WANT_WRITE() : 0;
 
-has resolver => sub { Mojo::IOLoop::Resolver->new };
-
 # "It's like my dad always said: eventually, everybody gets shot."
+has iowatcher => sub {
+  require Mojo::IOLoop;
+  Mojo::IOLoop->singleton->iowatcher;
+};
+
 sub DESTROY {
   my $self = shift;
   return if $self->{connected};
   $self->_cleanup;
 }
 
+# "I wonder where Bart is, his dinner's getting all cold... and eaten."
 sub connect {
   my $self = shift;
   my $args = ref $_[0] ? $_[0] : {@_};
-
-  # Lookup
-  if (!$args->{handle} && (my $address = $args->{address})) {
-    $self->resolver->lookup(
-      $address => sub {
-        $args->{address} = $_[1] || $args->{address};
-        $self->_connect($args);
-      }
-    );
-  }
-
-  # Connect
-  else {
-    $self->resolver->ioloop->defer(sub { $self->_connect($args) });
-  }
+  $args->{address} ||= '127.0.0.1';
+  $args->{address} = '127.0.0.1' if $args->{address} eq 'localhost';
+  weaken $self;
+  $self->iowatcher->timer(0 => sub { $self->_connect($args) });
 }
 
 sub _cleanup {
   my $self = shift;
-  return unless my $resolver = $self->{resolver};
-  return unless my $loop     = $resolver->ioloop;
-  return unless my $watcher  = $loop->iowatcher;
+  return unless my $watcher = $self->{iowatcher};
   $watcher->drop_timer($self->{timer})   if $self->{timer};
   $watcher->drop_handle($self->{handle}) if $self->{handle};
 }
@@ -61,7 +51,7 @@ sub _connect {
 
   # New socket
   my $handle;
-  my $watcher = $self->resolver->ioloop->iowatcher;
+  my $watcher = $self->iowatcher;
   my $timeout = $args->{timeout} || 3;
   unless ($handle = $args->{handle}) {
     my %options = (
@@ -121,8 +111,8 @@ sub _connect {
   $self->{handle} = $handle;
   $watcher->watch(
     $handle,
-    on_readable => sub { $self->_connecting },
-    on_writable => sub { $self->_connecting }
+    sub { $self->_connecting },
+    sub { $self->_connecting }
   );
 }
 
@@ -133,7 +123,7 @@ sub _connecting {
 
   # Switch between reading and writing
   my $handle  = $self->{handle};
-  my $watcher = $self->resolver->ioloop->iowatcher;
+  my $watcher = $self->iowatcher;
   if ($self->{tls} && !$handle->connect_SSL) {
     my $error = $IO::Socket::SSL::SSL_ERROR;
     if    ($error == TLS_READ)  { $watcher->change($handle, 1, 0) }
@@ -156,7 +146,7 @@ __END__
 
 =head1 NAME
 
-Mojo::IOLoop::Client - IOLoop socket client
+Mojo::IOLoop::Client - Non-blocking TCP client
 
 =head1 SYNOPSIS
 
@@ -176,8 +166,7 @@ Mojo::IOLoop::Client - IOLoop socket client
 
 =head1 DESCRIPTION
 
-L<Mojo::IOLoop::Client> performs non-blocking socket connections for
-L<Mojo::IOLoop>.
+L<Mojo::IOLoop::Client> opens TCP connections for L<Mojo::IOLoop>.
 Note that this module is EXPERIMENTAL and might change without warning!
 
 =head1 EVENTS
@@ -190,7 +179,7 @@ L<Mojo::IOLoop::Client> can emit the following events.
     my ($client, $handle) = @_;
   });
 
-Emitted once the connection is established.
+Emitted safely once the connection is established.
 
 =head2 C<error>
 
@@ -198,18 +187,19 @@ Emitted once the connection is established.
     my ($client, $error) = @_;
   });
 
-Emitted if an error happens on the connection.
+Emitted safely if an error happens on the connection.
 
 =head1 ATTRIBUTES
 
 L<Mojo::IOLoop::Client> implements the following attributes.
 
-=head2 C<resolver>
+=head2 C<iowatcher>
 
-  my $resolver = $client->resolver;
-  $client      = $client->resolver(Mojo::IOLoop::Resolver->new);
+  my $watcher = $client->iowatcher;
+  $client     = $client->iowatcher(Mojo::IOWatcher->new);
 
-DNS stub resolver, defaults to a L<Mojo::IOLoop::Resolver> object.
+Low level event watcher, defaults to the C<iowatcher> attribute value of the
+global L<Mojo::IOLoop> singleton.
 
 =head1 METHODS
 
@@ -242,6 +232,10 @@ Use an already prepared handle.
 =item C<port>
 
 Port to connect to.
+
+=item C<timeout>
+
+Maximum amount of time in seconds establishing connection may take.
 
 =item C<tls>
 

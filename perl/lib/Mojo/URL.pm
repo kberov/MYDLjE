@@ -59,18 +59,6 @@ sub authority {
   return $authority;
 }
 
-sub canonicalize {
-  my $self = shift;
-
-  $self->path->canonicalize;
-  return $self unless my $port   = $self->port;
-  return $self unless my $scheme = $self->scheme;
-  $self->port(undef) if $port eq '80'  && $scheme ~~ [qw/http ws/];
-  $self->port(undef) if $port eq '443' && $scheme ~~ [qw/https wss/];
-
-  return $self;
-}
-
 sub clone {
   my $self = shift;
 
@@ -116,17 +104,15 @@ sub ihost {
   return join '.', @encoded;
 }
 
-sub is_abs {
-  my $self = shift;
-  return $self->scheme && $self->authority;
-}
+sub is_abs { shift->scheme }
 
 sub parse {
   my ($self, $url) = @_;
   return $self unless $url;
 
-  my ($scheme, $authority, $path, $query, $fragment) =
-    $url =~ m|(?:([^:/?#]+)://([^/?#]*))?([^?#]*)(?:\?([^#]*))?(?:#(.*))?|;
+  # Official regex
+  my ($scheme, $authority, $path, $query, $fragment) = $url
+    =~ m|(?:([^:/?#]+):)?(?://([^/?#]*))?([^?#]*)(?:\?([^#]*))?(?:#(.*))?|;
   $self->scheme($scheme);
   $self->authority($authority);
   $self->path->parse($path);
@@ -203,32 +189,41 @@ sub to_abs {
   my $self = shift;
   my $base = shift || $self->base->clone;
 
-  # Absolute URL
+  # Scheme
   my $abs = $self->clone;
   return $abs if $abs->is_abs;
   $abs->scheme($base->scheme);
+
+  # Authority
+  return $abs if $abs->authority;
   $abs->authority($base->authority);
 
-  # New base
-  $abs->base($base->clone);
-  my $new = $base->path->clone;
+  # Absolute path
+  my $path = $abs->path;
+  return $abs if $path->leading_slash;
 
-  # Replace path
-  my $old = $self->path;
-  if ($old->leading_slash) { $new->parts([@{$old->parts}]) }
+  # Inherit path
+  my $base_path = $base->path;
+  if (!@{$path->parts}) {
+    $path =
+      $abs->path($base_path->clone)->path->trailing_slash(0)->canonicalize;
+
+    # Query
+    return $abs if length($abs->query->to_string);
+    $abs->query($base->query->clone);
+  }
 
   # Merge paths
   else {
+    my $new = $base_path->clone;
+    $new->leading_slash(1);
 
     # Characters after the right-most '/' need to go
-    pop @{$new->parts} unless $new->trailing_slash;
-    push @{$new->parts}, @{$old->parts};
+    pop @{$new->parts} if @{$path->parts} && !$new->trailing_slash;
+    push @{$new->parts}, @{$path->parts};
+    $new->trailing_slash($path->trailing_slash) if @{$new->parts};
+    $abs->path($new->canonicalize);
   }
-
-  # Absolute path
-  $new->leading_slash(1);
-  $new->trailing_slash($old->trailing_slash);
-  $abs->path($new);
 
   return $abs;
 }
@@ -237,13 +232,12 @@ sub to_rel {
   my $self = shift;
   my $base = shift || $self->base->clone;
 
-  # Relative URL
-  my $rel = $self->clone;
-  $rel->base($base);
-  $rel->scheme('');
-  $rel->authority('');
+  # Scheme and authority
+  my $rel = $self->clone->base($base);
+  $rel->scheme(undef);
+  $rel->userinfo(undef)->host(undef)->port(undef) if $base->authority;
 
-  # Build relative path
+  # Path
   my @rel_parts  = @{$rel->path->parts};
   my $base_path  = $base->path;
   my @base_parts = @{$base_path->parts};
@@ -252,8 +246,8 @@ sub to_rel {
     shift @rel_parts;
     shift @base_parts;
   }
-  $rel->path(Mojo::Path->new);
-  my $rel_path = $rel->path;
+  my $rel_path = $rel->path(Mojo::Path->new)->path;
+  $rel_path->leading_slash(1) if $rel->authority;
   $rel_path->parts([('..') x @base_parts, @rel_parts]);
   $rel_path->trailing_slash(1) if $self->path->trailing_slash;
 
@@ -266,21 +260,16 @@ sub to_rel {
 sub to_string {
   my $self = shift;
 
-  # Scheme and authority
-  my $url       = '';
-  my $scheme    = $self->scheme;
+  # Scheme
+  my $url = '';
+  if (my $scheme = $self->scheme) { $url .= lc "$scheme://" }
+
+  # Authority
   my $authority = $self->authority;
-  if ($scheme && $authority) {
-    $url .= lc "$scheme://";
-    $url .= "$authority";
-  }
+  $url .= $url ? $authority : $authority ? "//$authority" : '';
 
   # Path
-  my $path  = $self->path;
-  my $slash = $path->leading_slash;
-  $path->leading_slash(0) if !$scheme && @{$self->base->path->parts};
-  $url .= $path;
-  $path->leading_slash($slash);
+  $url .= $self->path;
 
   # Query
   my $query = join '', $self->query;
@@ -400,16 +389,6 @@ following new ones.
   my $url = Mojo::URL->new('http://127.0.0.1:3000/foo?f=b&baz=2#foo');
 
 Construct a new L<Mojo::URL> object.
-
-=head2 C<canonicalize>
-
-  $url = $url->canonicalize;
-
-Canonicalize URL.
-Note that this method is EXPERIMENTAL and might change without warning!
-
-  # "http://mojolicio.us/foo/baz"
-  say Mojo::URL->new('http://mojolicio.us:80/foo/bar/../baz')->canonicalize;
 
 =head2 C<clone>
 

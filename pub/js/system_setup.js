@@ -27,17 +27,23 @@ form_fields = ['site_name', 'secret', 'db_driver', 'db_host', 'db_name', 'db_use
 
 function scripts_are_executable() {
   scripts = {mydlje: '/hi', cpanel: '/hi', site: '/hi'};
+  var ul_oks = $('#system_check_div div.executable_oks ul.oks');
+  ul_oks.html('');
+  var ul_noks = $('#system_check_div div.executable_noks ul.noks');
+  ul_noks.html('');
+  var ul_wrench = $('#system_check_div ul.wrench');
+  ul_wrench.html('');
   for (i in scripts) {
     $.ajax({
       url: i + scripts[i],
       success: function(data, succsess_code, jqXHR) {
         $('#system_check_div div.executable_oks').show('slow').delay(100);
-        $('#system_check_div div.executable_oks ul.oks').append('<li>' + ok_icon + i + scripts[i] + ': ok, ' + data + '</li>');
+        ul_oks.append('<li>' + ok_icon + i + scripts[i] + ': ok, ' + data + '</li>');
         successes++;
       },
       error: function(jqXHR, textStatus, errorThrown) {
         $('#system_check_div div.executable_noks').show('slow').delay(100);
-        $('#system_check_div div.executable_noks ul.noks').append('<li>' + alert_icon + i + scripts[i] + ' : ' + textStatus + ', ' + errorThrown + '</li>');
+        ul_noks.append('<li>' + alert_icon + i + scripts[i] + ' : ' + textStatus + ', ' + errorThrown + '</li>');
         $('#system_check_div div.wrench').show('slow');
         if (typeof(errorThrown) != 'object' && errorThrown.match('Internal')) {
           $('#system_check_div ul.wrench').append('<li>Change "' + i + '" permissions to 0755( rwxr-xr-x )' + ' and refresh this page to see the result.</li>');
@@ -52,8 +58,10 @@ function scripts_are_executable() {
   } //end for (i in scripts)
   if (errors == 0) {
     check_rw();
-  } else {
-    $('#system_check_div ul.wrench').append('<li>Change "conf" directory permissions so it is readable and writable by Apache.</li>');
+  } else {    
+    ul_wrench.append('<li>Add "AllowOverride All" to the directory where MYDLjE is deployed.</li>');
+    ul_wrench.append('<li>Add "Options + ExecCGI" to the directory where MYDLjE is deployed.</li>');
+    ul_wrench.append('<li>Change "conf" directory permissions so it is readable and writable by Apache.</li>');
   }
 
 } //end function scripts_are_executable()
@@ -68,6 +76,8 @@ function scripts_are_executable() {
 function check_rw() {
   var urls = ['check_readables', 'check_writables'];
   var app = 'mydlje';
+  var ul_oks = $('#system_check_div div.check_readables ul.oks,#system_check_div div.check_writables ul.oks');
+  ul_oks.html('');
   for (action in urls) {
     $.ajax({
       url: app + '/' + urls[action],
@@ -278,7 +288,7 @@ $(window).load(function() {
   $('#setup').accordion({
     header: 'h2',
     autoHeight: false,
-    animated: 'bounceslide',
+    //animated: 'bounceslide',
     collapsible: true,
     active: false
   });

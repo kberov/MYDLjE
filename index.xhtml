@@ -49,7 +49,7 @@
                 <div class="ui-state-highlight ui-corner-all ui-priority-primary">
                   <p>
                     <span class="ui-icon ui-icon-wrench" style="float: left; margin-right: .3em;"></span>
-                    <b>Possible solution:</b>
+                    <b>Possible solutions:</b>
                     <ul class="wrench"></ul>
                   </p>
                 </div>
@@ -123,7 +123,8 @@
               <form id="system_setup" action="mydlje/system_config" method="post"
               class="ui-widget ui-corner-all ui-state-active">
                 <fieldset class="ui-widget-content ui-corner-all">
-                  <legend class="ui-widget-header ui-corner-all">System Configuration</legend>
+                  <legend class="ui-widget-header ui-corner-all" 
+                  title="Click on the question-mark for explanations!">System Configuration</legend>
                   <div class="unit on-2 columns">
                     <div class="fixed column" style="width:150px">
                       <label id="site_name_label">Site Name</label>
@@ -244,7 +245,9 @@
                     </div>
                     <div class="column span-2">
                       <div class="container help">The user which you will use to login in the 
-                      <code>cpanel</code>application and administer the system.</div>
+                        <code>cpanel</code> application and administer the system.
+                        <div class="ui-widget-content ui-state-error">Note: The user <strong>can not</strong> be named "admin" nor "guest"!!!</div>
+                      </div>
                     </div>
                     <div class="fixed column" style="width:150px">
                       <label id="admin_email_label">Admin Email</label>

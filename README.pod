@@ -6,7 +6,7 @@
 
 =head1 VERSION 
 
-01.09.18b3
+01.09.18b4
 
 =head1 DESCRIPTION
 
@@ -101,18 +101,18 @@ Almost all (even the cheapest) hosting providers meet the minimal system
 
 =item 1 Unpack the bundle in a directory visible by Apache.
 
-=item 2 Create a database using the example found in
- I<conf/mysql.schema.sql> or use the tool (PHPMyAdmin) provided by your
- hosting provider
+=item 2 Create a database and user using the example found in
+ I<conf/mysql.schema.sql> or use a tool like (PHPMyAdmin) provided by your
+ hosting provider. Grant all priviledges of the database to the user.
 
 =item 3 Unix only: Make sure the files C<site>, C<mydlje> and C<cpanel> in 
 $MYDLjE_HOME are executable.
 
-=item 4 Make sure the server can wriite in forlders C<tmp>, C<log>,
+=item 4 Make sure the server can write in forlders C<tmp>, C<log>,
  C<conf> and C<pub/home> in $MYDLjE_HOME.
 
-=item 5 Use your browser to access B<index.xhtml> or setup via commandline -
- see L</SETUP>.
+=item 5 Use your browser to access B<http://yourdomain.com/index.xhtml>  or setup via commandline -
+ see B<"INSTALLATION (via command line)">.
 
 =item 6 Check the system and troubleshoot :) if needed. Look at the apache
  error-log and log/development.log.
@@ -120,6 +120,29 @@ $MYDLjE_HOME are executable.
 =item 7 Fill in the "System Configuration" form. You are ready to go.
 
 =item 8 Enjoy your new site and start building your presence.
+
+=back
+
+
+=head1 INSTALLATION (via command line)
+
+=over
+
+=item 1 Unpack the bundle in a directory visible by Apache.
+
+=item 2 Create a database and user using the example found in
+ I<conf/mysql.schema.sql> or use a tool like "mysql". 
+ Grant all priviledges of the database to the user.
+
+=item 3 Unix only: Make sure the files C<site>, C<mydlje> and C<cpanel> in 
+$MYDLjE_HOME are executable.
+
+=item 4 Make sure the server can write in forlders C<tmp>, C<log>,
+ C<conf> and C<pub/home> in $MYDLjE_HOME.
+
+=item 5 Open a terminal and go to the MYDLjE root directory:
+
+  you@yourcomputer:/pat/to/MYDLjE$ ./mydlje help SystemSetup
 
 =back
 
@@ -228,23 +251,6 @@ I wish to thank to all who made something that I use to make MYDLjE works.
  https://github.com/nal. Thank You!
 
 =back
-
-=head1 SETUP
-
-Create an empty database. See conf/mysql.schema.sql for an example.
-
-=begin html
-
-To setup your system <a href="index.xhtml">go to index.xhtml</a>. Make sure
- the file is accessed trough HTTP(S) and not directly trough some file
- system. Follow the steps and you should be fine.
-
-=end html
-
-Many programmers prefer using a terminal. To set up the system this way,
- open a terminal and go to the MYDLjE root directory:
-
-  you@yourcomputer:/pat/to/MYDLjE$ ./mydlje help system_setup
 
 -----------------------
 

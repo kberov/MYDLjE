@@ -4,8 +4,8 @@
 <head>
 <title>MYDLjE - Web-presence rewritten</title>
 <meta content="text/html; charset=utf-8" http-equiv="content-type" />
-<link href="mailto:support@ActiveState.com" rev="made" />
-<link href="pub/css/ui-lightness/jquery-ui-current.custom.css" rel="stylesheet" type="text/css" />
+<link href="mailto:root@localhost" rev="made" />
+<link href="pub/css/humanity/jquery-ui-current.custom.css" rel="stylesheet" type="text/css" />
     <link href="pub/css/readme.css" rel="stylesheet" type="text/css" /></head>
 
 <body style="background-color: white"><div class="ui-widget ui-widget-content ui-corner-all ">
@@ -31,10 +31,10 @@
 
 	<li><a href="#minimal_requirements">MINIMAL REQUIREMENTS</a></li>
 	<li><a href="#installation__apache_">INSTALLATION (Apache)</a></li>
+	<li><a href="#installation__via_command_line_">INSTALLATION (via command line)</a></li>
 	<li><a href="#roadmap">ROADMAP</a></li>
 	<li><a href="#licenses_and_copyright">LICENSES and COPYRIGHT</a></li>
 	<li><a href="#credits">CREDITS</a></li>
-	<li><a href="#setup">SETUP</a></li>
 </ul>
 
 
@@ -49,7 +49,7 @@
 </p>
 
 <h1 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="version">VERSION</a></h1>
-<p>01.09.18b3</p>
+<p>01.09.18b4</p>
 <p>
 </p>
 
@@ -146,21 +146,21 @@ and application starters in $MYDLjE_HOME/perl/bin.</p>
 <li><strong><a class="item" name="unpack_the_bundle_in_a_directory_visible_by_apache">Unpack the bundle in a directory visible by Apache.</a></strong>
 
 </li>
-<li><strong><a class="item" name="tool">Create a database using the example found in
- <em>conf/mysql.schema.sql</em> or use the tool (PHPMyAdmin) provided by your
- hosting provider</a></strong>
+<li><strong><a class="item" name="like">Create a database and user using the example found in
+ <em>conf/mysql.schema.sql</em> or use a tool like (PHPMyAdmin) provided by your
+ hosting provider. Grant all priviledges of the database to the user.</a></strong>
 
 </li>
 <li><strong><a class="item" name="unix_only_make_sure_the_files_site_mydlje_and_cpanel_in_mydlje_home_are_executable">Unix only: Make sure the files <code>site</code>, <code>mydlje</code> and <code>cpanel</code> in 
 $MYDLjE_HOME are executable.</a></strong>
 
 </li>
-<li><strong><a class="item" name="make_sure_the_server_can_wriite_in_forlders_tmp_log_conf_and_pub_home_in_mydlje_home">Make sure the server can wriite in forlders <code>tmp</code>, <code>log</code>,
+<li><strong><a class="item" name="make_sure_the_server_can_write_in_forlders_tmp_log_conf_and_pub_home_in_mydlje_home">Make sure the server can write in forlders <code>tmp</code>, <code>log</code>,
  <code>conf</code> and <code>pub/home</code> in $MYDLjE_HOME.</a></strong>
 
 </li>
-<li><strong><a class="item" name="use_your_browser_to_access_index_xhtml_or_setup_via_commandline_see_setup">Use your browser to access <strong>index.xhtml</strong> or setup via commandline -
- see <a href="#setup">SETUP</a>.</a></strong>
+<li><strong><a class="item" name="installation">Use your browser to access <strong><a href="http://yourdomain.com/index.xhtml">http://yourdomain.com/index.xhtml</a></strong>  or setup via commandline -
+ see <strong>&quot;INSTALLATION (via command line)&quot;</strong>.</a></strong>
 
 </li>
 <li><strong><a class="item" name="check_the_system_and_troubleshoot_if_needed_look_at_the_apache_error_log_and_log_development_log">Check the system and troubleshoot :) if needed. Look at the apache
@@ -172,6 +172,33 @@ $MYDLjE_HOME are executable.</a></strong>
 </li>
 <li><strong><a class="item" name="enjoy_your_new_site_and_start_building_your_presence">Enjoy your new site and start building your presence.</a></strong>
 
+</li>
+</ol>
+<p>
+</p>
+
+<h1 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="installation__via_command_line_">INSTALLATION (via command line)</a></h1>
+<ol>
+<li><strong><a class="item" name="unpack_the_bundle_in_a_directory_visible_by_apache2">Unpack the bundle in a directory visible by Apache.</a></strong>
+
+</li>
+<li><strong><a class="item" name="create_a_database_and_user_using_the_example_found_in_conf_mysql_schema_sql_or_use_a_tool_like_mysql_grant_all_priviledges_of_the_database_to_the_user">Create a database and user using the example found in
+ <em>conf/mysql.schema.sql</em> or use a tool like &quot;mysql&quot;. 
+ Grant all priviledges of the database to the user.</a></strong>
+
+</li>
+<li><strong><a class="item" name="unix_only_make_sure_the_files_site_mydlje_and_cpanel_in_mydlje_home_are_executable2">Unix only: Make sure the files <code>site</code>, <code>mydlje</code> and <code>cpanel</code> in 
+$MYDLjE_HOME are executable.</a></strong>
+
+</li>
+<li><strong><a class="item" name="make_sure_the_server_can_write_in_forlders_tmp_log_conf_and_pub_home_in_mydlje_home2">Make sure the server can write in forlders <code>tmp</code>, <code>log</code>,
+ <code>conf</code> and <code>pub/home</code> in $MYDLjE_HOME.</a></strong>
+
+</li>
+<li><strong><a class="item" name="open_a_terminal_and_go_to_the_mydlje_root_directory">Open a terminal and go to the MYDLjE root directory:</a></strong>
+
+<pre>
+  you@yourcomputer:/pat/to/MYDLjE$ ./mydlje help SystemSetup</pre>
 </li>
 </ol>
 <p>
@@ -299,17 +326,6 @@ $MYDLjE_HOME are executable.</a></strong>
 
 </li>
 </ul>
-<p>
-</p>
-
-<h1 class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><a name="setup">SETUP</a></h1>
-<p>Create an empty database. See conf/mysql.schema.sql for an example.</p>
-To setup your system <a href="index.xhtml">go to index.xhtml</a>. Make sure
- the file is accessed trough HTTP(S) and not directly trough some file
- system. Follow the steps and you should be fine.<p>Many programmers prefer using a terminal. To set up the system this way,
- open a terminal and go to the MYDLjE root directory:</p>
-<pre>
-  you@yourcomputer:/pat/to/MYDLjE$ ./mydlje help system_setup</pre>
 <p>-----------------------</p>
 
 </div></div></body>

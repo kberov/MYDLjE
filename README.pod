@@ -6,7 +6,7 @@
 
 =head1 VERSION 
 
-01.09.18b4
+01.10.18b4
 
 =head1 DESCRIPTION
 

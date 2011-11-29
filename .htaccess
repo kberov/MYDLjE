@@ -1,5 +1,7 @@
 #Apache configuration for MYDLjE
-#set some Variables for MOJO
+# Move the content of this file to the virtual host 
+# configuration file for better performance.
+#Set some Variables for MOJO
 #Development:
 #SetEnv MOJO_RELOAD 1
 SetEnv MOJO_MODE  development
@@ -19,7 +21,7 @@ Options -Indexes +ExecCGI
 #Uncomment "IfModule !mod_fastcgi.c/IfModule" to prefer fastcgi 
 #<IfModule !mod_fastcgi.c>
 #set explicitly filenames as cgi scripts
-  <Files ~ "(mydlje|cpanel|site)$">
+  <Files ~ "^(mydlje|cpanel|site)$">
     SetHandler  cgi-script
   </Files>
 #</IfModule>

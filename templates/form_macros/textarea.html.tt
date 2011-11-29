@@ -26,7 +26,7 @@
     </div>
     <div class="elastic column " id="[% name_and_id _ '_field_column' %]"><div class="container field">
       <textarea id="[% params.id || name_and_id %]" name="[% name_and_id %]" class="textarea" 
-        style="height:[% params.height||'100px' %];width:100%;" >
+        style="min-height:[% params.height||'100px' %];" >
         [%~ params.value %]</textarea>
     </div></div>
     <div class="column span-2">

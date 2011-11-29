@@ -11,4 +11,14 @@
     <script src="pub/js/jquery-ui-current.custom.min.js" type="text/javascript" charset="utf-8"></script>
     <script src="pub/js/cpanel.js" type="text/javascript" charset="utf-8"></script>
     <script src="pub/js/md5-min.js" type="text/javascript" charset="utf-8"></script>
+    [% IF app.config('enable_markitup') +%]
+    <link rel="stylesheet" type="text/css" href="pub/js/markitup/skins/simple/style.css" />
+    <link rel="stylesheet" type="text/css" href="pub/js/markitup/sets/html/style.css" />
+    <link rel="stylesheet" type="text/css" href="pub/js/markitup/sets/textile/style.css" />
+    <link rel="stylesheet" type="text/css" href="pub/js/markitup/sets/markdown/style.css" />
+    <script type="text/javascript" src="pub/js/markitup/jquery.markitup.js"></script>
+    <script type="text/javascript" src="pub/js/markitup/sets/html/set.js"></script>
+    <script type="text/javascript" src="pub/js/markitup/sets/textile/set.js"></script>
+    <script type="text/javascript" src="pub/js/markitup/sets/markdown/set.js"></script>
+    [% END +%]
   </head>

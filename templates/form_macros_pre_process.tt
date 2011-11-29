@@ -38,7 +38,7 @@ PROCESS 'form_macros/text_simple_autocomplete_field.html.tt';
 #TODO
 #PROCESS 'form_macros/text_ajax_autocomplete_field.html.tt';
 PROCESS 'form_macros/text_datepicker_field.html.tt';
-#PROCESS 'form_macros/markitup_textarea.html.tt';
+PROCESS 'form_macros/markitup_textarea.html.tt';
 %]
 
 

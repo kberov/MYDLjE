@@ -1,1 +1,41 @@
+[%# 
+  Renders an enhanced by markItUp "<textarea />" 
+  with a localized label, error message and help boxes.
+  Params: 
+    arg - string - the name for the field
+    params - hash - attributes for the widged
+%]
+[%MACRO markitup_textarea(arg,params) BLOCK;
+  IF !app.config('enable_markitup');
+    textarea(arg,params);
+    RETURN;
+  END;
+  textarea(arg,params);
+  name_and_id = arg||params.name; 
+  name_and_id = name_and_id.replace('\.','\\\.');
+%]
+<script type="text/javascript">
+$(document).ready(function()    {
+  var textarea = $('#[%name_and_id%]') 
+  function switch_data_type(context) {
+    textarea.markItUpRemove();                   
+    newSet = $('option:selected',context).val();
+    switch(newSet) {
+      case 'textile':
+        textarea.markItUp(MarkItUpTextileSettings);
+        break;
+      case 'markdown':
+        textarea.markItUp(MarkItUpMarkdownSettings);
+        break;
+      case 'html':
+        textarea.markItUp(MarkItUpHTMLSettings);
+    }
+    return false;
+  }
+  var switcher = $('select#data_format');
+  switch_data_type(switcher);
+  switcher.change(switch_data_type);
+});
+</script>
+[%+ END %]
 

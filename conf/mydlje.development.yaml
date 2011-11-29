@@ -33,6 +33,8 @@ site_url: site
 #humanity, smoothness, ui-lightness, redmond, your-own
 jq_ui_theme: humanity
 
+#enhance textareas just enough
+enable_markitup: 1
 #supported languages:
 languages:
   - en

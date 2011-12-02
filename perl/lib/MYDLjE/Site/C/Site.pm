@@ -225,8 +225,10 @@ and other defined octions.
 
 =head1 DESCRIPTION
 
-This is the controller implementing actions to display domains, pages, 
-articles, news...
+This is the controller implementing actions to 
+display pages from any domain the system is configured to serve content for.
+In pages we embed different I<semantic types> of content
+(L<MYDLjE::M::Content/data_type>).
 
 =head1 ACTIONS
 
@@ -237,11 +239,12 @@ Fetches a page and its content from database (pages) and renders it.
 =head1 METHODS
 
 This controller defines some methods which are called internally in L</page>
- and are not available as separate actions.
+ and are not available as separate actions. However some description is provided
+ so you can get an idea on how they work together.
 
 =head2 _domains
 
-This is a direct call (with L<goto>) to L<MYDLjE::ControlPanel::C::Site/domains> 
+This is a direct call (with C<goto>) to L<MYDLjE::ControlPanel::C::Site/domains> 
 to detect the domain in which the L</page> method is called. 
 This way we know from which domain to retreive the requested page.
 
@@ -262,12 +265,15 @@ if C<$c-E<gt>stash('page_alias')> is empty. Called in L</_prepare_page>
 =head2 _get_page_404
 
 Retreives a page with C<page_type "404"> and returns it. 
-Such page B<I<must>> be defined for the current domain by the site administrator.
+Such page B<I<must>> be created for each domain by the site administrator
+using the "cpanel" application. 
+Called in L</_prepare_page> if no page is found by L</_get_page>.
 
 =head2 _prepare_content
 
 Retreives content from the database and puts it in the stash to be displayed by
-L<MYDLjE::Template::PageContent>. 
+L<MYDLjE::Template::PageContent>.
+
 The content is an array of instances of various L<MYDLjE::M::Content> subclasses.
 All of them have their L<page_id|MYDLjE::M::Content/page_id> attribute equal 
 to the current C<$page-E<gt>id>. The content elements are 
@@ -277,7 +283,8 @@ L<deleted|MYDLjE::M::Content/deleted> and
 L<language|MYDLjE::M::Content/language> attributes.
 The language is determined by C<$c-E<gt>stash('C_LANGUAGE')>. 
 All L<data_type|MYDLjE::M::Content/data_type>s are retreived except C<page> 
-which is considered as page properties and is retreived in L</_prepare_page>.
+which is used as page properties for the current page in the current language 
+and is retreived separately in L</_prepare_page>.
 
 =head2 _prepare_page
 
@@ -286,7 +293,7 @@ depending on various stash variables, defined by the current route
 and fills in the stash with the retreived data.
 
 The following stash variables are defined for display in the current domain 
-layout:
+or theme layout:
 
   $c->stash(
     TITLE       => $page_c->title,
@@ -297,6 +304,36 @@ layout:
     PAGE_C      => $page_c,
     C_LANGUAGE  => $c_language, #content language
   );
+
+=head2 detect_and_set_languages
+
+Detects user interface language and content language and sets them.
+
+Called in L</_prepare_page> before anything else. 
+The checks are made in the following order:
+
+  1. ui_language:
+    1. Current route with /:ui_language in it;
+    2. User browser preferences;
+    3. System supported languages 
+    (default language for Mojolicious::Plugin::I18N);
+  2. c_language:
+    1. GET/POST parameter "c_language";
+    2. Current ui_langauge (default);
+
+C<c_language> is stored in the current L<Mojolicious::Controller/session>  so you can use it:
+
+  my $content_language = $c->session('c_language');
+
+It is later passed to the stash as C<C_LANGUAGE> too so you can use it in templates.
+
+Note that in case you pass in your form or GET request c_language=bg but your 
+route looks like "/en/some_page/foo/bar/etc", L<_prepare_content> 
+will get content with C<lang='bg'> and L<_prepare_page> 
+will get page properties with C<lang='en'>. This may be a 
+required behaviour in some cases.
+
+
 
 =head1 SEE ALSO
 

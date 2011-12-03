@@ -169,6 +169,8 @@ sub render_bricks_to_boxes {
     ->hashes;
 
   return '' unless (scalar @$BRICKS);
+
+  my $table = MYDLjE::M::Content::Brick->TABLE;
   my $wrap = $self->get('SETTINGS')->{WRAP_BRICKS};
   foreach my $row (@$BRICKS) {
     my $brick          = MYDLjE::M::Content::Brick->new($row);
@@ -178,7 +180,6 @@ sub render_bricks_to_boxes {
     #Is this box filled in? Yes. Then put there nothing more.
     next if $self->get($box_filled_key);
     my $render = 'render_' . $brick->data_format;
-    my $table  = MYDLjE::M::Content::Brick->TABLE;
     if ($wrap) {
       my $language  = $brick->language;
       my $css_class = $brick->data_type . ' ' . $brick->data_format;
@@ -194,7 +195,7 @@ sub render_bricks_to_boxes {
       $BOXES->{$box} .= $self->$render($brick);
     }
 
-    #Mark the box as filled from within template to stop appending more bricks.
+    #Mark the box as filled from within its template to stop appending more bricks.
     #Example:
     #[% RIGHT_BOX_FILLED=1 %]
   }
@@ -255,6 +256,15 @@ Renders all page content.
 Renders all content elements with C<data_type> attribute C<brick> 
 (L<MYDLjE::M::Content::Brick>) and disposes them in C<BOXES>,
 defined in the current layout. 
+The language attribute of the bricks is C<C_LANGUAGE>. 
+Retreives the bricks for the current page and all parrent pages recursively.
+
+You can stop displaying/inheriting bricks from parrent pages in the current page.
+Depending on the box in which a brick is, 
+you set: C<[% RIGHT_BOX_FILLED=1 %]> and no more briks placed in C<RIGHT_BOX> 
+will be shown; C<[% LEFT_TOP_BOX_FILLED=1 %]> and no 
+more briks placed in C<LEFT_TOP_BOX> will be shown; etc. 
+
 Wraps the bricks with a div tag if C<SETTINGS.WRAP_BRICKS> is set to true.
 Called in L<MYDLjE::Template::PageContent/render> after L</render_content>.
 Can be callled separately in a site template.

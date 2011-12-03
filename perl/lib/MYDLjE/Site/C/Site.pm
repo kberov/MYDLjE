@@ -329,14 +329,15 @@ It is later passed to the stash as C<C_LANGUAGE> too so you can use it in templa
 
 Note that in case you pass in your form or GET request c_language=bg but your 
 route looks like "/en/some_page/foo/bar/etc", L<_prepare_content> 
-will get content with C<lang='bg'> and L<_prepare_page> 
-will get page properties with C<lang='en'>. This may be a 
+will get content with C<language='bg'> and L<_prepare_page> 
+will get page properties with C<language='en'>. This may be a 
 required behaviour in some cases.
 
 
 
 =head1 SEE ALSO
 
+L<MYDLjE::Template::PageContent>, 
 L<MYDLjE::Guides>, L<MYDLjE::Site::C>, L<MYDLjE::Site>, L<MYDLjE>
 
 =head1 AUTHOR AND COPYRIGHT

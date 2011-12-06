@@ -125,6 +125,7 @@ $t->get_ok($ENV{MYDLjE_ROOT_URL} . 'cpanel/home')->status_is(200)
   '#main-left-navigation #site li:nth-of-type(2) a',
   'Pages',
   'Pages menu item text ok'
+
 #  )->text_is(
 #  '#main-left-navigation #site li:nth-of-type(3) a',
 #  'Templates',

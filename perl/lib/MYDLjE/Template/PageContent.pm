@@ -171,7 +171,7 @@ sub render_bricks_to_boxes {
   return '' unless (scalar @$BRICKS);
 
   my $table = MYDLjE::M::Content::Brick->TABLE;
-  my $wrap = $self->get('SETTINGS')->{WRAP_BRICKS};
+  my $wrap  = $self->get('SETTINGS')->{WRAP_BRICKS};
   foreach my $row (@$BRICKS) {
     my $brick          = MYDLjE::M::Content::Brick->new($row);
     my $box            = $brick->box;

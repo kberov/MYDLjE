@@ -35,10 +35,14 @@ PROCESS 'form_macros/hidden_field.html.tt';
 PROCESS 'form_macros/permissions_field.html.tt';
 PROCESS 'form_macros/button_set.html.tt';
 PROCESS 'form_macros/text_simple_autocomplete_field.html.tt';
-#TODO
-#PROCESS 'form_macros/text_ajax_autocomplete_field.html.tt';
 PROCESS 'form_macros/text_datepicker_field.html.tt';
 PROCESS 'form_macros/markitup_textarea.html.tt';
+IF c.msession.guest; 
+  PROCESS 'form_macros/login_form.html.tt'; 
+END; 
+
+#TODO
+#PROCESS 'form_macros/text_ajax_autocomplete_field.html.tt';
 %]
 
 

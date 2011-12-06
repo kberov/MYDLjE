@@ -1,0 +1,96 @@
+<!-- start login_form -->
+[%#
+  A secure login form widget which is easily embedded in any template.
+    Params: 
+      action - string - the action for the form. willbe passed to c.url_for()
+      params - hash - attributes for the widged - NOT used yet.
+      
+  This form implements relatively secure authentication even 
+  for sites with no HTTPS support. 
+  The password is never submitted in clear-text
+  (unless JavaScript is disabled). But then the authenticating 
+  controller will not work.
+ 
+
+%]
+[% MACRO login_form(action, params) BLOCK +%]
+<script  type="text/javascript">//<![CDATA[
+  var error_messages = {
+    login_name: '[% c.l("login_field_error",c.l("login_name")) %]',
+    login_password: '[% c.l("login_field_error",c.l("login_password")) %]'
+  };
+  
+function validate_and_post_form (){
+  
+  var session_id = $('#session_id').val();
+  var login_name = $('#login_name').val();
+  var login_password = $('#login_password').val();
+  var errors = 0;
+  var messages = '';
+  $('#login_name,#login_password').each(function(){
+    $('#error-dialog').html(' ');
+    var current_value = $(this).val();
+    if(current_value == '' || current_value.length<4){
+      errors++;
+      $(this).addClass('ui-state-error');
+      messages += '<p class="ui-state-error ui-corner-all"><span class="ui-icon ui-icon-alert" '+
+        'style="float: left; margin-right: 0.3em;"></span>'+
+        error_messages[this.id] + '</p>';
+    }
+  });
+  if(errors>0){
+    $( "#error-dialog" ).html(messages);
+    $( "#error-dialog" ).dialog({
+    dialogClass: 'alert',
+    modal: true,
+    buttons: {
+        Ok: function() {
+            $( this ).dialog( "close" );
+        }
+    }
+    });
+    return false;
+  }else {
+    var temp_login_password = hex_md5(login_name + login_password );
+    
+    $('#login_password_md5').val(hex_md5(session_id + temp_login_password));
+    $('#login_password').val('');
+    return true;
+  }
+  return false;
+}
+/**
+  * Onload!
+  */
+$(window).load(function() {
+  submit_buton = $('#login_form .buttons button[type="submit"]');
+  submit_buton.click(validate_and_post_form);
+});
+//]]>
+</script>
+    <form id="login_form" action="[% c.url_for(action) %]" method="post"
+    class="ui-widget-content ui-corner-all">
+      <fieldset class="ui-widget-content ui-corner-all">
+        <legend class="ui-widget-header ui-corner-all">[% c.l('Login') %]</legend>
+        <div class="unit on-2 columns">
+          <div class="column span-2" style="display: [%
+          validator_errors ? 'block;':'none;' %]">
+            <div class="ui-state-error ui-corner-all">
+              [% validator_errors.values.join('<br/>') %]</div></div>
+          [% text_field('login_name',{required => 1}) %]
+          [% password_field('login_password',{required => 1}) %]
+          <div class="column span-2">
+            <div class="container buttons">
+              <button type="submit">[% c.l('Login') %]</button>
+            </div>
+          </div>
+        </div>
+        <!-- end div class="unit on-2 columns" -->
+        <input type="hidden" id="login_password_md5" name="login_password_md5" />
+        <input type="hidden" id="session_id" name="session_id" value="[% c.session('id') %]" />
+      </fieldset>
+    </form>
+    <div id="error-dialog" style="display:none" title="[% c.l('Error') %]"></div>
+
+<!-- end login_form -->
+[% END %]

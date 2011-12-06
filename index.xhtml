@@ -114,10 +114,14 @@
                 <div class="ui-state-active ui-corner-all ui-priority-primary">
                   <span class="ui-icon ui-icon-info" style="float: left; margin: .3em;"></span>
                   <h3>System is operational</h3>
-                  <p style="color:green">This page will be not visible any more. The "System Setup" plugin is disabled for security reasons.</p>
-                  <p style="color:green">Now log in to the administration application 
-                  <a href="cpanel">cpanel</a>  
-                  <br />and start building your site! And do not forget to have fun!</p>
+                  <p style="color:green">Now the "SystemSetup" plugin is disabled for security reasons (system_setup: 0) and 
+                  configuration flag "installed" is set to 1(installed: 1). See conf/local.mydlje.development.yaml.</p>
+                  <ol style="color:green">
+					<li>Please, delete this file(index.xhtml)!</li>
+					<li>Sign in to the administration application 
+						<a href="cpanel">cpanel</a> and start building your site!</li>
+					<li>Do not forget to have fun!</li>
+                  </ol>
                 </div>
               </div>
               <form id="system_setup" action="mydlje/system_config" method="post"
@@ -240,7 +244,7 @@
                     </div>
                     <div class="column">
                       <div class="container field">
-                        <input type="text" name="admin_user" />
+                        <input type="text" name="admin_user" title="The user CAN NOT be named 'admin' nor 'guest'!!!" />
                       </div>
                     </div>
                     <div class="column span-2">

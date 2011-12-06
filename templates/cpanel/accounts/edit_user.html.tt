@@ -34,7 +34,7 @@ disabled start stop properties
   </div>
 <div class="unit on-2 columns">
   <div class="column">
-      [% text_field('login_name') %]
+      [% text_field_readonly('login_name') %]
     </div>
     <div class="column">
       [% text_field_readonly('primary_group', {label=>c.l('group').ucfirst}); %]

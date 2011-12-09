@@ -10,6 +10,7 @@ i18n_messages = {
   //TODO
 };
 var errors = 0;
+var successes = 0;
 var alert_icon = '<span class="ui-icon ui-icon-alert" style="float: left; margin-right:.3em;"></span>';
 var ok_icon = '<span class="ui-icon ui-icon-check" style="float: left; margin-right:.3em;"></span>';
 

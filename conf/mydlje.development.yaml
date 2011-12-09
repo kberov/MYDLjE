@@ -116,4 +116,11 @@ MYDLjE::Content::Form::ui:
     - markdown
     - html
     - template
+#See http://docs.jquery.com/UI/Datepicker/formatDate
+jq_date_format: 'yy-mm-dd'
+#See perldoc Time::Piece
+date_time_format: '%Y-%m-%d %H:%M'
+date_timeseconds_format: '%Y-%m-%d %H:%M:%S'
+date_format: '%Y-%m-%d'
+time_format: '%H:%M'
 

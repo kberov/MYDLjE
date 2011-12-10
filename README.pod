@@ -28,10 +28,10 @@ The framework name is an acronym. It stands for: B<Mojolicious, YAML, DBI*,
 
 MYDLjE comes with three bundled web-applications around and on top of which
  you (the developer) can build even more powerful domain specific
- applications. The applications are based on Mojolicious, so if you (the
+ applications. The applications are based on L<Mojolicious>, so if you (the
  developer) know how it works, please feel at home! The applications are
  intended to be easy to use (intuitive) for the average computer-literate
- user, so the admin is not needed all the time :).
+ user, so an administrator is not needed all the time :).
 
 =head2 CONTROL PANEL (cpanel)
 
@@ -66,7 +66,7 @@ This is your front-end application intended for the public. Build a site or
 
 This is the most tested environment targeted by MYDLjE.  
 
-=item * nginx/0.8 or next with Starman;
+=item * nginx/0.8 or next with Starman or Hypnotoad;
 
 See example configurations in $MYDLjE_HOME/conf/nginx*.conf
 and application starters in $MYDLjE_HOME/perl/bin.

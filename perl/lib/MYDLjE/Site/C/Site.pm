@@ -44,21 +44,33 @@ sub _prepare_content {
   my $data_type = $c->stash('data_type');
   my $modules   = Mojo::Loader->search('MYDLjE::M::Content');
 
+  #get content with the given data_type,alias and  page_id=$page->id
   if ($c->stash('alias')) {
-    my $module = first { $_ eq $data_type } @$modules;
-    my $e = Mojo::Loader->load($module);
-    Mojo::Exception->throw($e) if $e;
-    $ct_where->{alias} = $c->stash('alias');
-    my $content = $module->select($ct_where);
-    if (not $content->id) {
-      $content = $module->new->data(
-        title       => 'Not found',
-        body        => 'Not found',
-        data_format => 'text',
-      );
+    my $module = first { $_ =~ /$data_type$/ix } @$modules;
+    if ($module) {
+      my $e = Mojo::Loader->load($module);
+      Mojo::Exception->throw($e) if $e;
+      $ct_where->{alias} = $c->stash('alias');
+      $c->debug('$ct_where:' . $c->dumper($ct_where));
+      my $content = $module->select($ct_where);
+      if (not $content->id) {
+        $content = $module->new->data(
+          title       => 'Not found',
+          body        => 'Not found',
+          data_format => 'text',
+        );
+      }
+      $c->stash(CONTENT => [$content]);
+      return;
     }
-    $c->stash(CONTENT => [$content]);
-    return;
+    else {
+      $c->app->log->warn('Could not map $data_type "'
+          . $data_type
+          . '" to Module: "MYDLjE::M::Content::'
+          . Mojo::Util::camelize($data_type)
+          . '"!');
+      delete $c->stash->{'alias'};
+    }
   }
 
   #No alias, so get a list!

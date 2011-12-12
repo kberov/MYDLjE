@@ -67,7 +67,12 @@ sub _get_input {
     my $path = $r->template_path($options);
 
     $path = \$inline if defined $inline;
-
+	if($^O=~/win/i){
+		#remove drive letter..ye this means templates are always on the same drive
+		$path =~ s/^\w\://i;
+		$path =~ s/\\/\//g;
+		#$c->debug($path);
+	}
     return unless defined $path && defined $tname;
 
     return ref $path ? $path # inline

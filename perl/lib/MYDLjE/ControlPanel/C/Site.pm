@@ -345,7 +345,7 @@ sub _validate_page {
   $v->field([qw(page.hidden page.cache)])
     ->each(sub { shift->regexp($page->FIELDS_VALIDATION->{cache}{regexp}) });
   $v->field('page.sorting')->regexp($page->FIELDS_VALIDATION->{sorting}{regexp});
-  $v->field('page.expiry')->regexp($page->FIELDS_VALIDATION->{expiry}{regexp});
+  $v->field('page.expiry')->inflate(\&M::zero_inflate)->regexp($page->FIELDS_VALIDATION->{expiry}{regexp});
   $form->{'page.permissions'} ||= $page->permissions;
   $v->field('page.permissions')
     ->regexp($page->FIELDS_VALIDATION->{permissions}{regexp});

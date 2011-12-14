@@ -35,12 +35,22 @@ sub render_template {
     }
   }
   $template || return '';
+
   Mojo::Util::html_unescape $template;
+  my $templ;
+  if ($template !~ /\.\w+$/x) {
+
+    #NOT a file name with extension, so treat it as a template string
+    $templ = \$template;
+  }
+  else {
+    $templ = $template;
+  }
   my $out = '';
 
   #SELF: Reference to the record from within its template
   my $ok = eval {
-    $out .= $self->process(\$template, {SELF => $RECORD});
+    $out .= $self->process($templ, {SELF => $RECORD});
     1;
   };
   unless ($ok) {

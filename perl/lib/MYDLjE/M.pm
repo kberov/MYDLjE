@@ -36,6 +36,8 @@ sub FIELDS_VALIDATION {
 #which will be preppended to $where argument for the select() method
 has WHERE => sub { {} };
 
+has rows => sub { [] };
+
 #METHODS
 sub new {
   my ($class, $fields) = get_obj_args(@_);
@@ -46,7 +48,7 @@ sub new {
   return $self;
 }
 
-#get data from satabase
+#get data from database
 sub select {    ##no critic (Subroutines::ProhibitBuiltinHomonyms)
   my ($self, $where) = get_obj_args(@_);
 
@@ -57,6 +59,22 @@ sub select {    ##no critic (Subroutines::ProhibitBuiltinHomonyms)
   $where = {%$where, %{$self->WHERE}};
 
   $self->{data} = $self->dbix->select($self->TABLE, $self->COLUMNS, $where)->hash;
+  return $self;
+}
+
+sub select_all {
+  my ($self, $where) = get_obj_args(@_);
+
+  #instantiate if needed
+  unless (ref $self) {
+    $self = $self->new();
+  }
+  $where = {%$where, %{$self->WHERE}};
+
+  my $order = delete $where->{'order'};
+
+  $self->{rows} =
+    [$self->dbix->select($self->TABLE, $self->COLUMNS, $where, $order)->hashes];
   return $self;
 }
 
@@ -407,7 +425,18 @@ The constructor. Instantiates a fresh MYDLjE::M based object. Generates getters 
 Instantiates an object from a saved in the database row by constructing and executing an SQL query based on the parameters. These parameters are used to construct the C<WHERE> clause for the SQL C<SELECT> statement. The API is the same as for L<DBIx::Simple/select> or L<SQL::Abstract/select> which is used internally. Prepends the L</WHERE> clause defined by you to the parameters. If a row is found puts in L</data>. Returns C<$self>.
 
   my $user = MYDLjE::M::User->select(id => $user_id);
-  
+
+
+=head2 select_all
+
+Selects many records from this class L</TABLE> and this class L</COLUMNS>. 
+The paramethers  C<$where> and  C<$order> are the same as described in L<SQL::Abstract>.
+Returns an array reference of hashes. If you want objects, you must instantate them one by one.
+
+  my $users_as_hashes = MYDLjE::M::User->select_all($where, $order)->rows;
+  #but i need MYDLjE::M::User instances
+  my @users_as_objects = map {MYDLjE::M::User->new($_)} @$userS_as_hashes;
+
 =head2 data
 
 Common getter/setter for all L</COLUMNS>. 

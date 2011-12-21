@@ -15,7 +15,7 @@ has COLUMNS => sub {
   [ qw(
       id title alias pid page_id user_id sorting data_type data_format
       time_created tstamp description keywords tags box
-      body language group_id permissions featured bad start stop
+      body language group_id permissions featured bad start stop accepted
       )
   ];
 };
@@ -139,7 +139,7 @@ sub user_id {
 sub group_id {
   my ($self, $value) = @_;
   if ($value) {                             #setting
-    $self->{data}{group_id} = $self->validate_field(group_id => $value);
+    $self->{data}{group_id} = $self->_check(group_id=>$value);
     return $self;
   }
   return $self->{data}{group_id};           #getting

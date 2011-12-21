@@ -29,7 +29,7 @@ sub register {
 
   my $xml_sql =
     Mojo::Asset::File->new(path => $app->home . '/conf/mysql.queries.sql')->slurp;
-  my $dom = Mojo::DOM->new(charset => $app->config('plugins')->{charset}{charset});
+  my $dom = Mojo::DOM->new->charset($app->config('plugins')->{charset}{charset});
   $dom->parse($xml_sql);
   my $queries = {};
   for my $q ($dom->find('query[name]')->each) {

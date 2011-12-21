@@ -18,7 +18,7 @@ MACRO link_to_ui_language(language) BLOCK;
 # example: en => English, bg=> Bulgarian
 # LANGUAGE is defined in site_pre_process.tt
 %]
-<a href="[% c.url_for().query(ui_language => language) %]"
+<a href="[% c.url_for('/' _ language) %]"
   title="[% c.l(language) %]">
   <img src="pub/css/icons/flags/[% language %].png"
     [%- IF LANGUAGE eq language; ' class="active" '; END; -%]

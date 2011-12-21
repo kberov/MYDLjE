@@ -1,15 +1,6 @@
 package MYDLjE::M::Content::Answer;
 use Mojo::Base 'MYDLjE::M::Content';
 
-has COLUMNS => sub {
-  [ qw(
-      id alias pid page_id user_id sorting data_type data_format
-      time_created tstamp title description keywords tags
-      body language group_id permissions featured bad start stop accepted
-      )
-  ];
-};
-
 has WHERE => sub { {data_type => 'answer', deleted => 0} };
 
 1;

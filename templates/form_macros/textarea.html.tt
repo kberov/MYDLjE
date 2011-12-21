@@ -11,6 +11,9 @@
   params.value ||= form.${name_and_id};
   label = name_and_id.replace('[^\.]+\.','');
   name_and_id_help = params.help|| label _ '_help';
+  params.width ||= '400px';
+  params.min_height ||= '100px';
+  params.height ||= '400px';
 +%]
 <!-- start [%+ name_and_id %]_unit -->
 <div class="unit on-2 columns" id="[% name_and_id %]_unit">
@@ -26,7 +29,7 @@
     </div>
     <div class="elastic column " id="[% name_and_id _ '_field_column' %]"><div class="container field">
       <textarea id="[% params.id || name_and_id %]" name="[% name_and_id %]" class="textarea" 
-        style="min-height:[% params.height||'100px' %];" >
+        style="min-height:[% params.min_height %]; height:[% params.height %]; width:[% params.width %];" >
         [%~ params.value %]</textarea>
     </div></div>
     <div class="column span-2">

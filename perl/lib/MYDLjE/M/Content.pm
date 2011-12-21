@@ -139,7 +139,7 @@ sub user_id {
 sub group_id {
   my ($self, $value) = @_;
   if ($value) {                             #setting
-    $self->{data}{group_id} = $self->validate_field(group_id => $value);
+    $self->{data}{group_id} = $self->_check(group_id=>$value);
     return $self;
   }
   return $self->{data}{group_id};           #getting

@@ -216,10 +216,11 @@ sub validate_field {
 
 #Common field definitions to be used accross all subclasses
 my $id_regexp   = {regexp => qr/^\d+$/x};
+my $id_allow    = {allow => qr/^\d+$/x};
 my $bool_regexp = {regexp => qr/^[01]$/x};
 my $FIELD_DEFS  = {
   id        => {required => 0, %$id_regexp},
-  pid       => {required => 1, %$id_regexp},
+  pid       => {required => 1, %$id_allow},
   domain_id => {required => 1, %$id_regexp},
   alias32   => {required => 1, regexp => qr/^[\-_a-zA-Z0-9]{2,32}$/x,},
   alias     => {required => 1, regexp => qr/^[\-_a-zA-Z0-9]{2,255}$/x,},
@@ -240,7 +241,7 @@ my $FIELD_DEFS  = {
       $/x,
   },
   user_id     => {required => 1, %$id_regexp},
-  group_id    => {required => 1, %$id_regexp},
+  group_id    => {required => 1, %$id_allow},
   cache       => {required => 0, %$bool_regexp},
   deleted     => {required => 0, %$bool_regexp},
   hidden      => {required => 0, %$bool_regexp},
@@ -271,6 +272,20 @@ sub sql {
   }
   Carp::cluck('Empty SQL QUERY!!! boom!!?');
   return '';
+}
+use Params::Check;
+sub _check {
+  my ($self, $key, $value) = @_;
+#warn Data::Dumper::Dumper($self->FIELD_DEF($key));
+#die;
+  local $Params::Check::WARNINGS_FATAL = 1;
+  local $Params::Check::CALLER_DEPTH = $Params::Check::CALLER_DEPTH + 1;
+
+  my $args_out = Params::Check::check({$key => $FIELD_DEFS->{$key}}, {$key => $value});
+#  warn Data::Dumper::Dumper($args_out);
+#die;
+  Carp::confess(Params::Check::last_error) unless $args_out;
+  return $args_out->{$key};
 }
 
 1;

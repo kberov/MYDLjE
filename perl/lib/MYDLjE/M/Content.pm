@@ -74,6 +74,27 @@ has FIELDS_VALIDATION => sub {
   };
 };
 
+my $FIELDS = {
+  %{__PACKAGE__->SUPER::FIELDS},
+  data_type   => {required => 1, allow => qr/^$MRE{data_types}$/x},
+  body        => {default  => ''},
+  data_format => {
+    required => 1,
+    allow    => qr/^(textile|text|html|markdown|template)$/x,
+  },
+  language => {
+      allow     => sub{
+        $_[0] //= '';
+        $_[0] =~ s/^([a-z]{0,2})/$1/x;
+        $_[0] = '' unless (I18N::LangTags::List::name($_[0]));
+        },
+      },
+};
+
+#Works only with current package fields!!!
+sub FIELDS {
+  return $_[1] ? $FIELDS->{$_[1]} : $FIELDS;
+}
 sub new { my $self = shift->SUPER::new(@_); $self->data_type; return $self; }
 
 #Make some attributes which are appropriate to any data_type of content
@@ -81,7 +102,7 @@ sub new { my $self = shift->SUPER::new(@_); $self->data_type; return $self; }
 sub alias {
   my ($self, $value) = @_;
   if ($value) {
-    $self->{data}{alias} = $self->validate_field(alias => $value);
+    $self->{data}{alias} = $self->_check(alias => $value);
     $self->{data}{alias} =~ s/\W+$//x;
     $self->{data}{alias} =~ s/^\W+//x;
     return $self;
@@ -102,7 +123,7 @@ sub alias {
 sub data_type {
   my ($self, $value) = @_;
   if ($value) {
-    $self->{data}{data_type} = $self->validate_field(data_type => $value);
+    $self->{data}{data_type} = $self->_check(data_type => $value);
 
     return $self;
   }
@@ -121,7 +142,7 @@ sub tstamp {
 sub id {
   my ($self, $value) = @_;
   if (defined $value) {                     #setting
-    $self->{data}{id} = $self->validate_field(id => $value);
+    $self->{data}{id} = $self->_check(id => $value);
     return $self;
   }
   return $self->{data}{id};                 #getting
@@ -130,7 +151,7 @@ sub id {
 sub user_id {
   my ($self, $value) = @_;
   if ($value) {                             #setting
-    $self->{data}{user_id} = $self->validate_field(user_id => $value);
+    $self->{data}{user_id} = $self->_check(user_id => $value);
     return $self;
   }
   return $self->{data}{user_id};            #getting
@@ -139,7 +160,7 @@ sub user_id {
 sub group_id {
   my ($self, $value) = @_;
   if ($value) {                             #setting
-    $self->{data}{group_id} = $self->_check(group_id=>$value);
+    $self->{data}{group_id} = $self->_check(group_id => $value);
     return $self;
   }
   return $self->{data}{group_id};           #getting
@@ -148,7 +169,7 @@ sub group_id {
 sub pid {
   my ($self, $value) = @_;
   if (defined $value) {                     #setting
-    $self->{data}{pid} = $self->validate_field(pid => $value);
+    $self->{data}{pid} = $self->_check(pid => $value);
     if (defined $self->{data}{id} && $self->{data}{pid} == $self->{data}{id}) {
       Carp::confess(
         $self->TABLE . '.pid field can not be the same as ' . $self->TABLE . '.id!');
@@ -161,7 +182,7 @@ sub pid {
 sub permissions {
   my ($self, $value) = @_;
   if (defined $value) {                     #setting
-    $self->{data}{permissions} = $self->validate_field(permissions => $value);
+    $self->{data}{permissions} = $self->_check(permissions => $value);
     return $self;
   }
   return $self->{data}{permissions} ||= '-rwxr-xr-x';    #getting
@@ -170,7 +191,7 @@ sub permissions {
 sub title {
   my ($self, $value) = @_;
   if ($value) {                                          #setting
-    $self->{data}{title} = $self->validate_field(title => $value);
+    $self->{data}{title} = $self->_check(title => $value);
     return $self;
   }
   return $self->{data}{title};                           #getting
@@ -200,8 +221,7 @@ sub featured {
     $self->{data}{featured} = 1;
     return $self;
   }
-  return $self->{data}{featured} if defined $self->{data}{featured};    #getting
-  return $self->{data}{featured} = 0;                                   #default
+  return $self->{data}{featured} ||= 0;                                   #default
 }
 
 sub sorting {
@@ -216,7 +236,7 @@ sub sorting {
 sub data_format {
   my ($self, $value) = @_;
   if ($value) {                                                         #setting
-    $self->{data}{data_format} = $self->validate_field(data_format => $value);
+    $self->{data}{data_format} = $self->_check(data_format => $value);
     return $self;
   }
   return $self->{data}{data_format};                                    #getting
@@ -235,17 +255,17 @@ sub time_created {
 sub body {
   my ($self, $value) = @_;
   if ($value) {                                                         #setting
-    $self->{data}{body} = $self->validate_field(body => $value);
+    $self->{data}{body} = $self->_check(body => $value);
     return $self;
   }
-  return $self->{data}{body};                                           #getting
+  return $self->{data}{body} || '';                                     #getting
 }
 
 
 sub language {
   my ($self, $value) = @_;
   if ($value) {                                                         #setting
-    $self->{data}{language} = $self->validate_field(language => $value);
+    $self->{data}{language} = $self->_check(language => $value);
     return $self;
   }
   return $self->{data}{language} ||= '';                                #getting
@@ -258,8 +278,7 @@ sub bad {
     $self->{data}{bad}++;
     return $self;
   }
-  return $self->{data}{bad} if defined $self->{data}{bad};              #getting
-  return $self->{data}{bad} = 0;                                        #default
+  return $self->{data}{bad} //= 0;                                        #default
 }
 
 sub start {

@@ -48,13 +48,22 @@ my $data  = {
   group_id    => 2,
   data_type   => 'note',
   data_format => 'html',
-  alias       => $alias
+  title       => 'EHAAAAAA <br/>' . $time,
+  alias       => $alias,
 };
 my $content = MYDLjE::M::Content->new(%{$data});
 isa_ok($content->dbix, 'DBIx::Simple');
 is($content->{data}{data_type},
   'note', 'content has correct data_type because it is explicitely defined');
 $content->body('<p>Hello</p>');
+#warn $content->title;
+use Benchmark;
+timethis(10000, sub { MYDLjE::M::Content->new($content->data); });
+timethis(10000, sub { $content->group_id(2); });
+
+#done_testing();
+#exit;
+
 is($content->user_id, 1, 'user_id is ' . $content->user_id);
 $content->user_id(2);
 is($content->user_id, 2, 'user_id is ' . $content->user_id);
@@ -131,10 +140,10 @@ $answer->save();
 
 #Use Custom data_type
 my $custom = MYDLjE::M::Content->new(alias => $alias, user_id => 2, group_id => 2);
-delete $custom->FIELDS_VALIDATION->{data_type}{constraints};
-$custom->data_type('alabala');
-$custom->body('alabala body');
-is($custom->data_type,                'alabala', 'custom data_type');
+#delete $custom->FIELDS_VALIDATION->{data_type}{constraints};
+#$custom->data_type('alabala');
+#$custom->body('alabala body');
+#is($custom->data_type,                'alabala', 'custom data_type');
 is($custom->language,                 '',        'language ok');
 is($custom->language('bg')->language, 'bg',      'language ok');
 is(
@@ -147,8 +156,8 @@ ok($custom->save, 'saving custom data_type is ok');
 #Retreive Custom data_type
 $custom = MYDLjE::M::Content->new;
 is($custom->data_type, 'content', 'default data_type is ' . $custom->data_type);
-delete $custom->FIELDS_VALIDATION->{data_type}{constraints};
-is($custom->data_type('alabala')->data_type, 'alabala', 'custom data_type');
+#delete $custom->FIELDS_VALIDATION->{data_type}{constraints};
+#is($custom->data_type('alabala')->data_type, 'alabala', 'custom data_type');
 is($custom->select(alias => $alias)->data_type,
   'alabala', 'custom data_type retrieved ok');
 is($custom->alias,    $alias, 'custom alias is unique for this data type');

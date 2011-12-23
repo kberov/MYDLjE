@@ -1,0 +1,6 @@
+--regex-perl=/^\s*?use\s+(\w+[\w\:]*?\w*?)/\1/u,use,uses/
+--regex-perl=/^\s*?require\s+(\w+[\w\:]*?\w*?)/\1/r,require,requires/
+--regex-perl=/^\s*?has\s+['"]?(\w+)['"]?/\1/a,attribute,attributes/
+--regex-perl=/^=head[1-5]\s+(.+)/\1/p,pod,Plain Old Documentation/
+#Additional ctags regexes for Perl.
+#Put this file in $HOME/.ctags or $HOME/ctags.cnf (on MSDOS, MSWindows only)

@@ -83,12 +83,12 @@ my $FIELDS = {
     allow    => qr/^(textile|text|html|markdown|template)$/x,
   },
   language => {
-      allow     => sub{
-        $_[0] //= '';
-        $_[0] =~ s/^([a-z]{0,2})/$1/x;
-        $_[0] = '' unless (I18N::LangTags::List::name($_[0]));
-        },
-      },
+    allow => sub {
+      $_[0] //= '';
+      $_[0] = '' unless ($_[0] && I18N::LangTags::List::name($_[0]));
+      1;
+    },
+  },
 };
 
 #Works only with current package fields!!!
@@ -221,84 +221,84 @@ sub featured {
     $self->{data}{featured} = 1;
     return $self;
   }
-  return $self->{data}{featured} ||= 0;                                   #default
+  return $self->{data}{featured} ||= 0;                  #default
 }
 
 sub sorting {
   my ($self, $value) = @_;
-  if ($value) {                                                         #setting
+  if ($value) {                                          #setting
     $self->{data}{sorting} = $self->validate_field(sorting => $value);
     return $self;
   }
-  return $self->{data}{sorting};                                        #getting
+  return $self->{data}{sorting};                         #getting
 }
 
 sub data_format {
   my ($self, $value) = @_;
-  if ($value) {                                                         #setting
+  if ($value) {                                          #setting
     $self->{data}{data_format} = $self->_check(data_format => $value);
     return $self;
   }
-  return $self->{data}{data_format};                                    #getting
+  return $self->{data}{data_format};                     #getting
 }
 
 sub time_created {
   my ($self, $value) = @_;
-  if ($value) {                                                         #setting
+  if ($value) {                                          #setting
     if   ($value =~ /(\d{10,})/x) { $self->{data}{time_created} = $1 }
     else                          { $self->{data}{time_created} = time; }
     return $self;
   }
-  return $self->{data}{time_created} ||= time;                          #getting
+  return $self->{data}{time_created} ||= time;           #getting
 }
 
 sub body {
   my ($self, $value) = @_;
-  if ($value) {                                                         #setting
+  if ($value) {                                          #setting
     $self->{data}{body} = $self->_check(body => $value);
     return $self;
   }
-  return $self->{data}{body} || '';                                     #getting
+  return $self->{data}{body} || '';                      #getting
 }
 
 
 sub language {
   my ($self, $value) = @_;
-  if ($value) {                                                         #setting
+  if ($value) {                                          #setting
     $self->{data}{language} = $self->_check(language => $value);
     return $self;
   }
-  return $self->{data}{language} ||= '';                                #getting
+  return $self->{data}{language} ||= '';                 #getting
 }
 
 
 sub bad {
   my ($self, $value) = @_;
-  if ($value) {                                                         #setting
+  if ($value) {                                          #setting
     $self->{data}{bad}++;
     return $self;
   }
-  return $self->{data}{bad} //= 0;                                        #default
+  return $self->{data}{bad} //= 0;                       #default
 }
 
 sub start {
   my ($self, $value) = @_;
-  if ($value) {                                                         #setting
+  if ($value) {                                          #setting
     if   ($value =~ /(\d{10,})/x) { $self->{data}{start} = $1 }
     else                          { $self->{data}{start} = 0; }
     return $self;
   }
-  return $self->{data}{start} ||= 0;                                    #getting
+  return $self->{data}{start} ||= 0;                     #getting
 }
 
 sub stop {
   my ($self, $value) = @_;
-  if ($value) {                                                         #setting
+  if ($value) {                                          #setting
     if   ($value =~ /(\d{10,})/x) { $self->{data}{stop} = $1 }
     else                          { $self->{data}{stop} = 0; }
     return $self;
   }
-  return $self->{data}{stop} ||= 0;                                     #getting
+  return $self->{data}{stop} ||= 0;                      #getting
 }
 
 1;

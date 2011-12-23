@@ -159,6 +159,7 @@ SUB
 sub zero_inflate {
   return shift->value || '0';
 }
+
 sub no_markup_inflate {
   my $filed = shift;
   my $value = $filed->value || '';
@@ -245,19 +246,20 @@ my $FIELD_DEFS  = {
       $MRE{perms}{rwx} # other's permissions - (r)ead,(w)rite,e(x)ecute
       $/x,
   },
-  user_id     => {required => 1, %$id_regexp},
-  group_id    => {required => 1, %$id_regexp},
-  cache       => {required => 0, %$bool_regexp, inflate => \&zero_inflate},
-  deleted     => {required => 0, %$bool_regexp},
-  hidden      => {required => 0, %$bool_regexp, inflate => \&zero_inflate},
-  changed_by  => {required => 1, %$id_regexp},
+  user_id    => {required => 1, %$id_regexp},
+  group_id   => {required => 1, %$id_regexp},
+  cache      => {required => 0, %$bool_regexp, inflate => \&zero_inflate},
+  deleted    => {required => 0, %$bool_regexp},
+  hidden     => {required => 0, %$bool_regexp, inflate => \&zero_inflate},
+  changed_by => {required => 1, %$id_regexp},
   title       => {required => 0, inflate => \&no_markup_inflate},
   description => {required => 0, inflate => \&no_markup_inflate},
-  domain      => {required => 1, regexp => domain_regexp()},
-  start  => {required => 0, %$id_regexp, inflate => \&zero_inflate},
+  domain      => {required => 1, regexp  => domain_regexp()},
+  start => {required => 0, %$id_regexp, inflate => \&zero_inflate},
 };
 $FIELD_DEFS->{name} = $FIELD_DEFS->{title};
 $FIELD_DEFS->{stop} = $FIELD_DEFS->{start};
+
 sub FIELD_DEF {
   my ($self, $key) = @_;
   if ($FIELD_DEFS->{$key}) {
@@ -287,7 +289,7 @@ my $FIELDS     = {
       }
   },
   permissions => {
-    allow => sub{
+    allow => sub {
       $_[0] ||= '-rwxr-xr-x';
       $_[0] =~ /^
       $MRE{perms}{ldn} # is this a directory, link or a regular record ?

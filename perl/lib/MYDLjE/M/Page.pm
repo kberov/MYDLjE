@@ -29,7 +29,7 @@ has FIELDS_VALIDATION => sub {
       constraints => [{in => ['regular', 'default', 'folder', '404']},]
     },
     $self->FIELD_DEF('sorting'),
-    expiry => {regexp => qr/^\d{1,6}$/x,},
+    expiry => {regexp => qr/^\d{1,6}$/x, inflate => \&zero_inflate},
     $self->FIELD_DEF('permissions'),
     $self->FIELD_DEF('user_id'),
     $self->FIELD_DEF('group_id'),
@@ -100,6 +100,16 @@ sub modify_pid {
   else {
     return 0;
   }
+}
+
+
+sub changed_by {
+  my ($self, $value) = @_;
+  if (defined $value) {    #setting
+    $self->{data}{changed_by} = $self->_check(changed_by => $value);
+    return $self;
+  }
+  return $self->{data}{changed_by} ||= $self->{data}{user_id} || 0;    #getting
 }
 
 1;

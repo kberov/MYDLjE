@@ -48,7 +48,6 @@ my $data  = {
   group_id    => 2,
   data_type   => 'note',
   data_format => 'html',
-  title       => 'EHAAAAAA <br/>' . $time,
   alias       => $alias,
 };
 my $content = MYDLjE::M::Content->new(%{$data});
@@ -56,10 +55,10 @@ isa_ok($content->dbix, 'DBIx::Simple');
 is($content->{data}{data_type},
   'note', 'content has correct data_type because it is explicitely defined');
 $content->body('<p>Hello</p>');
-#warn $content->title;
-use Benchmark;
-timethis(10000, sub { MYDLjE::M::Content->new($content->data); });
-timethis(10000, sub { $content->group_id(2); });
+
+#use Benchmark;
+#timethis(10000, sub { MYDLjE::M::Content->new($content->data); });
+#timethis(10000, sub { $content->group_id(2); });
 
 #done_testing();
 #exit;
@@ -140,12 +139,14 @@ $answer->save();
 
 #Use Custom data_type
 my $custom = MYDLjE::M::Content->new(alias => $alias, user_id => 2, group_id => 2);
+
 #delete $custom->FIELDS_VALIDATION->{data_type}{constraints};
 #$custom->data_type('alabala');
-#$custom->body('alabala body');
+$custom->body('alabala body');
+
 #is($custom->data_type,                'alabala', 'custom data_type');
-is($custom->language,                 '',        'language ok');
-is($custom->language('bg')->language, 'bg',      'language ok');
+is($custom->language,                 '',   'language ok');
+is($custom->language('bg')->language, 'bg', 'language ok');
 is(
   $custom->tags('perl,| Content-Management,   javaScript||jAvA')->tags,
   'perl, content-management, javascript, java',
@@ -156,13 +157,14 @@ ok($custom->save, 'saving custom data_type is ok');
 #Retreive Custom data_type
 $custom = MYDLjE::M::Content->new;
 is($custom->data_type, 'content', 'default data_type is ' . $custom->data_type);
+
 #delete $custom->FIELDS_VALIDATION->{data_type}{constraints};
 #is($custom->data_type('alabala')->data_type, 'alabala', 'custom data_type');
 is($custom->select(alias => $alias)->data_type,
-  'alabala', 'custom data_type retrieved ok');
+  'content', 'custom data_type retrieved ok');
 is($custom->alias,    $alias, 'custom alias is unique for this data type');
-is($custom->language, 'bg',   'language ok');
-is($custom->language('bgsds')->language, '', 'language ok');
+is($custom->language, 'bg',   'language ok - ' . $custom->language);
+is($custom->language('bgsds')->language, '', 'language ok - ' . $custom->language);
 
 is($custom->body, 'alabala body', 'custom retrieved ok');
 
@@ -337,6 +339,7 @@ is($page->user_id($sstorage->user->id)->user_id,
   $sstorage->user->id, '$page->user_id is ' . $page->user_id);
 is($page->group_id($sstorage->user->group_id)->group_id,
   $sstorage->user->group_id, '$page->group_id is ' . $page->group_id);
+is($page->changed_by, $sstorage->user->id, '$page->changed_by is ' . $page->user_id);
 
 #READ
 is($page->permissions('-r--r--r--')->permissions,

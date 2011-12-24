@@ -106,7 +106,7 @@ sub modify_pid {
 sub changed_by {
   my ($self, $value) = @_;
   if (defined $value) {    #setting
-    $self->{data}{changed_by} = $self->_check(changed_by => $value);
+    $self->{data}{changed_by} = $self->check(changed_by => $value);
     return $self;
   }
   return $self->{data}{changed_by} ||= $self->{data}{user_id} || 0;    #getting

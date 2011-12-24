@@ -172,9 +172,12 @@ is($custom->body, 'alabala body', 'custom retrieved ok');
 
 #cleanup
 $content->dbix->delete($content->TABLE,
-  {alias => {-like => ['test%', 'what-brcan-i-doooo']}});
+  {alias => {-like => ['test%', '%what-brcan-i-do%']}});
 
 #=cut
+
+#done_testing;
+#exit;
 
 # test MYDLjE::M::Session
 require MYDLjE::M::Session;
@@ -336,7 +339,7 @@ is($page->pid,       0,              '$page->pid is ' . $page->pid);
 is($page->alias,     'home' . $time, '$page->alias is ' . $page->alias);
 is($page->page_type, 'default',      '$page->page_type is ' . $page->page_type);
 is($page->user_id($sstorage->user->id)->user_id,
-  $sstorage->user->id, '$page->user_id is ' . $page->user_id);
+  $sstorage->user->id, '$page->user_id isq ' . $page->user_id);
 is($page->group_id($sstorage->user->group_id)->group_id,
   $sstorage->user->group_id, '$page->group_id is ' . $page->group_id);
 is($page->changed_by, $sstorage->user->id, '$page->changed_by is ' . $page->user_id);

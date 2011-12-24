@@ -32,6 +32,15 @@ sub _tags_inflate {
   return $value;
 }
 
+sub _tags_allow {    ##no critic qw(Subroutines::RequireArgUnpacking)
+  my $value = \$_[0];
+  $$value ||= '';
+  $$value = lc($$value);
+  my @words = split /[^\p{IsAlnum}\-_]+/xi, $$value;
+  $$value = join ", ", @words;
+  return 1;
+}
+
 sub _language_inflate {
   my $filed = shift;
   my $value = $filed->value || '';
@@ -89,20 +98,27 @@ my $FIELDS = {
       1;
     },
   },
+  tags     => {required => 0, allow => \&_tags_allow},
+  keywords => {required => 0, allow => \&_tags_allow},
 };
 
 #Works only with current package fields!!!
 sub FIELDS {
   return $_[1] ? $FIELDS->{$_[1]} : $FIELDS;
 }
-sub new { my $self = shift->SUPER::new(@_); $self->data_type; return $self; }
+
+sub new {
+  my $self = shift->SUPER::new(@_);
+  $self->data_type->body;#ensure defaults
+  return $self;
+}
 
 #Make some attributes which are appropriate to any data_type of content
 
 sub alias {
   my ($self, $value) = @_;
   if ($value) {
-    $self->{data}{alias} = $self->_check(alias => $value);
+    $self->{data}{alias} = $self->check(alias => $value);
     $self->{data}{alias} =~ s/\W+$//x;
     $self->{data}{alias} =~ s/^\W+//x;
     return $self;
@@ -123,7 +139,7 @@ sub alias {
 sub data_type {
   my ($self, $value) = @_;
   if ($value) {
-    $self->{data}{data_type} = $self->_check(data_type => $value);
+    $self->{data}{data_type} = $self->check(data_type => $value);
 
     return $self;
   }
@@ -142,7 +158,7 @@ sub tstamp {
 sub id {
   my ($self, $value) = @_;
   if (defined $value) {                     #setting
-    $self->{data}{id} = $self->_check(id => $value);
+    $self->{data}{id} = $self->check(id => $value);
     return $self;
   }
   return $self->{data}{id};                 #getting
@@ -151,7 +167,7 @@ sub id {
 sub user_id {
   my ($self, $value) = @_;
   if ($value) {                             #setting
-    $self->{data}{user_id} = $self->_check(user_id => $value);
+    $self->{data}{user_id} = $self->check(user_id => $value);
     return $self;
   }
   return $self->{data}{user_id};            #getting
@@ -160,7 +176,7 @@ sub user_id {
 sub group_id {
   my ($self, $value) = @_;
   if ($value) {                             #setting
-    $self->{data}{group_id} = $self->_check(group_id => $value);
+    $self->{data}{group_id} = $self->check(group_id => $value);
     return $self;
   }
   return $self->{data}{group_id};           #getting
@@ -169,7 +185,7 @@ sub group_id {
 sub pid {
   my ($self, $value) = @_;
   if (defined $value) {                     #setting
-    $self->{data}{pid} = $self->_check(pid => $value);
+    $self->{data}{pid} = $self->check(pid => $value);
     if (defined $self->{data}{id} && $self->{data}{pid} == $self->{data}{id}) {
       Carp::confess(
         $self->TABLE . '.pid field can not be the same as ' . $self->TABLE . '.id!');
@@ -182,7 +198,7 @@ sub pid {
 sub permissions {
   my ($self, $value) = @_;
   if (defined $value) {                     #setting
-    $self->{data}{permissions} = $self->_check(permissions => $value);
+    $self->{data}{permissions} = $self->check(permissions => $value);
     return $self;
   }
   return $self->{data}{permissions} ||= '-rwxr-xr-x';    #getting
@@ -191,7 +207,7 @@ sub permissions {
 sub title {
   my ($self, $value) = @_;
   if ($value) {                                          #setting
-    $self->{data}{title} = $self->_check(title => $value);
+    $self->{data}{title} = $self->check(title => $value);
     return $self;
   }
   return $self->{data}{title};                           #getting
@@ -200,7 +216,7 @@ sub title {
 sub tags {
   my ($self, $value) = @_;
   if ($value) {                                          #setting
-    $self->{data}{tags} = $self->validate_field(tags => $value);
+    $self->{data}{tags} = $self->check(tags => $value);
     return $self;
   }
   return $self->{data}{tags};                            #getting
@@ -209,7 +225,7 @@ sub tags {
 sub keywords {
   my ($self, $value) = @_;
   if ($value) {                                          #setting
-    $self->{data}{keywords} = $self->validate_field(keywords => $value);
+    $self->{data}{keywords} = $self->check(keywords => $value);
     return $self;
   }
   return $self->{data}{keywords};                        #getting }
@@ -227,7 +243,7 @@ sub featured {
 sub sorting {
   my ($self, $value) = @_;
   if ($value) {                                          #setting
-    $self->{data}{sorting} = $self->validate_field(sorting => $value);
+    $self->{data}{sorting} = $self->check(sorting => $value);
     return $self;
   }
   return $self->{data}{sorting};                         #getting
@@ -236,7 +252,7 @@ sub sorting {
 sub data_format {
   my ($self, $value) = @_;
   if ($value) {                                          #setting
-    $self->{data}{data_format} = $self->_check(data_format => $value);
+    $self->{data}{data_format} = $self->check(data_format => $value);
     return $self;
   }
   return $self->{data}{data_format};                     #getting
@@ -255,7 +271,7 @@ sub time_created {
 sub body {
   my ($self, $value) = @_;
   if ($value) {                                          #setting
-    $self->{data}{body} = $self->_check(body => $value);
+    $self->{data}{body} = $self->check(body => $value);
     return $self;
   }
   return $self->{data}{body} || '';                      #getting
@@ -265,7 +281,7 @@ sub body {
 sub language {
   my ($self, $value) = @_;
   if ($value) {                                          #setting
-    $self->{data}{language} = $self->_check(language => $value);
+    $self->{data}{language} = $self->check(language => $value);
     return $self;
   }
   return $self->{data}{language} ||= '';                 #getting

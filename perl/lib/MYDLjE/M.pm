@@ -101,7 +101,7 @@ sub data {
     return $self->$args;
   }
 
-  #they want all what we have in $self->{data}
+  #they want all what we touched in $self->{data}
   return $self->{data};
 }
 
@@ -195,6 +195,7 @@ sub domain_regexp {
 #validates $value for $field against $self->FIELDS_VALIDATION->{$field} rules.
 sub validate_field {
   my ($self, $field, $value) = @_;
+  Carp::carp ref($self) . "::validate_field($field, $value) is DEPRECATED!";
   my $rules = \%{$self->FIELDS_VALIDATION->{$field}};    #copy?!
 
   return $value unless $rules;                           #no validation rules defined
@@ -299,6 +300,14 @@ my $FIELDS     = {
       $/x
     },
   },
+  sorting => {
+    required => 1,
+    %$id_allow,
+    allow => sub {
+      $_[0] ||= time();
+      return $_[0] =~ /$id_allow->{allow}/x ? 1 : 0;
+    },
+  },
 };
 
 
@@ -312,7 +321,7 @@ sub FIELDS {
 }
 
 
-sub _check {
+sub check {
   my ($self, $key, $value) = @_;
 
   #warn Data::Dumper::Dumper($self->FIELDS);die;

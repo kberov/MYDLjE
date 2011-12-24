@@ -85,8 +85,7 @@ has FIELDS_VALIDATION => sub {
 
 my $FIELDS = {
   %{__PACKAGE__->SUPER::FIELDS},
-  data_type   => {required => 1, allow => qr/^$MRE{data_types}$/x},
-  body        => {default  => ''},
+  body        => {default => ''},
   data_format => {
     required => 1,
     allow    => qr/^(textile|text|html|markdown|template)$/x,
@@ -109,7 +108,8 @@ sub FIELDS {
 
 sub new {
   my $self = shift->SUPER::new(@_);
-  $self->data_type->body;#ensure defaults
+  $self->data_type;
+  $self->body;    #ensure defaults
   return $self;
 }
 
@@ -136,18 +136,24 @@ sub alias {
   return $self->{data}{alias};
 }
 
+sub allow_data_type {
+  my ($self, $type) = @_;
+
+  #allow new semantic types in MYDLjE::M::Content namespace
+  unless ($type =~ qr/^$MRE{data_types}$/x) {
+    $type = lc(ref($self));
+    $type =~ /(\w+)$/x and $type = Mojo::Util::decamelize($1);
+  }
+  return $type;
+}
+
 sub data_type {
   my ($self, $value) = @_;
   if ($value) {
-    $self->{data}{data_type} = $self->check(data_type => $value);
-
+    $self->{data}{data_type} = $self->allow_data_type($value);
     return $self;
   }
-  unless ($self->{data}{data_type}) {
-    my $type = lc(ref($self));
-    $type =~ /(\w+)$/x and $self->{data}{data_type} = $1;
-  }
-  return $self->{data}{data_type};
+  return $self->{data}{data_type} ||= $self->allow_data_type('');
 }
 
 sub tstamp {
@@ -415,23 +421,25 @@ At the time of writing the following data formats are accepted/recognized:
 
 =head2 data_type
 
-Auto-generated based on the reference of the current object. Auto-populated during instantiation. Can be overwritten.
+Auto-generated based on the reference of the current object. 
+Auto-populated during instantiation. Can be overwritten.
 
-    # I have a bright idea about a new data_type but I do not want (yet) to 
-    # define another MYDLjE::M::Content::MyNewBrightIdea class
-    my $custom_semantic_type = MYDLjE::M::Content->new(user_id=>2);
-    delete $custom_semantic_type->FIELDS_VALIDATION->{data_type}{constraints};
-    $custom_semantic_type->data_type('foo_bar');
-    $custom_semantic_type->title('My note');
+    # I have a bright idea about a new data_type. 
+    # Define a MYDLjE::M::Content::Custom class
+    {
+      package MYDLjE::M::Content::Custom;
+      use Mojo::Base 'MYDLjE::M::Content';
+    };
+    my $custom_semantic_type = MYDLjE::M::Content::Custom->new(user_id=>2);
+    $custom_semantic_type->title('My custom note');
     $custom_semantic_type->body('body of My note');
     $custom_semantic_type->save();#OK
     
     #time passes...    
     #Retrieve it
-    my $custom = MYDLjE::M::Content->new;
-    delete $custom->FIELDS_VALIDATION->{data_type}{constraints};
-    $custom->data_type('foo_bar');
-    $custom->alias('my-note');
+    my $custom = MYDLjE::M::Content::Custom->new;
+    $custom->data_type;#custom
+    $custom->alias('my-custom-note');
     $custom->select()->body;# 'body of My note'
     
  

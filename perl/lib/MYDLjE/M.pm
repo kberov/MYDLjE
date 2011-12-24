@@ -59,9 +59,9 @@ sub select {    ##no critic (Subroutines::ProhibitBuiltinHomonyms)
   unless (ref $self) {
     $self = $self->new();
   }
-  $where = {%$where, %{$self->WHERE}};
+  $self->WHERE(+{%$where, %{$self->WHERE}});
 
-  $self->{data} = $self->dbix->select($self->TABLE, $self->COLUMNS, $where)->hash;
+  $self->{data} = $self->dbix->select($self->TABLE, $self->COLUMNS, $self->WHERE)->hash;
   return $self;
 }
 
@@ -72,12 +72,12 @@ sub select_all {
   unless (ref $self) {
     $self = $self->new();
   }
-  $where = {%$where, %{$self->WHERE}};
+  $self->WHERE(+{%$where, %{$self->WHERE}});
 
   my $order = delete $where->{'order'};
 
   $self->{rows} =
-    [$self->dbix->select($self->TABLE, $self->COLUMNS, $where, $order)->hashes];
+    [$self->dbix->select($self->TABLE, $self->COLUMNS, $self->WHERE, $order)->hashes];
   return $self;
 }
 

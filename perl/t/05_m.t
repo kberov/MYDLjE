@@ -52,8 +52,8 @@ my $data  = {
 };
 my $content = MYDLjE::M::Content->new(%{$data});
 isa_ok($content->dbix, 'DBIx::Simple');
-is($content->{data}{data_type},
-  'note', 'content has correct data_type because it is explicitely defined');
+is($content->data_type, 'note',
+  'content has correct data_type because it is explicitely defined');
 $content->body('<p>Hello</p>');
 
 #use Benchmark;
@@ -111,14 +111,14 @@ require MYDLjE::M::Content::Question;
 my $question = MYDLjE::M::Content::Question->select(id => $id);
 is($question->id, undef, '$question->id undef ');
 is(
-  $question->title('What <br>can I doooo?')->title,
-  'What brcan I doooo?',
+  $question->title('What <br>can I doooo?' . $time)->title,
+  'What brcan I doooo?' . $time,
   'seting title'
 );
 $question->body('A longer description of the question');
 $question->alias(lc MYDLjE::Unidecode::unidecode($question->title));
-is($question->alias,     'what-brcan-i-doooo', 'alias is "what-can-i-doooo"');
-is($question->data_type, 'question',           '$question->data_type is "question"');
+is($question->alias, 'what-brcan-i-doooo-' . $time, 'alias is "what-can-i-doooo"');
+is($question->data_type, 'question', '$question->data_type is "question"');
 is($question->user_id($note->user_id)->user_id, $note->user_id, 'question has owner');
 is($question->group_id($note->group_id)->group_id,
   $note->group_id, 'question has group');
@@ -138,15 +138,18 @@ is($answer->group_id($note->group_id)->group_id, $note->group_id, 'answer has gr
 $answer->save();
 
 #Use Custom data_type
-my $custom = MYDLjE::M::Content->new(alias => $alias, user_id => 2, group_id => 2);
+{
 
-#delete $custom->FIELDS_VALIDATION->{data_type}{constraints};
-#$custom->data_type('alabala');
+  package MYDLjE::M::Content::Alabala;
+  use Mojo::Base 'MYDLjE::M::Content';
+};
+my $custom =
+  MYDLjE::M::Content::Alabala->new(alias => $alias, user_id => 2, group_id => 2);
+
 $custom->body('alabala body');
-
-#is($custom->data_type,                'alabala', 'custom data_type');
-is($custom->language,                 '',   'language ok');
-is($custom->language('bg')->language, 'bg', 'language ok');
+is($custom->data_type,                'alabala', 'custom data_type');
+is($custom->language,                 '',        'language ok');
+is($custom->language('bg')->language, 'bg',      'language ok');
 is(
   $custom->tags('perl,| Content-Management,   javaScript||jAvA')->tags,
   'perl, content-management, javascript, java',
@@ -155,17 +158,16 @@ is(
 ok($custom->save, 'saving custom data_type is ok');
 
 #Retreive Custom data_type
-$custom = MYDLjE::M::Content->new;
-is($custom->data_type, 'content', 'default data_type is ' . $custom->data_type);
-
-#delete $custom->FIELDS_VALIDATION->{data_type}{constraints};
-#is($custom->data_type('alabala')->data_type, 'alabala', 'custom data_type');
-is($custom->select(alias => $alias)->data_type,
-  'content', 'custom data_type retrieved ok');
-is($custom->alias,    $alias, 'custom alias is unique for this data type');
-is($custom->language, 'bg',   'language ok - ' . $custom->language);
+$custom->select(alias => $custom->alias);
+is_deeply(
+  $custom->WHERE,
+  {deleted => 0, alias => $alias},
+  'WHERE is specific for the current object'
+);
+is($custom->data_type, 'alabala', 'custom data_type');
+is($custom->alias,     $alias,    'custom alias is unique for this data type');
+is($custom->language,  'bg',      'language ok - ' . $custom->language);
 is($custom->language('bgsds')->language, '', 'language ok - ' . $custom->language);
-
 is($custom->body, 'alabala body', 'custom retrieved ok');
 
 #=pod

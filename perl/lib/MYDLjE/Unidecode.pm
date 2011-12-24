@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use utf8;
 use Mojo::Util;
-our $VERSION = 0.1;
+our $VERSION = 0.2;
 my $UTF8_LOOKUP_TABLE = {
   'uc' => {
     'ｚ' => 'Ｚ',
@@ -2500,7 +2500,7 @@ sub unidecode {
   return '' unless $words;
   my (@from, @to);
   @from = split //, $words;
-  @to = map { $UTF8_LOOKUP_TABLE->{'unidecode'}{$_} || '-' } @from;
+  @to = map { $UTF8_LOOKUP_TABLE->{'unidecode'}{$_} // '-' } @from;
   return join('', @to);
 }
 

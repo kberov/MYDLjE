@@ -10,7 +10,7 @@ sub register {
     ;    #for direct usage
 
   #$syntax is also used as extension
-  my $syntax = lc(delete $config->{syntax}) || 'tt';
+  my $syntax = lc(delete $config->{syntax} || 'tt');
 
   #only TT supported for now
   if ($syntax =~ /tt/ix) {

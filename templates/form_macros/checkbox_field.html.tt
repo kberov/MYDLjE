@@ -22,7 +22,7 @@
     </div>
     <div class="fixed column label" id="[% name_and_id _ '_label_column' %]">&#160;
     <input type="hidden" name="[% name_and_id %]" id="[% name_and_id %]"  
-    value="[% params.value %]" />
+    value="[% params.value||0 %]" />
     <input type="checkbox" class="checkbox"
     [% params.value ? ' checked="checked" ' : ' ' %]
     id="[% name_and_id %]_" name="[% name_and_id %]_" value="1" />

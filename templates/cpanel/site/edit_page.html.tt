@@ -86,7 +86,7 @@ PROCESS 'site/page_options.tt';
     [% checkbox_field('page.cache'); %]
   </div>
   <div class="column">
-    [% text_field('page.expiry'); %]
+    [% select_field('page.expiry',{options=>expiry_options}); %]
   </div>
 </div>
     

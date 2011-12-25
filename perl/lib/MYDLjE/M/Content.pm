@@ -84,7 +84,7 @@ has FIELDS_VALIDATION => sub {
 };
 
 my $FIELDS = {
-  %{__PACKAGE__->SUPER::FIELDS},
+  %{MYDLjE::M->FIELDS},
   body        => {default => ''},
   data_format => {
     required => 1,
@@ -156,41 +156,38 @@ sub data_type {
   return $self->{data}{data_type} ||= $self->allow_data_type('');
 }
 
-sub tstamp {
-  my ($self) = @_;
-  return $self->{data}{tstamp} ||= time;    #setting getting
-}
+sub tstamp { return $_[0]->{data}{tstamp} = time; }
 
 sub id {
   my ($self, $value) = @_;
-  if (defined $value) {                     #setting
+  if (defined $value) {    #setting
     $self->{data}{id} = $self->check(id => $value);
     return $self;
   }
-  return $self->{data}{id};                 #getting
+  return $self->{data}{id};    #getting
 }
 
 sub user_id {
   my ($self, $value) = @_;
-  if ($value) {                             #setting
+  if ($value) {                #setting
     $self->{data}{user_id} = $self->check(user_id => $value);
     return $self;
   }
-  return $self->{data}{user_id};            #getting
+  return $self->{data}{user_id};    #getting
 }
 
 sub group_id {
   my ($self, $value) = @_;
-  if ($value) {                             #setting
+  if ($value) {                     #setting
     $self->{data}{group_id} = $self->check(group_id => $value);
     return $self;
   }
-  return $self->{data}{group_id};           #getting
+  return $self->{data}{group_id};    #getting
 }
 
 sub pid {
   my ($self, $value) = @_;
-  if (defined $value) {                     #setting
+  if (defined $value) {              #setting
     $self->{data}{pid} = $self->check(pid => $value);
     if (defined $self->{data}{id} && $self->{data}{pid} == $self->{data}{id}) {
       Carp::confess(
@@ -198,12 +195,12 @@ sub pid {
     }
     return $self;
   }
-  return $self->{data}{pid} || 0;           #getting
+  return $self->{data}{pid} || 0;    #getting
 }
 
 sub permissions {
   my ($self, $value) = @_;
-  if (defined $value) {                     #setting
+  if (defined $value) {              #setting
     $self->{data}{permissions} = $self->check(permissions => $value);
     return $self;
   }

@@ -137,7 +137,7 @@ sub make_field_attrs {
 sub $class\::$column {
   my (\$self,\$value) = \@_;
   if(defined \$value){ #setting value
-    \$self->{data}{$column} = \$self->validate_field($column=>\$value);
+    \$self->{data}{$column} = \$self->check($column=>\$value);
     #make it chainable
     return \$self;
   }
@@ -310,14 +310,18 @@ my $FIELDS     = {
   },
 };
 
-
-$FIELDS->{changed_by} = $FIELDS->{domain_id} = $FIELDS->{user_id} =
-  $FIELDS->{group_id} = $FIELDS->{pid};
+$FIELDS->{description} = $FIELDS->{title};
+$FIELDS->{changed_by}  = $FIELDS->{domain_id} = $FIELDS->{user_id} =
+  $FIELDS->{group_id}  = $FIELDS->{pid};
 $FIELDS->{deleted} = $FIELDS->{cache};
 
 #Works only with current package fields!!! So sublass MUST implement it.
 sub FIELDS {
-  return $_[1] ? $FIELDS->{$_[1]} : $FIELDS;
+  my ($class, $key) = @_;
+  $class = ref($class) || $class;
+  ($class eq __PACKAGE__)
+    or Carp::croak('You must implement ' . $class . '::FIELDS');
+  return $key ? $FIELDS->{$key} : $FIELDS;
 }
 
 

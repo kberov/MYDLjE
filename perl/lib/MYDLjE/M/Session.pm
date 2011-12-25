@@ -36,6 +36,19 @@ has FIELDS_VALIDATION => sub {
   };
 };
 
+my $FIELDS = {
+  %{MYDLjE::M->FIELDS},
+  cid         => MYDLjE::M->FIELDS('id'),
+  id          => {required => 1, allow => qr/^[a-f0-9]{32}$/x,},
+  sessiondata => {
+    required => 1,
+    allow    => [sub { $_[0] = _thaw_sessiondata($_[0]) unless $_[0] && ref($_[0]) },],
+    }
+
+};
+
+sub FIELDS { return $_[1] ? $FIELDS->{$_[1]} : $FIELDS; }
+
 sub user {
   my ($self, $user) = @_;
   if ($user) {
@@ -67,7 +80,7 @@ sub new_id {
 sub user_id {
   my ($self, $user_id) = @_;
   if ($user_id) {
-    $self->{data}{user_id} = $self->validate_field(user_id => $user_id);
+    $self->{data}{user_id} = $self->check(user_id => $user_id);
 
     #synchronize
     unless ($self->{data}{user_id} == $self->user->id) {
@@ -91,7 +104,7 @@ sub sessiondata {
   if ($sessiondata) {
 
     #not chainable
-    $self->{data}{sessiondata} = $self->validate_field(sessiondata => $sessiondata);
+    $self->{data}{sessiondata} = $self->check(sessiondata => $sessiondata);
 
   }
   return $self->{data}{sessiondata} ||= {};

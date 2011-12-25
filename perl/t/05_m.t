@@ -49,6 +49,7 @@ my $data  = {
   data_type   => 'note',
   data_format => 'html',
   alias       => $alias,
+  description => 'Some cool? explanations!, really-cool',
 };
 my $content = MYDLjE::M::Content->new(%{$data});
 isa_ok($content->dbix, 'DBIx::Simple');

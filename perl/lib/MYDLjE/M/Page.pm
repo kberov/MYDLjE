@@ -40,6 +40,18 @@ has FIELDS_VALIDATION => sub {
     $self->FIELD_DEF('changed_by'),
   };
 };
+
+my $FIELDS = {
+  %{MYDLjE::M->FIELDS},
+  page_type => {
+    required => 1,
+    allow    => ['regular', 'default', 'folder', '404'],
+  },
+  expiry => {default => 86400, allow => [qr/^\d{1,6}$/x,]},
+
+};
+sub FIELDS { return $_[1] ? $FIELDS->{$_[1]} : $FIELDS; }
+
 {
   no warnings qw(once);
   *id          = \&MYDLjE::M::Content::id;

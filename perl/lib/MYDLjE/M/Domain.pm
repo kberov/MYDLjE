@@ -19,6 +19,9 @@ has FIELDS_VALIDATION => sub {
     $self->FIELD_DEF('domain'),
   };
 };
+my $FIELDS = {%{MYDLjE::M->FIELDS},};
+sub FIELDS { return $_[1] ? $FIELDS->{$_[1]} : $FIELDS; }
+
 *id       = \&MYDLjE::M::Content::id;
 *user_id  = \&MYDLjE::M::Content::user_id;
 *group_id = \&MYDLjE::M::Content::group_id;
@@ -26,7 +29,7 @@ has FIELDS_VALIDATION => sub {
 sub permissions {
   my ($self, $value) = @_;
   if (defined $value) {    #setting
-    $self->{data}{permissions} = $self->validate_field(permissions => $value);
+    $self->{data}{permissions} = $self->check(permissions => $value);
     return $self;
   }
   return $self->{data}{permissions} ||= 'drwxr-xr-x';    #getting

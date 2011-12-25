@@ -2,7 +2,10 @@ package MYDLjE::M::User;
 use Mojo::Base 'MYDLjE::M';
 use Mojo::Util qw();
 use Scalar::Util qw(blessed reftype);
+use Email::Address;
 use List::Util;
+use MYDLjE::M::Content;
+use MYDLjE::Regexp qw(%MRE);
 
 has TABLE => 'users';
 
@@ -39,15 +42,43 @@ has FIELDS_VALIDATION => sub {
   return $fields;
 };
 
+my $FIELDS = {
+  %{MYDLjE::M->FIELDS},
+  login_name     => {required => 1, allow => qr/^\p{IsAlnum}{4,100}$/x},
+  login_password => {required => 1, allow => qr/^[a-f0-9]{32}$/x},
+  email          => {
+    required => 1,
+    allow    => qr/$Email::Address::addr_spec/x
+  },
+  last_name => {
+    default => '',
+    allow   => ['', qr/^(\p{IsAlnum}[\p{IsAlnum}\-\.\s]{3,100})$/x]
+  },
+};
+$FIELDS->{first_name} = $FIELDS->{last_name};
+$FIELDS->{created_by} = $FIELDS->{changed_by};
+$FIELDS->{disabled}   = $FIELDS->{deleted};
+
+sub FIELDS { return $_[1] ? $FIELDS->{$_[1]} : $FIELDS; }
+
+{
+  no warnings qw(once);
+  *id     = \&MYDLjE::M::Content::id;
+  *tstamp = \&MYDLjE::M::Content::tstamp;
+  *start  = \&MYDLjE::M::Content::start;
+  *stop   = \&MYDLjE::M::Content::stop;
+}
+
 has groups => sub {
   my $self = shift;
-  return $self->dbix->query(
-    'SELECT g.* FROM groups g,user_group ug WHERE ug.user_id=? AND ug.group_id=g.id',
-    $self->id)->hashes;
+  return [
+    $self->dbix->query(
+      'SELECT g.* FROM groups g,user_group ug WHERE ug.user_id=? AND ug.group_id=g.id',
+      $self->id
+      )->hashes
+  ];
 };
 
-
-sub tstamp { return $_[0]->{data}{tstamp} = time; }
 
 sub add {
   my ($class, $args) = MYDLjE::M::get_obj_args(@_);

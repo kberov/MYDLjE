@@ -356,9 +356,55 @@ is($dom->at('input[type="text"][name="permissions"]')->attrs->{value},
 is($dom->at('select[name="published"] option[selected="selected"]')->attrs->{value},
   $published, 'published is: ' . $published);
 
-note '... let us clenup this mess.';
 
-#TODO: Add pages and content in this domain
+#Add pages and content in this domain
+note ' * Add pages and content in this domain...';
+$t->get_ok($ENV{MYDLjE_ROOT_URL} . 'cpanel/site/pages')->status_is(200)
+  ->element_exists('a#new_page_button', '"New Page" Button is present');
+$dom = $t->tx->res->dom;
+my $new_page_url = $dom->at('a#new_page_button')->{href};
+like($new_page_url, qr|site/edit_page|, ' url is ' . $new_page_url);
+
+$t->get_ok($ENV{MYDLjE_ROOT_URL} . 'cpanel/site/edit_page')->status_is(200)
+  ->element_exists('input[name="content.title"]')
+  ->element_exists('select[name="content.language"]')
+  ->element_exists('input[name="page.alias"]')
+  ->element_exists('select[name="page.domain_id"]')
+  ->element_exists('select[name="page.page_type"]')
+
+#permission widget
+  ->element_exists('select[name="page.permissions_type"]')
+  ->element_exists('input[name="page.permissions_owner_read"]')
+  ->element_exists('input[name="page.permissions_group_read"]')
+  ->element_exists('input[name="page.permissions_others_read"]')
+  ->element_exists('input[name="page.permissions_owner_write"]')
+  ->element_exists('input[name="page.permissions_group_write"]')
+  ->element_exists('input[name="page.permissions_others_write"]')
+  ->element_exists('input[name="page.permissions_owner_execute"]')
+  ->element_exists('input[name="page.permissions_group_execute"]')
+  ->element_exists('input[name="page.permissions_others_execute"]')
+  ->element_exists('input[type="text"][name="page.permissions"]')
+
+  ->element_exists('select[name="page.published"]')
+
+#checkbox widget
+  ->element_exists('input[type="checkbox"][name="page.hidden_"]')
+  ->element_exists('input[type="hidden"][name="page.hidden"]')
+  ->element_exists('input[name="page.sorting"]')
+
+#checkbox widget
+  ->element_exists('input[type="checkbox"][name="page.cache_"]')
+  ->element_exists('input[type="hidden"][name="page.cache"]')
+
+  ->element_exists('textarea[name="page.template"]')
+  ->element_exists('textarea[name="content.body"]')->element_exists('#buttons_unit')
+  ->element_exists('button[type="submit"][name="save"]')
+  ->element_exists('button[type="submit"][name="save_and_close"]')
+  ->element_exists('button[type="reset"]')
+  ->element_exists('button[class="button_close"]')
+
+  ;
+note '... let us cleanup this mess.';
 note ' * Delete domain!';
 $t->get_ok($ENV{MYDLjE_ROOT_URL} . 'cpanel/site/domains')->status_is(200)
   ->element_exists('#domains_form', 'Domains list is present')

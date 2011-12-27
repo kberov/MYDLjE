@@ -67,7 +67,7 @@ sub new_id {
   my ($self, $new_id) = @_;
   if ($new_id) {
     Carp::confess('New session id does not look like an md5_sum!')
-      unless $new_id =~ m|^[a-f0-9]{32}$|x;
+      unless $new_id =~ m|$FIELDS->{id}{allow}|x;
     $self->{new_id} = $new_id;
   }
   if (!$self->{new_id}) {

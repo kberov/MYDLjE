@@ -47,7 +47,7 @@ my $FIELDS = {
     required => 1,
     allow    => ['regular', 'default', 'folder', '404'],
   },
-  expiry => {allow => [sub{$_[0]||=0},qr/^\d{1,6}$/x,]},
+  expiry => {allow => [sub { $_[0] ||= 0 }, qr/^\d{1,6}$/x,]},
 
 };
 sub FIELDS { return $_[1] ? $FIELDS->{$_[1]} : $FIELDS; }

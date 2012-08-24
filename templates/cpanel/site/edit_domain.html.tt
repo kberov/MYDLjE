@@ -22,9 +22,9 @@ END;
   [%+ 
      text_field('domain', {label => c.l('Domain')}); 
      text_field('name', {label => c.l('title'),help=>'title_help'});
-     text_field('description');
-     permissions_field('permissions');
-     select_field('published', {options => published_options});
+     text_field('description', {label => c.l('Description')});
+     permissions_field('permissions', {label => c.l('Permissions')});
+     select_field( 'published', {options => published_options});
      button_set();
    +%]
 </fieldset>

@@ -13,9 +13,9 @@
     DEFAULT TEMPLATE_WRAPPER = 'layouts/cpanel_layout.html.tt';
     TITLE = app.routes.namespace _'::' _ controller _ '/' _ action;
     published_options = [
-      {label => 'not published', value => 0 },
-      {label => 'for review', value => 1 },
-      {label => 'published', value => 2 }
+      {label => c.l('not published'), value => 0 },
+      {label => c.l('for review'), value => 1 },
+      {label => c.l('published'), value => 2 }
     ];
 
 ~%]

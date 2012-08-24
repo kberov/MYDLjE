@@ -30,7 +30,7 @@ $MOJO_HOME/templates/site/layouts/my_theme/my_theme.html.tt
 3. If you need to switch to another layout only for some pages,
 define SETTINGS.PAGE_LAYOUT in your page template using the cpanel user interface.
 
-For example in the template for the imagianry page "shop":
+For example in the template for the imaginary page "shop":
 [% 
 this_page_layout = 'page_id'_ SELF.id _'_theme';#SELF is the current PAGE object
 SETTINGS.PAGE_LAYOUT= 'layouts/'_ this_page_layout _'/'_ this_page_layout _'.html.tt';

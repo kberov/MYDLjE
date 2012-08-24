@@ -162,7 +162,7 @@ sub _find_and_set_page_template {
   return;
 }
 
-#Retreives page and page properties (MYDLjE::M::Content::Page) from database
+#Retrieves page and page properties (MYDLjE::M::Content::Page) from database
 #and puts them into stash.
 sub _prepare_page {
   my ($c, $user) = @_;
@@ -233,7 +233,7 @@ __END__
 =head1 NAME
 
 MYDLjE::Site::C::Site - Controller class for displaying site pages 
-and other defined octions.
+and other defined actions.
 
 =head1 DESCRIPTION
 
@@ -258,32 +258,32 @@ This controller defines some methods which are called internally in L</page>
 
 This is a direct call (with C<goto>) to L<MYDLjE::ControlPanel::C::Site/domains> 
 to detect the domain in which the L</page> method is called. 
-This way we know from which domain to retreive the requested page.
+This way we know from which domain to retrieve the requested page.
 
 =head2 _find_and_set_page_template
 
 Finds a page template up in the inheritance path and
- fallbacks to the default page template
+ falls back to the default page template
  for the current domain if a template is not found.
- Called in L</_prepare_page> after a page is retreived from the database.
+ Called in L</_prepare_page> after a page is retrieved from the database.
 
 =head2 _get_page
 
-Retreives a L<page|MYDLjE::M::Page> from the database depending on the value in 
+Retrieves a L<page|MYDLjE::M::Page> from the database depending on the value in 
 C<$c-E<gt>stash('page_alias')> and returns it. 
-Fallbacks to the page with C<page_type "default"> 
+Falls back to the page with C<page_type "default"> 
 if C<$c-E<gt>stash('page_alias')> is empty. Called in L</_prepare_page>
 
 =head2 _get_page_404
 
-Retreives a page with C<page_type "404"> and returns it. 
+Retrieves a page with C<page_type "404"> and returns it. 
 Such page B<I<must>> be created for each domain by the site administrator
 using the "cpanel" application. 
 Called in L</_prepare_page> if no page is found by L</_get_page>.
 
 =head2 _prepare_content
 
-Retreives content from the database and puts it in the stash to be displayed by
+Retrieves content from the database and puts it in the stash to be displayed by
 L<MYDLjE::Template::PageContent>.
 
 The content is an array of instances of various L<MYDLjE::M::Content> subclasses.
@@ -294,15 +294,15 @@ L<start|MYDLjE::M::Content/start>, L<stop|MYDLjE::M::Content/stop>,
 L<deleted|MYDLjE::M::Content/deleted> and 
 L<language|MYDLjE::M::Content/language> attributes.
 The language is determined by C<$c-E<gt>stash('C_LANGUAGE')>. 
-All L<data_type|MYDLjE::M::Content/data_type>s are retreived except C<page> 
+All L<data_type|MYDLjE::M::Content/data_type>s are retrieved except C<page> 
 which is used as page properties for the current page in the current language 
-and is retreived separately in L</_prepare_page>.
+and is retrieved separately in L</_prepare_page>.
 
 =head2 _prepare_page
 
-Retreives a page (C<$page>) and its properties (C<$page_c>) from the databse 
+Retrieves a page (C<$page>) and its properties (C<$page_c>) from the database 
 depending on various stash variables, defined by the current route 
-and fills in the stash with the retreived data.
+and fills in the stash with the retrieved data.
 
 The following stash variables are defined for display in the current domain 
 or theme layout:

@@ -267,7 +267,7 @@ Renders all content elements with C<data_type> attribute C<brick>
 (L<MYDLjE::M::Content::Brick>) and disposes them in C<BOXES>,
 defined in the current layout. 
 The language attribute of the bricks is C<C_LANGUAGE>. 
-Retreives the bricks for the current page and all parrent pages recursively.
+Retrieves the bricks for the current page and all parrent pages recursively.
 
 You can stop displaying/inheriting bricks from parrent pages in the current page.
 Depending on the box in which a brick is, 
@@ -288,7 +288,7 @@ Params: $page - a L<MYDLjE::M:Page> instance - Default: current page
 Renders all content elements with C<data_type> attribute other  than C<brick>
 and  C<page>. They are put in the special C<content> variable, 
 placed in the current layout. 
-Content elements are retreived from stash variable C<MAIN_AREA_CONTENT> and 
+Content elements are retrieved from stash variable C<MAIN_AREA_CONTENT> and 
  have C<box> attribute with value C<MAIN_AREA||''>. 
  C<MAIN_AREA_CONTENT> is constructed in 
  L<MYDLjE::Site::C::Site/_prepare_content>. 

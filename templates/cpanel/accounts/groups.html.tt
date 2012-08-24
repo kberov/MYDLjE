@@ -1,5 +1,71 @@
 [% WRAPPER ${TEMPLATE_WRAPPER} %]
 <!-- start [% action %] -->
-[% template.name %]
+<div id="[% action %]-area" class="container ui-corner-all ui-widget-content">
+<form id="[% action %]_form" class="tree_form">
+<fieldset class="ui-widget-content ui-corner-all">
+        <legend class="ui-widget-header ui-corner-all">[% c.l('Groups') %]
+            <span  class="legend_icon"><a href="[% c.url_for('/site/edit_group')%]"
+           title="[% c.l('New [_1]', c.l('Group') ) %]"
+           id="new_group_button"
+           class="new domain">
+             <span class="ui-icon" 
+             style="background-image: url(pub/css/icons/group_add.png) ">
+             </span></a></span>
+        </legend>
+<ul class="items">
+[% FOREACH g IN groups;
+    IF (g.disabled > 0 ||(g.start>now || (g.stop>0 && g.stop < now)));
+        state = 'ui-state-disabled' ;
+    ELSE
+        state = 'ui-state-default';
+    END;
+%]
+<li class="group [%+ state %]">
+        <div class="columns">
+            <div class="fixed column name">
+                <div class="container" 
+                title="[% g.description %]">[% g.name +%]
+                </div>
+            </div>
+            <div class="elastic column">
+                <div class="container buttons">
+           <span  class="legend_icon"><a 
+           href="[% c.url_for('/accounts/edit_group/' _ g.id )%]"
+           title="[% c.l('Edit [_1]', c.l('Group') ) %]"
+           id="edit_group_button"
+           class="edit_group">
+             <span class="ui-icon" 
+             style="background-image: url(pub/css/icons/group_edit.png) "></span></a></span>
+             
+           <span  class="legend_icon"><a 
+           href="[% c.url_for('/accounts/disable_group/' _ g.id )%]"
+           title="[% c.l('Disable [_1]', g.name ) %]"
+           id="disable_group_button_[%d.id%]"
+           class="disable_user">
+             <span class="ui-icon" 
+             style="background-image: url(pub/css/icons/group_delete.png) "></span>
+             <div class="modal_message" style="display:none;">
+                <p class="ui-button-text">
+                    [% c.l('disable_group_confirm_message', g.name ) %]
+                </p>
+             </div>
+             </a>
+           </span>
+             </div><!-- end class="container buttons" -->
+            </div>
+        </div>
+    </li>
+[% END %]
+</ul>
+</fieldset>
+</form>
+</div><!-- end div id="[% action %]-area" -->
+<script  type="text/javascript">//<![CDATA[
+$(document).ready(function() {
+  enhance_delete_buttons('disable_group');
+});
+
+//]]>
+</script>
 <!-- end [%+ action +%] -->
 [% END %]

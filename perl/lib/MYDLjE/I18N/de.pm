@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use utf8;
 use I18N::LangTags::List;
+
 our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   _AUTO          => 1,
   login_name     => 'Benutzer',
@@ -13,7 +14,7 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   login_password_help =>
     'Bitte das Passwort eingeben. Es wird NICHT im Klartext übertragen, selbst ohne Nutzung des HTTPS Protokolles.',
   login_field_error => 'Bitte einen gültigen Wert für das Feld "[_1]" eingeben!',
-  session_id_error  => 'Invalid session. Please try again!',
+  session_id_error  => 'Ungültige Sitzung. Bitte nochmals versuchen!',
   first_name        => 'Vorname',
   last_name         => 'Nachname',
   list_pages        => 'Liste der Seiten',
@@ -39,10 +40,10 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   featured    => 'Featured',
   sorting     => 'Sortierung',
   data_type   => 'Semantic Type',
-  data_format => 'Data Format',
+  data_format => 'Daten-Format',
   data_format_help =>
 
-    'MYDLjE content is stored in different text formats '
+    'MYDLjE Inhalt wird in verschiedenen Formaten gespeichert '
     . '(markup languages): *html*, *text*, *textile*, *markdown*, *pod*, *template*. '
     . 'The format designates how the content will be processed before '
     . 'being displayed to the site users. ' . "\n\n"
@@ -80,6 +81,7 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   language     => 'Sprache',
   group_id     => 'Gruppe',
   protected    => 'Geschützt',
+  deleted => 'Gelöscht',
   bad          => 'Bad Content',
   pid          => 'Eltern',
   
@@ -96,6 +98,7 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   'Books' => 'Bücher',
   'Bricks' => 'Bausteine',
   'Users' => 'Benutzer',
+  'User' => 'Benutzer',
   'Groups' => 'Gruppen',
   'Settings' => 'Einstellungen',
   'File' => 'Dateien',
@@ -124,6 +127,17 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   'Link' => 'Link',
   'Regular Record' => 'normaler Eintrag',
   
+  'New [_1]' => '[_1] neu erstellen',
+  'New [_1] here' => '[_1] hier neu erstellen',
+  'Edit [_1]' => '[_1] bearbeiten',
+  'Delete [_1]' => '[_1] löschen',
+  'Page' => 'Seite',
+  'article' => 'Artikel',
+  
+  'Help' => 'Hilfe',
+  
+  'Disable [_1]' => '[_1] sperren',
+  
   
 
   #TODO: use I18N::LangTags::List better
@@ -134,8 +148,8 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
 
   domain_help => 'You can manage several domains with just one instance of MYDLjE.'
     . ' Every domain has its own pages. This way you can run several sites using just one Hosting account.',
-  default   => 'Domain index-page',
-  regular   => 'Regular',
+  default   => 'Domäne Verzeichnis-Seite',
+  regular   => 'Regulär',
   folder    => 'Ordner',
   page_type => 'Seiten-Typ',
   order_by  => 'Sortiert nach',
@@ -175,8 +189,8 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
     'Who created this user? If this is "guest", the this user registered via the site.',
   changed_by      => 'Geändert von',
   changed_by_help => 'Who changed this record for the last time?',
-  tstamp          => 'Zuletzt geändert um',
-  reg_tstamp      => 'Registered on',
+  tstamp          => 'Zuletzt geändert',
+  reg_tstamp      => 'Registriert am',
   disabled        => 'Gesperrt',
 );
 

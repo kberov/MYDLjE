@@ -8,8 +8,8 @@ use warnings;
 use File::Basename 'dirname';
 use Cwd;
 BEGIN{
-  $ENV{MOJO_MODE} ||='development';
-  #$ENV{MOJO_MODE}='production';
+  $ENV{MOJO_MODE} ||= 'development';
+  #$ENV{MOJO_MODE} = 'production';
   $ENV{MOJO_HOME} = Cwd::abs_path(dirname(__FILE__));
 }
 

@@ -44,7 +44,7 @@ sub _prepare_content {
   my $data_type = $c->stash('data_type');
   my $modules   = Mojo::Loader->search('MYDLjE::M::Content');
 
-  #get content with the given data_type, alias and page_id=$page->id
+  # get content with the given data_type, alias and page_id=$page->id
   if ($c->stash('alias')) {
     my $module = first { $_ =~ /$data_type$/ix } @$modules;
     if ($module) {
@@ -97,7 +97,7 @@ sub _prepare_content {
 }
 
 
-#detects ui_language and c_language and returns them
+# detects ui_language and c_language and returns them
 sub detect_and_set_languages {
   my ($c)           = @_;
   my ($ui_language) = $c->set_ui_language($c->stash('ui_language'));

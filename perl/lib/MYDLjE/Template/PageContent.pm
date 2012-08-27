@@ -267,17 +267,17 @@ Renders all content elements with C<data_type> attribute C<brick>
 (L<MYDLjE::M::Content::Brick>) and disposes them in C<BOXES>,
 defined in the current layout. 
 The language attribute of the bricks is C<C_LANGUAGE>. 
-Retrieves the bricks for the current page and all parrent pages recursively.
+Retrieves the bricks for the current page and all parent pages recursively.
 
-You can stop displaying/inheriting bricks from parrent pages in the current page.
+You can stop displaying/inheriting bricks from parent pages in the current page.
 Depending on the box in which a brick is, 
-you set: C<[% RIGHT_BOX_FILLED=1 %]> and no more briks placed in C<RIGHT_BOX> 
+you set: C<[% RIGHT_BOX_FILLED=1 %]> and no more bricks placed in C<RIGHT_BOX> 
 will be shown; C<[% LEFT_TOP_BOX_FILLED=1 %]> and no 
-more briks placed in C<LEFT_TOP_BOX> will be shown; etc. 
+more bricks placed in C<LEFT_TOP_BOX> will be shown; etc. 
 
 Wraps the bricks with a div tag if C<SETTINGS.WRAP_BRICKS> is set to true.
 Called in L<MYDLjE::Template::PageContent/render> after L</render_content>.
-Can be callled separately in a site template.
+Can be called separately in a site template.
 
 Params: $page - a L<MYDLjE::M:Page> instance - Default: current page
 
@@ -285,7 +285,7 @@ Params: $page - a L<MYDLjE::M:Page> instance - Default: current page
 
 =head2 render_content
 
-Renders all content elements with C<data_type> attribute other  than C<brick>
+Renders all content elements with C<data_type> attribute other than C<brick>
 and  C<page>. They are put in the special C<content> variable, 
 placed in the current layout. 
 Content elements are retrieved from stash variable C<MAIN_AREA_CONTENT> and 

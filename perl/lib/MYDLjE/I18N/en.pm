@@ -125,10 +125,10 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
     . ' Boxes are defined in "layouts/${DOMAIN.id}/pre_process.tt".',
   in_box => 'in box "[_1]"',
   user_description_help =>
-    'Several words about the user from him self. up to 255 symbols.',
+    'Several words about the user from him self. Up to 255 symbols.',
   created_by => 'Created by',
   created_by_help =>
-    'Who created this user? If this is "guest", the this user registered via the site.',
+    'Who created this user? If this is "guest", the user registered via the site.',
   changed_by      => 'Changed By',
   changed_by_help => 'Who changed this record for the last time?',
   tstamp          => 'Last change on',

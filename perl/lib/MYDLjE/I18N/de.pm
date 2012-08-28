@@ -39,7 +39,7 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   tags        => 'Schlagwörter',
   featured    => 'Featured',
   sorting     => 'Sortierung',
-  data_type   => 'Semantic Type',
+  data_type   => 'Semantischer Typ',
   data_format => 'Daten-Format',
   data_format_help =>
 
@@ -76,13 +76,13 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
 
   time_created => 'Erstellt',
   tstamp       => 'Geändert',
-  body         => 'Content (body)',
+  body         => 'Inhalt (body)',
   invisible    => 'Unsichtbar',
   language     => 'Sprache',
   group_id     => 'Gruppe',
   protected    => 'Geschützt',
   deleted => 'Gelöscht',
-  bad          => 'Bad Content',
+  bad          => 'Schlechter Inhalt',
   pid          => 'Eltern',
   
   'All types'  => 'Alle Arten',
@@ -158,7 +158,7 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   ASC          => 'Aufsteigend',
   DESC         => 'Absteigend',
   page_id      => 'Seite',
-  page_id_help => 'Parent Seite für diesen Eintrag.',
+  page_id_help => 'Eltern Seite für diesen Eintrag.',
 
   #textile
   page_type_help => 'MYDLjE has different type of pages. ' . "\n\n"
@@ -184,11 +184,11 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   in_box => 'in box "[_1]"',
   user_description_help =>
     'Several words about the user from him self. up to 255 symbols.',
-  created_by => 'Created by',
+  created_by => 'Erstellt von',
   created_by_help =>
-    'Who created this user? If this is "guest", the this user registered via the site.',
+    'Wer erstellte diesen Benutzer? If this is "guest", the this user registered via the site.',
   changed_by      => 'Geändert von',
-  changed_by_help => 'Who changed this record for the last time?',
+  changed_by_help => 'Wer änderte diesen Eintrag zuletzt?',
   tstamp          => 'Zuletzt geändert',
   reg_tstamp      => 'Registriert am',
   disabled        => 'Gesperrt',

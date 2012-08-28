@@ -45,23 +45,23 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
 
     'MYDLjE Inhalt wird in verschiedenen Formaten gespeichert '
     . '(markup languages): *html*, *text*, *textile*, *markdown*, *pod*, *template*. '
-    . 'The format designates how the content will be processed before '
-    . 'being displayed to the site users. ' . "\n\n"
-    . 'bq. HTML: Will be converted to valid XHTML and displayed.' . "\n\n"
-    . 'bq. TEXT: Will be formatted minimally. Every new line designates a new paragraph.'
+    . 'Das Format bestimmt, wie der Inhalt verarbeitet wird, bevor '
+    . 'dieser angezeigt wird. ' . "\n\n"
+    . 'bq. HTML: Wird zu gültigem XHTML konvertiert.' . "\n\n"
+    . 'bq. TEXT: Wird minimal verarbeitet. Jede neue Zeile ergibt einen neuen Absatz.'
     . "\n\n"
-    . 'bq. TEXTILE: Will be processed by the *textile* processor '
+    . 'bq. TEXTILE: Wird durch *textile* verarbeitet '
     . '("Text::Textile":http://search.cpan.org/dist/Text-Textile/). '
-    . 'See "examples on Wikipedia":http://en.wikipedia.org/wiki/Textile_%28markup_language%29 '
-    . 'and "This reference":http://redcloth.org/hobix.com/textile/.' . "\n\n"
-    . 'bq. MARKDOWN: This is another popular text markup, similar to the one above. '
-    . 'It will be processed by the *markdown* processor '
+    . 'Siehe "examples on Wikipedia":http://en.wikipedia.org/wiki/Textile_%28markup_language%29 '
+    . 'und "This reference":http://redcloth.org/hobix.com/textile/.' . "\n\n"
+    . 'bq. MARKDOWN: Das ist eine andere populäre Auszeichnungssprache, ähnlich der obigen. '
+    . 'Wird durch *markdown* verarbeitet '
     . '("Text::MultiMarkdown":http://search.cpan.org/dist/Text-MultiMarkdown/). '
-    . 'See "examples on Wikipedia":http://en.wikipedia.org/wiki/Markdown '
-    . ' and "the original syntax":http://daringfireball.net/projects/markdown/syntax/.'
+    . 'Siehe "examples on Wikipedia":http://en.wikipedia.org/wiki/Markdown '
+    . ' und "the original syntax":http://daringfireball.net/projects/markdown/syntax/.'
     . "\n\n"
-    . 'bq. POD(Plain Old Documentation): Format, '
-    . 'for writing documentation for Perl programs. '
+    . 'bq. POD (Plain Old Documentation): Format '
+    . 'für die Dokumentation von Perl-Programmen. '
     . 'It can be used safely for any type of structured text. '
     . 'See "perlpod":http://perldoc.perl.org/perlpod.html and'
     . ' "the specification":http://perldoc.perl.org/perlpodspec.html.' . "\n\n"
@@ -146,8 +146,8 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   ru => I18N::LangTags::List::name('ru'),
   de => I18N::LangTags::List::name('de'),
 
-  domain_help => 'You can manage several domains with just one instance of MYDLjE.'
-    . ' Every domain has its own pages. This way you can run several sites using just one Hosting account.',
+  domain_help => 'Mit einer Instanz von MYDLjE können mehrere Domänen verwaltet werden.'
+    . ' Jede Domäne hat ihre eigenen Seiten. This way you can run several sites using just one Hosting account.',
   default   => 'Domäne Verzeichnis-Seite',
   regular   => 'Regulär',
   folder    => 'Ordner',

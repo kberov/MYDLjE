@@ -24,7 +24,7 @@
 # content element with page_id equal to the current PAGE.id.
 # Copy and paste each "box" in the desired place for the output to be displayed.
 # This should be either ${DOMAIN.id}.html.tt or some of the PROCESS-ed files in the layout.
-# Try to invent meaningfull names to ease maintenance later.
+# Try to invent meaningful names to ease maintenance later.
 
     DEFAULT BOXES = {
       HEADER_BRICKS => menu_languages(),
@@ -40,8 +40,8 @@
       FOOTER_BRICKS =''
     };
     
-    #No content will be appended to BOXES.HEADER_BRICKS
-    #See MYDLjE::Template::PageContent->render_bricks_to_boxes()
+    # No content will be appended to BOXES.HEADER_BRICKS
+    # See MYDLjE::Template::PageContent->render_bricks_to_boxes()
     HEADER_BRICKS_FILLED = 1;
 %]
 

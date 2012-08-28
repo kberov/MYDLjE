@@ -173,7 +173,7 @@ sub render_bricks_to_boxes {
   my $columns = join ',', @{MYDLjE::M::Content::Brick->COLUMNS};
   $sql = "SELECT $columns FROM ($sql) as bricks";
 
-  #$c->debug($sql);
+  # $c->debug($sql);
   my $BRICKS =
     $self->dbix->query($sql, $PAGE->id, $self->get('C_LANGUAGE'), $uid, $uid, $uid)
     ->hashes;
@@ -187,7 +187,7 @@ sub render_bricks_to_boxes {
     my $box            = $brick->box;
     my $box_filled_key = $box . '_FILLED';
 
-    #Is this box filled in? Yes. Then put there nothing more.
+    # Is this box filled in? Yes. Then put there nothing more.
     next if $self->get($box_filled_key);
     my $render = 'render_' . $brick->data_format;
     if ($wrap) {
@@ -205,9 +205,9 @@ sub render_bricks_to_boxes {
       $BOXES->{$box} .= $self->$render($brick);
     }
 
-    #Mark the box as filled from within its template to stop appending more bricks.
-    #Example:
-    #[% RIGHT_BOX_FILLED=1 %]
+    # Mark the box as filled from within its template to stop appending more bricks.
+    # Example:
+    # [% RIGHT_BOX_FILLED=1 %]
   }
   return;
 }

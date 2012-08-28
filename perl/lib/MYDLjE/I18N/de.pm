@@ -161,8 +161,8 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   page_id_help => 'Eltern Seite für diesen Eintrag.',
 
   #textile
-  page_type_help => 'MYDLjE has different type of pages. ' . "\n\n"
-    . 'bq. *Domain-index (home) page* is the enter point to the domain. It is loaded when the URL does not specify a page to load.'
+  page_type_help => 'MYDLjE hat unterschiedliche Arten von Seiten. ' . "\n\n"
+    . 'bq. *Domain-index (home) page* ist die Einstiegsseite des Auftrittes. Diese wird geladen, wenn die URL keine spezifische Seite angibt.'
     . $/
     . $/
     . 'bq. In the *regular page* you can put any type of content. MYDLjE traverses the content and shows it depending on its type. '
@@ -183,7 +183,7 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
     . ' Boxes are defined in "layouts/${DOMAIN.id}/pre_process.tt".',
   in_box => 'in box "[_1]"',
   user_description_help =>
-    'Several words about the user from him self. up to 255 symbols.',
+    'Several words about the user from him self. Bis zu 255 Zeichen.',
   created_by => 'Erstellt von',
   created_by_help =>
     'Wer erstellte diesen Benutzer? If this is "guest", the this user registered via the site.',

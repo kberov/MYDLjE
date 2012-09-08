@@ -3,10 +3,10 @@
 [% 
 IF id;
   legend = c.l('Edit [_1]', c.l('group') );
-  form_action = c.url_for('/site/edit_group/' _ id );
+  form_action = c.url_for('/accounts/edit_group/' _ id );
 ELSE;
   legend = c.l('New [_1]', c.l('group') );
-  form_action = c.url_for('/site/edit_group');
+  form_action = c.url_for('/accounts/edit_group');
 END;
 
 %]

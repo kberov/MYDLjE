@@ -40,6 +40,11 @@ disabled start stop properties
       [% text_field_readonly('primary_group', {label=>c.l('group').ucfirst}); %]
     </div>
 </div>
+<div class="unit on-1 columns">
+  <div class="column">
+      [% text_field('login_password')%]
+  </div>
+</div> 
 <div class="unit on-2 columns">
   <div class="column">
       [% text_field('first_name') %]

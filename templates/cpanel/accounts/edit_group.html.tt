@@ -33,8 +33,8 @@ disabled start stop properties
   </div>
 <div class="column">
   <div class="column">
-      [% text_field_readonly('name') %]
-    </div>
+      [% text_field('name') %]
+  </div>
 </div>
 
 <div class="column">

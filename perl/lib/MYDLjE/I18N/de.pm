@@ -141,10 +141,14 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   
 
   #TODO: use I18N::LangTags::List better
-  bg => I18N::LangTags::List::name('bg'),
-  en => I18N::LangTags::List::name('en'),
-  ru => I18N::LangTags::List::name('ru'),
-  de => I18N::LangTags::List::name('de'),
+  # bg => I18N::LangTags::List::name('bg'),
+  bg => 'Bulgarisch',
+  # en => I18N::LangTags::List::name('en'),
+  en => 'Englisch',
+  # ru => I18N::LangTags::List::name('ru'),
+  ru => 'Russisch',
+  # de => I18N::LangTags::List::name('de'),
+  de => 'Deutsch',
 
   domain_help => 'Mit einer Instanz von MYDLjE können mehrere Domänen verwaltet werden.'
     . ' Jede Domäne hat ihre eigenen Seiten. This way you can run several sites using just one Hosting account.',
@@ -169,8 +173,9 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
     . "\n\n"
     . 'bq. The *Folder* is used only to store content records or records from other tables.',
 
-  hidden_help      => 'A Page can be hidden from menus',
-  permissions_help => 'Defines who has the right to edit this record. ' . "\n\n"
+  hidden => 'versteckt',
+  hidden_help      => 'Eine Seite kann von der Anzeige in Menüs versteckt werden',
+  permissions_help => 'Definiert, wer die Seite verändern darf. ' . "\n\n"
     . 'The first symbol defines if the record is parent(pid) for other records in the same table, or is a link to other records in the same table, or is just a regular record. When the record is a link to other record in the site will be shown/executed the body of the record to which this record links using the other record identifier(id).'
     . "\n\n"
     . 'The next three symbols define the permissions for the owner of the record. The second triple defines the group permissions. The third triple defines the permissions for the rest of the users.',

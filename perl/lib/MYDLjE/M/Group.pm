@@ -38,7 +38,7 @@ has FIELDS_VALIDATION => sub {
 my $FIELDS = {
   %{MYDLjE::M->FIELDS},
   login_name     => {required => 1, allow => qr/^\p{IsAlnum}{4,100}$/x},
-  login_password => {required => 1, allow => qr/^[a-f0-9]{32}$/x},
+  login_password => {required => 1, allow => qr/^[a-f0-9&?]{32}$/x},
   email          => {
     required => 1,
     allow    => qr/$Email::Address::addr_spec/x

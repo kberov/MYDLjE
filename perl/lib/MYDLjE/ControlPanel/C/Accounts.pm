@@ -90,7 +90,7 @@ sub get_groups {
     $c->dbix->abstract->select(MYDLjE::M::Group->TABLE, MYDLjE::M::Group->COLUMNS,
     $where);
   $sql .= $c->sql_limit($form->{offset}, $form->{rows});
-  foreach my $group (@{$c->dbix->query($sql, @bind)->hashes}) {
+  for my $group (@{$c->dbix->query($sql, @bind)->hashes}) {
     push @$groups, $group;
   }
   return $groups;

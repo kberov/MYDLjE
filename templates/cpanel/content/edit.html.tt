@@ -76,7 +76,7 @@ markitup_textarea('body');
       [% checkbox_field('bad'); %]
   </div>
 </div>
-<div class="unit on-3 columns">
+<div class="unit on-2 columns">
   <div class="column">
     [% permissions_field('permissions'); %]
   </div>
@@ -86,11 +86,17 @@ markitup_textarea('body');
       hidden_field('pid');
       %]
   </div>
+
+</div>  
+<div class="unit on-2 columns">   
   <div class="column">
       [%  
       hidden_field('pid');
       select_field('pid',{options =>pid_options});
       %]
+  </div>
+  <div class="column">
+      [% checkbox_field('accepted'); %]
   </div>
   <!--  -->
 </div>

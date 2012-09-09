@@ -173,10 +173,10 @@ sub no_markup_inflate {
   return $value;
 }
 
-#TODO: Move ALL validation stuff to MYDLjE::Validator which will inherit MojoX::Validator.
+# TODO: Move ALL validation stuff to MYDLjE::Validator which will inherit MojoX::Validator.
 sub domain_regexp {
 
-#stollen from Regexp::Common::URI::RFC2396;
+# stolen from Regexp::Common::URI::RFC2396;
   my $digit       = '[0-9]';
   my $upalpha     = '[A-Z]';
   my $lowalpha    = '[a-z]';
@@ -222,7 +222,7 @@ sub validate_field {
 
 }
 
-#Common field definitions to be used accross all subclasses
+# Common field definitions to be used accross all subclasses
 my $id_regexp   = {regexp => qr/^\d+$/x};
 my $bool_regexp = {regexp => qr/^[01]$/x};
 my $FIELD_DEFS  = {
@@ -238,7 +238,7 @@ my $FIELD_DEFS  = {
   },
   permissions => {
 
-    #required => 1,
+    # required => 1,
     inflate => sub { return $_[0]->value ? $_[0]->value : '-rwxr-xr-x'; },
     regexp => qr/^
       $MRE{perms}{ldn} # is this a directory, link or a regular record ?
@@ -328,14 +328,14 @@ sub FIELDS {
 sub check {
   my ($self, $key, $value) = @_;
 
-  #warn Data::Dumper::Dumper($self->FIELDS);die;
+  # warn Data::Dumper::Dumper($self->FIELDS);die;
   my $args_out =
     Params::Check::check({$key => $self->FIELDS($key) || {}}, {$key => $value});
   return $args_out->{$key};
 }
 
-#TODO:Utility function used for passing custom SQL in Model Classes.
-#$SQL is loaded from file during initialization
+# TODO:Utility function used for passing custom SQL in Model Classes.
+# $SQL is loaded from file during initialization
 sub sql {
   my ($key) = @_;
   if ($key && exists $SQL->{$key}) {
@@ -358,7 +358,7 @@ MYDLjE::M - an oversimplified database-based objects class.
 
 =head1 DESCRIPTION
 
-This is the base class for all classes that store they data in a L<MYDLjE> database table. It was written in order to decrease dependencies from CPAN modules and keep MYDLjE small and light.
+This is the base class for all classes that store their data in a L<MYDLjE> database table. It was written in order to decrease dependencies from CPAN modules and keep MYDLjE small and light.
 
 The class provides some useful methods which simplify representing rows from tables as Perl objects. It is not intended to be a full featured ORM at all. It is rather a DBA (Database Abstraction Layer). It simply saves you from writing the same SQl over and over again to construct well known MYDLjE objects stored in tables' rows. If you have to do complicated  SQL queries use directly L<DBIx::Simple/query> method. A L<DBIx::Simple> singleton instance is available as attribute in every L<MYDLjE::M> derived object. Use this base class if you want to construct Perl objects which store their data in table rows. That's it.
 
@@ -367,8 +367,8 @@ And of course you can always overwrite all methods from this base class at will 
 
 =head1 SYNOPSIS
 
-  #in your class representing a template for a row in
-  #a table or view or whatever database object
+  # in your class representing a template for a row in
+  # a table or view or whatever database object
 
   package MYDLjE::M::Content::Note;
   use Mojo::Base 'MYDLjE::M::Content';
@@ -397,16 +397,16 @@ And of course you can always overwrite all methods from this base class at will 
 }
 
 
-  #...somewhere in your application or controller or a custom script
+  # ... somewhere in your application or controller or a custom script
   my $note = MYDLjE::M::Content::Note->select({id=>5});
-  #or
+  # or
   my $user = MYDLjE::M::User->select(login_name => 'guest')
   $user->password(Mojo::Util::md5_sum('myverysecReTPasWord123'));
   
-  #do whatwever you do with this object, then save it
+  # do whatwever you do with this object, then save it
   $user->save;
   
-  #or create something really fresh
+  # or create something really fresh
   my $question = MYDLjE::M::Content::Question->new(
     user_id => $c->msession->user_id,
     title   => 'How to cook with MYDLjE?',
@@ -450,8 +450,8 @@ It is used  internally in L<select> when retreiving a row from the database and 
 =head2 FIELDS_VALIDATION
 
 You must define this attribute in your subclass. 
-It must return a HASHREF with column names as keys and "types" constratints as values
-interpretted by L<validate_field> which will check and validate the value of a column
+It must return a HASHREF with column names as keys and "types" constraints as values
+interpreted by L<validate_field> which will check and validate the value of a column
 each time a new value is set.
 
   has FIELDS_VALIDATION => sub {
@@ -479,8 +479,8 @@ Specific C<WHERE> clause for your class which will be appended to C<where> argum
 You can redefine the WHERE clause for the object data population just after instatntiating an empty object and before calling select to populate it with data.
 
     my $user = MYDLjE::M::User->new();
-    $user->WHERE({disabled =>0, });
-    $user->select(id=>1);
+    $user->WHERE({disabled => 0, });
+    $user->select(id => 1);
 
 =head1 METHODS
 
@@ -504,10 +504,10 @@ Instantiates an object from a saved in the database row by constructing and exec
 
 Selects many records from this class L</TABLE> and this class L</COLUMNS>. 
 The paramethers  C<$where> and  C<$order> are the same as described in L<SQL::Abstract>.
-Returns an array reference of hashes. If you want objects, you must instantate them one by one.
+Returns an array reference of hashes. If you want objects, you must instantiate them one by one.
 
   my $users_as_hashes = MYDLjE::M::User->select_all($where, $order)->rows;
-  #but i need MYDLjE::M::User instances
+  # but i need MYDLjE::M::User instances
   my @users_as_objects = map {MYDLjE::M::User->new($_)} @$userS_as_hashes;
 
 =head2 data
@@ -530,7 +530,7 @@ But also use the autogenereated or defined by you getters/setters.
 
 =head2 save
 
-DWIM saver. If the object is fresh ( C<if (!$self-E<gt>id)> ) prepares and executes an C<INSERT> statment, otherwise preforms an C<UPDATE>. L</TABLE> is used to construct the SQL.
+DWIM saver. If the object is fresh ( C<if (!$self-E<gt>id)> ) prepares and executes an C<INSERT> statement, otherwise preforms an C<UPDATE>. L</TABLE> is used to construct the SQL.
 
 =head2 make_field_attrs
 
@@ -544,7 +544,7 @@ Called each time a field is set either by the specific field setter or by L</dat
 
 =head2 FIELD_DEF 
 
-Returns a field definition of a commonly used field acrross many tables as 
+Returns a field definition of a commonly used field across many tables as 
 a hash with only one key.
 
 There are several fieldnames and types that are commonly used in database tables.

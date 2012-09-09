@@ -87,6 +87,7 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   bg => I18N::LangTags::List::name('bg'),
   en => I18N::LangTags::List::name('en'),
   ru => I18N::LangTags::List::name('ru'),
+  de => I18N::LangTags::List::name('de'),
 
   domain_help => 'You can manage several domains with just one instance of MYDLjE.'
     . ' Every domain has its own pages. This way you can run several sites using just one Hosting account.',

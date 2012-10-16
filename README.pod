@@ -108,7 +108,7 @@ Almost all (even the cheapest) hosting providers meet the minimal system
 =item 3 Unix only: Make sure the files C<site>, C<mydlje> and C<cpanel> in 
 $MYDLjE_HOME are executable.
 
-=item 4 Make sure the server can write in forlders C<tmp>, C<log>,
+=item 4 Make sure the server can write in folders C<tmp>, C<log>,
  C<conf> and C<pub/home> in $MYDLjE_HOME.
 
 =item 5 Use your browser to access B<http://yourdomain.com/index.xhtml>  or setup via commandline -
@@ -137,7 +137,7 @@ $MYDLjE_HOME are executable.
 =item 3 Unix only: Make sure the files C<site>, C<mydlje> and C<cpanel> in 
 $MYDLjE_HOME are executable.
 
-=item 4 Make sure the server can write in forlders C<tmp>, C<log>,
+=item 4 Make sure the server can write in folders C<tmp>, C<log>,
  C<conf> and C<pub/home> in $MYDLjE_HOME.
 
 =item 5 Open a terminal and go to the MYDLjE root directory:

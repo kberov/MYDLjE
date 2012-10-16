@@ -11,7 +11,7 @@ EOF
 
 has message => <<"EOF";
 
-Try: $0 help system_setup 
+Try: $0 help SystemSetup 
 for more explanations.
 
 EOF
@@ -34,9 +34,9 @@ my %fields  = (
     . uc(substr($secret, 4, 3))
 );
 has usage => <<"EOF";
-usage: $0 system_setup [OPTIONS]
+usage: $0 SystemSetup [OPTIONS]
 
-$0 system_setup --db_name=$fields{db_name} --db_user=$fields{db_user} --db_password=mydlje...
+$0 SystemSetup --db_name=$fields{db_name} --db_user=$fields{db_user} --db_password=mydlje...
   
 These options are available:
     --db_name     Defaults to "$fields{db_name}". Note that the database must exists.
@@ -139,8 +139,8 @@ On the commandline:
 
     # Create an empty database and give enough priviledges to db_user.
     $ cd $MOJO_HOME #Go to the folder where you unpacked MYDLjE.
-    $ ./mydlje help system_setup
-    $ ./mydlje system_setup --db_user=mydlje --db_name=mydlje
+    $ ./mydlje help SystemSetup
+    $ ./mydlje SystemSetup --db_user=mydlje --db_name=mydlje
     System is operational now.
     The following options were used:...
 

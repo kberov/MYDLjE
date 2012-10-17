@@ -10,7 +10,7 @@ sub render {
   my $out  = $self->render_template($PAGE, $PAGE->template);
   my $c    = $self->c;
 
-  #$c->debug('Settings:' . $c->dumper($self->get('SETTINGS')));
+  $c->debug('Settings:' . $c->dumper($self->get('SETTINGS')));
   if (!$out) {
     $out = $self->render_page_content();
   }

@@ -26,7 +26,7 @@ has FIELDS_VALIDATION => sub {
     login_name =>
       {required => 1, constraints => [{regexp => qr/^\p{IsAlnum}{4,100}$/x}]},
     login_password =>
-      {required => 1, constraints => [{regexp => qr/^[a-f0-9]{32}$/x}]},
+      {required => 1, constraints => [{regexp => qr/^[a-f0-9&?]{32}$/x}]},
     email => {required => 1, constraints => [{'email' => 'email'},]},
     first_name => {constraints => [{length => [3, 100]}]},
     last_name  => {constraints => [{length => [3, 100]}]},
@@ -45,7 +45,7 @@ has FIELDS_VALIDATION => sub {
 my $FIELDS = {
   %{MYDLjE::M->FIELDS},
   login_name     => {required => 1, allow => qr/^\p{IsAlnum}{4,100}$/x},
-  login_password => {required => 1, allow => qr/^[a-f0-9]{32}$/x},
+  login_password => {required => 1, allow => qr/^[a-f0-9&?]{32}$/x},
   email          => {
     required => 1,
     allow    => qr/$Email::Address::addr_spec/x
@@ -266,7 +266,7 @@ Note also that all columns are available as setters and getters for the instanti
 
 =head2 COLUMNS
 
-Retursns an ARRAYREF with all columns from table C<users>. 
+Returns an ARRAYREF with all columns from table C<users>. 
 
 =head2 TABLE
 
@@ -275,7 +275,7 @@ Returns the table name from which rows L<MYDLjE::M::User> instances are construc
 
 =head2 FIELDS_VALIDATION
 
-Returns a HASHREF with column-names as keys and L<MojoX::Validator> constraints used when retreiving and inserting values.
+Returns a HASHREF with column-names as keys and L<MojoX::Validator> constraints used when retrieving and inserting values.
 
 =head2 groups
 
@@ -297,8 +297,8 @@ Parameters:
 
     #All columns can be passed as  key-value pairs like MYDLjE::M::select.
     #group_ids - ARRAYREF with additional ids of groups to which the new user will belong
-    #namespaces - STRING - comma sparated list ofapplications to which 
-    #    the new user group will have login acces - $ENV{MOJO_APP} by default 
+    #namespaces - STRING - comma separated list of applications to which 
+    #the new user group will have login access - $ENV{MOJO_APP} by default 
 
 Example:
 

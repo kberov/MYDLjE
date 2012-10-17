@@ -101,7 +101,7 @@ my $FIELDS = {
   keywords => {required => 0, allow => \&_tags_allow},
 };
 
-#Works only with current package fields!!!
+# Works only with current package fields!!!
 sub FIELDS {
   return $_[1] ? $FIELDS->{$_[1]} : $FIELDS;
 }
@@ -113,7 +113,7 @@ sub new {
   return $self;
 }
 
-#Make some attributes which are appropriate to any data_type of content
+# Make some attributes which are appropriate to any data_type of content
 
 sub alias {
   my ($self, $value) = @_;
@@ -303,7 +303,7 @@ sub bad {
 sub start {
   my ($self, $value) = @_;
   if ($value) {                                          #setting
-    if   ($value =~ /(\d{10,})/x) { $self->{data}{start} = $1 }
+    if   ($value =~ /(\d{10,})/x) { $self->{data}{start} = $1; }
     else                          { $self->{data}{start} = 0; }
     return $self;
   }

@@ -2518,7 +2518,7 @@ MYDLjE::Unidecode - Transliterate Unicode characters to plain ASCII equivalents
 =head1 DESCRIPTION
 
 This is the Unicode lookup table defined as a HASHREF which is used by L<MYDLjE> to make plain ascii aliases out of content element titles.
-The table is ported from Contao CMS - L<http://www.contao.org>. The variable C<$UTF8_LOOKUP_TABLE> is private to the package C<MYDLjE::Unidecode> so it is not accessible from outside. Instead various subroutines can be written to retreive and use characters from it.
+The table is ported from Contao CMS - L<http://www.contao.org>. The variable C<$UTF8_LOOKUP_TABLE> is private to the package C<MYDLjE::Unidecode> so it is not accessible from outside. Instead various subroutines can be written to retrieve and use characters from it.
 I know there is L<Text::Unidecode>, but now is 2011.
 
 =head1 SUBROUTINES

@@ -12,7 +12,7 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
     'Please enter your username for the MYDLjE::ControlPanel application.',
   login_password_help =>
     'Please enter your password. It is NOT transmitted in plain text even if you are not using HTTPS protocol.',
-  login_field_error => 'Please enter valid value for the field "[_1]"!',
+  login_field_error => 'Please enter a valid value for the field "[_1]"!',
   session_id_error  => 'Invalid session. Please try again!',
   first_name        => 'First Name',
   last_name         => 'Last Name',
@@ -59,7 +59,7 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
     . 'See "examples on Wikipedia":http://en.wikipedia.org/wiki/Markdown '
     . ' and "the original syntax":http://daringfireball.net/projects/markdown/syntax/.'
     . "\n\n"
-    . 'bq. POD(Plain Old Documentation): Format, '
+    . 'bq. POD (Plain Old Documentation): Format, '
     . 'for writing documentation for Perl programs. '
     . 'It can be used safely for any type of structured text. '
     . 'See "perlpod":http://perldoc.perl.org/perlpod.html and'
@@ -87,6 +87,7 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
   bg => I18N::LangTags::List::name('bg'),
   en => I18N::LangTags::List::name('en'),
   ru => I18N::LangTags::List::name('ru'),
+  de => I18N::LangTags::List::name('de'),
 
   domain_help => 'You can manage several domains with just one instance of MYDLjE.'
     . ' Every domain has its own pages. This way you can run several sites using just one Hosting account.',
@@ -104,16 +105,16 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
 
   #textile
   page_type_help => 'MYDLjE has different type of pages. ' . "\n\n"
-    . 'bq. *Domain-index (home) page* is the enter point to the domain. It is loaded when the URL does not specify a page to load.'
+    . 'bq. *Domain-index (home) page* is the entry point to the domain. It is loaded when the URL does not specify a page to load.'
     . $/
     . $/
     . 'bq. In the *regular page* you can put any type of content. MYDLjE traverses the content and shows it depending on its type. '
     . "\n\n"
     . 'bq. The *Folder* is used only to store content records or records from other tables.',
 
-  hidden_help      => 'A Page can be hidden from menus',
+  hidden_help      => 'A Page can be hidden from menus.',
   permissions_help => 'Defines who has the right to edit this record. ' . "\n\n"
-    . 'The first symbol defines if the record is parent(pid) for other records in the same table, or is a link to other records in the same table, or is just a regular record. When the record is a link to other record in the site will be shown/executed the body of the record to which this record links using the other record identifier(id).'
+    . 'The first symbol defines if the record is parent (pid) for other records in the same table, or is a link to other records in the same table, or is just a regular record. When the record is a link to another record in the site it will be shown/executed using the body of the record to which this record links using the other record identifier(id).'
     . "\n\n"
     . 'The next three symbols define the permissions for the owner of the record. The second triple defines the group permissions. The third triple defines the permissions for the rest of the users.',
   delete_domain_confirm_message =>
@@ -125,10 +126,10 @@ our %Lexicon = (    ##no critic qw(Variables::ProhibitPackageVars)
     . ' Boxes are defined in "layouts/${DOMAIN.id}/pre_process.tt".',
   in_box => 'in box "[_1]"',
   user_description_help =>
-    'Several words about the user from him self. up to 255 symbols.',
+    'Several words about the user from him self. Up to 255 symbols.',
   created_by => 'Created by',
   created_by_help =>
-    'Who created this user? If this is "guest", the this user registered via the site.',
+    'Who created this user? If this is "guest", the user registered via the site.',
   changed_by      => 'Changed By',
   changed_by_help => 'Who changed this record for the last time?',
   tstamp          => 'Last change on',

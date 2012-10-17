@@ -10,7 +10,7 @@ use MYDLjE::M::Content::Note;
 *domains              = \&MYDLjE::ControlPanel::C::Site::domains;
 *persist_domain_id    = \&MYDLjE::ControlPanel::C::Site::persist_domain_id;
 
-#all types of content are listed by a single template(for now)
+#all types of content are listed by a single template (for now)
 sub list_content {
   my $c    = shift;
   my $user = $c->msession->user;
@@ -20,7 +20,7 @@ sub list_content {
   if (!$form->{data_type} && $c->stash('action') !~ /list/) {
     $form->{data_type} = $c->stash('action');
 
-    #just remove "s" - how convennient books --> book
+    #just remove "s" - how convenient books --> book
     $form->{data_type} =~ s|s$||x;
   }
 
@@ -48,7 +48,7 @@ sub notes     { goto &list_content }
 sub bricks    { goto &list_content }
 sub list      { goto &list_content }
 
-#all types of content are edited using a single template(for now)
+#all types of content are edited using a single template (for now)
 sub edit {
   my $c    = shift;
   my $user = $c->msession->user;
@@ -115,7 +115,7 @@ sub _save_content {
 
   #save
   my $content = $c->stash('content');
-  foreach my $attr (@{$content->COLUMNS}) {
+  for my $attr (@{$content->COLUMNS}) {
     if (exists $form->{$attr}) {
       $content->$attr($form->{$attr});
     }
@@ -195,7 +195,7 @@ sub get_list {
   return;
 }
 
-#prepares an hierarshical looking list for pid select_field
+#prepares an hierarchical looking list for pid select_field
 sub set_pid_options {
   my ($c, $user) = @_;
   my $pid_options = [{label => '/', value => 0}];
@@ -219,7 +219,7 @@ sub traverse_content_children {
   $id = ($c->stash('id') || 0);
   if (@$elems) {
 
-    foreach my $elem (@$elems) {
+    for my $elem (@$elems) {
       if ($elem->{value} == $id) {
         $elem->{disabled} = 1;
       }

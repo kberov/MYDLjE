@@ -3,10 +3,10 @@
 [% 
 IF id;
   legend = c.l('Edit [_1]', c.l('user') );
-  form_action = c.url_for('/site/edit_user/' _ id );
+  form_action = c.url_for('/accounts/edit_user/' _ id );
 ELSE;
   legend = c.l('New [_1]', c.l('user') );
-  form_action = c.url_for('/site/edit_user');
+  form_action = c.url_for('/accounts/edit_user');
 END;
 
 %]
@@ -34,12 +34,17 @@ disabled start stop properties
   </div>
 <div class="unit on-2 columns">
   <div class="column">
-      [% text_field_readonly('login_name') %]
+      [% text_field('login_name') %]
     </div>
     <div class="column">
       [% text_field_readonly('primary_group', {label=>c.l('group').ucfirst}); %]
     </div>
 </div>
+<div class="unit on-1 columns">
+  <div class="column">
+      [% text_field('login_password')%]
+  </div>
+</div> 
 <div class="unit on-2 columns">
   <div class="column">
       [% text_field('first_name') %]

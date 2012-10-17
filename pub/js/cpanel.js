@@ -62,7 +62,7 @@ function enhance_list_items() {
 
 page_type_icons = {
   regular: 'layout_content.png',
-  default: 'page_world.png',
+  'default': 'page_world.png',
   folder: 'folder_page.png'
 };
 function prepend_type_icons(tag){

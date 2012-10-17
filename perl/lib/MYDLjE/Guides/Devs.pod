@@ -77,7 +77,7 @@ The C<log> folder is for the log files. Note that some early warnings or errors 
     #Example:
     cd ~/opt/public_dev/MYDLjE/; tail -n200 -f log/development.log
 
-In C<perl/bin> we keep utility commandline scripts. Everything from Mojo scripts folder is also there. In L<perl/lib> are all the Perl Modules that come bundled with L<MYDLjE>. C<perl/site/bin> and C<perl/site/lib> are intended for your custom, aplication specific code. These folders will not be ever touched if you upgrade MYDLjE.
+In C<perl/bin> we keep utility commandline scripts. Everything from Mojo scripts folder is also there. In L<perl/lib> are all the Perl Modules that come bundled with L<MYDLjE>. C<perl/site/bin> and C<perl/site/lib> are intended for your custom, application specific code. These folders will not be ever touched if you upgrade MYDLjE.
 
 =head1 PERL MODULES
 
@@ -127,7 +127,7 @@ TODO: implement it
 The user is restored from L<msession|MYDLjE::C/msession>
 or a new msession is instantiated and an L<MYDLjE::M::User> instance is put in it.
 
-MYDLjE::Site differenitiates  between content language and user interface language. 
+MYDLjE::Site differentiates  between content language and user interface language. 
 A user could browse English content while having messages in Bulgarian.
 Current content language is restored from C<$c-E<gt>session('c_language')> or 
 C<$c-E<gt>req-E<gt>param('c_language')> is used. 
@@ -145,8 +145,8 @@ C<$c-E<gt>req-E<gt>param('ui_language')> is used.
 The current domain is detected from C<$ENV{HTTP_HOST}> 
 (C<$c-E<gt>req-E<gt>headers-E<gt>host>).
 
-The page is retreived from table C<pages> by alias and page properties are 
-retreived from table C<content> by data_type (C<page>) and 
+The page is retrieved from table C<pages> by alias and page properties are 
+retrieved from table C<content> by data_type (C<page>) and 
 page_id (C<$page-E<gt>page_id>). 
 The passed alias is taken from C<$c-E<gt>stash('page_alias')>. 
 It is put there by Mojolicious. 
@@ -160,16 +160,16 @@ The page template specifies the template wrapper (C<TEMPLATE_WRAPPER>),
 which is the layout for the page to be used. Defaults to 
 C<site/layouts/default.html.tt>.
 
-The page content is retreived from table C<content> by C<page_id> and C<language>.
+The page content is retrieved from table C<content> by C<page_id> and C<language>.
 
-The the content with C<data_type> "brick" is retreived recursively 
-from curent and then parent and C<default> pages like the C<page> template.
+The content with C<data_type> "brick" is retrieved recursively 
+from current and then parent and C<default> pages like the C<page> template.
 
 C<permissions> field is used to filter the page and its content.
 C<published> and other fields are taken into account too 
 (see the L<MYDLjE::Site::C::Site> and mysql.queries.sql source).
 
-After all needed data is retreived it is put in the stash 
+After all needed data is retrieved it is put in the stash 
 (C<$c-E<gt>stash()>) and the page is rendered. 
 
 In the template further processing is made by L<MYDLjE::Template::PageContent>.
@@ -204,7 +204,7 @@ L<MYDLjE::Template::PageTree>
 
 
 You can write your own custom applications which do not use MYDLjE code at all, 
-but are based on Mojolicious only. In it's turn Mojolicious allows you to 
+but are based on Mojolicious only. In its turn Mojolicious allows you to 
 use only what you want from it. 
 You can also write front-end applications similar to L<site> and use the MYDLjE 
 framework, database etc. You can also write embedded "applications" 

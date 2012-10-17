@@ -45,9 +45,9 @@
                     </select>
                 </td>
             </tr>
-            <tr><th> </th><th>Read</th><th>Write</th><th>Execute</th></tr>
+            <tr><th> </th><th>[% c.l('Read') %]</th><th>[% c.l('Write') %]</th><th>[% c.l('Execute') %]</th></tr>
             <tr>
-                <th>Owner</th>
+                <th>[% c.l('Owner') %]</th>
                 <td><input name="[% name_and_id %]_owner_read" 
                 [% params.value.match('^[ld\-]r') ? ' checked="checked" ':' ' %]
                 type="checkbox" value="r"/></td>
@@ -59,7 +59,7 @@
                 type="checkbox" value="x"/></td>
             </tr>
             <tr>
-                <th>Group</th>
+                <th>[% c.l('Group') %]</th>
                 <td><input name="[% name_and_id %]_group_read" 
                 [% params.value.match('^[ld\-][rwx-]{3}r') ? ' checked="checked" ':' ' %]
                 type="checkbox" value="r"/></td>
@@ -71,7 +71,7 @@
                 type="checkbox" value="x"/></td>
             </tr>
             <tr>
-                <th>Others</th>
+                <th>[% c.l('Others') %]</th>
                 <td><input name="[% name_and_id %]_others_read" 
                 [% params.value.match('^[ld\-][rwx-]{3}[rwx-]{3}r') ? ' checked="checked" ':' ' %]
                 type="checkbox" value="r"/></td>
@@ -102,7 +102,7 @@ $(window).load(function() {
     var scope = 'table[id$="permissions_ptable"]';
     var checkboxes = scope + ' input[type="checkbox"]';
     var pselect = scope + ' [name$="permissions_type"]';
-    var permissions ='[name$="ermissions"]';
+    var permissions ='[name$="permissions"]';
     $(permissions).attr({readonly: 'readonly'});
     $(permissions).removeClass('ui-state-default');
     $(permissions).addClass('ui-state-disabled');

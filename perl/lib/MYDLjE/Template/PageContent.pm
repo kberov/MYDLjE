@@ -10,7 +10,7 @@ sub render {
   my $out  = $self->render_template($PAGE, $PAGE->template);
   my $c    = $self->c;
 
-  #$c->debug('Settings:' . $c->dumper($self->get('SETTINGS')));
+  $c->debug('Settings:' . $c->dumper($self->get('SETTINGS')));
   if (!$out) {
     $out = $self->render_page_content();
   }
@@ -173,7 +173,7 @@ sub render_bricks_to_boxes {
   my $columns = join ',', @{MYDLjE::M::Content::Brick->COLUMNS};
   $sql = "SELECT $columns FROM ($sql) as bricks";
 
-  #$c->debug($sql);
+  # $c->debug($sql);
   my $BRICKS =
     $self->dbix->query($sql, $PAGE->id, $self->get('C_LANGUAGE'), $uid, $uid, $uid)
     ->hashes;
@@ -187,7 +187,7 @@ sub render_bricks_to_boxes {
     my $box            = $brick->box;
     my $box_filled_key = $box . '_FILLED';
 
-    #Is this box filled in? Yes. Then put there nothing more.
+    # Is this box filled in? Yes. Then put there nothing more.
     next if $self->get($box_filled_key);
     my $render = 'render_' . $brick->data_format;
     if ($wrap) {
@@ -205,9 +205,9 @@ sub render_bricks_to_boxes {
       $BOXES->{$box} .= $self->$render($brick);
     }
 
-    #Mark the box as filled from within its template to stop appending more bricks.
-    #Example:
-    #[% RIGHT_BOX_FILLED=1 %]
+    # Mark the box as filled from within its template to stop appending more bricks.
+    # Example:
+    # [% RIGHT_BOX_FILLED=1 %]
   }
   return;
 }
@@ -267,17 +267,17 @@ Renders all content elements with C<data_type> attribute C<brick>
 (L<MYDLjE::M::Content::Brick>) and disposes them in C<BOXES>,
 defined in the current layout. 
 The language attribute of the bricks is C<C_LANGUAGE>. 
-Retreives the bricks for the current page and all parrent pages recursively.
+Retrieves the bricks for the current page and all parent pages recursively.
 
-You can stop displaying/inheriting bricks from parrent pages in the current page.
+You can stop displaying/inheriting bricks from parent pages in the current page.
 Depending on the box in which a brick is, 
-you set: C<[% RIGHT_BOX_FILLED=1 %]> and no more briks placed in C<RIGHT_BOX> 
+you set: C<[% RIGHT_BOX_FILLED=1 %]> and no more bricks placed in C<RIGHT_BOX> 
 will be shown; C<[% LEFT_TOP_BOX_FILLED=1 %]> and no 
-more briks placed in C<LEFT_TOP_BOX> will be shown; etc. 
+more bricks placed in C<LEFT_TOP_BOX> will be shown; etc. 
 
 Wraps the bricks with a div tag if C<SETTINGS.WRAP_BRICKS> is set to true.
 Called in L<MYDLjE::Template::PageContent/render> after L</render_content>.
-Can be callled separately in a site template.
+Can be called separately in a site template.
 
 Params: $page - a L<MYDLjE::M:Page> instance - Default: current page
 
@@ -285,10 +285,10 @@ Params: $page - a L<MYDLjE::M:Page> instance - Default: current page
 
 =head2 render_content
 
-Renders all content elements with C<data_type> attribute other  than C<brick>
+Renders all content elements with C<data_type> attribute other than C<brick>
 and  C<page>. They are put in the special C<content> variable, 
 placed in the current layout. 
-Content elements are retreived from stash variable C<MAIN_AREA_CONTENT> and 
+Content elements are retrieved from stash variable C<MAIN_AREA_CONTENT> and 
  have C<box> attribute with value C<MAIN_AREA||''>. 
  C<MAIN_AREA_CONTENT> is constructed in 
  L<MYDLjE::Site::C::Site/_prepare_content>. 

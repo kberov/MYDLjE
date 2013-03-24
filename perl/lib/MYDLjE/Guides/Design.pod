@@ -7,7 +7,7 @@ MYDLjE::Guides::Design - make beautiful layouts and templates.
 =head1 DESCRIPTION
 
 MYDLjE comes with Elastic CSS framework and the jQuery UI framework bundled. 
-Ofcourse they need jQuery which comes with L<Mojolicious>.
+Of course they need jQuery which comes with L<Mojolicious>.
 Nothing is added or removed, so everything you know so far applies.
 
 Elastic CSS is used for the layout and jQuery UI is used for 

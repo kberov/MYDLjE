@@ -99,7 +99,7 @@ MYDLjE::Config - use and manipulate system configuration files.
 =head1 DESCRIPTION
 
 This class provides access to MYDLjE settings. They are available in all controllers as 
-C<$c-E<gt>app-E<gt>config> attribute and in all aplications like C<$app-E<gt>config> attribute.
+C<$c-E<gt>app-E<gt>config> attribute and in all applications like C<$app-E<gt>config> attribute.
 It is used also separately to manipulate the local configuration files. 
 MYDLjE configuration files are in YAML format.
 

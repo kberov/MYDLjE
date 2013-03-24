@@ -4,7 +4,7 @@
 <form id="[% action %]_form" class="tree_form">
 <fieldset class="ui-widget-content ui-corner-all">
         <legend class="ui-widget-header ui-corner-all">[% c.l('Users') %]
-            <span  class="legend_icon"><a href="[% c.url_for('/site/edit_user')%]"
+            <span  class="legend_icon"><a href="[% c.url_for('/accounts/edit_user')%]"
            title="[% c.l('New [_1]', c.l('User') ) %]"
            id="new_user_button"
            class="new domain">

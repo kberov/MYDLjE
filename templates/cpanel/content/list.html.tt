@@ -85,11 +85,11 @@
     <div class="elastic column">
         <div class="container buttons">
         <a href="[% c.url_for('/content/edit/' _ row.id ).query('data_type' => row.data_type ) %]"
-         title="[% c.l('Edit [_1]', row.data_type ) %]"
+         title="[% c.l('Edit [_1]', c.l(row.data_type) ) %]"
          id="[%'edit_' _ row.id _ row.data_type %]"
          class="edit_content"><span class="ui-icon"></span></a>
          <a href="[% c.url_for('/content/delete/' _ row.id ).query('data_type' => row.data_type ) %]"
-         title="[% c.l('Delete [_1]', data_type ) %]"
+         title="[% c.l('Delete [_1]', c.l(data_type) ) %]"
          id="[%'delete_' _ row.data_type _ row.id %]"
          class="delete_content"><span class="ui-icon"></span></a>
         </div>

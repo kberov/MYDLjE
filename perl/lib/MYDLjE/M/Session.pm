@@ -2,6 +2,7 @@ package MYDLjE::M::Session;
 use Mojo::Base 'MYDLjE::M';
 use Mojo::Util qw();
 use MYDLjE::M::User;
+use MYDLjE::M::Group;
 require Time::HiRes;
 
 has TABLE => 'sessions';

@@ -19,10 +19,10 @@ MACRO link_to_ui_language(language) BLOCK;
 # LANGUAGE is defined in cpanel_macros_pre_process.tt
 %]
 <a href="[% c.url_for().query(ui_language => language) %]"
-  title="[% c.l(language) %]">
-  <img src="pub/css/icons/flags/[% language %].png"
+  title="[% c.l(language) %]">[% c.l(language) %]
+  <!-- img src="pub/css/icons/flags/[% language %].png"
     [%- IF LANGUAGE eq language; ' class="active" '; END; -%]
-    alt="[% language %]" />
+    alt="[% language %]" / -->
 </a>
 [% END %]
 

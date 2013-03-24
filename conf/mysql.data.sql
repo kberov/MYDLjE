@@ -21,21 +21,21 @@ INSERT INTO `users` (`id`, `group_id`, `login_name`, `login_password`, `first_na
 -- ]]></query>
 -- <query name="user_group"><![CDATA[
  INSERT INTO `user_group` (`user_id`, `group_id`) VALUES (1, 1), (2, 2);
--- ]]></quey>
+-- ]]></query>
 
 -- <query name="domains"><![CDATA[
 
 INSERT INTO `domains` (`id`, `domain`, `name`, `description`, `user_id`, `group_id`, `permissions`, `published`) VALUES
 (0, 'localhost', 'Local Host', 'Default domain for all pages in the system.', 1, 1, 'drwxrwxr-x', 2);
 
--- ]]></quey>
+-- ]]></query>
 
 -- <query name="pages"><![CDATA[
 
 INSERT INTO `pages` (`id`, `pid`, `domain_id`, `alias`, `page_type`, `sorting`, `template`, `cache`, `expiry`, `permissions`, `user_id`, `group_id`, `tstamp`, `start`, `stop`, `published`, `hidden`, `deleted`, `changed_by`) VALUES
 (0, 0, 0, 'system_page-do_not_use_or_delete', '', 1, NULL, 0, 300, 'drwx------', 1, 1, 1, 1, 1, 2, 1, 1, 1);
 
--- ]]></quey>
+-- ]]></query>
 
 -- <query name="content"><![CDATA[
 INSERT INTO `content` (`id`, `alias`, `pid`, `page_id`, `user_id`, `group_id`, `sorting`, `data_type`, `data_format`, 
@@ -43,7 +43,7 @@ INSERT INTO `content` (`id`, `alias`, `pid`, `page_id`, `user_id`, `group_id`, `
 `accepted`, `bad`, `deleted`,`start`, `stop`) VALUES
 (0, 'system_content-do_not_use_or_delete', 0, 0, 1, 1, 0, 'note', 'text', 1, 1, 'Parent content of all contents', '', '', '', 'This content is used only to keep foreign key constraints happy.', 'en', 'drwx------', 0, 0, 0, 1, 1, 1);
 
--- ]]></quey>
+-- ]]></query>
 
 
 -- ]]></queries>

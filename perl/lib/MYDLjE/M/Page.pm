@@ -141,7 +141,7 @@ MYDLjE::M::Page - MYDLjE::M-based Page class
 
 =head1 DESCRIPTION
 
-This class is used to instantiate page objects. Pages in MYDLjE can form an hierarshical 
+This class is used to instantiate page objects. Pages in MYDLjE can form an hierarchical 
 structure. This is achieved by using the L<pid>(parent id) data attribute.
 
 =head1 ATTRIBUTES
@@ -154,7 +154,7 @@ Note also that all table-columns are available as setters and getters for the in
 
 =head2 COLUMNS
 
-Retursns an ARRAYREF with all columns from table C<pages>.  These are used to automatically generate getters/setters.
+Returns an ARRAYREF with all columns from table C<pages>.  These are used to automatically generate getters/setters.
 
 =head2 TABLE
 
@@ -163,7 +163,7 @@ Returns the table name from which rows L<MYDLjE::M::Page> instances are construc
 
 =head2 FIELDS_VALIDATION
 
-Returns a HASHREF with column-names as keys and L<MojoX::Validator> constraints used in the getters/setters when retreiving and inserting values. See below.
+Returns a HASHREF with column-names as keys and L<MojoX::Validator> constraints used in the getters/setters when retrieving and inserting values. See below.
 
 =head1 DATA ATTRIBUTES
 
@@ -173,7 +173,7 @@ Primary key.
 
 =head2 pid
 
-Parent id - foreing key referencing the page under which this page is found in the site structure.
+Parent id - foreign key referencing the page under which this page is found in the site structure.
 
 =head2 alias
 
@@ -192,7 +192,7 @@ Unique identifier for pages with the same L<domain_id>. SEO-friendly alias used 
       -and => [$c->sql('read_permissions_sql'), $uid, $uid, $uid];
     );
 
-In MYDLjE there are  several types of pages:
+In MYDLjE there are several types of pages:
 
 =item I<folder> 
 
@@ -204,7 +204,7 @@ Regular pages are used to construct menus in the site and to display content or 
 
 =item I<default>
 
-A page representing the default index page of a domain(there can be several domains managed by a MYDLjE system). 
+A page representing the default index page of a domain (there can be several domains managed by a MYDLjE system). 
 Other types of pages can be added easily and used depending on the business logic you define.
 
 

@@ -6,7 +6,7 @@
     <meta name="keywords" content="[% KEYWORDS %]" />
         <link href="pub/css/[% JQ_UI_THEME %]/jquery-ui-current.custom.css" 
     rel="stylesheet" type="text/css" />
-    [%#TODO Implement cannonical and alternate links
+    [%#TODO Implement canonical and alternate links
     #<link rel="canonical" href="" />
     http://googlewebmastercentral.blogspot.com/2010/09/unifying-content-under-multilingual.html
     http://googlewebmastercentral.blogspot.com/2009/02/specify-your-canonical.html

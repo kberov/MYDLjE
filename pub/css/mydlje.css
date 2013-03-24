@@ -60,7 +60,7 @@ font-style: italic;
   font-size: 105%;
   font-style: oblique;
 }
-/*make some elemnts unselctable*/
+/*make some elements unselectable*/
 .unselectable,.ui-accordion-header,
 label,th,legend {
    -moz-user-select: none;

@@ -10,7 +10,12 @@
 
 =head1 DESCRIPTION
 
-B<NOTE: This is a work in progress. Help is wellcome.>
+B<NOTE: There is a successor of this project named Ado. It is getting up to speed now.>
+
+Ado is already on CPAN - see L<Ado|https://metacpan.org/release/Ado>.
+The code repository is here L<https://github.com/kberov/Ado>.
+Ado is much more modular and flexible than MYDLjE ant its name even means something :).
+
 
 MYDLjE (pronounced [maidalji]/[майдълджи]) is a lightweight
  Web-Applications and Content Management Framework. It is a collection of

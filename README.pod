@@ -10,9 +10,9 @@
 
 =head1 DESCRIPTION
 
-B<NOTE: There is a successor of this project named Ado. It is getting up to speed now.>
+B<NOTE: MYDLjE is no longer in active devellopment.There is a successor of this project named L<Ado|https://github.com/kberov/Ado>.>
 
-Ado is already on CPAN - see L<Ado|https://metacpan.org/release/Ado>.
+Ado is already usable and on CPAN - see L<Ado|https://metacpan.org/release/Ado>.
 The code repository is here L<https://github.com/kberov/Ado>.
 Ado is much more modular and flexible than MYDLjE ant its name even means something :).
 
